@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/31 13:19:21 $ 
-    $Revision: 1.27 $ 
+    $Date: 2005/04/06 11:20:38 $ 
+    $Revision: 1.28 $ 
 */
 
 #include "tidy.h"
@@ -432,7 +432,8 @@ void printXMLOption( TidyDoc tdoc, TidyOption topt, const OptionDesc *d )
 
 static void XMLoptionhelp( TidyDoc tdoc )
 {
-    printf( "<?xml version=\"1.0\"?>\n<config>\n" );
+    printf( "<?xml version=\"1.0\"?>\n<config version=\"%s\">\n"
+            , tidyReleaseDate());
     ForEachOption( tdoc, printXMLOption );
     printf( "</config>\n" );
 }
