@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/13 13:43:42 $ 
-    $Revision: 1.31 $ 
+    $Date: 2003/04/13 13:47:38 $ 
+    $Revision: 1.32 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -322,7 +322,7 @@ void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
 
     /*
      if there already is a class attribute
-     then append class name after an underscore.
+     then append class name after a space.
     */
     if (classattr)
     {
