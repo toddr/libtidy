@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/13 12:33:59 $ 
-    $Revision: 1.47 $ 
+    $Date: 2005/02/21 17:20:19 $ 
+    $Revision: 1.48 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1243,14 +1243,14 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
         if (xhtmlOut && !htmlOut)
         {
             SetXHTMLDocType(doc);
-            FixAnchors(doc, &doc->root, yes, yes, yes);
+            FixAnchors(doc, &doc->root, yes, yes);
             FixXhtmlNamespace(doc, yes);
             FixLanguageInformation(doc, &doc->root, yes, yes);
         }
         else
         {
             FixDocType(doc);
-            FixAnchors(doc, &doc->root, yes, yes, no);
+            FixAnchors(doc, &doc->root, yes, yes);
             FixXhtmlNamespace(doc, no);
             FixLanguageInformation(doc, &doc->root, no, yes);
         }

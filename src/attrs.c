@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/18 17:30:19 $ 
-    $Revision: 1.105 $ 
+    $Date: 2005/02/21 17:20:13 $ 
+    $Revision: 1.106 $ 
 
 */
 
@@ -1090,7 +1090,7 @@ void CheckScript( TidyDocImpl* doc, Node *node, AttVal *attval)
 #pragma unused(attval)
 }
 
-static Bool IsValidHTMLID(ctmbstr id)
+Bool IsValidHTMLID(ctmbstr id)
 {
     ctmbstr s = id;
 

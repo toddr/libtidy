@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/18 17:30:20 $ 
-    $Revision: 1.16 $ 
+    $Date: 2005/02/21 17:20:15 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -175,6 +175,7 @@ Bool IsAnchorElement( TidyDocImpl* doc, Node* node );
 */
 Bool IsCSS1Selector( ctmbstr buf );
 
+Bool IsValidHTMLID(ctmbstr id);
 Bool IsValidXMLID(ctmbstr id);
 
 /* removes anchor for specific node */

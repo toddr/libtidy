@@ -8,8 +8,8 @@
 
   CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/02/15 13:48:24 $ 
-    $Revision: 1.10 $ 
+    $Date: 2005/02/21 17:20:19 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -90,7 +90,7 @@ void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node);
 void NormalizeSpaces(Lexer *lexer, Node *node);
 void ConvertCDATANodes(TidyDocImpl* doc, Node* node);
 
-void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId, Bool xmlId);
+void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId);
 void FixXhtmlNamespace(TidyDocImpl* doc, Bool wantXmlns);
 void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool wantLang);
 
