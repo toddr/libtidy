@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/04 04:03:17 $ 
-    $Revision: 1.19 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/05 01:06:28 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -44,7 +44,7 @@ ParseProperty ParseInvBool; /* parser for 'true' or 'false' or 'yes' or 'no' */
 ParseProperty ParseName;    /* a string excluding whitespace */
 ParseProperty ParseString;  /* a string including whitespace */
 ParseProperty ParseTagNames; /* a space separated list of tag names */
-ParseProperty ParseCharEncoding; /* RAW, ASCII, LATIN1, UTF8 or ISO2022 */
+ParseProperty ParseCharEncoding; /* RAW, ASCII, LATIN1, UTF8, ISO2022, or MACROMAN */
 ParseProperty ParseIndent;   /* specific to the indent option */
 ParseProperty ParseDocType;  /* omit | auto | strict | loose | <fpi> */
 ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
@@ -115,7 +115,7 @@ uint ShowErrors = 6;        /* number of errors to put out */
 Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char */
 Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
-Bool EscapeCdata = no;     /* replace <![CDATA[]]> sections with escaped text */
+Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text */
 
 typedef struct _lex PLex;
 
@@ -222,7 +222,6 @@ static struct Flag
     {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
     
-
   /* this must be the final entry */
     {0,          0,             0}
 };
@@ -498,7 +497,7 @@ void ParseConfigFile(char *file)
     }
 }
 
-/* returns false if unknown or doesn't use parameter */
+/* returns false if unknown option, missing parameter, or option doesn't use parameter */
 Bool ParseConfig(char *option, char *parameter)
 {
     PList *entry;
@@ -526,6 +525,11 @@ Bool ParseConfig(char *option, char *parameter)
         entry->parser(entry->location, option);
     
         fin = ffp;
+    }
+    else if (!parameter)
+    {
+        ReportBadArgument(option);
+        return no;
     }
 
     return yes;
