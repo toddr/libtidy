@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/03 07:18:36 $ 
-    $Revision: 1.123 $ 
+    $Date: 2004/08/07 03:32:20 $ 
+    $Revision: 1.124 $ 
 
 */
 
@@ -4259,8 +4259,11 @@ void ParseXMLDocument(TidyDocImpl* doc)
         {
             InsertNodeAtEnd( &doc->root, node );
             ParseXMLElement( doc, node, IgnoreWhitespace );
+            continue;
         }
 
+        ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
+        FreeNode( doc, node);
     }
 
     /* ensure presence of initial <?xml version="1.0"?> */
