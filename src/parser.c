@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/04/07 13:14:29 $ 
-    $Revision: 1.40 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/04/07 14:19:26 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -246,6 +246,9 @@ static Bool CanPrune(Node *element)
         return no;
 
     if (element->tag->model & CM_ROW)
+        return no;
+
+    if (element->tag->model & CM_EMPTY)
         return no;
 
     if (element->tag == tag_applet)
