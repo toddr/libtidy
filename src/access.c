@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 17:48:04 $ 
-    $Revision: 1.22 $ 
+    $Date: 2005/03/17 11:50:48 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -365,7 +365,7 @@ static Bool EndsWithBytes( ctmbstr txt )
 * text node.
 *******************************************************/
 
-static tmbstr textFromOneNode( TidyDocImpl* doc, Node* node )
+static ctmbstr textFromOneNode( TidyDocImpl* doc, Node* node )
 {
     uint i;
     uint x = 0;
@@ -384,7 +384,7 @@ static tmbstr textFromOneNode( TidyDocImpl* doc, Node* node )
         }
     }
 
-    txt[x] = 0;
+    txt[x] = '\0';
     return txt;
 }
 
@@ -685,7 +685,6 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
     Bool HasTriggeredMissingLongDesc = no;
 
     AttVal* av;
-    tmbstr word;
                 
     if (Level1_Enabled( doc ))
     {
@@ -816,7 +815,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             if(node->content != NULL && (node->content)->tag == NULL)
             {
                 /* Number of characters found within the text node */
-                word = textFromOneNode( doc, node->content);
+                ctmbstr word = textFromOneNode( doc, node->content);
                     
                 if ((strcmp(word,"d") == 0)||
                     (strcmp(word,"D") == 0))
@@ -847,7 +846,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                 if(node->content != NULL && node->content->tag == NULL)
                 {
                     /* Number of characters found within the text node */
-                    word = textFromOneNode( doc, node->content );
+                    ctmbstr word = textFromOneNode( doc, node->content );
 
                     if ((strcmp(word, "d") == 0)||
                         (strcmp(word, "D") == 0))
@@ -939,7 +938,6 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
     Bool HasDescription = no;
 
     AttVal* av;
-    tmbstr word = NULL;
         
     if (Level1_Enabled( doc ))
     {
@@ -966,6 +964,8 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
             /* Must have alternate text representation for that element */
             if (node->content != NULL) 
             {
+                ctmbstr word = NULL;
+
                 if ( node->content->tag == NULL )
                     word = textFromOneNode( doc, node->content);
 
@@ -999,8 +999,6 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
 
 static void CheckObject( TidyDocImpl* doc, Node* node )
 {
-    tmbstr word = NULL;
-
     Bool HasAlt = no;
     Bool HasDescription = no;
 
@@ -1026,6 +1024,8 @@ static void CheckObject( TidyDocImpl* doc, Node* node )
             /* Must have alternate text representation for that element */
             if ( !HasAlt )
             {
+                ctmbstr word = NULL;
+
                 if ( nodeIsText(node->content) )
                     word = textFromOneNode( doc, node->content );
 
@@ -1202,7 +1202,6 @@ static void CheckIFrame( TidyDocImpl* doc, Node* node )
 static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 {
     AttVal* av;
-    tmbstr word = NULL;
     Bool HasDescription = no;
     Bool HasTriggeredLink = no;
 
@@ -1239,7 +1238,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                             {
                                 if (node->next->tag == NULL)
                                 {
-                                    word = textFromOneNode( doc, node->next);
+                                    ctmbstr word = textFromOneNode( doc, node->next);
                                 
                                     /* Must contain at least one letter in the text */
                                     if (IsWhitespace (word) == no)
@@ -1282,7 +1281,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
         if ((node->content != NULL)&&
             (node->content->tag == NULL))
         {
-            word = textFromOneNode( doc, node->content);
+            ctmbstr word = textFromOneNode( doc, node->content);
 
             if ((word != NULL)&&
                 (IsWhitespace (word) == no))
@@ -1421,7 +1420,6 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
 {
     int numTR = 0;
     int numValidTH = 0;
-    tmbstr word;
     
     doc->access.CheckedHeaders++;
 
@@ -1442,7 +1440,7 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
             
                 if ( node->content && nodeIsText(node->content->content) )
                 {
-                    word = textFromOneNode( doc, node->content->content);
+                    ctmbstr word = textFromOneNode( doc, node->content->content);
                     if ( !IsWhitespace(word) )
                         numValidTH++;
                 }
@@ -1477,7 +1475,6 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
 static void CheckColumns( TidyDocImpl* doc, Node* node )
 {
     Node* tnode;
-    tmbstr word;
     int numTH = 0;
     Bool isMissingHeader = no;
 
@@ -1494,7 +1491,7 @@ static void CheckColumns( TidyDocImpl* doc, Node* node )
             {
                 if ( nodeIsText(tnode->content) )
                 {
-                    word = textFromOneNode( doc, tnode->content);
+                    ctmbstr word = textFromOneNode( doc, tnode->content);
                     if ( !IsWhitespace(word) )
                         numTH++;
                 }
@@ -1525,7 +1522,7 @@ static void CheckColumns( TidyDocImpl* doc, Node* node )
 static void CheckTH( TidyDocImpl* doc, Node* node )
 {
     Bool HasAbbr = no;
-    tmbstr word = NULL;
+    ctmbstr word = NULL;
     AttVal* av;
 
     if (Level3_Enabled( doc ))
@@ -2072,8 +2069,6 @@ static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
                                 LabelProp *lprop )
 {
     Bool foundLabel = no;
-    tmbstr word;
-    tmbstr text;
 
     if ( node->prev != NULL && node->prev->prev != NULL )
     {
@@ -2083,7 +2078,7 @@ static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
             foundLabel = yes;
             if ( nodeIsText(temp->content) )
             {
-                word = textFromOneNode( doc, temp->content );
+                ctmbstr word = textFromOneNode( doc, temp->content );
                 if ( !IsWhitespace(word) )
                     lprop->HasLabelBefore = yes;
             }
@@ -2091,7 +2086,7 @@ static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
 
         if ( lprop->HasLabelBefore && nodeIsText(node->prev) )
         {
-            text = textFromOneNode( doc, node->prev );
+           ctmbstr  text = textFromOneNode( doc, node->prev );
             if ( IsWhitespace(text) )
                 lprop->HasValidLabel = yes;
         }
@@ -2104,13 +2099,13 @@ static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
         if ( nodeIsLABEL(temp) &&
              nodeIsText(temp->content) )
         {
-            word = textFromOneNode( doc, temp->content);
+            ctmbstr word = textFromOneNode( doc, temp->content);
             if ( !IsWhitespace(word) )
                 lprop->HasLabelAfter = yes;
         }
         if ( lprop->HasLabelAfter && nodeIsText(node->next) )
         {
-            text = textFromOneNode( doc, node->next);
+            ctmbstr text = textFromOneNode( doc, node->next);
             if ( IsWhitespace(text) )
                 lprop->HasValidLabel = yes;
         }
@@ -2275,7 +2270,6 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
 static void CheckFrameSet( TidyDocImpl* doc, Node* node )
 {
     Node* temp;
-    tmbstr word;
     
     Bool HasNoFrames = no;
 
@@ -2300,7 +2294,7 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
                         Node* para = temp->content->content;
                         if ( nodeIsText(para->content) )
                         {
-                            word = textFromOneNode( doc, para->content );
+                            ctmbstr word = textFromOneNode( doc, para->content );
                             if ( word && strstr(word, "browser") != NULL )
                             {
                                 ReportAccessError( doc, para, NOFRAMES_INVALID_CONTENT );
@@ -2342,7 +2336,6 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
 static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
 {
     Node* temp;
-    tmbstr word;
     uint i;
     int numWords = 1;
 
@@ -2357,7 +2350,7 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
         */
         if (node->content != NULL && node->content->tag == NULL)
         {
-            word = textFromOneNode( doc, node->content);
+            ctmbstr word = textFromOneNode( doc, node->content);
 
             for(i = 0; i < tmbstrlen (word); i++)
             {
@@ -2554,7 +2547,7 @@ static void CheckBlink( TidyDocImpl* doc, Node* node )
         /* Checks to see if text is found within the BLINK element. */
         if ( nodeIsText(node->content) )
         {
-            tmbstr word = textFromOneNode( doc, node->content );
+            ctmbstr word = textFromOneNode( doc, node->content );
             if ( !IsWhitespace(word) )
             {
                 ReportAccessError( doc, node, REMOVE_BLINK_MARQUEE );
@@ -2579,7 +2572,7 @@ static void CheckMarquee( TidyDocImpl* doc, Node* node )
         /* Checks to see if there is text in between the MARQUEE element */
         if ( nodeIsText(node) )
         {
-            tmbstr word = textFromOneNode( doc, node->content);
+            ctmbstr word = textFromOneNode( doc, node->content);
             if ( !IsWhitespace(word) )
             {
                 ReportAccessError( doc, node, REMOVE_BLINK_MARQUEE );
@@ -2744,7 +2737,7 @@ static int WordCount( TidyDocImpl* doc, Node* node )
         if ( nodeIsText( node ) )
         {
             tmbchar ch;
-            tmbstr word = textFromOneNode( doc, node );
+            ctmbstr word = textFromOneNode( doc, node );
             if ( !IsWhitespace(word) )
             {
                 ++wc;
@@ -3007,7 +3000,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
              nodeIsTITLE(node) &&
              nodeIsText(node->content) )
         {
-            tmbstr word = textFromOneNode( doc, node->content );
+            ctmbstr word = textFromOneNode( doc, node->content );
             if ( !IsWhitespace(word) )
                 HasMetaData = yes;
         }
@@ -3058,13 +3051,11 @@ static void MetaDataPresent( TidyDocImpl* doc, Node* node )
 
 static void CheckDocType( TidyDocImpl* doc, Node* node )
 {
-    tmbstr word;
-
     if (Level2_Enabled( doc ))
     {
         if (node->tag == NULL)
         {
-            word = textFromOneNode( doc, node->content);
+            ctmbstr word = textFromOneNode( doc, node->content);
                 
             if ((strstr (word, "HTML PUBLIC") == NULL) &&
                 (strstr (word, "html PUBLIC") == NULL))
