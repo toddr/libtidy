@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:45:24 $ 
-    $Revision: 1.25 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/15 03:01:10 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -220,6 +220,7 @@ static struct _attrlist
     {"onreset",          VERS_HTML40,            SCRIPT},   /* event */
     {"onselect",         VERS_HTML40,            SCRIPT},   /* event */
     {"onunload",         VERS_HTML40,            SCRIPT},   /* event */
+    {"onfocus",          VERS_HTML40,            SCRIPT},   /* event */
     {"onafterupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */
     {"onbeforeupdate",   VERS_MICROSOFT,         SCRIPT},   /* form fields */
     {"onerrorupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */
@@ -588,7 +589,7 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
         
         for (i = 0; c = p[i]; ++i)
         {
-            if ((c > 0x7e) || (c < 0x20) || (strchr("<>", c)))
+            if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
                 pos += sprintf(dest + pos, "%%%02X", (unsigned char)c);
             else
                 dest[pos++] = c;
@@ -841,6 +842,10 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
     
     if (p == null)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+
+    /* font size may be preceded by + or - */
+    if (node->tag == tag_font && (*p == '+' || *p == '-'))
+        ++p;
 
     while (*p)
     {
