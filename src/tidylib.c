@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:05:38 $ 
-    $Revision: 1.32 $ 
+    $Date: 2003/05/25 03:22:20 $ 
+    $Revision: 1.33 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -105,7 +105,6 @@ TidyDocImpl* tidyDocCreate(void)
     ClearMemory( doc, sizeof(*doc) );
 
     InitMap();
-    InitEntities();
     InitTags( doc );
     InitAttrs( doc );
     InitConfig( doc );
@@ -141,7 +140,6 @@ void          tidyDocRelease( TidyDocImpl* doc )
         FreeConfig( doc );
         FreeAttrTable( doc );
         FreeTags( doc );
-        FreeEntities();
         MemFree( doc );
     }
 }

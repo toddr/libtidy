@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.90 $ 
+    $Date: 2003/05/25 03:22:20 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -173,6 +173,8 @@ static const Attribute attribute_defs [] =
   { TidyAttr_WRAP,              "wrap",              VERS_NETSCAPE,     PCDATA    }, /* textarea */
   { TidyAttr_XML_LANG,          "xml:lang",          VERS_XML,          LANG      }, /* XML language */
   { TidyAttr_XML_SPACE,         "xml:space",         VERS_XML,          PCDATA    }, /* XML language */
+
+  /* todo: VERS_ALL is wrong! */
   { TidyAttr_XMLNS,             "xmlns",             VERS_ALL,          PCDATA    }, /* name space */
   { TidyAttr_EVENT,             "event",             VERS_HTML40,       PCDATA    }, /* reserved for <script> */
   { TidyAttr_METHODS,           "methods",           VERS_HTML20,       PCDATA    }, /* for <a>, never implemented */

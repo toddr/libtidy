@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.83 $ 
+    $Date: 2003/05/25 03:22:20 $ 
+    $Revision: 1.84 $ 
 
 */
 
@@ -2204,8 +2204,7 @@ void PPrintXMLTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     if (node == NULL)
         return;
 
-    if ( node->type == TextNode  ||
-         (node->type == CDATATag && cfgBool(doc, TidyEscapeCdata)) )
+    if ( node->type == TextNode)
     {
         PPrintText( doc, mode, indent, node );
     }

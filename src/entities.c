@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 19:34:23 $ 
-    $Revision: 1.12 $ 
+    $Date: 2003/05/25 03:22:20 $ 
+    $Revision: 1.13 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -19,8 +19,6 @@
 #include "entities.h"
 #include "tidy-int.h"
 #include "tmbstr.h"
-
-#define ENTITY_HASHSIZE 731
 
 struct _entity;
 typedef struct _entity entity;
@@ -321,14 +319,6 @@ static const entity* lookup( ctmbstr s )
         if ( ch == *np->name && tmbstrcmp(s, np->name) == 0 )
             return np;
     return NULL;
-}
-
-void InitEntities(void)
-{
-}
-
-void FreeEntities(void)
-{
 }
 
 /* entity starting with "&" returns zero on error */

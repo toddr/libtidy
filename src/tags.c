@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 23:32:51 $ 
-    $Revision: 1.43 $ 
+    $Date: 2003/05/25 03:22:20 $ 
+    $Revision: 1.44 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -17,7 +17,6 @@
 #include "tidy-int.h"
 #include "message.h"
 #include "tmbstr.h"
-#include "parser.h"  /* For FixId() */
 
 #define VERS_ELEM_A          (HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10)
 #define VERS_ELEM_ABBR       (xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10)
