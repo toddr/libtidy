@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/08 14:03:27 $ 
-    $Revision: 1.82 $ 
+    $Date: 2005/03/10 10:00:27 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -240,7 +240,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyIndentCdata,             MU, "indent-cdata",                BL, no,              ParseBool,         boolPicks       },
   { TidyForceOutput,             MS, "force-output",                BL, no,              ParseBool,         boolPicks       },
   { TidyShowErrors,              DG, "show-errors",                 IN, 6,               ParseInt,          NULL            },
-  { TidyAsciiChars,              CE, "ascii-chars",                 BL, yes,             ParseBool,         boolPicks       },
+  { TidyAsciiChars,              CE, "ascii-chars",                 BL, no,              ParseBool,         boolPicks       },
   { TidyJoinClasses,             MU, "join-classes",                BL, no,              ParseBool,         boolPicks       },
   { TidyJoinStyles,              MU, "join-styles",                 BL, yes,             ParseBool,         boolPicks       },
   { TidyEscapeCdata,             MU, "escape-cdata",                BL, no,              ParseBool,         boolPicks       },

@@ -4,7 +4,7 @@
 <head>
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy Configuration Options Quick Reference</title>
-<meta name="version" content="$Id: quickref.html,v 1.12 2005/03/09 12:59:08 arnaud02 Exp $" />
+<meta name="version" content="$Id: quickref.html,v 1.13 2005/03/10 10:00:26 arnaud02 Exp $" />
 </head>
 <body>
 <h1 id="top">Quick Reference</h1>
@@ -393,7 +393,7 @@
 <tr>
 <td><a href="#ascii-chars">ascii-chars</a></td>
 <td>Boolean</td>
-<td>yes</td>
+<td>no</td>
 </tr>
 <tr>
 <td><a href="#char-encoding">char-encoding</a></td>
@@ -1869,12 +1869,12 @@ break.</td>
 <tr>
 <td valign="top">
   Type: <b>Boolean</b><br />
-  Default: <b>yes</b><br />
+  Default: <b>no</b><br />
   Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
 <td align="right" valign="top"><a href="#clean">clean</a></td>
 </tr>
 <tr>
-<td colspan="2">Can be used to modify behavior of -c (--clean yes) option.  Defaults to "yes" when using -c.  Set to "no" to prevent converting &amp;emdash;, &amp;rdquo;, and other named character entities to their ascii equivalents.</td>
+<td colspan="2">Can be used to modify behavior of -c (--clean yes) option.  If set to "yes" when using -c, &amp;emdash;, &amp;rdquo;, and other named character entities are downgraded to their closest ascii equivalents.</td>
 </tr>
 <tr>
 <td><br /></td>
