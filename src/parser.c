@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 22:58:53 $ 
-    $Revision: 1.80 $ 
+    $Date: 2003/05/07 03:54:17 $ 
+    $Revision: 1.81 $ 
 
 */
 
@@ -21,6 +21,7 @@
 
 Bool CheckNodeIntegrity(Node *node)
 {
+#ifndef NO_NODE_INTEGRITY_CHECK
     if (node->prev)
     {
         if (node->prev->next != node)
@@ -55,6 +56,7 @@ Bool CheckNodeIntegrity(Node *node)
         if ( !CheckNodeIntegrity(node) )
             return no;
 
+#endif
     return yes;
 }
 
