@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 18:36:04 $ 
-    $Revision: 1.29 $ 
+    $Date: 2001/07/17 15:56:56 $ 
+    $Revision: 1.30 $ 
 
 */
 
@@ -271,6 +271,7 @@ static struct _attrlist
     {"width",            VERS_ALL,               LENGTH},   /* pixels only for TD/TH */
     {"wrap",             VERS_NETSCAPE,          TEXT},     /* textarea */
     {"xml:lang",         VERS_XML,               TEXT},     /* XML language */
+    {"xml:space",        VERS_XML,               TEXT},     /* XML language */
     {"xmlns",            VERS_ALL,               TEXT},     /* name space */
     {"rbspan",           VERS_XHTML11,           NUMBER},   /* ruby markup */
    
