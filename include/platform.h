@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/05/31 21:52:23 $ 
-    $Revision: 1.26 $ 
+    $Date: 2002/06/16 21:52:46 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -56,6 +56,12 @@
 /* If additional accessibility checks are enabled, disable the original accessibility checks by default */
 #ifndef USE_ORIGINAL_ACCESSIBILITY_CHECKS
 #define USE_ORIGINAL_ACCESSIBILITY_CHECKS 0
+#endif
+
+/* If additional accessibility checks are disabled, always enable the original accessibility checks */
+#if !SUPPORT_ACCESSIBILITY_CHECKS
+#undef USE_ORIGINAL_ACCESSIBILITY_CHECKS
+#define USE_ORIGINAL_ACCESSIBILITY_CHECKS 1
 #endif
 
 /* Convenience defines for Mac platforms */
@@ -252,6 +258,8 @@
 #include <pwd.h>
 #endif
 
+/* #define __USE_MISC */
+
 #ifdef NEEDS_UNISTD_H
 #include <unistd.h>  /* needed for unlink on some Unix systems */
 #endif
@@ -345,11 +353,11 @@
 #if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS)
 #include <sys/types.h>
 #else
-#ifndef _INCLUDE_HPUX_SOURCE
+#if !HPUX_OS && !CYGWIN_OS
 typedef unsigned int uint;
-#endif /* _INCLUDE_HPUX_SOURCE */
+#endif
 typedef unsigned long ulong;
-#endif /* BSDs */
+#endif
 #endif /* __USE_MISC */
 
 typedef unsigned char byte;
