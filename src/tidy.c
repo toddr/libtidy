@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/20 15:31:02 $ 
-    $Revision: 1.11 $ 
+    $Date: 2001/07/20 19:39:12 $ 
+    $Revision: 1.12 $ 
 
   Contributing Author(s):
 
@@ -1164,7 +1164,7 @@ int main(int argc, char **argv)
             break;
     }
 
-    if (totalerrors + totalwarnings > 0)
+    if (totalerrors + totalwarnings > 0 && !Quiet)
         GeneralInfo(errout);
 
     if (errout != stderr)
