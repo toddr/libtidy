@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/02/29 15:55:43 $ 
-    $Revision: 1.137 $ 
+    $Date: 2004/03/01 05:44:54 $ 
+    $Revision: 1.138 $ 
 
 */
 
@@ -50,8 +50,6 @@
 */
 /* swallows closing '>' */
 AttVal *ParseAttrs( TidyDocImpl* doc, Bool *isempty );
-
-Node *CommentToken( Lexer *lexer);
 
 static tmbstr ParseAttribute( TidyDocImpl* doc, Bool* isempty, 
                              Node **asp, Node **php );
@@ -1159,90 +1157,25 @@ static Node* TagToken( TidyDocImpl* doc, uint type )
     return node;
 }
 
-Node* CommentToken(Lexer *lexer)
+static Node* NewToken(TidyDocImpl* doc, uint type)
 {
-    Node* node = NewNode( lexer );
-    node->type = CommentTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-static Node* DocTypeToken(Lexer *lexer)
-{
-    Node* node = NewNode( lexer );
-    node->type = DocTypeTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-static Node *PIToken(Lexer *lexer)
-{
-    Node *node = NewNode(lexer);
-    node->type = ProcInsTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-static Node *AspToken(Lexer *lexer)
-{
+    Lexer* lexer = doc->lexer;
     Node* node = NewNode(lexer);
-    node->type = AspTag;
+    node->type = type;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
 }
 
-static Node *JsteToken(Lexer *lexer)
-{
-    Node* node = NewNode(lexer);
-    node->type = JsteTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-/* Added by Baruch Even - handle PHP code too. */
-static Node *PhpToken(Lexer *lexer)
-{
-    Node* node = NewNode(lexer);
-    node->type = PhpTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-/* XML Declaration <?xml version='1.0' ... ?> */
-static Node *XmlDeclToken(Lexer *lexer)
-{
-    Node* node = NewNode(lexer);
-    node->type = XmlDecl;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-/* Word2000 uses <![if ... ]> and <![endif]> */
-static Node *SectionToken(Lexer *lexer)
-{
-    Node* node = NewNode(lexer);
-    node->type = SectionTag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
-
-/* CDATA uses <![CDATA[ ... ]]> */
-static Node *CDATAToken(Lexer *lexer)
-{
-    Node* node = NewNode(lexer);
-    node->type = CDATATag;
-    node->start = lexer->txtstart;
-    node->end = lexer->txtend;
-    return node;
-}
+#define CommentToken(doc) NewToken(doc, CommentTag)
+#define DocTypeToken(doc) NewToken(doc, DocTypeTag)
+#define PIToken(doc)      NewToken(doc, ProcInsTag)
+#define AspToken(doc)     NewToken(doc, AspTag)
+#define JsteToken(doc)    NewToken(doc, JsteTag)
+#define PhpToken(doc)     NewToken(doc, PhpTag)
+#define XmlDeclToken(doc) NewToken(doc, XmlDecl)
+#define SectionToken(doc) NewToken(doc, SectionTag)
+#define CDATAToken(doc)   NewToken(doc, CDATATag)
 
 void AddStringLiteral( Lexer* lexer, ctmbstr str )
 {
@@ -2434,7 +2367,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->lexbuf[lexer->lexsize] = '\0';
                     lexer->state = LEX_CONTENT;
                     lexer->waswhite = no;
-                    lexer->token = CommentToken(lexer);
+                    lexer->token = CommentToken(doc);
 
                     /* now look for a line break */
 
@@ -2552,7 +2485,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->txtend = lexer->lexsize;
                     lexer->lexbuf[lexer->lexsize] = '\0';
 
-                    lexer->token = PIToken(lexer);
+                    lexer->token = PIToken(doc);
                     lexer->token->closed = closed;
                     lexer->token->element = tmbstrndup(lexer->lexbuf +
                                                        lexer->txtstart - i, i);
@@ -2561,7 +2494,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 {
                     lexer->txtend = lexer->lexsize;
                     lexer->lexbuf[lexer->lexsize] = '\0';
-                    lexer->token = PIToken(lexer);
+                    lexer->token = PIToken(doc);
                 }
 
                 lexer->state = LEX_CONTENT;
@@ -2587,7 +2520,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = AspToken(lexer);
+                return lexer->token = AspToken(doc);
 
             case LEX_JSTE:  /* seen <# so look for "#>" */
                 if (c != '#')
@@ -2608,7 +2541,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = JsteToken(lexer);
+                return lexer->token = JsteToken(doc);
 
             case LEX_PHP: /* seen "<?php" so look for "?>" */
                 if (c != '?')
@@ -2628,7 +2561,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = PhpToken(lexer);
+                return lexer->token = PhpToken(doc);
 
             case LEX_XMLDECL: /* seen "<?xml" so look for "?>" */
 
@@ -2671,7 +2604,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->txtend] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                lexer->token = XmlDeclToken(lexer);
+                lexer->token = XmlDeclToken(doc);
                 lexer->token->attributes = attributes;
                 return lexer->token;
 
@@ -2704,7 +2637,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = SectionToken(lexer);
+                return lexer->token = SectionToken(doc);
 
             case LEX_CDATA: /* seen "<![CDATA[" so look for "]]>" */
                 if (c != ']')
@@ -2733,7 +2666,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = CDATAToken(lexer);
+                return lexer->token = CDATAToken(doc);
         }
     }
 
@@ -2763,7 +2696,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
         lexer->lexbuf[lexer->lexsize] = '\0';
         lexer->state = LEX_CONTENT;
         lexer->waswhite = no;
-        return lexer->token = CommentToken(lexer);
+        return lexer->token = CommentToken(doc);
     }
 
     return 0;
@@ -2838,7 +2771,7 @@ static Node *ParseAsp( TidyDocImpl* doc )
 
     lexer->txtend = lexer->lexsize;
     if (lexer->txtend > lexer->txtstart)
-        asp = AspToken(lexer);
+        asp = AspToken(doc);
 
     lexer->txtstart = lexer->txtend;
     return asp;
@@ -2882,7 +2815,7 @@ static Node *ParsePhp( TidyDocImpl* doc )
 
     lexer->txtend = lexer->lexsize;
     if (lexer->txtend > lexer->txtstart)
-        php = PhpToken(lexer);
+        php = PhpToken(doc);
 
     lexer->txtstart = lexer->txtend;
     return php;
@@ -3536,7 +3469,7 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
 static Node *ParseDocTypeDecl(TidyDocImpl* doc)
 {
     Lexer *lexer = doc->lexer;
-    Node *node = DocTypeToken(lexer);
+    Node *node = DocTypeToken(doc);
     int start = lexer->lexsize;
     int state = DT_DOCTYPENAME;
     uint c;
