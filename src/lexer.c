@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 16:00:36 $ 
-    $Revision: 1.148 $ 
+    $Date: 2004/03/08 12:24:08 $ 
+    $Revision: 1.149 $ 
 
 */
 
@@ -2584,6 +2584,19 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     UngetChar(c, doc->docIn);
 
                     name = ParseAttribute( doc, &isempty, &asp, &php );
+
+                    if (!name)
+                    {
+                        /* fix for http://tidy.sf.net/bug/788031 */
+                        lexer->lexsize -= 1;
+                        lexer->txtend = lexer->txtstart;
+                        lexer->lexbuf[lexer->txtend] = '\0';
+                        lexer->state = LEX_CONTENT;
+                        lexer->waswhite = no;
+                        lexer->token = XmlDeclToken(doc);
+                        lexer->token->attributes = attributes;
+                        return lexer->token;
+                    }
 
                     av = NewAttribute();
                     av->attribute = name;
