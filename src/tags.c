@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 11:17:29 $ 
-    $Revision: 1.13 $ 
+    $Date: 2001/07/16 16:37:44 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -220,6 +220,16 @@ static struct tag
     {"font",       VERS_LOOSE,   CM_INLINE, ParseInline, null},
     {"bdo",        VERS_HTML40,  CM_INLINE, ParseInline, null},
 
+  /* elements for XHTML 1.1 */
+
+    {"ruby",       VERS_XHTML11, CM_INLINE, ParseInline, null},
+    {"rbc",        VERS_XHTML11, CM_INLINE, ParseInline, null}, 
+    {"rtc",        VERS_XHTML11, CM_INLINE, ParseInline, null},
+    {"rb",         VERS_XHTML11, CM_INLINE, ParseInline, null},
+    {"rt",         VERS_XHTML11, CM_INLINE, ParseInline, null},
+    {"rp",         VERS_XHTML11, CM_INLINE, ParseInline, null},
+
+
   /* this must be the final entry */
     {null,         0,            0,          0,       0}
 };
@@ -237,6 +247,9 @@ int HTMLVersion(Lexer *lexer)
     if (!(XmlOut|XmlTags|lexer->isvoyager) &&
         versions & VERS_HTML32)
         return VERS_HTML32;
+
+    if (versions & VERS_XHTML11)
+        return VERS_XHTML11;
 
     if (versions & VERS_HTML40_STRICT)
         return VERS_HTML40_STRICT;

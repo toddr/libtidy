@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 11:17:29 $ 
-    $Revision: 1.24 $ 
+    $Date: 2001/07/16 16:37:44 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -222,6 +222,8 @@ typedef struct _node Node;
 
 #define VERS_MALFORMED   512
 
+#define VERS_XHTML11    1024
+
 /* all tags and attributes are ok in proprietary version of HTML */
 #define VERS_PROPRIETARY (VERS_NETSCAPE|VERS_MICROSOFT|VERS_SUN)
 
@@ -237,7 +239,7 @@ typedef struct _node Node;
 /* tags/attrs in all versions from HTML 3.2 onwards */
 #define VERS_FROM32 (VERS_HTML32|VERS_HTML40)
 
-#define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_HTML40)
+#define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_HTML40|VERS_XHTML11)
 
 /*
   Mosaic handles inlines via a separate stack from other elements
