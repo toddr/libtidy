@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/13 12:33:56 $ 
-    $Revision: 1.102 $ 
+    $Date: 2005/02/11 15:46:40 $ 
+    $Revision: 1.103 $ 
 
 */
 
@@ -856,7 +856,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 
                 uint end = tmbstrlen(first->value);
 
-                if (first->value[end - 1] == ';')
+                if (end >0 && first->value[end - 1] == ';')
                 {
                     /* attribute ends with declaration seperator */
 
@@ -866,7 +866,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                     tmbstrcat(first->value, " ");
                     tmbstrcat(first->value, second->value);
                 }
-                else if (first->value[end - 1] == '}')
+                else if (end >0 && first->value[end - 1] == '}')
                 {
                     /* attribute ends with rule set */
 
@@ -884,7 +884,8 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                     first->value = (tmbstr) MemRealloc(first->value,
                         end + tmbstrlen(second->value) + 3);
 
-                    tmbstrcat(first->value, "; ");
+                    if (end > 0)
+                        tmbstrcat(first->value, "; ");
                     tmbstrcat(first->value, second->value);
                 }
 
