@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/18 19:52:44 $ 
-    $Revision: 1.31 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/19 07:22:21 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -1443,7 +1443,7 @@ void CheckLINK(Lexer *lexer, Node *node)
 /* reports missing action attribute */
 void CheckFORM(Lexer *lexer, Node *node)
 {
-    AttVal *action = GetAttrByName(node, "rel");
+    AttVal *action = GetAttrByName(node, "action");
 
     CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
