@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/13 22:03:27 $ 
-    $Revision: 1.73 $ 
+    $Date: 2003/04/16 21:51:33 $ 
+    $Revision: 1.74 $ 
 
 */
 
@@ -1084,7 +1084,8 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                      nodeIsNOSCRIPT(element)
                     ))
                 {
-                    UngetToken( doc );
+                    /* fix for bug 722753 */
+                    /* UngetToken( doc ); */
                     node = InferredTag( doc, "p" );
                     InsertNodeAtEnd( element, node );
                     ParseTag( doc, node, MixedContent );
