@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 16:54:43 $ 
-    $Revision: 1.86 $ 
+    $Date: 2003/05/13 03:37:14 $ 
+    $Revision: 1.87 $ 
 
 */
 
@@ -2540,15 +2540,23 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         if ( node->type == EndTag && 
              (node->tag == pre->tag || DescendantOf(pre, TagId(node))) )
         {
-            if ( node->tag == pre->tag )
-              FreeNode( doc, node);
+            if (nodeIsBODY(node) || nodeIsHTML(node))
+            {
+                ReportWarning(doc, pre, node, DISCARDING_UNEXPECTED);
+                FreeNode(doc, node);
+                continue;
+            }
+            if (node->tag == pre->tag)
+            {
+                FreeNode(doc, node);
+            }
             else
             {
-              ReportWarning( doc, pre, node, MISSING_ENDTAG_BEFORE );
-              UngetToken( doc );
+                ReportWarning( doc, pre, node, MISSING_ENDTAG_BEFORE );
+                UngetToken( doc );
             }
-            TrimSpaces(doc, pre);
             pre->closed = yes;
+            TrimSpaces(doc, pre);
             TrimEmptyElement(doc, pre);
             return;
         }
@@ -2580,10 +2588,90 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         if ( !PreContent(doc, node) )
         {
             Node *newnode;
+#if 0
+            /*
+              <pre>...<hr>...</pre> ==
+              <pre>...&lt;hr&gt;...</pre>
+
+              <pre>...<div>...</div>...</pre> ==
+              <pre>...&lt;div&gt;...&lt;/div&gt;...</pre>
+
+              <pre>...<pre>...</pre>...</pre> ==
+              <pre>...&lt;pre&gt;...</pre>...
+
+              <pre>...<div>...<pre>...</pre>...</div>...</pre> ==
+              <pre>...&lt;div&gt;...&lt;/div&gt;...</pre>
+
+              <pre>...<table><tr><td>...</td></tr></table>...</pre> ==
+              <pre>...&lt;table&gt;&lt;tr&gt;&lt;td&gt;...
+                   &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;...</pre>
+            */
             ReportWarning( doc, pre, node, UNESCAPED_ELEMENT );
             newnode = EscapeTag( lexer, node );
             FreeNode( doc, node );
             InsertNodeAtEnd(pre, newnode);
+#else
+            /*
+              <pre>...<hr>...</pre> ==
+              <pre>...</pre><hr><pre>...</pre> ==
+
+              <pre>...<div>...</div>...</pre> ==
+              <pre>...</pre><div>...</div><pre>...</pre>
+
+              <pre>...<pre>...</pre>...</pre> ==
+              <pre>...</pre><pre>...</pre><pre>...</pre>
+
+              <pre>...<div>...<pre>...</pre>...</div>...</pre> ==
+              <pre>...</pre><div>...<pre>...</pre>...</div><pre>...</pre>
+
+              <pre>...<table><tr><td>...</td></tr></table>...</pre> ==
+              <pre>...</pre><table><tr><td>...</td></tr></table><pre>...</pre>
+
+              This is basically what Tidy 04 August 2000 did and far more accurate
+              with respect to browser behaivour than the code commented out above.
+              Tidy could try to propagate the <pre> into each disallowed child where
+              <pre> is allowed in order to replicate some browsers behaivour, but
+              there are a lot of exceptions, e.g. Internet Explorer does not propagate
+              <pre> into table cells while Mozilla does. Opera 6 never propagates
+              <pre> into blocklevel elements while Opera 7 behaves much like Mozilla.
+
+              Tidy behaves thus mostly like Opera 6 except for nested <pre> elements
+              which are handled like Mozilla takes them (Opera6 closes all <pre> after
+              the first </pre>).
+
+              There are similar issues like replacing <p> in <pre> with <br>, for
+              example
+
+                <pre>...<p>...</pre>                 (Input)
+                <pre>...<br>...</pre>                (Tidy)
+                <pre>...<br>...</pre>                (Opera 7 and Internet Explorer)
+                <pre>...<br><br>...</pre>            (Opera 6 and Mozilla)
+
+                <pre>...<p>...</p>...</pre>          (Input)
+                <pre>...<br>......</pre>             (Tidy, BUG!)
+                <pre>...<br>...<br>...</pre>         (Internet Explorer)
+                <pre>...<br><br>...<br><br>...</pre> (Mozilla, Opera 6)
+                <pre>...<br>...<br><br>...</pre>     (Opera 7)
+                
+              or something similar, they could also be closing the <pre> and propagate
+              the <pre> into the newly opened <p>.
+
+              Todo: IMG, OBJECT, APPLET, BIG, SMALL, SUB, SUP, FONT, and BASEFONT are
+              dissallowed in <pre>, Tidy neither detects this nor does it perform any
+              cleanup operation. Tidy should at least issue a warning if it encounters
+              such constructs.
+
+              Todo: discarding </p> is abviously a bug, it should be replaced by <br>.
+            */
+            InsertNodeAfterElement(pre, node);
+            ReportWarning(doc, pre, node, MISSING_ENDTAG_BEFORE);
+            ParseTag(doc, node, IgnoreWhitespace);
+
+            newnode = InferredTag(doc, "pre");
+            ReportWarning(doc, pre, newnode, INSERTING_TAG);
+            pre = newnode;
+            InsertNodeAfterElement(node, pre);
+#endif
             continue;
         }
 
