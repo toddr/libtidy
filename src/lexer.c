@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/11 20:56:09 $ 
-    $Revision: 1.92 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/17 15:50:20 $ 
+    $Revision: 1.93 $ 
 
 */
 
@@ -1923,16 +1923,6 @@ Bool ExpectsContent(Node *node)
     return yes;
 }
 
-/*
-  create a text node for the contents of
-  a CDATA element like style or script
-  which ends with </foo> for some foo.
-*/
-static Bool IsQuote( int c )
-{
-  return ( c == '\'' || c == '\"' );
-}
-
 #ifndef OLD_CDATA_CODE
 #define CDATA_INTERMEDIATE 1
 #define CDATA_STARTTAG     2
@@ -2141,6 +2131,16 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
 }
 
 #else /* defined(OLD_CDATA_CODE) */
+
+/*
+  create a text node for the contents of
+  a CDATA element like style or script
+  which ends with </foo> for some foo.
+*/
+static Bool IsQuote( int c )
+{
+  return ( c == '\'' || c == '\"' );
+}
 
 Node *GetCDATA( TidyDocImpl* doc, Node *container )
 {
