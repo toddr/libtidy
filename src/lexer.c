@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/19 11:36:38 $ 
-    $Revision: 1.36 $ 
+    $Date: 2001/07/19 12:11:35 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -1406,9 +1406,6 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
     version = GetAttrByName(xml, "version");
     encoding = GetAttrByName(xml, "encoding");
 
-    if (version == null)
-        AddAttribute(xml, "version", "1.0");
-
     /*
       We need to insert a check if declared encoding 
       and output encoding mismatch and fix the Xml
@@ -1418,10 +1415,13 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
     if (encoding == null && CharEncoding != UTF8)
     {
         if (CharEncoding == LATIN1)
-            encoding->value = "iso-8859-1";
+            AddAttribute(xml, "encoding", "iso-8859-1");
         if (CharEncoding == ISO2022)
-            encoding->value = "iso-2022";
+            AddAttribute(xml, "encoding", "iso-2022");
     }
+
+    if (version == null)
+        AddAttribute(xml, "version", "1.0");
 
     return yes;
 }
