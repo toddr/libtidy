@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/07 08:42:21 $ 
-    $Revision: 1.58 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/03/31 20:04:26 $ 
+    $Revision: 1.59 $ 
 
 */
 
@@ -2268,9 +2268,10 @@ Node *GetToken(Lexer *lexer, uint mode)
                     }
                 }
 
-                if  (lexer->lexsize - lexer->txtstart == 3)
+                if  (lexer->lexsize - lexer->txtstart == 4)
                 {
-                    if (wstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0)
+                    if (wstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0 &&
+                        IsWhite(lexer->lexbuf[lexer->txtstart + 3]))
                     {
                         lexer->state = LEX_XMLDECL;
                         attributes = null;
