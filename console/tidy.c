@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/30 13:27:01 $ 
-    $Revision: 1.25 $ 
+    $Date: 2005/03/30 13:56:53 $ 
+    $Revision: 1.26 $ 
 */
 
 #include "tidy.h"
@@ -226,6 +226,7 @@ typedef struct {
     ctmbstr vals;  /**< Potential values. If NULL, use an external function */
     ctmbstr def;   /**< default */
     tmbchar tempdefs[80]; /**< storage for default such as integer */
+    Bool haveVals; /**< if yes, vals is valid */
 } OptionDesc;
 
 typedef void (*OptionFunc)( TidyOption, const OptionDesc * );
@@ -242,6 +243,7 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     d->cat = ConfigCategoryName( tidyOptGetCategory( topt ) );
     d->vals = NULL;
     d->def = NULL;
+    d->haveVals = yes;
 
     if ( tidyOptIsReadOnly(topt) )
         return;
@@ -279,7 +281,7 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     case TidyPreTags:
         d->type = "Tag names";
         d->vals = "tagX, tagY, ...";
-        d->def = "-none-";
+        d->def = NULL;
         break;
 
     case TidyCharEncoding:
@@ -308,7 +310,8 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
                 d->type = "AutoBool";
                 d->vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
                 d->def = tidyOptGetCurrPick( tdoc, optId );
-            } else
+            }
+            else
             {
                 uint idef;
                 d->type = "Integer";
@@ -325,10 +328,9 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
 
         case TidyString:
             d->type = "String";
-            d->vals = "-";
+            d->vals = NULL;
+            d->haveVals = no;
             d->def = tidyOptGetValue( tdoc, optId );
-            if (!d->def)
-                d->def = "-";
             break;
         }
     }
@@ -404,16 +406,20 @@ void printOption( TidyOption topt, const OptionDesc *d )
 {
     if ( *d->name || *d->type )
     {
-       ctmbstr pval = d->vals;
-       tmbstr val = NULL;
-       if (pval == NULL)
-       {
-           val = GetAllowedValues( topt, d);
-           pval = val;
-       }
-       print3Columns( fmt, 27, 9, 40, d->name, d->type, pval );
-       if (val)
-           free(val);
+        ctmbstr pval = d->vals;
+        tmbstr val = NULL;
+        if (!d->haveVals)
+        {
+            pval = "-";
+        }
+        else if (pval == NULL)
+        {
+            val = GetAllowedValues( topt, d);
+            pval = val;
+        }
+        print3Columns( fmt, 27, 9, 40, d->name, d->type, pval );
+        if (val)
+            free(val);
     }
 }
 
