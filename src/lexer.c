@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 02:06:51 $ 
-    $Revision: 1.82 $ 
+    $Date: 2003/04/07 04:35:02 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -58,6 +58,8 @@ static tmbstr ParseAttribute( TidyDocImpl* doc, Bool* isempty,
 
 static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name, Bool foldCase,
                          Bool *isempty, int *pdelim );
+
+static Node *ParseDocTypeDecl(TidyDocImpl* doc);
 
 static void AddAttrToList( AttVal** list, AttVal* av );
 
@@ -2082,7 +2084,10 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 {
     Lexer* lexer = doc->lexer;
     uint c, lastc, badcomment = 0;
-    Bool isempty, inDTDSubset = no;
+    Bool isempty = no;
+#if 0
+    Bool inDTDSubset = no;
+#endif
     AttVal *attributes = NULL;
 
     if (lexer->pushed)
@@ -2603,6 +2608,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
             case LEX_DOCTYPE:  /* seen <!d so look for '>' munging whitespace */
 
+#if 0
                 if (IsWhite(c))
                 {
                     if (lexer->waswhite)
@@ -2629,6 +2635,18 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
                 lexer->token = DocTypeToken(lexer);
+#endif
+                /* use ParseDocTypeDecl() to tokenize doctype declaration */
+                UngetChar(c, doc->docIn);
+                lexer->lexsize -= 1;
+                lexer->token = ParseDocTypeDecl(doc);
+
+                lexer->txtend = lexer->lexsize;
+                lexer->lexbuf[lexer->lexsize] = '\0';
+                lexer->state = LEX_CONTENT;
+                lexer->waswhite = no;
+                lexer->token = DocTypeToken(lexer);
+
                 /* make a note of the version named by the 1st doctype */
                 if ( lexer->doctype == VERS_UNKNOWN )
                     lexer->doctype = FindGivenVersion( doc, lexer->token );
@@ -3645,4 +3663,134 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
     }
 
     return list;
+}
+
+static Node *ParseDocTypeDecl(TidyDocImpl* doc)
+{
+    Lexer *lexer = doc->lexer;
+    Node *node = DocTypeToken(lexer);
+    int start = lexer->lexsize;
+    int state = DT_DOCTYPENAME;
+    uint c;
+    int delim = 0;
+    Bool hasfpi = yes;
+
+    lexer->waswhite = no;
+
+    while ((c = ReadChar(doc->docIn)) != EndOfStream)
+    {
+        /* convert newlines to spaces */
+        c = c == '\n' ? ' ' : c;
+
+        /* convert white-space sequences to single space character */
+        if (IsWhite(c))
+        {
+            if (!lexer->waswhite)
+            {
+                AddCharToLexer(lexer, (uint)c);
+                lexer->waswhite = yes;
+            }
+            else
+            {
+                /* discard space */
+                continue;
+            }
+        }
+        else
+        {
+            AddCharToLexer(lexer, (uint)c);
+            lexer->waswhite = no;
+        }
+
+        switch(state)
+        {
+        case DT_INTERMEDIATE:
+            /* determine what's next */
+            if (ToUpper(c) == 'P' || ToUpper(c) == 'S')
+            {
+                start = lexer->lexsize - 1;
+                state = DT_PUBLICSYSTEM;
+                continue;
+            }
+            else if (c == '[')
+            {
+                state = DT_INTSUBSET;
+                continue;
+            }
+            else if (c == '\'' || c == '"')
+            {
+                start = lexer->lexsize;
+                delim = c;
+                state = DT_QUOTEDSTRING;
+                continue;
+            }
+            else if (c == '>')
+            {
+                node->end = --(lexer->lexsize);
+                return node;
+            }
+            else
+            {
+                /* error */
+            }
+            break;
+        case DT_DOCTYPENAME:
+            /* read document type name */
+            if (IsWhite(c) || c == '>' || c == '[')
+            {
+                node->element = tmbstrndup(lexer->lexbuf + start,
+                    lexer->lexsize - start - 1);
+                if (c == '>' || c == '[')
+                {
+                    --(lexer->lexsize);
+                    UngetChar(c, doc->docIn);
+                }
+
+                state = DT_INTERMEDIATE;
+                continue;
+            }
+            break;
+        case DT_PUBLICSYSTEM:
+            /* read PUBLIC/SYSTEM */
+            if (IsWhite(c) || c == '>')
+            {
+                char *attname = tmbstrndup(lexer->lexbuf + start,
+                    lexer->lexsize - start - 1);
+                hasfpi = !(tmbstrcasecmp(attname, "SYSTEM") == 0);
+
+                if (c == '>')
+                {
+                    --(lexer->lexsize);
+                    UngetChar(c, doc->docIn);
+                }
+
+                state = DT_INTERMEDIATE;
+                continue;
+            }
+            break;
+        case DT_QUOTEDSTRING:
+            /* read quoted string */
+            if (c == delim)
+            {
+                char *value = tmbstrndup(lexer->lexbuf + start,
+                    lexer->lexsize - start - 1);
+                AddAttribute(doc, node, hasfpi ? "PUBLIC" : "SYSTEM", value);
+                hasfpi = no;
+                state = DT_INTERMEDIATE;
+                delim = 0;
+                continue;
+            }
+            break;
+        case DT_INTSUBSET:
+            /* read internal subset */
+            if (c == ']')
+            {
+                state = DT_INTERMEDIATE;
+            }
+            break;
+        }
+    }
+
+    /* document type declaration not finished */
+    return NULL;
 }

@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:45 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/07 04:35:03 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -86,6 +86,12 @@
 #define LEX_PHP         12
 #define LEX_XMLDECL     13
 
+/* ParseDocTypeDecl state constants */
+#define DT_INTERMEDIATE 0
+#define DT_DOCTYPENAME  1
+#define DT_PUBLICSYSTEM 2
+#define DT_QUOTEDSTRING 3
+#define DT_INTSUBSET    4
 
 /* content model shortcut encoding
 */
