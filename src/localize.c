@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/03/01 09:49:57 $ 
-    $Revision: 1.53 $ 
+    $Author: creitzel $ 
+    $Date: 2002/03/21 18:41:03 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -880,9 +880,9 @@ void ReportNumberOfSlides(FILE *errout, int count)
 
 void GeneralInfo(FILE *errout)
 {
+    tidy_out(errout, "To learn more about HTML Tidy see http://tidy.sourceforge.net\n");
+    tidy_out(errout, "Please send bug reports to html-tidy@w3.org\n");
     tidy_out(errout, "HTML and CSS specifications are available from http://www.w3.org/\n");
-    tidy_out(errout, "To learn more about HTML Tidy see http://www.w3.org/People/Raggett/tidy/\n");
-    tidy_out(errout, "Please send bug reports to Dave Raggett care of <html-tidy@w3.org>\n");
     tidy_out(errout, "Lobby your company to join W3C, see http://www.w3.org/Consortium\n");
 }
 
