@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 00:43:35 $ 
-    $Revision: 1.10 $ 
+    $Date: 2001/07/14 15:07:27 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -866,7 +866,7 @@ static void PPrintTag(Lexer *lexer, Out *fout,
     PPrintAttrs(fout, indent, lexer, node, node->attributes);
 
     if ((XmlOut == yes || lexer->isvoyager) &&
-            (node->type == StartEndTag || node->tag->model & CM_EMPTY ))
+            ((node->type == StartEndTag && !xHTML) || node->tag->model & CM_EMPTY))
     {
         AddC(' ', linelen++);   /* compatibility hack */
         AddC('/', linelen++);
@@ -874,7 +874,7 @@ static void PPrintTag(Lexer *lexer, Out *fout,
 
     AddC('>', linelen++);
 
-    if (node->type != StartEndTag && !(mode & PREFORMATTED))
+    if ((node->type != StartEndTag || xHTML) && !(mode & PREFORMATTED))
     {
         if (indent + linelen >= wraplen)
             WrapLine(fout, indent);
@@ -1266,7 +1266,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
         PPrintJste(fout, indent, lexer, node);
     else if (node->type == PhpTag)
         PPrintPhp(fout, indent, lexer, node);
-    else if (node->tag->model & CM_EMPTY || node->type == StartEndTag)
+    else if (node->tag->model & CM_EMPTY || (node->type == StartEndTag && !xHTML))
     {
         if (!(node->tag->model & CM_INLINE))
             PCondFlushLine(fout, indent);
@@ -1502,7 +1502,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
         PPrintJste(fout, indent, lexer, node);
     else if (node->type == PhpTag)
         PPrintPhp(fout, indent, lexer, node);
-    else if (node->tag->model & CM_EMPTY || node->type == StartEndTag)
+    else if (node->tag->model & CM_EMPTY || (node->type == StartEndTag && !xHTML))
     {
         PCondFlushLine(fout, indent);
         PPrintTag(lexer, fout, mode, indent, node);
