@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/19 15:48:39 $ 
-    $Revision: 1.38 $ 
+    $Date: 2001/07/24 12:46:39 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -2533,6 +2533,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
             }
 
             UngetChar(c, lexer->in);
+            UngetChar('<', lexer->in);
             ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
             return null;
         }
@@ -2818,9 +2819,11 @@ static char *ParseValue(Lexer *lexer, char *name,
 
             if (c == '<')
             {
-                /* UngetChar(c, lexer->in); */
+                UngetChar(c, lexer->in);
+                c = '>';
+                UngetChar(c, lexer->in);
                 ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
-                /* break; */
+                break;
             }
 
             /*

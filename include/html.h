@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/20 19:37:22 $ 
-    $Revision: 1.36 $ 
+    $Date: 2001/07/24 12:46:39 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -289,13 +289,15 @@ typedef struct _lexer Lexer;
 
 /* tidy.c */
 #define EndOfStream EOF
+#define CHARBUF_SIZE 5
 
 /* non-raw input is cleaned up*/
 typedef struct
 {
     int state;     /* FSM for ISO2022 */
     Bool pushed;
-    int c;
+    int charbuf[CHARBUF_SIZE];
+    int bufpos;
     int tabs;
     int lastcol;
     int curcol;
