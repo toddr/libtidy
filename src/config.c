@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/07 16:27:02 $ 
-    $Revision: 1.81 $ 
+    $Date: 2005/03/08 14:03:27 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -369,7 +369,7 @@ static void ReparseTagType( TidyDocImpl* doc, TidyOptionId optId )
 /* Not efficient, but effective */
 static void ReparseTagDecls( TidyDocImpl* doc )
 {
-    FreeDeclaredTags( doc, 0 );
+    FreeDeclaredTags( doc, tagtype_null );
     if ( cfg(doc, TidyInlineTags) )
         ReparseTagType( doc, TidyInlineTags );
     if ( cfg(doc, TidyBlockTags) )
@@ -390,7 +390,7 @@ void ResetConfigToDefault( TidyDocImpl* doc )
         assert( ixVal == (uint) option->id );
         CopyOptionValue( option, &value[ixVal], option->dflt );
     }
-    FreeDeclaredTags( doc, 0 );
+    FreeDeclaredTags( doc, tagtype_null );
 }
 
 void TakeConfigSnapshot( TidyDocImpl* doc )
@@ -420,7 +420,7 @@ void ResetConfigToSnapshot( TidyDocImpl* doc )
         assert( ixVal == (uint) option->id );
         CopyOptionValue( option, &value[ixVal], snap[ixVal] );
     }
-    FreeDeclaredTags( doc, 0 );
+    FreeDeclaredTags( doc, tagtype_null );
     ReparseTagDecls( doc );
 }
 
@@ -1069,19 +1069,22 @@ Bool ParseCSS1Selector( TidyDocImpl* doc, const TidyOptionImpl* option )
 }
 
 /* Coordinates Config update and Tags data */
-static void DeclareUserTag( TidyDocImpl* doc, TidyOptionId optId, int tagType, tmbstr name )
+static void DeclareUserTag( TidyDocImpl* doc, TidyOptionId optId,
+                            UserTagType tagType, ctmbstr name )
 {
   ctmbstr prvval = cfgStr( doc, optId );
-  tmbstr catval = name;
+  tmbstr catval;
+  ctmbstr theval = name;
   if ( prvval )
   {
     uint len = tmbstrlen(name) + tmbstrlen(prvval) + 3;
     catval = tmbstrndup( prvval, len );
     tmbstrcat( catval, ", " );
     tmbstrcat( catval, name );
+    theval = catval;
   }
   DefineTag( doc, tagType, name );
-  SetOptionValue( doc, optId, catval );
+  SetOptionValue( doc, optId, theval );
   if ( prvval )
     MemFree( catval );
 }
@@ -1093,7 +1096,7 @@ Bool ParseTagNames( TidyDocImpl* doc, const TidyOptionImpl* option )
     tmbchar buf[1024];
     uint i = 0, nTags = 0;
     uint c = SkipWhite( cfg );
-    uint ttyp = 0;
+    UserTagType ttyp = tagtype_null;
 
     switch ( option->id )
     {

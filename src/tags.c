@@ -1,13 +1,13 @@
 /* tags.c -- recognize HTML tags
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/13 12:33:58 $ 
-    $Revision: 1.53 $ 
+    $Date: 2005/03/08 14:03:28 $ 
+    $Revision: 1.54 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -390,7 +390,7 @@ Parser* FindParser( TidyDocImpl* doc, Node *node )
     return NULL;
 }
 
-void DefineTag( TidyDocImpl* doc, int tagType, ctmbstr name )
+void DefineTag( TidyDocImpl* doc, UserTagType tagType, ctmbstr name )
 {
     Parser* parser = NULL;
     uint cm = 0;
@@ -417,6 +417,9 @@ void DefineTag( TidyDocImpl* doc, int tagType, ctmbstr name )
         cm = CM_BLOCK|CM_NO_INDENT|CM_NEW;
         parser = ParsePre;
         break;
+
+    case tagtype_null:
+        break;
     }
     if ( cm && parser )
         declare( &doc->tags, name, vers, cm, parser, NULL );
@@ -427,7 +430,7 @@ TidyIterator   GetDeclaredTagList( TidyDocImpl* doc )
     return (TidyIterator) doc->tags.declared_tag_list;
 }
 
-ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, int tagType,
+ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, UserTagType tagType,
                                    TidyIterator* iter )
 {
 #pragma unused(doc)
@@ -459,6 +462,9 @@ ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, int tagType,
                  curr->parser == ParsePre )
                 name = curr->name;
             break;
+
+        case tagtype_null:
+            break;
         }
     }
     *iter = (TidyIterator) curr;
@@ -487,7 +493,7 @@ void InitTags( TidyDocImpl* doc )
 /* By default, zap all of them.  But allow
 ** an single type to be specified.
 */
-void FreeDeclaredTags( TidyDocImpl* doc, int tagType )
+void FreeDeclaredTags( TidyDocImpl* doc, UserTagType tagType )
 {
     TidyTagImpl* tags = &doc->tags;
     Dict *curr, *next = NULL, *prev = NULL;
@@ -510,10 +516,13 @@ void FreeDeclaredTags( TidyDocImpl* doc, int tagType )
             deleteIt = ( (curr->model & CM_BLOCK) &&
                          curr->parser == ParseBlock );
             break;
-    
+
         case tagtype_pre:
             deleteIt = ( (curr->model & CM_BLOCK) &&
                          curr->parser == ParsePre );
+            break;
+
+        case tagtype_null:
             break;
         }
 
@@ -556,7 +565,7 @@ void FreeTags( TidyDocImpl* doc )
     }
 #endif
 
-    FreeDeclaredTags( doc, 0 );
+    FreeDeclaredTags( doc, tagtype_null );
     MemFree( tags->xml_tags );
 
     /* get rid of dangling tag references */
@@ -662,7 +671,7 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
     CheckAttributes(doc, node);
 
     /* a missing summary attribute is bad accessibility, no matter
-       what HTML version is involved; a document wihtout is valid */
+       what HTML version is involved; a document without is valid */
     if (cfg(doc, TidyAccessibilityCheckLevel) == 0)
     {
         if (!HasSummary)

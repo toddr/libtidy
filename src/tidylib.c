@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/07 16:27:06 $ 
-    $Revision: 1.52 $ 
+    $Date: 2005/03/08 14:03:28 $ 
+    $Revision: 1.53 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -460,7 +460,7 @@ ctmbstr       tidyOptGetNextDeclTag( TidyDoc tdoc, TidyOptionId optId,
     ctmbstr tagnam = NULL;
     if ( impl )
     {
-        int tagtyp = 0;
+        UserTagType tagtyp = tagtype_null;
         if ( optId == TidyInlineTags )
             tagtyp = tagtype_inline;
         else if ( optId == TidyBlockTags )
@@ -469,7 +469,7 @@ ctmbstr       tidyOptGetNextDeclTag( TidyDoc tdoc, TidyOptionId optId,
             tagtyp = tagtype_empty;
         else if ( optId == TidyPreTags )
             tagtyp = tagtype_pre;
-        if ( tagtyp )
+        if ( tagtyp != tagtype_null )
             tagnam = GetNextDeclaredTag( impl, tagtyp, iter );
     }
     return tagnam;
