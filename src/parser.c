@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:47 $ 
-    $Revision: 1.63 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/06 19:24:27 $ 
+    $Revision: 1.64 $ 
 
 */
 
@@ -1150,12 +1150,21 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
      on the inline stack. For Inline elements, we normally push them
      onto the inline stack provided they aren't implicit or OBJECT/APPLET.
      This test is carried out in PushInline and PopInline, see istack.c
-     We don't push SPAN to replicate current browser behavior
+
+     InlineDup(...) is not called for elements with a block and inline
+     content model, e.g. <del> or <ins>, otherwise constructs like 
+
+       <p>111<a name='foo'>222<del>333</del>444</a>555</p>
+       <p>111<span>222<del>333</del>444</span>555</p>
+       <p>111<em>222<del>333</del>444</em>555</p>
+
+     will get corrupted.
     */
-    if ( nodeHasCM(element, CM_BLOCK) || nodeIsDT(element) )
-        InlineDup( doc, NULL );
-    else if ( nodeHasCM(element, CM_INLINE) )
-        PushInline( doc, element );
+    if ((nodeHasCM(element, CM_BLOCK) || nodeIsDT(element)) &&
+        !nodeHasCM(element, CM_INLINE))
+        InlineDup(doc, NULL);
+    else if (nodeHasCM(element, CM_INLINE))
+        PushInline(doc, element);
 
     if ( nodeIsNOBR(element) )
         doc->badLayout |= USING_NOBR;
