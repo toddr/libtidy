@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/06/23 18:18:36 $ 
-    $Revision: 1.28 $ 
+    $Date: 2002/06/25 07:21:37 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -353,7 +353,7 @@
 #if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS)
 #include <sys/types.h>
 #else
-#if !HPUX_OS && !CYGWIN_OS
+#if !defined(HPUX_OS) && !defined(CYGWIN_OS)
 typedef unsigned int uint;
 #endif
 typedef unsigned long ulong;
