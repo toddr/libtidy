@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/02 02:31:32 $ 
-    $Revision: 1.51 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/10/06 01:50:01 $ 
+    $Revision: 1.52 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -686,38 +686,47 @@ void CheckSCRIPT( TidyDocImpl* doc, Node *node )
     AttVal *lang, *type;
     char buf[16];
 
-    CheckAttributes( doc, node );
+    CheckAttributes(doc, node);
 
     lang = AttrGetById(node, TidyAttr_LANGUAGE);
     type = AttrGetById(node, TidyAttr_TYPE);
 
-    if ( !type )
+    if (!type)
     {
-        /*  ReportMissingAttr( doc, node, "type" );  */
-
         /* check for javascript */
-        if ( lang )
+        if (lang)
         {
             /* Test #696799. lang->value can be NULL. */
             buf[0] = '\0';
-            tmbstrncpy( buf, lang->value, sizeof(buf) );
+            tmbstrncpy(buf, lang->value, sizeof(buf));
             buf[10] = '\0';
 
-            if ( tmbstrncasecmp(buf, "javascript", 10) == 0 ||
-                 tmbstrncasecmp(buf,    "jscript", 7) == 0 )
+            if (tmbstrncasecmp(buf, "javascript", 10) == 0 ||
+                 tmbstrncasecmp(buf,   "jscript",  7) == 0)
             {
-                AddAttribute( doc, node, "type", "text/javascript" );
+                AddAttribute(doc, node, "type", "text/javascript");
             }
-            else if ( tmbstrcasecmp(buf, "vbscript") == 0 )
+            else if (tmbstrcasecmp(buf, "vbscript") == 0)
             {
                 /* per Randy Waki 8/6/01 */
-                AddAttribute( doc, node, "type", "text/vbscript" );
+                AddAttribute(doc, node, "type", "text/vbscript");
             }
         }
         else
-            AddAttribute( doc, node, "type", "text/javascript" );
+        {
+            AddAttribute(doc, node, "type", "text/javascript");
+        }
+
         type = AttrGetById(node, TidyAttr_TYPE);
-        ReportAttrError( doc, node, type, INSERTING_ATTRIBUTE );
+
+        if (type != NULL)
+        {
+            ReportAttrError(doc, node, type, INSERTING_ATTRIBUTE);
+        }
+        else
+        {
+            ReportMissingAttr(doc, node, "type");
+        }
     }
 }
 
