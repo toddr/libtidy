@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:38 $ 
-    $Revision: 1.129 $ 
+    $Date: 2005/03/29 16:37:30 $ 
+    $Revision: 1.130 $ 
 
 */
 
@@ -428,7 +428,8 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
 
     if ( go )
     {
-        char buf[ 64 ], *cp;
+        char buf[ 64 ];
+        const char *cp;
         if ( line > 0 && col > 0 )
         {
             ReportPosition(doc, line, col, buf, sizeof(buf));
