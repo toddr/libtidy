@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/04 13:42:10 $ 
-    $Revision: 1.84 $ 
+    $Date: 2005/03/04 13:50:11 $ 
+    $Revision: 1.85 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -609,19 +609,21 @@ static void StripOnlyChild(TidyDocImpl* doc, Node *node)
         child->parent = node;
 }
 
-/* used to strip font start and end tags */
+/*
+  used to strip font start and end tags.
+  Extricate "element", replace it by its content and delete it.
+*/
 static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
 {
-    Node *node, *parent = element->parent;
-
     if (element->content)
     {
+        Node *node, *parent = element->parent;
+
         element->last->next = element->next;
 
         if (element->next)
         {
             element->next->prev = element->last;
-            element->last->next = element->next;
         }
         else
             parent->last = element->last;
@@ -638,24 +640,14 @@ static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
             node->parent = parent;
 
         *pnode = element->content;
+
+        element->next = element->content = NULL;
+        FreeNode(doc, element);
     }
     else
     {
-        if (element->next)
-            element->next->prev = element->prev;
-        else
-            parent->last = element->prev;
-
-        if (element->prev)
-            element->prev->next = element->next;
-        else
-            parent->content = element->next;
-
-        *pnode = element->next;
+        *pnode = DiscardElement(doc, element);
     }
-
-    element->next = element->content = NULL;
-    FreeNode(doc, element);
 }
 
 /*
@@ -1024,41 +1016,25 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
         {
             if (node->content)
             {
-                Node *last = node->last, *parent = node->parent;
+                Node *last = node->last;
                 DiscardContainer( doc, node, pnode );
+
                 node = InferredTag(doc, TidyTag_BR);
-
-                if (last->next)
-                    last->next->prev = node;
-
-                node->next = last->next;
-                last->next = node;
-                node->prev = last;
-
-                if (parent->last == last)
-                    parent->last = node;
-
-                node->parent = parent;
+                InsertNodeAfterElement(last, node);
             }
             else
             {
-                Node *prev = node->prev, *next = node->next, *parent = node->parent;
+                Node *prev = node->prev, *next = node->next,
+                     *parent = node->parent;
                 DiscardContainer( doc, node, pnode );
 
                 node = InferredTag(doc, TidyTag_BR);
-                node->next = next;
-                node->prev = prev;
-                node->parent = parent;
-
                 if (next)
-                    next->prev = node;
+                    InsertNodeBeforeElement(next, node);
+                else if (prev)
+                    InsertNodeAfterElement(prev, node);
                 else
-                    parent->last = node;
-
-                if (prev)
-                    prev->next = node;
-                else
-                    parent->content = node;
+                    InsertNodeAtStart(parent, node);
             }
 
             return yes;
