@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/18 09:17:52 $ 
-    $Revision: 1.20 $ 
+    $Date: 2001/08/19 19:27:59 $ 
+    $Revision: 1.21 $ 
 
   Contributing Author(s):
 
@@ -59,7 +59,7 @@ void DeInitTidy(void);
 
 extern char *release_date;
 
-Bool        debug_flag = no;
+Bool       debug_flag = no;
 Node       *debug_element = null;
 Lexer      *debug_lexer = null;
 uint       totalerrors = 0;
@@ -219,7 +219,7 @@ int Symbol2Unicode[] =
     0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F
 };
 
-/* Function to convert from MacRoman to Unicode */
+/* Function to convert from Symbol Font chars to Unicode */
 int DecodeSymbolFont(uint c)
 {
     if (c > 255)
@@ -302,15 +302,15 @@ Table 4 - Mapping from UCS-4 to UTF-8
 4) Legal UTF-8 byte sequences:
 <http://www.unicode.org/unicode/uni2errata/UTF-8_Corrigendum.html>
 
-Code point			1st byte	2nd byte	3rd byte	4th byte
-----------			--------	--------	--------	--------
-U+0000..U+007F		00..7F
-U+0080..U+07FF		C2..DF		80..BF
-U+0800..U+0FFF		E0			A0..BF		80..BF
-U+1000..U+FFFF		E1..EF		80..BF		80..BF
-U+10000..U+3FFFF	F0			90..BF		80..BF		80..BF
-U+40000..U+FFFFF	F1..F3		80..BF		80..BF		80..BF
-U+100000..U+10FFFF	F4			80..8F		80..BF		80..BF
+Code point          1st byte    2nd byte    3rd byte    4th byte
+----------          --------    --------    --------    --------
+U+0000..U+007F      00..7F
+U+0080..U+07FF      C2..DF      80..BF
+U+0800..U+0FFF      E0          A0..BF      80..BF
+U+1000..U+FFFF      E1..EF      80..BF      80..BF
+U+10000..U+3FFFF    F0          90..BF      80..BF      80..BF
+U+40000..U+FFFFF    F1..F3      80..BF      80..BF      80..BF
+U+100000..U+10FFFF  F4          80..8F      80..BF      80..BF
 
 The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also allows for the use of
 five- and six-byte sequences to encode characters that are outside the range of the Unicode
@@ -458,18 +458,18 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
             }
         }
         
-		if ((buf[i - 1] & 0xC0) != 0x80)
-		{
-		    /* illegal successor byte value */
-		    hasError = yes;
-		    bytes = i;
+        if ((buf[i - 1] & 0xC0) != 0x80)
+        {
+            /* illegal successor byte value */
+            hasError = yes;
+            bytes = i;
             if (getter)
             {
                 tempCount = 1; /* to simplify things, unget 1 byte at a time */
-            	getter(in, (unsigned char *)&buf[i - 1], &tempCount, yes); /* Unget the byte */
+                getter(in, (unsigned char *)&buf[i - 1], &tempCount, yes); /* Unget the byte */
             }
-		    break;
-		}
+            break;
+        }
         
         n = (n << 6) | (buf[i - 1] & 0x3F);
     }
@@ -527,12 +527,12 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
     if (hasError)
     {
 #if 0
- 	    /* debug */
- 	    tidy_out(errout, "UTF-8 decoding error of %d bytes : ", bytes);
-		tidy_out(errout, "0x%02x ", firstByte);
-	    for (i = 1; i < bytes; i++)
-		    tidy_out(errout, "0x%02x ", buf[i - 1]);
-	    tidy_out(errout, " = U+%04lx\n", n);
+        /* debug */
+        tidy_out(errout, "UTF-8 decoding error of %d bytes : ", bytes);
+        tidy_out(errout, "0x%02x ", firstByte);
+        for (i = 1; i < bytes; i++)
+            tidy_out(errout, "0x%02x ", buf[i - 1]);
+        tidy_out(errout, " = U+%04lx\n", n);
 #endif
 
        /* n = 0xFFFD; */ /* replacement char - do this in the caller */
@@ -632,17 +632,17 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
         if (tempCount < bytes)
             hasError = yes;
     }
-    	
+
     *count = bytes;
     
     if (hasError)
-	{
+    {
 #if 0
-	    /* debug */
-	    tidy_out(errout, "UTF-8 encoding error for U+%x : ", c);
-	    for (i = 0; 0 < bytes; i++)
-		    tidy_out(errout, "0x%02x ", buf[i]);
-	    tidy_out(errout, "\n");
+        /* debug */
+        tidy_out(errout, "UTF-8 encoding error for U+%x : ", c);
+        for (i = 0; 0 < bytes; i++)
+            tidy_out(errout, "0x%02x ", buf[i]);
+        tidy_out(errout, "\n");
 #endif
 
         return -1;
@@ -685,9 +685,9 @@ static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count,
             /* should never get here; testing for 0xFF, a valid char, is not a good idea */
             if ((in && feof(in->file)) /* || buf[i] == (unsigned char)EndOfStream */)
             {
-	            /* tidy_out(errout, "Attempt to unget EOF in ReadRawBytesFromStream\n"); */ /* debug */
+                /* tidy_out(errout, "Attempt to unget EOF in ReadRawBytesFromStream\n"); */ /* debug */
                 *count = -i;
-	            return;
+                return;
             }
     
             rawPushed = yes;
@@ -842,7 +842,7 @@ static int ReadCharFromStream(StreamIn *in)
     }
     
     lookingForBOM = no;
-
+    
     /*
        A document in ISO-2022 based encoding uses some ESC sequences
        called "designator" to switch character sets. The designators
@@ -940,7 +940,7 @@ static int ReadCharFromStream(StreamIn *in)
         /* deal with UTF-8 encoded char */
 
         uint i, count;
-
+        
         if ((c & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
         {
             n = c & 31;
@@ -1014,25 +1014,25 @@ static int ReadCharFromStream(StreamIn *in)
     {
         if (c < 128)
             return c;
-	    else
-	    {
+        else
+        {
             uint c1;
-		    
+ 
             count = 1;
             ReadRawBytesFromStream(in, &tempchar, &count, no);
             if (count <= 0)
                 return EndOfStream;
             c1 = (uint)tempchar;
         
-		    n = (c << 8) + c1;
+            n = (c << 8) + c1;
         
-		    return n;
-	    }
+            return n;
+        }
     }
     /* #431953 - end RJ */
     else
         n = c;
-
+        
     return n;
 }
 
@@ -1156,7 +1156,7 @@ void UngetChar(int c, StreamIn *in)
 {
     if (c == EndOfStream)
     {
-	    /* tidy_out(errout, "Attempt to UngetChar EOF\n"); */ /* debug */
+        /* tidy_out(errout, "Attempt to UngetChar EOF\n"); */ /* debug */
     }
     
     in->pushed = yes;
@@ -1594,68 +1594,68 @@ int main(int argc, char **argv)
 #endif
             /* #427667 - fix by Randy Waki 04 Aug 00 */
             /*
-            if (strcmp(arg, "indent") == 0)
+            if (wstrcasecmp(arg, "indent") == 0)
                 IndentContent = yes;
-            else */ if (strcmp(arg, "xml") == 0)
+            else */ if (wstrcasecmp(arg, "xml") == 0)
                 XmlTags = yes;
-            else if (strcmp(arg, "asxml") == 0 || strcmp(arg, "asxhtml") == 0)
+            else if (wstrcasecmp(arg, "asxml") == 0 || wstrcasecmp(arg, "asxhtml") == 0)
                 xHTML = yes;
-            else if (strcmp(arg, "indent") == 0)
+            else if (wstrcasecmp(arg, "indent") == 0)
             {
                 IndentContent = yes;
                 SmartIndent = yes;
             }
-            else if (strcmp(arg, "omit") == 0)
+            else if (wstrcasecmp(arg, "omit") == 0)
                 HideEndTags = yes;
-            else if (strcmp(arg, "upper") == 0)
+            else if (wstrcasecmp(arg, "upper") == 0)
                 UpperCaseTags = yes;
-            else if (strcmp(arg, "clean") == 0)
+            else if (wstrcasecmp(arg, "clean") == 0)
                 MakeClean = yes;
-            else if (strcmp(arg, "raw") == 0)
+            else if (wstrcasecmp(arg, "raw") == 0)
                 CharEncoding = RAW;
-            else if (strcmp(arg, "ascii") == 0)
+            else if (wstrcasecmp(arg, "ascii") == 0)
                 CharEncoding = ASCII;
-            else if (strcmp(arg, "latin1") == 0)
+            else if (wstrcasecmp(arg, "latin1") == 0)
                 CharEncoding = LATIN1;
-            else if (strcmp(arg, "utf8") == 0)
+            else if (wstrcasecmp(arg, "utf8") == 0)
                 CharEncoding = UTF8;
-            else if (strcmp(arg, "iso2022") == 0)
+            else if (wstrcasecmp(arg, "iso2022") == 0)
                 CharEncoding = ISO2022;
-            else if (strcmp(arg, "mac") == 0)
+            else if (wstrcasecmp(arg, "mac") == 0)
                 CharEncoding = MACROMAN;
-            else if (strcmp(arg, "utf16le") == 0)
+            else if (wstrcasecmp(arg, "utf16le") == 0)
                 CharEncoding = UTF16LE;
-            else if (strcmp(arg, "utf16be") == 0)
+            else if (wstrcasecmp(arg, "utf16be") == 0)
                 CharEncoding = UTF16BE;
-            else if (strcmp(arg, "utf16") == 0)
+            else if (wstrcasecmp(arg, "utf16") == 0)
                 CharEncoding = UTF16;
-            else if (strcmp(arg, "win1252") == 0)
+            else if (wstrcasecmp(arg, "win1252") == 0)
                 CharEncoding = WIN1252;
-            else if (strcmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
+            else if (wstrcasecmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
                 CharEncoding = SHIFTJIS; /* #431953 - RJ */
-            else if (strcmp(argv[1], "-big5") == 0) /* #431953 - RJ */
+            else if (wstrcasecmp(argv[1], "-big5") == 0) /* #431953 - RJ */
                 CharEncoding = BIG5; /* #431953 - RJ */
-            else if (strcmp(arg, "numeric") == 0)
+            else if (wstrcasecmp(arg, "numeric") == 0)
                 NumEntities = yes;
-            else if (strcmp(arg, "modify") == 0)
+            else if (wstrcasecmp(arg, "modify") == 0)
                 writeback = yes;
-            else if (strcmp(arg, "change") == 0)  /* obsolete */
+            else if (wstrcasecmp(arg, "change") == 0)  /* obsolete */
                 writeback = yes;
-            else if (strcmp(arg, "update") == 0)  /* obsolete */
+            else if (wstrcasecmp(arg, "update") == 0)  /* obsolete */
                 writeback = yes;
-            else if (strcmp(arg, "errors") == 0)
+            else if (wstrcasecmp(arg, "errors") == 0)
                 OnlyErrors = yes;
-            else if (strcmp(arg, "quiet") == 0)
+            else if (wstrcasecmp(arg, "quiet") == 0)
                 Quiet = yes;
-            else if (strcmp(arg, "slides") == 0)
+            else if (wstrcasecmp(arg, "slides") == 0)
                 BurstSlides = yes;
-            else if (strcmp(arg, "help") == 0 ||
+            else if (wstrcasecmp(arg, "help") == 0 ||
                      argv[1][1] == '?'|| argv[1][1] == 'h')
             {
                 HelpText(stdout, prog);
                 return 1;
             }
-            else if (strcmp(arg, "config") == 0)
+            else if (wstrcasecmp(arg, "config") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1665,8 +1665,8 @@ int main(int argc, char **argv)
                 }
             }
             /* #431953 - start RJ */
-            else if (strcmp(argv[1], "-language") == 0 ||
-                     strcmp(argv[1], "-lang") == 0)
+            else if (wstrcasecmp(argv[1], "-language") == 0 ||
+                     wstrcasecmp(argv[1], "-lang") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1676,9 +1676,9 @@ int main(int argc, char **argv)
                 }
             }
             /* #431953 - end RJ */
-            else if (strcmp(argv[1], "-file") == 0 ||
-                     strcmp(argv[1], "--file") == 0 ||
-                        strcmp(argv[1], "-f") == 0)
+            else if (wstrcasecmp(argv[1], "-file") == 0 ||
+                     wstrcasecmp(argv[1], "--file") == 0 ||
+                        wstrcasecmp(argv[1], "-f") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1688,9 +1688,9 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
-            else if (strcmp(argv[1], "-wrap") == 0 ||
-                        strcmp(argv[1], "--wrap") == 0 ||
-                        strcmp(argv[1], "-w") == 0)
+            else if (wstrcasecmp(argv[1], "-wrap") == 0 ||
+                        wstrcasecmp(argv[1], "--wrap") == 0 ||
+                        wstrcasecmp(argv[1], "-w") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1699,9 +1699,9 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
-            else if (strcmp(argv[1], "-version") == 0 ||
-                        strcmp(argv[1], "--version") == 0 ||
-                        strcmp(argv[1], "-v") == 0)
+            else if (wstrcasecmp(argv[1], "-version") == 0 ||
+                        wstrcasecmp(argv[1], "--version") == 0 ||
+                        wstrcasecmp(argv[1], "-v") == 0)
             {
                 ShowVersion(errout);
                 /* called to free hash tables etc. */
@@ -1761,6 +1761,10 @@ int main(int argc, char **argv)
             FILE *fp;
 
             /* is it same as the currently opened file? */
+            
+            /* this comparison could be an issue on filesystems that are not case-sensitive */
+            /* e.g. Mac OS HFS; but if we use wstrcasecmp(), we will have the same issue on */
+            /* file systems that are case-sensitive - e.g. UFS */
             if (wstrcmp(errfile, current_errorfile) != 0)
             {
                 /* no so close previous error file */
@@ -1819,8 +1823,8 @@ int main(int argc, char **argv)
             */
             lexer->in->lexer = lexer;
 
-            SetFilename(file);	/* #431895 - fix by Dave Bryan 04 Jan 01 */
-
+            SetFilename(file); /* #431895 - fix by Dave Bryan 04 Jan 01 */
+            
             /* skip byte order mark */
             if (lexer->in->encoding == UTF8    ||
                 lexer->in->encoding == UTF16LE ||
@@ -1961,7 +1965,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = input;
 
-                    if (XmlOut && !xHTML /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
+                    if (XmlOut && !xHTML /*XmlTags*/) /* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
                     else if (BodyOnly)
@@ -1982,7 +1986,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = stdout;
 
-                    if (XmlOut && !xHTML /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
+                    if (XmlOut && !xHTML /*XmlTags*/) /* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
                     else if (BodyOnly)
