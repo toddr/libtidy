@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/12 05:15:15 $ 
-    $Revision: 1.39 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/13 16:08:31 $ 
+    $Revision: 1.40 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1389,16 +1389,14 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
 ** call stack until we have a valid node reference.
 */
 
-static Node* CleanTree( TidyDocImpl* doc, Node *node, Node** prepl )
+static Node* CleanTree( TidyDocImpl* doc, Node *node )
 {
     if (node->content)
     {
-        Node *child, *repl = node;
+        Node *child;
         for (child = node->content; child != NULL; child = child->next)
         {
-            child = CleanTree( doc, child, &repl );
-            if ( repl != node ) 
-                return repl;
+            child = CleanTree( doc, child );
             if ( !child )
                 break;
         }
@@ -1428,8 +1426,7 @@ void CleanDocument( TidyDocImpl* doc )
     /* placeholder.  CleanTree()/CleanNode() will not
     ** zap root element 
     */
-    Node* repl = &doc->root;  
-    CleanTree( doc, &doc->root, &repl );
+    CleanTree( doc, &doc->root );
 
     if ( cfgBool(doc, TidyMakeClean) )
     {
