@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 02:06:53 $ 
-    $Revision: 1.57 $ 
+    $Date: 2003/04/07 20:54:46 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -1345,8 +1345,13 @@ static void PPrintXmlDecl( TidyDocImpl* doc, uint indent, Node *node )
     AttVal* att;
     uint saveWrap;
     TidyPrintImpl* pprint = &doc->pprint;
+    Bool ucAttrs;
     SetWrap( doc, indent );
     saveWrap = WrapOff( doc );
+
+    /* no case translation for XML declaration pseudo attributes */
+    ucAttrs = cfgBool(doc, TidyUpperCaseAttrs);
+    SetOptionBool(doc, TidyUpperCaseAttrs, no);
 
     AddString( pprint, "<?xml" );
 
@@ -1358,6 +1363,9 @@ static void PPrintXmlDecl( TidyDocImpl* doc, uint indent, Node *node )
       PPrintAttribute( doc, indent, node, att );
     if ( att = GetAttrByName(node, "standalone") )
       PPrintAttribute( doc, indent, node, att );
+
+    /* restore old config value */
+    SetOptionBool(doc, TidyUpperCaseAttrs, ucAttrs);
 
     if ( node->end <= 0 || doc->lexer->lexbuf[node->end - 1] != '?' )
         AddChar( pprint, '?' );
