@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/29 03:34:04 $ 
-    $Revision: 1.9 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/29 17:45:39 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -98,17 +98,13 @@
 #endif
 
 #ifndef PRESERVE_FILE_TIMES
-#if defined(sun)
-#define PRESERVE_FILE_TIMES 0
-#else
 #define PRESERVE_FILE_TIMES 1
-#endif
 #endif
 
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(__linux__) || defined(BSD_BASED_OS) || defined(MAC_OS)
+#if defined(sun) || defined(__linux__) || defined(BSD_BASED_OS) || defined(MAC_OS)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
@@ -116,7 +112,7 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(__ATARI__) || defined(BSD_BASED_OS) || defined(MAC_OS)
+#if defined(sun) || defined(__ATARI__) || defined(BSD_BASED_OS) || defined(MAC_OS)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
