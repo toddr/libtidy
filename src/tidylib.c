@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 16:18:20 $ 
-    $Revision: 1.40 $ 
+    $Date: 2004/03/06 15:53:42 $ 
+    $Revision: 1.41 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1226,25 +1226,29 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
         /* If we had XHTML input but want HTML output */
         if ( htmlOut && doc->lexer->isvoyager )
         {
-            Node* node = FindDocType( doc );
+            Node* node = FindDocType(doc);
             /* Remove reference, but do not free */
-            if ( node )
-              RemoveNode( node );  
-            if ( NULL != (node = FindHTML(doc)) )
-            {
-              AttVal* av = AttrGetById( node, TidyAttr_XMLNS );
-              if ( av )
-                  RemoveAttribute( doc, node, av );
-            }
+            if (node)
+              RemoveNode(node);
         }
 
-        if ( xhtmlOut && !htmlOut )
-            SetXHTMLDocType( doc );
+        if (xhtmlOut && !htmlOut)
+        {
+            SetXHTMLDocType(doc);
+            FixAnchors(doc, &doc->root, yes, yes, yes);
+            FixXhtmlNamespace(doc, yes);
+            FixLanguageInformation(doc, &doc->root, yes, yes);
+        }
         else
-            FixDocType( doc );
+        {
+            FixDocType(doc);
+            FixAnchors(doc, &doc->root, yes, yes, no);
+            FixXhtmlNamespace(doc, no);
+            FixLanguageInformation(doc, &doc->root, no, yes);
+        }
 
-        if ( tidyMark )
-            AddGenerator( doc );
+        if (tidyMark )
+            AddGenerator(doc);
     }
 
     /* ensure presence of initial <?XML version="1.0"?> */

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 11:13:13 $ 
-    $Revision: 1.110 $ 
+    $Date: 2004/03/06 15:53:42 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -773,50 +773,6 @@ static void InsertDocType( TidyDocImpl* doc, Node *element, Node *doctype )
             element = element->parent;
         InsertNodeBeforeElement( element, doctype );
     }
-}
-
-/*
- duplicate name attribute as an id
- and check if id and name match
-*/
-void FixId( TidyDocImpl* doc, Node *node )
-{
-    AttVal *name = AttrGetById(node, TidyAttr_NAME);
-    AttVal *id = AttrGetById(node, TidyAttr_ID);
-
-    if (name)
-    {
-        if (id)
-        {
-            if ( name->value != NULL && id->value != NULL &&
-                 tmbstrcmp(id->value, name->value) != 0 )
-                ReportAttrError( doc, node, name, ID_NAME_MISMATCH );
-        }
-        else if (cfgBool(doc, TidyXmlOut))
-        {
-            if (IsValidXMLID(name->value))
-                AddAttribute(doc, node, "id", name->value);
-            else
-                ReportAttrError(doc, node, name, INVALID_XML_ID);
-        }
-    }
-}
-
-void FixXmlLang(TidyDocImpl* doc, Node* node)
-{
-    AttVal* lang = AttrGetById(node, TidyAttr_LANG);
-    AttVal* xmllang;
-
-    if (!lang)
-        return;
-
-    xmllang = AttrGetById(node, TidyAttr_XML_LANG);
-
-    /* todo: check whether lang="" and xml:lang="" mismatch */
-    if (xmllang)
-        return;
-
-    AddAttribute(doc, node, "xml:lang", lang->value);
 }
 
 /*
@@ -3946,12 +3902,6 @@ static void AttributeChecks(TidyDocImpl* doc, Node* node)
                 node->tag->chkattrs(doc, node);
             else
                 CheckAttributes(doc, node);
-
-            if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
-                FixXmlLang(doc, node);
-
-            if (IsAnchorElement(doc, node))
-                FixId(doc, node);
         }
 
         if (node->content)

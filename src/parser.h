@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 03:46:26 $ 
-    $Revision: 1.7 $ 
+    $Date: 2004/03/06 15:53:42 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -58,10 +58,6 @@ Bool IsBlank(Lexer *lexer, Node *node);
  duplicate name attribute as an id
  and check if id and name match
 */
-void FixId( TidyDocImpl* doc, Node *node );
-
-void FixXmlLang(TidyDocImpl* doc, Node* node);
-
 /* acceptable content for pre elements */
 Bool PreContent( TidyDocImpl* doc, Node *node );
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 13:41:34 $ 
-    $Revision: 1.58 $ 
+    $Date: 2004/03/06 15:53:41 $ 
+    $Revision: 1.59 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2419,7 +2419,6 @@ void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
     }
 }
 
-#if 0
 /*
   FixLanguageInformation ensures that the document contains (only)
   the attributes for language information desired by the output
@@ -2467,7 +2466,7 @@ void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool
         }
 
         if (node->content)
-            FixLanguageInformation(doc, node->content, addXmlLang, addLang);
+            FixLanguageInformation(doc, node->content, wantXmlLang, wantLang);
 
         node = next;
     }
@@ -2534,7 +2533,7 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId, Bool x
                     ReportAttrError(doc, node, name, INVALID_XML_ID);
                 }
             }
-            else if (id and wantName)
+            else if (id && wantName)
             {
                 /* todo: do not assume id is valid */
                 RepairAttrValue(doc, node, "name", id->value);
@@ -2546,13 +2545,14 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId, Bool x
             if (name && !wantName)
                 RemoveAttribute(doc, node, name);
 
+            if (AttrGetById(node, TidyAttr_NAME) == NULL &&
+                AttrGetById(node, TidyAttr_ID) == NULL)
+                RemoveAnchorByNode(doc, node);
         }
 
         if (node->content)
-            ConvertCDATANodes(doc, node->content);
+            FixAnchors(doc, node->content, wantName, wantId, xmlId);
 
         node = next;
     }
 }
-
-#endif /* 0 */

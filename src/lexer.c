@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 11:13:13 $ 
-    $Revision: 1.143 $ 
+    $Date: 2004/03/06 15:53:41 $ 
+    $Revision: 1.144 $ 
 
 */
 
@@ -1450,36 +1450,11 @@ ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
     return name;
 }
 
-
-static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
-{
-    Node* node = FindHTML( doc );
-    if ( node )
-    {
-        AttVal *attr = AttrGetById(node, TidyAttr_XMLNS);
-        if ( attr )
-        {
-            if ( !AttrMatches(attr, profile) )
-            {
-                ReportError(doc, node, NULL, INCONSISTENT_NAMESPACE );
-                MemFree( attr->value );
-                attr->value = tmbstrdup( profile );
-            }
-        }
-        else
-        {
-            attr = AddAttribute( doc, node, "xmlns", profile );
-        }
-    }
-}
-
-
 /* Put DOCTYPE declaration between the
 ** <?xml version "1.0" ... ?> declaration, if any,
 ** and the <html> tag.  Should also work for any comments, 
 ** etc. that may precede the <html> tag.
 */
-
 
 static Node* NewDocTypeNode( TidyDocImpl* doc )
 {
@@ -1518,8 +1493,6 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
     uint dtmode = cfg(doc, TidyDoctypeMode);
     ctmbstr pub = "PUBLIC";
     ctmbstr sys = "SYSTEM";
-
-    FixHTMLNameSpace(doc, XHTML_NAMESPACE);
 
     if (dtmode == TidyDoctypeOmit)
     {
