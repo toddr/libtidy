@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:45 $ 
-    $Revision: 1.73 $ 
+    $Date: 2003/03/19 20:32:49 $ 
+    $Revision: 1.74 $ 
 
 */
 
@@ -304,8 +304,6 @@ void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
     uint reason = code & ~DISCARDED_CHAR;
     ctmbstr action = code & DISCARDED_CHAR ? "discarding" : "replacing";
     ctmbstr fmt = NULL;
-
-    doc->warnings++;
 
     /* An encoding mismatch is currently treated as a non-fatal error */
     switch ( reason )
