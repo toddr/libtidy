@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/06/25 07:21:37 $ 
-    $Revision: 1.29 $ 
+    $Date: 2002/06/26 07:33:04 $ 
+    $Revision: 1.30 $ 
 
 */
 
@@ -120,6 +120,12 @@
 #define BSD_BASED_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "FreeMiNT"
+#endif
+
+#elif defined(__bsdi__)
+#define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "BSD/OS"
 #endif
 
 #endif
