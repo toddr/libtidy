@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 16:34:50 $ 
-    $Revision: 1.85 $ 
+    $Date: 2003/05/13 04:39:59 $ 
+    $Revision: 1.86 $ 
 
 */
 
@@ -545,6 +545,11 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     case UNEXPECTED_GT:
         messageNode( doc, TidyWarning, node,
                      "%s missing '>' for end of tag", tagdesc );
+        break;
+
+    case INVALID_XML_ID:
+        messageNode( doc, TidyWarning, node,
+                     "%s cannot copy name attribute to id", tagdesc );
         break;
     }
 }

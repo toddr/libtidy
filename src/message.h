@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 16:34:50 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/05/13 04:39:59 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -159,6 +159,7 @@ void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versW
 
 #define BAD_ATTRIBUTE_VALUE_REPLACED     26
 
+#define INVALID_XML_ID          27
 
 /* page transition effects */
 

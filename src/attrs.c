@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/10 07:50:10 $ 
-    $Revision: 1.85 $ 
+    $Date: 2003/05/13 04:39:59 $ 
+    $Revision: 1.86 $ 
 
 */
 
@@ -1197,7 +1197,7 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     if ( IsAnchorElement(doc, node) )
     {
-        if (doc->lexer->isvoyager && !IsValidNMTOKEN(attval->value))
+        if (cfgBool(doc, TidyXmlOut) && !IsValidNMTOKEN(attval->value))
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 
         if ((old = GetNodeByAnchor(doc, attval->value)) &&  old != node)

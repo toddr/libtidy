@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 03:37:14 $ 
-    $Revision: 1.87 $ 
+    $Date: 2003/05/13 04:39:59 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -620,8 +620,13 @@ void FixId( TidyDocImpl* doc, Node *node )
                  tmbstrcmp(id->value, name->value) != 0 )
                 ReportAttrError( doc, node, name, ID_NAME_MISMATCH );
         }
-        else if ( cfgBool(doc, TidyXmlOut) )
-            AddAttribute( doc, node, "id", name->value );
+        else if (cfgBool(doc, TidyXmlOut))
+        {
+            if (IsValidXMLID(name->value))
+                AddAttribute(doc, node, "id", name->value);
+            else
+                ReportAttrError(doc, node, name, INVALID_XML_ID);
+        }
     }
 }
 
