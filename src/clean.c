@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 21:50:59 $ 
-    $Revision: 1.45 $ 
+    $Date: 2003/05/18 22:04:06 $ 
+    $Revision: 1.46 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -705,7 +705,7 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
 
     for (s2 = NULL, av = child->attributes; av; av = av->next)
     {
-        if (tmbstrcmp(av->attribute, "class") == 0)
+        if (attrIsCLASS(av))
         {
             s2 = av->value;
             break;
@@ -714,7 +714,7 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
 
     for (s1 = NULL, av = node->attributes; av; av = av->next)
     {
-        if (tmbstrcmp(av->attribute, "class") == 0)
+        if (attrIsCLASS(av))
         {
             s1 = av->value;
             break;
@@ -762,7 +762,7 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
 
     for (s2 = NULL, av = child->attributes; av; av = av->next)
     {
-        if (tmbstrcmp(av->attribute, "style") == 0)
+        if (attrIsSTYLE(av))
         {
             s2 = av->value;
             break;
@@ -771,7 +771,7 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
 
     for (s1 = NULL, av = node->attributes; av; av = av->next)
     {
-        if (tmbstrcmp(av->attribute, "style") == 0)
+        if (attrIsSTYLE(av))
         {
             s1 = av->value;
             break;
@@ -908,11 +908,11 @@ static void AddFontStyles( TidyDocImpl* doc, Node *node, AttVal *av)
 {
     while (av)
     {
-        if (tmbstrcmp(av->attribute, "face") == 0)
+        if (attrIsFACE(av))
             AddFontFace( doc, node, av->value );
-        else if (tmbstrcmp(av->attribute, "size") == 0)
+        else if (attrIsSIZE(av))
             AddFontSize( doc, node, av->value );
-        else if (tmbstrcmp(av->attribute, "color") == 0)
+        else if (attrIsCOLOR(av))
             AddFontColor( doc, node, av->value );
 
         av = av->next;
@@ -931,7 +931,7 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
 
     for (av = node->attributes; av; av = av->next)
     {
-        if (tmbstrcmp(av->attribute, "align") == 0)
+        if (attrIsALIGN(av))
         {
             if (prev)
                 prev->next = av->next;
@@ -1317,7 +1317,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
         {
             next = av->next;
 
-            if ( tmbstrcmp(av->attribute, "style") == 0 )
+            if (attrIsSTYLE(av))
             {
                 av->next = NULL;
                 style = av;
@@ -1663,7 +1663,7 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 
         /* special check for class="Code" denoting pre text */
         /* Pass thru user defined styles as HTML class names */
-        if (tmbstrcmp(attr->attribute, "class") == 0)
+        if (attrIsCLASS(attr))
         {
             if ( tmbstrcmp(attr->value, "Code") == 0 ||
                  tmbstrncmp(attr->value, "Mso", 3) != 0 )
@@ -1673,15 +1673,10 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
             }
         }
 
-        if ( tmbstrcmp(attr->attribute, "class") == 0 ||
-             tmbstrcmp(attr->attribute, "style") == 0 ||
-             tmbstrcmp(attr->attribute, "lang") == 0 ||
-             tmbstrncmp(attr->attribute, "x:", 2) == 0 ||
-             ( ( tmbstrcmp(attr->attribute, "height") == 0 ||
-                 tmbstrcmp(attr->attribute, "width") == 0 ) &&
-               ( nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node) )
-             )
-           )
+        if (attrIsCLASS(attr) || attrIsSTYLE(attr) || attrIsLANG(attr) ||
+            ((attrIsHEIGHT(attr) || attrIsWIDTH(attr)) &&
+            (nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node))) ||
+            tmbstrncmp(attr->attribute, "x:", 2) == 0)
         {
             if (prev)
                 prev->next = next;
