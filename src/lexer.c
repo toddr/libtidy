@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 00:58:28 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/09 01:47:02 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -220,8 +220,7 @@ void FreeLexer(Lexer *lexer)
 
     MemFree(lexer);
 }
-
-static void AddByte(Lexer *lexer, uint c)
+void AddByte(Lexer *lexer, uint c)
 {
     if (lexer->lexsize + 1 >= lexer->lexlength)
     {

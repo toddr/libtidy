@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 00:56:25 $ 
-    $Revision: 1.6 $ 
+    $Date: 2001/07/09 01:48:40 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -389,6 +389,8 @@ typedef struct _tagdict Dict;
 
 void FatalError(char *msg);
 void FileError(FILE *fp, const char *file);
+
+void AddByte(Lexer *lexer, uint c);
 
 Node *GetToken(Lexer *lexer, uint mode);
 
