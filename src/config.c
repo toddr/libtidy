@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/03/10 18:57:35 $ 
-    $Revision: 1.49 $ 
+    $Author: creitzel $ 
+    $Date: 2003/03/18 18:59:15 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -26,19 +26,18 @@
   the line, as whitespace at the start of a line signifies a
   line continuation.
 */
-#include "platform.h"
-
-#ifdef WINDOWS_OS
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 
 #include "config.h"
 #include "tidy-int.h"
 #include "message.h"
 #include "tmbstr.h"
 #include "tags.h"
+
+#ifdef WINDOWS_OS
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 int CharEncodingId( ctmbstr charenc ); /* returns -1 if not recognized */
 

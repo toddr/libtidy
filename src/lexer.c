@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/20 16:39:47 $ 
-    $Revision: 1.76 $ 
+    $Date: 2003/03/18 18:59:16 $ 
+    $Revision: 1.77 $ 
 
 */
 
@@ -2073,7 +2073,7 @@ void UngetToken( TidyDocImpl* doc )
 Node* GetToken( TidyDocImpl* doc, uint mode )
 {
     Lexer* lexer = doc->lexer;
-    int c, lastc, badcomment = 0;
+    uint c, lastc, badcomment = 0;
     Bool isempty, inDTDSubset = no;
     AttVal *attributes = null;
 

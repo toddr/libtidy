@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 18:59:17 $ 
+    $Revision: 1.3 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -177,14 +177,9 @@ uint ReadChar( StreamIn *in )
         if (c == '\r')
         {
             c = ReadCharFromStream(in);
-            if (c != '\n')
+            if ( c != '\n' )
             {
-                if (c == EndOfStream) /* EOF fix by Terry Teague 12 Aug 01 */
-                {
-                    /* c = EndOfStream; */ /* debug */
-                }
-                else
-                    UngetChar(c, in);
+                UngetChar( c, in );
                 c = '\n';
             }
             in->curcol = 1;
@@ -1146,6 +1141,8 @@ uint ReadCharFromStream( StreamIn* in )
         else
         {
             uint c1 = ReadByte( in );
+            if ( EndOfStream == c1 )
+                return EndOfStream;
             n = (c << 8) + c1;
             return n;
         }
