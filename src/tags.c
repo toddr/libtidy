@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:48:51 $ 
-    $Revision: 1.11 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/15 10:02:16 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -233,7 +233,8 @@ int HTMLVersion(Lexer *lexer)
     if (versions & VERS_HTML20)
         return VERS_HTML20;
 
-    if (versions & VERS_HTML32)
+    if (!(XmlOut|XmlTags|lexer->isvoyager) &&
+        versions & VERS_HTML32)
         return VERS_HTML32;
 
     if (versions & VERS_HTML40_STRICT)
