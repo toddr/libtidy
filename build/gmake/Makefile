@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/03/04 18:00:42 $ 
-#     $Revision: 1.7 $ 
+#     $Date: 2005/03/07 11:21:02 $ 
+#     $Revision: 1.8 $ 
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -76,8 +76,10 @@ LIBDIR = ${TOPDIR}/lib
 BINDIR = ${TOPDIR}/bin
 
 # CFLAGS etc..
+# For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1
+# disabled.
 CC= gcc
-CFLAGS= -Wall -Wno-switch -Wno-parentheses -Wno-unused -I $(INCDIR)
+CFLAGS= -g -Wall -Wno-switch -Wno-parentheses -Wno-unused -I $(INCDIR)
 
 OTHERCFLAGS=
 OTHERCFLAGS+= -D_DEBUG=1 -DHAS_VSNPRINTF=1
