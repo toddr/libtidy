@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:53 $ 
-    $Revision: 1.12 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/17 23:15:28 $ 
+    $Revision: 1.13 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -925,6 +925,9 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
 
     if ( 0 == status )
       status = tidyDocSaveStream( doc, out );
+
+    /* fix for bug 689588 */
+    fflush(stdout);
 
 #if defined(_WIN32) || defined(OS2_OS)
     if ( oldmode != -1 )
