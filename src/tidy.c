@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/03 01:48:39 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/06/03 01:57:30 $ 
+    $Revision: 1.4 $ 
 
   Contributing Author(s):
 
@@ -1094,7 +1094,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = input;
 
-                    if (XmlTags)
+                    if (XmlOut /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     else
                         PPrintTree(&out, null, 0, lexer, document);
@@ -1112,7 +1112,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = stdout;
 
-                    if (XmlTags)
+                    if (XmlOut /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     else
                         PPrintTree(&out, null, 0, lexer, document);
