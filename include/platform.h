@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:59:50 $ 
-    $Revision: 1.45 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/02/29 04:40:53 $ 
+    $Revision: 1.46 $ 
 
 */
 
@@ -566,7 +566,7 @@ typedef struct _##typenam* typenam
 ** and forth to keep current position in a
 ** list or other collection.
 */
-opaque( TidyIterator );
+opaque_type( TidyIterator );
 
 #ifdef __cplusplus
 } /* extern "C" */
