@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/04/01 01:30:43 $ 
-    $Revision: 1.40 $ 
+    $Author: creitzel $ 
+    $Date: 2002/04/09 04:20:59 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -1484,7 +1484,7 @@ static Bool InsideHead( Node *node )
    If it already ends on a newline, it is not
    necessary to print another before printing end tag.
 */
-static Bool TextEndsWithNewline(Lexer *lexer, Node *node)
+static int TextEndsWithNewline(Lexer *lexer, Node *node)
 {
     if ( node->type == TextNode && node->end > node->start )
     {
@@ -1494,9 +1494,10 @@ static Bool TextEndsWithNewline(Lexer *lexer, Node *node)
                 && ( ch == ' ' || ch == '\t' || ch == '\r' ) )
             --ix;
 
-        return ( lexer->lexbuf[ ix ] == '\n' );
+        if ( lexer->lexbuf[ ix ] == '\n' )
+          return node->end - ix + 1;
     }
-    return no;
+    return -1;
 }
 
 static Bool HasCDATA( Lexer* lexer, Node* node )
@@ -1614,7 +1615,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     char* commentStart = DEFAULT_COMMENT_START;
     char* commentEnd = DEFAULT_COMMENT_END;
     Bool  hasCData = no;
-    Bool  contentEndsOnNewline = no;
+    int   contentIndent = -1;
 
     if ( InsideHead(node) )
       PFlushLine(fout, indent);
@@ -1668,22 +1669,31 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
           content = content->next )
     {
         PPrintTree( fout, (mode | PREFORMATTED | NOWRAP |CDATA), 
-                    indent, lexer, content );
+                    0 /* indent */, lexer, content );
 
         if ( content->next == null )
-            contentEndsOnNewline = TextEndsWithNewline( lexer, content );
+            contentIndent = TextEndsWithNewline( lexer, content );
     }
 
-    if ( ! contentEndsOnNewline )
+    if ( contentIndent < 0 )
+    {
         PCondFlushLine(fout, indent);
+        contentIndent = 0;
+    }
 
     if (xHTML && node->content != null)
     {
         if ( ! hasCData )
         {
             /* disable wrapping */
-            uint savewraplen = wraplen;
+            uint ix, savewraplen = wraplen;
             wraplen = 0xFFFFFF;  /* a very large number */
+
+            /* Add spaces to last text node to align w/ indent */
+            if ( contentIndent > 0 && linelen < (uint)contentIndent )
+              linelen = contentIndent;
+            for ( ix=0; ix < (indent-contentIndent); ++ix )
+              AddC( ' ', linelen++ );
 
             linelen = AddAsciiString( commentStart, linelen );
             linelen = AddAsciiString( CDATA_END,    linelen );
@@ -1691,7 +1701,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
 
             /* restore wrapping */
             wraplen = savewraplen;
-            PCondFlushLine(fout, indent);
+            PCondFlushLine( fout, 0 /* indent */ );
         }
     }
 

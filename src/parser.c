@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/04/09 03:16:11 $ 
-    $Revision: 1.42 $ 
+    $Date: 2002/04/09 04:20:59 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -2789,6 +2789,7 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
 
         if (node->type == TextNode)
         {
+            ReportWarning(lexer, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken(lexer);
             break;
         }
@@ -2818,6 +2819,7 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
         */
         if (!(node->tag->model & CM_HEAD))
         {
+            ReportWarning(lexer, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken(lexer);
             break;
         }
