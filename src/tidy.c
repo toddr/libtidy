@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:00:58 $ 
-    $Revision: 1.31 $ 
+    $Date: 2001/09/04 08:17:54 $ 
+    $Revision: 1.32 $ 
 
   Contributing Author(s):
 
@@ -1724,6 +1724,23 @@ void outc(uint c, Out *out)
         putc(c, out->fp);
 }
 
+/* Output a Byte Order Mark if required */
+void outBOM(Out *out)
+{
+    if (
+        out->encoding == UTF8
+
+#if SUPPORT_UTF16_ENCODINGS
+
+     || out->encoding == UTF16LE
+     || out->encoding == UTF16BE
+     || out->encoding == UTF16
+
+#endif
+        )
+        outc(UNICODE_BOM, out); /* this will take care of encoding the BOM correctly */
+}
+
 /*
   first time initialization which should
   precede reading the command line
@@ -1769,6 +1786,7 @@ int main(int argc, char **argv)
     Lexer *lexer;
     char *s, c, *arg, *current_errorfile = "stderr";
     Out out;   /* normal output stream */
+    Bool InputHadBOM = no;
 
 #if PRESERVE_FILE_TIMES
     struct utimbuf filetimes;
@@ -2089,7 +2107,9 @@ int main(int argc, char **argv)
             {
                 uint c = ReadChar(lexer->in);
                 
-                if (c != UNICODE_BOM)
+                if (c == UNICODE_BOM)
+                    InputHadBOM = yes;
+                else
                     UngetChar(c, lexer->in);
             }
             
@@ -2221,6 +2241,10 @@ int main(int argc, char **argv)
                 {
                     out.fp = input;
 
+                    /* Output a Byte Order Mark if required */
+                    if (OutputBOM || (InputHadBOM && SmartBOM))
+                        outBOM(&out);
+
                     if (XmlOut && !xHTML /*XmlTags*/) /* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
@@ -2260,6 +2284,10 @@ int main(int argc, char **argv)
                 else
                 {
                     out.fp = stdout;
+
+                    /* Output a Byte Order Mark if required */
+                    if (OutputBOM || (InputHadBOM && SmartBOM))
+                        outBOM(&out);
 
                     if (XmlOut && !xHTML /*XmlTags*/) /* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);

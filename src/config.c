@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:08:11 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/09/04 08:16:40 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -50,6 +50,7 @@ ParseProperty ParseCharEncoding;
 ParseProperty ParseIndent;  /* specific to the indent option - Bool and 'auto' */
 ParseProperty ParseDocType; /* omit | auto | strict | loose | <fpi> */
 ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
+ParseProperty ParseBOM;     /* specific to the output-bom option - Bool and 'auto' */
 
 uint spaces =  2;           /* default indentation */
 uint wraplen = 68;          /* default wrap margin */
@@ -124,6 +125,8 @@ Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
 Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text */
 Bool NCR = yes;             /* #431953 - RJ allow numeric character references */
+Bool OutputBOM = no;        /* output a Byte Order Mark (BOM) when using UTF-8/UTF-16 encodings */
+Bool SmartBOM = yes;        /* if input stream has BOM, do we automatically output a BOM? */
 
 static uint c;      /* current char in input stream */
 static FILE *fin;   /* file pointer for input stream */
@@ -251,6 +254,7 @@ static struct Flag
     {"join-styles",     {(int *)&JoinStyles},       ParseBool},
     {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
+    {"output-bom",      {(int *)&OutputBOM},        ParseBOM},
 
   /* this must be the final entry */
     {0,          0,             0}
@@ -698,6 +702,17 @@ void AdjustConfig(void)
         QuoteAmpersand = yes;
         HideEndTags = no;
     }
+
+#if SUPPORT_UTF16_ENCODINGS
+
+ /* XML requires a BOM on output if using UTF-16 encoding */
+    if (XmlOut &&
+       (outCharEncoding == UTF16LE ||
+        outCharEncoding == UTF16BE ||
+        outCharEncoding == UTF16))
+        OutputBOM = yes;
+
+#endif
 }
 
 /* unsigned integers */
@@ -1114,6 +1129,29 @@ void ParseRepeatedAttribute(Location location, char *option)
     NextProperty();
 }
 
+void ParseBOM(Location location, char *option)
+{
+    int flag = no;
+    
+    flag = ParseTriState(autoState, location, option);
+    
+    if (flag == no)
+    {
+        OutputBOM = no;
+        SmartBOM = no;
+    }
+    else if (flag == yes)
+    {
+        OutputBOM = yes;
+        SmartBOM = yes;
+    }
+    else
+    {
+        OutputBOM = no;
+        SmartBOM = yes;
+    }
+}
+
 void PrintConfigOptions(FILE *errout, Bool showCurrent)
 {
 #define kMaxValFieldWidth 40
@@ -1315,6 +1353,21 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
                 vals = (DuplicateAttrs == keep_first)?"keep-first":"keep-last";
             else
                 vals = "keep-first, keep-last";
+        }
+
+        else if ( configItem->parser == ParseBOM )
+        {
+            type = "AutoBool";
+             
+            if (showCurrent)
+            {
+                if ((SmartBOM == yes) && (OutputBOM == no))
+                    vals = "auto";
+                else
+                    vals = *(configItem->location.logical)?"yes":"no";
+            }
+            else
+                vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
         }
 
         if (name != "" || type != "" || vals != "")

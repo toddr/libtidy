@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:54:11 $ 
-    $Revision: 1.58 $ 
+    $Date: 2001/09/04 08:15:42 $ 
+    $Revision: 1.59 $ 
 
 */
 
@@ -931,6 +931,8 @@ extern Bool JoinStyles;
 extern DupAttrMode DuplicateAttrs;
 extern Bool EscapeCdata;
 extern Bool NCR; /* #431953 - RJ */
+extern Bool OutputBOM;
+extern Bool SmartBOM;
 
 /* Parser methods for tags */
 
