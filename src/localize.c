@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 03:20:33 $ 
-    $Revision: 1.90 $ 
+    $Date: 2003/05/23 20:13:54 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -80,7 +80,6 @@ struct _msgfmt
   { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     },
   { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  },
   { ANCHOR_NOT_UNIQUE,            "%s Anchor \"%s\" already defined"                                        },
-  { ENTITY_IN_ID,                 "No entities allowed in id attribute, discarding \"&\""                   },
   { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          },
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              },
   { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  },
@@ -530,10 +529,6 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 
     case REPEATED_ATTRIBUTE:
         messageNode(doc, TidyWarning, node, fmt, tagdesc, value, name);
-        break;
-
-    case ENTITY_IN_ID:
-        messageNode(doc, TidyWarning, node, fmt);
         break;
 
     case UNEXPECTED_END_OF_FILE_ATTR:

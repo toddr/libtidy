@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 01:49:00 $ 
-    $Revision: 1.123 $ 
+    $Date: 2003/05/23 20:13:53 $ 
+    $Revision: 1.124 $ 
 
 */
 
@@ -3348,20 +3348,11 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
         if (c == '&')
         {
-            /* no entities in ID attributes for XHTML/HTML */
-            if (tmbstrcasecmp(name, "id") == 0 && !cfgBool(doc, TidyXmlTags))
-            {
-                ReportAttrError( doc, NULL, NULL, ENTITY_IN_ID );
-                continue;
-            }
-            else
-            {
-                AddCharToLexer(lexer, c);
-                ParseEntity( doc, 0 );
-                if (lexer->lexbuf[lexer->lexsize - 1] == '\n' && munge)
-                    ChangeChar(lexer, ' ');
-                continue;
-            }
+            AddCharToLexer(lexer, c);
+            ParseEntity( doc, 0 );
+            if (lexer->lexbuf[lexer->lexsize - 1] == '\n' && munge)
+                ChangeChar(lexer, ' ');
+            continue;
         }
 
         /*

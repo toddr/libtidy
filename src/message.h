@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 03:20:35 $ 
-    $Revision: 1.14 $ 
+    $Date: 2003/05/23 20:13:54 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -148,7 +148,7 @@ void ReportError( TidyDocImpl* doc, Node* element, Node* node, uint code );
 
 #define NEWLINE_IN_URI               65
 #define ANCHOR_NOT_UNIQUE            66
-#define ENTITY_IN_ID                 67
+
 #define JOINING_ATTRIBUTE            68
 #define UNEXPECTED_EQUALSIGN         69
 #define ATTR_VALUE_NOT_LCASE         70
