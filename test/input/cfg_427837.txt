@@ -1,0 +1,4 @@
+// Tidy configuration file for bug #427837
+add-xml-decl: yes
+output-xhtml: yes
+char-encoding: latin1
