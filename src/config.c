@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/13 23:29:22 $ 
-    $Revision: 1.71 $ 
+    $Date: 2004/06/03 15:25:05 $ 
+    $Revision: 1.72 $ 
 
 */
 
@@ -776,7 +776,7 @@ Bool ParseConfigValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optval )
 
         status = option->parser( doc, option );
 
-        MemFree( doc->config.cfgIn );       /* Release input source */
+        freeStreamIn(doc->config.cfgIn);  /* Release input source */
         doc->config.cfgIn  = NULL;
         tidyBufDetach( &inbuf );
     }
