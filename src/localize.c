@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/30 07:21:57 $ 
-    $Revision: 1.6 $ 
+    $Date: 2001/06/30 20:03:46 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -233,7 +233,7 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
             tidy_out(lexer->errout, "Error: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " missing '>' for end of tag");
-            lexer->errors++;;
+            lexer->errors++;
         }
         else if (code == UNEXPECTED_QUOTEMARK)
         {
@@ -272,7 +272,7 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         tidy_out(lexer->errout, "Error: ");
         ReportTag(lexer, node);
         tidy_out(lexer->errout, " missing '>' for end of tag\n");
-        lexer->errors++;;
+        lexer->errors++;
     }
 }
 

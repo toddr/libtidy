@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/29 08:21:56 $ 
-    $Revision: 1.7 $ 
+    $Date: 2001/06/30 20:05:07 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -2196,7 +2196,7 @@ void ParseTableTag(Lexer *lexer, Node *table, uint mode)
 
         if (node->type == StartTag || node->type == StartEndTag)
         {
-            InsertNodeAtEnd(table, node);;
+            InsertNodeAtEnd(table, node);
             ParseTag(lexer, node, IgnoreWhitespace);
             continue;
         }
