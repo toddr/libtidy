@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/01 00:50:58 $ 
-    $Revision: 1.26 $ 
+    $Date: 2001/09/01 04:14:02 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -131,6 +131,8 @@ static char *block_tags;
 static char *empty_tags;
 static char *pre_tags;
 
+/* track what types of tags user has defined to eliminate unnecessary searches */
+static int defined_tags = 0;
 
 typedef struct _plist PList;
 
@@ -558,7 +560,8 @@ void AdjustConfig(void)
  /* Word 2000 needs o:p to be declared as inline */
     if (Word2000)
     {
-        DefineInlineTag("o:p");
+        defined_tags |= tagtype_inline;
+        DefineTag(tagtype_inline, "o:p");
     }
 
  /* XHTML is written in lower case */
@@ -719,14 +722,26 @@ void ParseTagNames(Location location, char *option)
             
         /* add tag to dictionary */
 
-        if(location.string == &inline_tags)
-            DefineInlineTag(buf);
+        if (location.string == &inline_tags)
+        {
+            defined_tags |= tagtype_inline;
+            DefineTag(tagtype_inline, buf);
+        }
         else if (location.string == &block_tags)
-            DefineBlockTag(buf);
+        {
+            defined_tags |= tagtype_block;
+            DefineTag(tagtype_block, buf);
+        }
         else if (location.string == &empty_tags)
-            DefineEmptyTag(buf);
+        {
+            defined_tags |= tagtype_empty;
+            DefineTag(tagtype_empty, buf);
+        }
         else if (location.string == &pre_tags)
-            DefinePreTag(buf);
+        {
+            defined_tags |= tagtype_pre;
+            DefineTag(tagtype_pre, buf);
+        }
 
         i = 0;
     }
@@ -944,45 +959,213 @@ void ParseDocType(Location location, char *option)
     NextProperty();
 }
 
-void PrintConfigOptions(FILE *errout)
+void PrintConfigOptions(FILE *errout, Bool showCurrent)
 {
-    static const char* fmt = "%-24.24s  %-9.9s  %-40.40s\n";
+#define kMaxValFieldWidth 40
+    static const char* fmt = "%-26.26s  %-9.9s  %-40.40s\n";
     static const char* ul 
         = "=================================================================";
     struct Flag* configItem;
 
     tidy_out( errout, "\nConfiguration File Settings:\n\n" );
-    tidy_out( errout, fmt, "Name", "Type", "Values" );
+    if (showCurrent)
+        tidy_out( errout, fmt, "Name", "Type", "Current value" );
+    else
+        tidy_out( errout, fmt, "Name", "Type", "Allowable values" );
     tidy_out( errout, fmt, ul, ul, ul );
 
     for ( configItem = flags; configItem && configItem->name; configItem++ )
     {
-        const char* type = "String";
-        const char* vals = "";
-
-        if ( configItem->parser == ParseBool 
-             || configItem->parser == ParseInvBool )
-            type = "Boolean", vals = "yes, no, true, false";
+        char* name = configItem->name;
+        char* type = "String";
+        char tempvals[80];
+        char* vals = &tempvals[0];
+        
+        tempvals[0] = '\0';
+        
+        if ( configItem->parser == ParseBool || 
+             configItem->parser == ParseInvBool )
+        {
+            type = "Boolean";
+            
+            if (showCurrent)
+                if (configItem->parser == ParseBool)
+                    vals = *(configItem->location.logical)?"yes":"no";
+                else
+                    vals = *(configItem->location.logical)?"no":"yes";
+            else
+                vals = "yes, no, true, false";
+        }
 
         else if ( configItem->parser == ParseInt )
-            type = "Integer", vals = "0, 1, 2, ...";
+        {
+            type = "Integer";
+            
+            if (showCurrent)
+                sprintf(tempvals, "%d", *(configItem->location.number));
+            else
+                vals = "0, 1, 2, ...";
+        }
 
         else if ( configItem->parser == ParseIndent )
-            type = "Indent", vals = "auto, yes, no, true, false";
+        {
+            type = "Indent";
+             
+            if (showCurrent)
+            {
+                if (SmartIndent)
+                    vals = "auto";
+                else
+                    vals = *(configItem->location.logical)?"yes":"no";
+            }
+            else
+                vals = "auto, yes, no, true, false";
+        }
 
         else if ( configItem->parser == ParseDocType )
-            type = "DocType", vals = "auto, omit, user, strict, loose or transitional";
+        {
+            type = "DocType";
+            
+            if (showCurrent)
+            {
+                switch(doctype_mode)
+                {
+                    case doctype_auto   : vals = "auto"; break;
+                    case doctype_omit   : vals = "omit"; break;
+                    case doctype_strict : vals = "strict"; break;
+                    case doctype_loose  : vals = "loose (transitional)"; break;
+                    case doctype_user   : vals = *(configItem->location.string); break;
+                }
+            }
+            else
+            {
+                vals = "auto, omit, strict, loose, transitional,";
+                tidy_out( errout, fmt, name, type, vals );
+                name = "";
+                type = "";
+                vals = "user specified fpi (string)";
+            }
+        }
+
+        else if ( configItem->parser == ParseName )
+        {
+            type = "Name";
+            
+            /* these are not currently used */
+            /*
+            if ( wstrcasecmp(configItem->name, "slide-style") ||
+                 wstrcasecmp(configItem->name, "language") )
+                continue;
+            */
+            if (showCurrent)
+                 vals = *(configItem->location.string);
+             else
+                 vals = "" /* "whole word only" */;
+         }
 
         else if ( configItem->parser == ParseTagNames )
-            type = "Tag names", vals = "tagX, tagY, ...";
+        {
+            type = "Tag names";
+            
+            if (showCurrent)
+            {
+                int tagType = 0;
+                
+                if ((configItem->location.string == &inline_tags) &&
+                    (defined_tags & tagtype_inline))
+                    tagType = tagtype_inline;
+                else if ((configItem->location.string == &block_tags) &&
+                    (defined_tags & tagtype_block))
+                    tagType = tagtype_block;
+                else if ((configItem->location.string == &empty_tags) &&
+                    (defined_tags & tagtype_empty))
+                    tagType = tagtype_empty;
+                else if ((configItem->location.string == &pre_tags) &&
+                    (defined_tags & tagtype_pre))
+                    tagType = tagtype_pre;
+                
+                if (tagType != 0)
+                {
+                    char *tagName = null;
+                    int totlen = 0;
+                    
+                    ResetDefinedTagSearch();
+                    
+                    do
+                    {
+                        tagName = FindNextDefinedTag(tagType);
+                        if (tagName)
+                        {
+                            if (totlen + wstrlen(tagName) + 2 > kMaxValFieldWidth)
+                            {
+                                /* output what we have so far */
+                                tidy_out( errout, fmt, name, type, vals );
+                                name = "";
+                                type = "";
+                                totlen = 0;
+                                *vals = '\0';
+                            }
+
+                            wstrcat(vals, tagName);
+                            wstrcat(vals, ", ");
+                            totlen += wstrlen(tagName) + 2;
+                        }
+                    } while (tagName != null);
+                    
+                    if ((totlen > 1) && (vals[totlen - 2] == ','))
+                        vals[totlen - 2] = '\0'; /* strip trailing comma/space */
+                }
+            }
+            else
+                vals = "tagX, tagY, ...";
+        }
 
         else if ( configItem->parser == ParseCharEncoding )
-            type = "Encoding", vals = "ascii, latin1, raw, utf8, iso2022, mac";
-
+        {
+            type = "Encoding";
+            
+            if (showCurrent)
+            {
+                switch(CharEncoding)
+                {
+                    case ASCII    : vals = "ascii"; break;
+                    case LATIN1   : vals = "latin1"; break;
+                    case RAW      : vals = "raw"; break;
+                    case UTF8     : vals = "utf8"; break;
+                    case ISO2022  : vals = "iso2022"; break;
+                    case MACROMAN : vals = "mac"; break;
+                    case UTF16LE  : vals = "utf16le"; break;
+                    case UTF16BE  : vals = "utf16be"; break;
+                    case UTF16    : vals = "utf16"; break;
+                    case WIN1252  : vals = "win1252"; break;
+                    case BIG5     : vals = "big5"; break;
+                    case SHIFTJIS : vals = "shiftjis"; break;
+                }
+            }
+            else
+            {
+                vals = "ascii, latin1, raw, utf8, iso2022, mac,";
+                tidy_out( errout, fmt, name, type, vals );
+                name = "";
+                type = "";
+                vals = "utf16le, utf16be, utf16,";
+                tidy_out( errout, fmt, name, type, vals );
+                vals = "win1252, big5, shiftjis";
+            }
+       }
+        
         else if ( configItem->parser == ParseRepeatedAttribute )
-            type = "-", vals = "keep-first, keep-last";
+        {
+            type = "-";
+            
+            if (showCurrent)
+                vals = (DuplicateAttrs == keep_first)?"keep-first":"keep-last";
+            else
+                vals = "keep-first, keep-last";
+        }
 
-        tidy_out( errout, fmt, configItem->name, type, vals );
+        if (name != "" || type != "" || vals != "")
+            tidy_out( errout, fmt, name, type, vals );
     }
     
 }

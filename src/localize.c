@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/29 17:44:57 $ 
-    $Revision: 1.33 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/09/01 04:15:00 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -954,6 +954,7 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -version or -v  show version\n");
     tidy_out(out, "  -help   or -h   list command line options\n");
     tidy_out(out, "  -help-config    list all configuration file options\n");
+    tidy_out(out, "  -show-config    list the current configuration settings\n");
     tidy_out(out, "You can also use --blah for any config file option blah\n");
     tidy_out(out, "\n");
 

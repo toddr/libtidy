@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/29 17:45:39 $ 
-    $Revision: 1.53 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/09/01 04:09:52 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -415,6 +415,12 @@ extern Attribute *attr_title;
  Tag dictionary node
 */
 
+/* types of tags that the user can define */
+#define tagtype_empty     1
+#define tagtype_inline    2
+#define tagtype_block     4
+#define tagtype_pre       8
+
 struct _tagdict
 {
     struct _tagdict *next;
@@ -585,10 +591,9 @@ uint EntityCode(char *name);
 char *EntityName(uint n);
 
 /* tags.c */
-void DefineEmptyTag(char *name);
-void DefineInlineTag(char *name);
-void DefineBlockTag(char *name);
-void DefinePreTag(char *name);
+void DefineTag(int tagType, char *name);
+void ResetDefinedTagSearch(void);
+char *FindNextDefinedTag(int tagType);
 
 Bool FindTag(Node *node);
 void InitTags(void);
@@ -827,7 +832,7 @@ void FreeConfig(void);
 void ParseConfigFile(char *file);
 Bool ParseConfig(char *option, char *parameter);
 void AdjustConfig(void);
-void PrintConfigOptions(FILE *errout);
+void PrintConfigOptions(FILE *errout, Bool showCurrent);
 
 extern uint spaces;         /* default indentation */
 extern uint wraplen;        /* default wrap margin */

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/19 19:26:55 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/09/01 04:15:40 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -89,6 +89,11 @@ Dict *tag_q;
 Dict *xml_tags;  /* dummy for xml tags */
 
 static Dict *hashtab[HASHSIZE];
+
+/* used by FindFirstDefinedTag and FindNextDefinedTag */
+static Dict *tag_blink; /* a proprietary tag added by Tidy, along with tag_nobr, tag_wbr */
+static Dict *curDictEntry;
+static int curHashIndex;
 
 static struct tag
 {
@@ -205,6 +210,7 @@ static struct tag
     {"comment",    VERS_MICROSOFT, CM_INLINE, ParseInline, null},
     {"spacer",     VERS_NETSCAPE, (CM_INLINE|CM_EMPTY), ParseEmpty, null},
     {"keygen",     VERS_NETSCAPE, (CM_INLINE|CM_EMPTY), ParseEmpty, null},
+    /* next 2 are already defined above - does no harm though */
     {"nolayer",    VERS_NETSCAPE, (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"ilayer",     VERS_NETSCAPE, CM_INLINE, ParseInline, null},
     {"map",        (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseBlock, CheckMap},
@@ -340,24 +346,86 @@ Parser *FindParser(Node *node)
         return null;
 }
 
-void DefineEmptyTag(char *name)
+void DefineTag(int tagType, char *name)
 {
-    install(name, VERS_PROPRIETARY, (CM_EMPTY|CM_NO_INDENT|CM_NEW), ParseBlock, null);
+    switch (tagType)
+    {
+        case tagtype_empty :
+            install(name, VERS_PROPRIETARY, (CM_EMPTY|CM_NO_INDENT|CM_NEW), ParseBlock, null);
+            break;
+        case tagtype_inline :
+            install(name, VERS_PROPRIETARY, (CM_INLINE|CM_NO_INDENT|CM_NEW), ParseInline, null);
+            break;
+        case tagtype_block :
+            install(name, VERS_PROPRIETARY, (CM_BLOCK|CM_NO_INDENT|CM_NEW), ParseBlock, null);
+            break;
+        case tagtype_pre :
+            install(name, VERS_PROPRIETARY, (CM_BLOCK|CM_NO_INDENT|CM_NEW), ParsePre, null);
+            break;
+    }
 }
 
-void DefineInlineTag(char *name)
+void ResetDefinedTagSearch(void)
 {
-    install(name, VERS_PROPRIETARY, (CM_INLINE|CM_NO_INDENT|CM_NEW), ParseInline, null);
+    curDictEntry = null;
+    curHashIndex = 0;
 }
 
-void DefineBlockTag(char *name)
+char *FindNextDefinedTag(int tagType)
 {
-    install(name, VERS_PROPRIETARY, (CM_BLOCK|CM_NO_INDENT|CM_NEW), ParseBlock, null);
-}
-
-void DefinePreTag(char *name)
-{
-    install(name, VERS_PROPRIETARY, (CM_BLOCK|CM_NO_INDENT|CM_NEW), ParsePre, null);
+    char *tagName = null;
+    
+    do
+    {
+        if (curDictEntry != null)
+        {
+            switch (tagType)
+            {
+                /* defined tags can be empty + inline */
+                case tagtype_empty :
+                    if ((curDictEntry->versions == VERS_PROPRIETARY) &&
+                        ((curDictEntry->model & CM_EMPTY) == CM_EMPTY) &&
+                        /* (curDictEntry->parser == ParseBlock) && */
+                        (curDictEntry != tag_wbr))
+                        tagName = curDictEntry->name;
+                    break;
+                /* defined tags can be empty + inline */
+                case tagtype_inline :
+                    if ((curDictEntry->versions == VERS_PROPRIETARY) &&
+                        ((curDictEntry->model & CM_INLINE) == CM_INLINE) &&
+                        /* (curDictEntry->parser == ParseInline) && */
+                        (curDictEntry != tag_blink) &&
+                        (curDictEntry != tag_nobr) &&
+                        (curDictEntry != tag_wbr))
+                        tagName = curDictEntry->name;
+                    break;
+                /* defined tags can be empty + block */
+                case tagtype_block :
+                    if ((curDictEntry->versions == VERS_PROPRIETARY) &&
+                        ((curDictEntry->model & CM_BLOCK) == CM_BLOCK) &&
+                        (curDictEntry->parser == ParseBlock))
+                        tagName = curDictEntry->name;
+                    break;
+                case tagtype_pre :
+                    if ((curDictEntry->versions == VERS_PROPRIETARY) &&
+                        ((curDictEntry->model & CM_BLOCK) == CM_BLOCK) &&
+                        (curDictEntry->parser == ParsePre))
+                        tagName = curDictEntry->name;
+                    break;
+            }
+            
+            curDictEntry = curDictEntry->next;
+        }
+        
+        if (curDictEntry == null)
+            do
+            {
+                curDictEntry = hashtab[curHashIndex++];
+            } while ((curDictEntry == null) && (curHashIndex < HASHSIZE));
+    
+    } while ((tagName == null) && (curDictEntry != null));
+    
+    return tagName;
 }
 
 void InitTags(void)
@@ -437,6 +505,8 @@ void InitTags(void)
     xml_tags->model = CM_BLOCK;
     xml_tags->parser = null;
     xml_tags->chkattrs = null;
+    
+    tag_blink = lookup("blink"); /* so we can skip this in the search for user defined tags */
 }
 
 void FreeTags(void)
