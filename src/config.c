@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/21 21:51:27 $ 
-    $Revision: 1.59 $ 
+    $Date: 2003/04/25 04:26:10 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -37,6 +37,10 @@
 #include <io.h>
 #else
 #include <unistd.h>
+#endif
+
+#ifdef TIDY_WIN32_MLANG_SUPPORT
+#include "win32tc.h"
 #endif
 
 int CharEncodingId( ctmbstr charenc ); /* returns -1 if not recognized */
@@ -1190,7 +1194,15 @@ Bool ParseCharEnc( TidyDocImpl* doc, const TidyOptionImpl* option )
     }
     buf[i] = 0;
 
-    if ( (enc = CharEncodingId( buf )) < 0 )
+    enc = CharEncodingId( buf );
+
+#ifdef TIDY_WIN32_MLANG_SUPPORT
+    /* limit support to --input-encoding */
+    if (option->id != TidyInCharEncoding && enc > WIN32MLANG)
+        enc = -1;
+#endif
+
+    if ( enc < 0 )
     {
         validEncoding = no;
         ReportBadArgument( doc, option->name );
@@ -1240,6 +1252,15 @@ int CharEncodingId( ctmbstr charenc )
         enc = BIG5;
     else if ( tmbstrcasecmp(charenc, "shiftjis") == 0 )
         enc = SHIFTJIS;
+#endif
+
+#ifdef TIDY_WIN32_MLANG_SUPPORT
+    else
+    {
+        uint wincp = Win32MLangGetCPFromName(charenc);
+        if (wincp)
+            enc = wincp;
+    }
 #endif
 
     return enc;
