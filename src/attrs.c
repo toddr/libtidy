@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 10:46:34 $ 
-    $Revision: 1.62 $ 
+    $Date: 2003/04/10 13:34:08 $ 
+    $Revision: 1.63 $ 
 
 */
 
@@ -15,46 +15,6 @@
 #include "attrs.h"
 #include "message.h"
 #include "tmbstr.h"
-
-#if 0
-#define TEXT        NULL
-#define CHARSET     NULL
-#define TYPE        NULL
-#define CHARACTER   NULL
-#define URLS        NULL
-#define URL         CheckUrl
-#define SCRIPT      CheckScript
-#define ALIGN       CheckAlign
-#define VALIGN      CheckValign
-#define COLOR       CheckColor
-#define CLEAR       CheckClear
-#define BORDER      CheckBool     /* kludge */
-#define LANG        CheckLang
-#define BOOL        CheckBool
-#define COLS        NULL
-#define NUMBER      CheckNumber
-#define LENGTH      CheckLength
-#define COORDS      NULL
-#define DATE        NULL
-#define TEXTDIR     CheckTextDir
-#define IDREFS      NULL
-#define IDREF       NULL
-#define IDDEF       CheckId
-#define NAME        CheckName
-#define TFRAME      NULL
-#define FBORDER     NULL
-#define MEDIA       NULL
-#define FSUBMIT     CheckFsubmit
-#define LINKTYPES   NULL
-#define TRULES      NULL
-#define SCOPE       CheckScope
-#define SHAPE       CheckShape
-#define SCROLL      CheckScroll
-#define TARGET      CheckTarget
-#define VTYPE       CheckVType
-#endif
-/*
-*/
 
 static const Attribute attribute_defs [] =
 {
