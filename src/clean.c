@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/02/29 04:51:48 $ 
-    $Revision: 1.54 $ 
+    $Date: 2004/03/05 10:06:08 $ 
+    $Revision: 1.55 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1385,7 +1385,7 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
         if ( Center2Div(doc, node, &next) )
             continue;
 
-        if ( MergeDivs(doc, node, &next) )
+        if (cfgBool(doc, TidyMergeDivs) && MergeDivs(doc, node, &next))
             continue;
 
         if ( BlockStyle(doc, node, &next) )

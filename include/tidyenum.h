@@ -14,8 +14,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:55:01 $ 
-    $Revision: 1.9 $ 
+    $Date: 2004/03/05 10:06:08 $ 
+    $Revision: 1.10 $ 
 
   Contributing Author(s):
 
@@ -193,6 +193,7 @@ typedef enum
 #if SUPPORT_ASIAN_ENCODINGS
   TidyPunctWrap,       /**< consider punctuation and breaking spaces for wrapping */
 #endif
+  TidyMergeDivs,
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 
