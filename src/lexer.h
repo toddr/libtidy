@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:51 $ 
-    $Revision: 1.10 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -380,7 +380,7 @@ uint ToUpper(uint c);
 char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps );
 
 
-Lexer* NewLexer(void);
+Lexer* NewLexer( TidyDocImpl* doc );
 Bool EndOfInput( TidyDocImpl* doc );
 void FreeLexer( TidyDocImpl* doc );
 

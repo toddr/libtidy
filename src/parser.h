@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/09 05:01:26 $ 
-    $Revision: 1.5 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -71,7 +71,7 @@ Bool DescendantOf(Node *element, TidyTagId tid);
 /*
   HTML is the top level element
 */
-Node *ParseDocument( TidyDocImpl* doc );
+void ParseDocument( TidyDocImpl* doc );
 
 
 
@@ -80,6 +80,6 @@ Node *ParseDocument( TidyDocImpl* doc );
 */
 Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element );
 
-Node* ParseXMLDocument( TidyDocImpl* doc );
+void ParseXMLDocument( TidyDocImpl* doc );
 
 #endif /* __PARSER_H__ */

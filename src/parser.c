@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/09 05:01:26 $ 
-    $Revision: 1.82 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -3641,25 +3641,21 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
 /*
   HTML is the top level element
 */
-Node *ParseDocument(TidyDocImpl* doc)
+void ParseDocument(TidyDocImpl* doc)
 {
-    Node *node, *document, *html, *doctype = NULL;
-
-    document = NewNode(doc->lexer);
-    document->type = RootNode;
-    doc->root = doc->lexer->root = document;
+    Node *node, *html, *doctype = NULL;
 
     while ((node = GetToken(doc, IgnoreWhitespace)) != NULL)
     {
         /* deal with comments etc. */
-        if (InsertMisc(document, node))
+        if (InsertMisc( &doc->root, node ))
             continue;
 
         if (node->type == DocTypeTag)
         {
             if (doctype == NULL)
             {
-                InsertNodeAtEnd(document, node);
+                InsertNodeAtEnd( &doc->root, node);
                 doctype = node;
             }
             else
@@ -3688,7 +3684,7 @@ Node *ParseDocument(TidyDocImpl* doc)
         if (!FindDocType(doc))
             ReportWarning(doc, NULL, NULL, MISSING_DOCTYPE);
 
-        InsertNodeAtEnd(document, html);
+        InsertNodeAtEnd( &doc->root, html);
         ParseHTML( doc, html, no );
         break;
     }
@@ -3697,11 +3693,9 @@ Node *ParseDocument(TidyDocImpl* doc)
     {
         /* a later check should complain if <body> is empty */
         html = InferredTag(doc, "html");
-        InsertNodeAtEnd(document, html);
+        InsertNodeAtEnd( &doc->root, html);
         ParseHTML(doc, html, no);
     }
-
-    return document;
 }
 
 Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element)
@@ -3811,13 +3805,11 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
     }
 }
 
-Node *ParseXMLDocument(TidyDocImpl* doc)
+void ParseXMLDocument(TidyDocImpl* doc)
 {
     Lexer* lexer = doc->lexer;
-    Node *node, *document, *doctype = NULL;
+    Node *node, *doctype = NULL;
 
-    doc->root = lexer->token = document = NewNode( lexer );
-    document->type = RootNode;
     SetOptionBool( doc, TidyXmlTags, yes );
 
     while ((node = GetToken(doc, IgnoreWhitespace)) != NULL)
@@ -3831,14 +3823,14 @@ Node *ParseXMLDocument(TidyDocImpl* doc)
         }
 
          /* deal with comments etc. */
-        if (InsertMisc(document, node))
+        if (InsertMisc( &doc->root, node))
             continue;
 
         if (node->type == DocTypeTag)
         {
             if (doctype == NULL)
             {
-                InsertNodeAtEnd(document, node);
+                InsertNodeAtEnd( &doc->root, node);
                 doctype = node;
             }
             else
@@ -3851,14 +3843,14 @@ Node *ParseXMLDocument(TidyDocImpl* doc)
 
         if (node->type == StartEndTag)
         {
-            InsertNodeAtEnd(document, node);
+            InsertNodeAtEnd( &doc->root, node);
             continue;
         }
 
        /* if start tag then parse element's content */
         if (node->type == StartTag)
         {
-            InsertNodeAtEnd( document, node );
+            InsertNodeAtEnd( &doc->root, node );
             ParseXMLElement( doc, node, IgnoreWhitespace );
         }
 
@@ -3874,7 +3866,5 @@ Node *ParseXMLDocument(TidyDocImpl* doc)
     /* ensure presence of initial <?XML version="1.0"?> */
     if ( cfgBool(doc, TidyXmlDecl) )
         FixXmlDecl( doc );
-
-    return document;
 }
 

@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/18 20:53:55 $ 
-    $Revision: 1.7 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -3482,7 +3482,7 @@ static void CheckMapLinks( TidyDocImpl* doc, Node* node )
             /* Checks for 'HREF' attribute */                
             AttVal* href = attrGetHREF( child );
             if ( hasValue(href) &&
-                 !FindLinkA( doc, doc->root, href->value ) )
+                 !FindLinkA( doc, &doc->root, href->value ) )
             {
                 AccessReport( doc, node, TidyError,
                               IMG_MAP_CLIENT_MISSING_TEXT_LINKS );
@@ -3854,24 +3854,24 @@ void AccessibilityChecks( TidyDocImpl* doc )
     tidy_out( doc, "\n" );
 
     /* Checks all elements for script accessibility */
-    CheckScriptKeyboardAccessible( doc, doc->root );
+    CheckScriptKeyboardAccessible( doc, &doc->root );
 
     /* Checks entire document for the use of 'STYLE' attribute */
-    CheckForStyleAttribute( doc, doc->root );
+    CheckForStyleAttribute( doc, &doc->root );
 
     /* Checks for '!DOCTYPE' */
-    CheckDocType( doc, doc->root );
+    CheckDocType( doc, &doc->root );
 
     
     /* Checks to see if stylesheets are used to control the layout */
-    if ( ! CheckMissingStyleSheets( doc, doc->root ) )
+    if ( ! CheckMissingStyleSheets( doc, &doc->root ) )
     {
-        AccessReport( doc, doc->root, TidyWarning,
+        AccessReport( doc, &doc->root, TidyWarning,
                       STYLE_SHEET_CONTROL_PRESENTATION );
     }
 
     /* Check to see if any list elements are found within the document */
-    CheckForListElements( doc, doc->root );
+    CheckForListElements( doc, &doc->root );
 
     /* Checks for natural language change */
     /* Must contain more than 3 words of text in the document
@@ -3881,7 +3881,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
     ** It seems like a bad idea to emit this message for
     ** every document with _more_ than 3 words!
 
-    if ( WordCount(doc, doc->root) > 3 )
+    if ( WordCount(doc, &doc->root) > 3 )
     {
         AccessReport( doc, node, TidyWarning, INDICATE_CHANGES_IN_LANGUAGE);
     }
@@ -3891,7 +3891,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
     /* Recursively apply all remaining checks to 
     ** each node in document.
     */
-    AccessibilityCheckNode( doc, doc->root );
+    AccessibilityCheckNode( doc, &doc->root );
 
     /* Cleanup */
     FreeAccessibilityChecks( doc );

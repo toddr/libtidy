@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/09 05:01:25 $ 
-    $Revision: 1.108 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.109 $ 
 
 */
 
@@ -636,7 +636,7 @@ static tmbchar LastChar( tmbstr str )
     #define StartEndTag 4
 */
 
-Lexer* NewLexer(void)
+Lexer* NewLexer( TidyDocImpl* doc )
 {
     Lexer* lexer = (Lexer*) MemAlloc( sizeof(Lexer) );
 
@@ -650,6 +650,7 @@ Lexer* NewLexer(void)
 
         lexer->versions = (VERS_ALL|VERS_PROPRIETARY);
         lexer->doctype = VERS_UNKNOWN;
+        lexer->root = &doc->root;
     }
     return lexer;
 }
@@ -675,12 +676,16 @@ void FreeLexer( TidyDocImpl* doc )
         MemFree( lexer );
         doc->lexer = NULL;
     }
+/*
+    Moved to tidylib.c, as an object really should not be freeing
+    resources it doesn't "own"
 
     FreeNode( doc, doc->root );
     doc->root = NULL;
 
     FreeNode( doc, doc->givenDoctype );
     doc->givenDoctype = NULL;
+*/
 }
 
 /* Lexer uses bigger memory chunks than pprint as
@@ -1101,7 +1106,8 @@ void FreeNode( TidyDocImpl* doc, Node *node )
         MemFree( node->element );
         FreeAttrs( doc, node );
         FreeNode( doc, node->content );
-        MemFree( node );
+        if (RootNode != node->type)
+            MemFree( node );
 
         node = next;
     }
@@ -1256,7 +1262,7 @@ void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len )
 Node *FindDocType( TidyDocImpl* doc )
 {
     Node* node;
-    for ( node = (doc->root ? doc->root->content : NULL);
+    for ( node = (doc ? doc->root.content : NULL);
           node && node->type != DocTypeTag; 
           node = node->next )
         /**/;
@@ -1278,8 +1284,8 @@ Node* FindContainer( Node* node )
 /* find html element */
 Node *FindHTML( TidyDocImpl* doc )
 {
-    Node *node = doc->root;
-    for ( node = (node ? node->content : NULL);
+    Node *node;
+    for ( node = (doc ? doc->root.content : NULL);
           node && !nodeIsHTML(node); 
           node = node->next )
         /**/;
@@ -1316,7 +1322,7 @@ Node *FindTITLE(TidyDocImpl* doc)
 
 Node *FindBody( TidyDocImpl* doc )
 {
-    Node *node = ( doc->root ? doc->root->content : NULL );
+    Node *node = ( doc ? doc->root.content : NULL );
 
     while ( node && !nodeIsHTML(node) )
         node = node->next;
@@ -1475,7 +1481,7 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
 {
     Node* doctype = NULL;
     Node* html = FindHTML( doc );
-    Node* root = doc->root;
+    Node* root = &doc->root;
     if ( !html )
         return NULL;
 
@@ -1668,7 +1674,7 @@ Bool FixXmlDecl( TidyDocImpl* doc )
     Node* xml;
     AttVal *version, *encoding;
     Lexer*lexer = doc->lexer;
-    Node* root = doc->root;
+    Node* root = &doc->root;
 
     if ( root->content && root->content->type == XmlDecl )
     {

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/09 02:24:48 $ 
-    $Revision: 1.22 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/09 19:52:25 $ 
+    $Revision: 1.23 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -138,6 +138,8 @@ void          tidyDocRelease( TidyDocImpl* doc )
         FreeAttrTable( doc );
         FreeTags( doc );
         FreeEntities();
+        FreeNode( doc, &doc->root );
+        FreeNode( doc, doc->givenDoctype );
         MemFree( doc );
     }
 }
@@ -1041,7 +1043,15 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     TakeConfigSnapshot( doc );    /* Save config state */
     FreeLexer( doc );
     FreeAnchors( doc );
-    doc->lexer = NewLexer();
+    FreeNode( doc, &doc->root );
+
+    FreeNode( doc, doc->givenDoctype );
+    doc->givenDoctype = NULL;
+
+    doc->lexer = NewLexer( doc );
+//    doc->lexer->root = &doc->root;
+    doc->root.line = doc->lexer->lines;
+    doc->root.column = doc->lexer->columns;
     doc->inputHadBOM = no;
 
     /* skip byte order mark */
@@ -1068,15 +1078,15 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     /* Tidy doesn't alter the doctype for generic XML docs */
     if ( xmlIn )
     {
-        doc->root = ParseXMLDocument( doc );
-        if ( !CheckNodeIntegrity(doc->root) )
+        ParseXMLDocument( doc );
+        if ( !CheckNodeIntegrity( &doc->root ) )
             FatalError( integrity );
     }
     else
     {
         doc->warnings = 0;
-        doc->root = ParseDocument( doc );
-        if ( !CheckNodeIntegrity(doc->root) )
+        ParseDocument( doc );
+        if ( !CheckNodeIntegrity( &doc->root ) )
             FatalError( integrity );
     }
 
@@ -1098,6 +1108,7 @@ int         tidyDocRunDiagnostics( TidyDocImpl* doc )
 
     if ( !quiet )
     {
+
         ReportMarkupVersion( doc );
         ReportNumWarnings( doc );
     }
@@ -1126,23 +1137,23 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     Bool tidyMark = cfgBool( doc, TidyMark );
 
     /* simplifies <b><b> ... </b> ...</b> etc. */
-    NestedEmphasis( doc, doc->root );
+    NestedEmphasis( doc, &doc->root );
 
     /* cleans up <dir>indented text</dir> etc. */
-    List2BQ( doc, doc->root );
-    BQ2Div( doc, doc->root );
+    List2BQ( doc, &doc->root );
+    BQ2Div( doc, &doc->root );
 
     /* replaces i by em and b by strong */
     if ( logical )
-        EmFromI( doc, doc->root );
+        EmFromI( doc, &doc->root );
 
     if ( word2K && IsWord2000(doc) )
     {
         /* prune Word2000's <![if ...]> ... <![endif]> */
-        DropSections( doc, doc->root );
+        DropSections( doc, &doc->root );
 
         /* drop style & class attributes and empty p, span elements */
-        CleanWord2000( doc, doc->root );
+        CleanWord2000( doc, &doc->root );
     }
 
     /* replaces presentational markup by style rules */
@@ -1161,13 +1172,13 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
         )
         VerifyHTTPEquiv( doc, FindHEAD( doc ));
 
-    if ( !CheckNodeIntegrity(doc->root) )
+    if ( !CheckNodeIntegrity( &doc->root ) )
         FatalError( integrity );
 
     /* remember given doctype for reporting */
     doc->givenDoctype = CloneNodeEx( doc, FindDocType(doc) );
 
-    if ( doc->root->content )
+    if ( doc->root.content )
     {
         /* If we had XHTML input but want HTML output */
         if ( htmlOut && doc->lexer->isvoyager )
@@ -1229,11 +1240,11 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 
         doc->docOut = out;
         if ( xmlOut && !xhtmlOut )
-            PPrintXMLTree( doc, 0, 0, doc->root );
+            PPrintXMLTree( doc, 0, 0, &doc->root );
         else if ( bodyOnly )
             PrintBody( doc );
         else
-            PPrintTree( doc, 0, 0, doc->root );
+            PPrintTree( doc, 0, 0, &doc->root );
 
         PFlushLine( doc, 0 );
         doc->docOut = NULL;
@@ -1255,12 +1266,10 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 
 TidyNode    tidyGetRoot( TidyDoc tdoc )
 {
-  TidyDocImpl* impl = tidyDocToImpl( tdoc );
-  Node* node = NULL;
-  if ( impl )
-      node = impl->root;
-  return tidyImplToNode( node );
+    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+    return tidyImplToNode( &impl->root );
 }
+
 TidyNode    tidyGetHtml( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
@@ -1269,6 +1278,7 @@ TidyNode    tidyGetHtml( TidyDoc tdoc )
       node = FindHTML( impl );
   return tidyImplToNode( node );
 }
+
 TidyNode    tidyGetHead( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
@@ -1277,6 +1287,7 @@ TidyNode    tidyGetHead( TidyDoc tdoc )
       node = FindHEAD( impl );
   return tidyImplToNode( node );
 }
+
 TidyNode    tidyGetBody( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
