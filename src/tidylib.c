@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 12:49:24 $ 
-    $Revision: 1.50 $ 
+    $Date: 2005/03/07 12:28:21 $ 
+    $Revision: 1.51 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1328,11 +1328,11 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 
         doc->docOut = out;
         if ( xmlOut && !xhtmlOut )
-            PPrintXMLTree( doc, 0, 0, &doc->root );
+            PPrintXMLTree( doc, NORMAL, 0, &doc->root );
         else if ( bodyOnly )
             PrintBody( doc );
         else
-            PPrintTree( doc, 0, 0, &doc->root );
+            PPrintTree( doc, NORMAL, 0, &doc->root );
 
         PFlushLine( doc, 0 );
         doc->docOut = NULL;
@@ -1469,9 +1469,9 @@ Bool  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf )
 
       doc->docOut = out;
       if ( xmlOut && !xhtmlOut )
-          PPrintXMLTree( doc, 0, 0, nimp );
+          PPrintXMLTree( doc, NORMAL, 0, nimp );
       else
-          PPrintTree( doc, 0, 0, nimp );
+          PPrintTree( doc, NORMAL, 0, nimp );
 
       PFlushLine( doc, 0 );
       doc->docOut = NULL;

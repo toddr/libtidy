@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/01/10 12:40:38 $ 
-    $Revision: 1.96 $ 
+    $Date: 2005/03/07 12:28:21 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -1885,7 +1885,7 @@ void PrintBody( TidyDocImpl* doc )
     if ( node )
     {
         for ( node = node->content; node != NULL; node = node->next )
-            PPrintTree( doc, 0, 0, node );
+            PPrintTree( doc, NORMAL, 0, node );
     }
 }
 
