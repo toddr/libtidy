@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/08 06:58:02 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/09 00:35:06 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -345,7 +345,8 @@ static void ParseEntity(Lexer *lexer, int mode)
     ch = EntityCode(lexer->lexbuf+start);
 
     /* deal with unrecognized entities */
-    if (ch <= 0)
+    /* #433012 - fix by Randy Waki 17 Feb 01 */
+    if (ch <= 0 || (ch >= 256 && c != ';'))
     {
         /* set error position just before offending chararcter */
         lexer->lines = lexer->in->curline;
