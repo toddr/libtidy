@@ -5,17 +5,17 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 19:33:15 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/04/12 02:56:52 $ 
+    $Revision: 1.6 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
 
 */
 
-#include <tidy.h>
-#include <buffio.h>
+#include "tidy.h"
+#include "buffio.h"
 
 
 /**************
