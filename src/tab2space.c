@@ -258,7 +258,7 @@ void HelpText(FILE *errout, char *prog)
     fprintf(errout, "  -unix or -lf    set line ends to LF (Unix)\n");
     fprintf(errout, "  -cr             set line ends to CR (Macs)\n");
     fprintf(errout, "  -tabs           preserve tabs, e.g. for Makefile\n");
-    fprintf(errout, "  -help or -h     display this hekp message\n");
+    fprintf(errout, "  -help or -h     display this help message\n");
     fprintf(errout, "\nNote this utility doesn't map spaces to tabs!\n");
 }
 
