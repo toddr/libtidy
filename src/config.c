@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/14 04:18:51 $ 
-    $Revision: 1.35 $ 
+    $Author: krusch $ 
+    $Date: 2002/01/14 21:26:04 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -689,6 +689,12 @@ void AdjustConfig(void)
     {
         defined_tags |= tagtype_inline;
         DefineTag(tagtype_inline, "o:p");
+    }
+
+ /* #480701 disable XHTML output flag if both output-xhtml and xml are set */
+    if (XmlTags)
+    {
+        xHTML = no;
     }
 
  /* XHTML is written in lower case */
