@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/02/18 02:27:04 $ 
-    $Revision: 1.23 $ 
+    $Date: 2002/03/16 01:19:31 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -200,6 +200,15 @@
 #endif
 #endif
 
+/* Convenience defines for OpenVMS */
+
+#if defined(__VMS)
+#define OPENVMS_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "OpenVMS"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -245,7 +254,7 @@
 #endif
 
 #ifndef PRESERVE_FILE_TIMES
-#if defined(RISC_OS)
+#if defined(RISC_OS) || defined(OPENVMS_OS)
 #define PRESERVE_FILE_TIMES 0
 #else
 #define PRESERVE_FILE_TIMES 1
@@ -349,7 +358,7 @@ typedef enum
 #define unlink _unlink
 #endif
 
-#if defined(RISC_OS)
+#if defined(RISC_OS) || defined(OPENVMS_OS)
 #define unlink remove
 #endif
 
