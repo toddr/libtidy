@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:46:58 $ 
-    $Revision: 1.13 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/16 04:24:11 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -768,7 +768,9 @@ static void PPrintAttribute(Out *fout, uint indent,
     if (attr->value == null)
     {
         if (XmlTags || XmlOut)
-            PPrintAttrValue(fout, indent, attr->attribute, attr->delim, yes);
+            PPrintAttrValue(fout, indent,
+              IsBool(attr->attribute) ? attr->attribute : "",
+              attr->delim, yes);
         else if (!IsBoolAttribute(attr) && !IsNewNode(node))
             PPrintAttrValue(fout, indent, "", attr->delim, yes);
         else if (indent + linelen < wraplen)

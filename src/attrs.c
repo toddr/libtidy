@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/15 03:01:10 $ 
-    $Revision: 1.26 $ 
+    $Date: 2001/07/16 04:24:11 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -393,6 +393,13 @@ Bool IsUrl(char *attrname)
     Attribute *np;
 
     return (Bool)((np = lookup(attrname)) && np->attrchk == URL);
+}
+
+Bool IsBool(char *attrname)
+{
+    Attribute *np;
+
+    return (Bool)((np = lookup(attrname)) && np->attrchk == BOOL);
 }
 
 Bool IsScript(char *attrname)

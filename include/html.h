@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/15 22:20:08 $ 
-    $Revision: 1.22 $ 
+    $Date: 2001/07/16 04:24:11 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -505,6 +505,7 @@ void CheckAttributes(Lexer *lexer, Node *node);
 Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval);
 Bool IsUrl(char *attrname);
 Bool IsScript(char *attrname);
+Bool IsBool(char *attrname);
 void DeclareLiteralAttrib(char *name);
 Bool IsLiteralAttribute(char *attrname);
 
