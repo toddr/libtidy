@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 19:33:15 $ 
-    $Revision: 1.54 $ 
+    $Date: 2003/03/19 19:52:51 $ 
+    $Revision: 1.55 $ 
 
 */
 
@@ -1401,7 +1401,7 @@ const TidyOptionImpl*  getNextOption( TidyDocImpl* doc, TidyIterator* iter )
     option = &option_defs[ optId ];
     optId++;
   }
-  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? optId : 0 );
+  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? (TidyIterator) optId : 0 );
   return option;
 }
 
@@ -1409,7 +1409,7 @@ const TidyOptionImpl*  getNextOption( TidyDocImpl* doc, TidyIterator* iter )
 */
 TidyIterator getOptionPickList( const TidyOptionImpl* option )
 {
-    uint ix = 0;
+    ulong ix = 0;
     if ( option && option->pickList )
         ix = 1;
     return (TidyIterator) ix;
@@ -1418,11 +1418,11 @@ TidyIterator getOptionPickList( const TidyOptionImpl* option )
 ctmbstr      getNextOptionPick( const TidyOptionImpl* option,
                                 TidyIterator* iter )
 {
-    uint ix;
+    ulong ix;
     ctmbstr val = NULL;
     assert( option!=NULL && iter != NULL );
 
-    ix = (uint) *iter;
+    ix = (ulong) *iter;
     if ( ix > 0 && ix < 16 && option->pickList )
         val = option->pickList[ ix-1 ];
     *iter = (TidyIterator) ( val && option->pickList[ix] ? ix + 1 : 0 );
@@ -1494,7 +1494,7 @@ int  SaveConfigToStream( TidyDocImpl* doc, StreamOut* out )
     const TidyOptionImpl* option;
     for ( option=option_defs+1; 0==rc && option && option->name; ++option )
     {
-        uint ival = doc->config.value[ option->id ];
+        ulong ival = doc->config.value[ option->id ];
         if ( option->parser == NULL )
             continue;
         if ( ival == option->dflt && option->id != TidyDoctype)
@@ -1502,12 +1502,13 @@ int  SaveConfigToStream( TidyDocImpl* doc, StreamOut* out )
 
         if ( option->id == TidyDoctype )  /* Special case */
         {
-          uint dtmode = cfg( doc, TidyDoctypeMode );
+          ulong dtmode = cfg( doc, TidyDoctypeMode );
           if ( dtmode == TidyDoctypeUser )
           {
             tmbstr t;
             
-            if (( t = MemAlloc( tmbstrlen( (ctmbstr)ival) + 2 ) ))  /* add 2 double quotes */
+            /* add 2 double quotes */
+            if (( t = MemAlloc( tmbstrlen( (ctmbstr)ival) + 2 ) ))
             {
               t[0] = '\"'; t[1] = 0;
             

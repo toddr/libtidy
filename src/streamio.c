@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:47 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/03/19 19:52:57 $ 
+    $Revision: 1.6 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -70,14 +70,14 @@ static StreamOut stdoutStreamOut =
 StreamOut* StdErrOutput()
 {
   if ( stderrStreamOut.sink.sinkData == 0 )
-      stderrStreamOut.sink.sinkData = (uint) stderr;
+      stderrStreamOut.sink.sinkData = (ulong) stderr;
   return &stderrStreamOut;
 }
 
 StreamOut* StdOutOutput()
 {
   if ( stdoutStreamOut.sink.sinkData == 0 )
-      stdoutStreamOut.sink.sinkData = (uint) stdout;
+      stdoutStreamOut.sink.sinkData = (ulong) stdout;
   return &stdoutStreamOut;
 }
 
@@ -822,7 +822,7 @@ Bool tidyInitSource( TidyInputSource*  source,
   Bool ok = ( source && srcData && gbFunc && ugbFunc && endFunc );
   if ( ok )
   {
-    source->sourceData = (uint) srcData;
+    source->sourceData = (ulong) srcData;
     source->getByte    = gbFunc;
     source->ungetByte  = ugbFunc;
     source->eof        = endFunc;
@@ -837,7 +837,7 @@ Bool tidyInitSink( TidyOutputSink* sink,
   Bool ok = ( sink && snkData && pbFunc );
   if ( ok )
   {
-    sink->sinkData = (uint) snkData;
+    sink->sinkData = (ulong) snkData;
     sink->putByte  = pbFunc;
   }
   return ok;
