@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/06 21:29:31 $ 
-    $Revision: 1.61 $ 
+    $Date: 2003/04/10 10:46:34 $ 
+    $Revision: 1.62 $ 
 
 */
 
@@ -904,17 +904,34 @@ Bool IsBoolAttribute(AttVal *attval)
 Bool attrIsEvent( AttVal* attval )
 {
     TidyAttrId atid = AttrId( attval );
-    return ( atid == TidyAttr_OnMOUSEMOVE ||
-             atid == TidyAttr_OnMOUSEDOWN ||
-             atid == TidyAttr_OnMOUSEUP   ||
-             atid == TidyAttr_OnCLICK     ||
-             atid == TidyAttr_OnMOUSEOVER ||
-             atid == TidyAttr_OnMOUSEOUT  ||
-             atid == TidyAttr_OnKEYDOWN   ||
-             atid == TidyAttr_OnKEYUP     ||
-             atid == TidyAttr_OnKEYPRESS  ||
-             atid == TidyAttr_OnFOCUS     ||
-             atid == TidyAttr_OnBLUR );
+
+    return (atid == TidyAttr_OnAFTERUPDATE     ||
+            atid == TidyAttr_OnBEFOREUNLOAD    ||
+            atid == TidyAttr_OnBEFOREUPDATE    ||
+            atid == TidyAttr_OnBLUR            ||
+            atid == TidyAttr_OnCHANGE          ||
+            atid == TidyAttr_OnCLICK           ||
+            atid == TidyAttr_OnDATAAVAILABLE   ||
+            atid == TidyAttr_OnDATASETCHANGED  ||
+            atid == TidyAttr_OnDATASETCOMPLETE ||
+            atid == TidyAttr_OnDBLCLICK        ||
+            atid == TidyAttr_OnERRORUPDATE     ||
+            atid == TidyAttr_OnFOCUS           ||
+            atid == TidyAttr_OnKEYDOWN         ||
+            atid == TidyAttr_OnKEYPRESS        ||
+            atid == TidyAttr_OnKEYUP           ||
+            atid == TidyAttr_OnLOAD            ||
+            atid == TidyAttr_OnMOUSEDOWN       ||
+            atid == TidyAttr_OnMOUSEMOVE       ||
+            atid == TidyAttr_OnMOUSEOUT        ||
+            atid == TidyAttr_OnMOUSEOVER       ||
+            atid == TidyAttr_OnMOUSEUP         ||
+            atid == TidyAttr_OnRESET           ||
+            atid == TidyAttr_OnROWENTER        ||
+            atid == TidyAttr_OnROWEXIT         ||
+            atid == TidyAttr_OnSELECT          ||
+            atid == TidyAttr_OnSUBMIT          ||
+            atid == TidyAttr_OnUNLOAD);
 }
 
 static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attval)
