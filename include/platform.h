@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/07 02:36:19 $ 
-    $Revision: 1.6 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/19 19:14:38 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -88,9 +88,7 @@ typedef unsigned long ulong;
 #endif /* BSDs */
 #endif  /* __USE_MISC */
 typedef unsigned char byte;
-
-typedef char *UTF8;
-
+           
 /*
   bool is a reserved word in some but
   not all C++ compilers depending on age
@@ -126,3 +124,9 @@ typedef enum
 #if defined(DMALLOC)
 #include "dmalloc.h"
 #endif
+
+/* were defined in html.h - TRT */
+void *MemAlloc(uint size);
+void *MemRealloc(void *mem, uint newsize);
+void MemFree(void *mem);
+void ClearMemory(void *, uint size);

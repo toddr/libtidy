@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/18 09:11:00 $ 
-    $Revision: 1.46 $ 
+    $Date: 2001/08/19 19:14:08 $ 
+    $Revision: 1.47 $ 
 
 */
 
@@ -29,7 +29,7 @@
 #define UTF16BE     7
 #define UTF16       8
 #define WIN1252     9
-#define	BIG5	    10  /* #431953 - RJ */
+#define BIG5        10  /* #431953 - RJ */
 #define SHIFTJIS    11  /* #431953 - RJ */
 /* RJ.  Note that Big5 and SHIFTJIS are not converted to ISO 10646
 codepoints (i.e., to Unicode) before being recoded into UTF-8. This
@@ -55,11 +55,11 @@ void outc(uint c, Out *out);
     "ESC" + "$" + ?     and
     "ESC" + "$" + "(" + ?   for multibyte character sets
 */
-#define FSM_ASCII   0
-#define FSM_ESC     1
-#define FSM_ESCD    2
-#define FSM_ESCDP   3
-#define FSM_ESCP    4
+#define FSM_ASCII    0
+#define FSM_ESC      1
+#define FSM_ESCD     2
+#define FSM_ESCDP    3
+#define FSM_ESCP     4
 #define FSM_NONASCII 5
 
 /* lexer char types */
@@ -91,7 +91,7 @@ void outc(uint c, Out *out);
 
 /* content model shortcut encoding */
 
-#define CM_UNKNOWN         0
+#define CM_UNKNOWN      0
 #define CM_EMPTY        (1 << 0)
 #define CM_HTML         (1 << 1)
 #define CM_HEAD         (1 << 2)
@@ -242,19 +242,18 @@ typedef struct _anchor Anchor;
 #define VERS_HTML32        2
 #define VERS_HTML40_STRICT 4
 #define VERS_HTML40_LOOSE  8
-#define VERS_FRAMESET     16
+#define VERS_FRAMESET      16
 
+#define VERS_XML           32  /* special flag */
 
-#define VERS_XML          32  /* special flag */
+#define VERS_NETSCAPE      64
+#define VERS_MICROSOFT     128
+#define VERS_SUN           256
 
-#define VERS_NETSCAPE     64
-#define VERS_MICROSOFT   128
-#define VERS_SUN         256
+#define VERS_MALFORMED     512
 
-#define VERS_MALFORMED   512
-
-#define VERS_XHTML11    1024
-#define VERS_BASIC      2048
+#define VERS_XHTML11       1024
+#define VERS_BASIC         2048
 
 /* all tags and attributes are ok in proprietary version of HTML */
 #define VERS_PROPRIETARY (VERS_NETSCAPE|VERS_MICROSOFT|VERS_SUN)
@@ -327,7 +326,6 @@ StreamIn *OpenInput(FILE *fp);
 int ReadChar(StreamIn *in);
 void UngetChar(int c, StreamIn *in);
 
-
 /*
   The following are private to the lexer
   Use NewLexer(fp) to create a lexer, and
@@ -367,7 +365,7 @@ struct _lexer
       which contains the concatenated text
       contents of all of the elements.
 
-     lexsize must be reset for each file.
+      lexsize must be reset for each file.
     */
     char *lexbuf;     /* char buffer */
     uint lexlength;   /* allocated */
@@ -605,7 +603,7 @@ void NeedsAuthorIntervention(FILE *errout);
 void MissingBody(FILE *errout);
 void ReportNumberOfSlides(FILE *errout, int count);
 void GeneralInfo(FILE *errout);
-void SetFilename (char *filename);	/* #431895 - fix by Dave Bryan 04 Jan 01 */
+void SetFilename (char *filename); /* #431895 - fix by Dave Bryan 04 Jan 01 */
 void HelloMessage(FILE *errout, char *date, char *filename);
 void ReportVersion(FILE *errout, Lexer *lexer,
                    char *filename, Node *doctype);
@@ -621,7 +619,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
                     Lexer *lexer, Node *node);
 void PFlushLine(Out *out, uint indent);
 void PCondFlushLine(Out *out, uint indent);
-void PrintBody(Out *fout, Lexer *lexer, Node *root);	/* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
+void PrintBody(Out *fout, Lexer *lexer, Node *root); /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
 void AddTransitionEffect(Lexer *lexer, Node *root, int effect, float duration);
 Node *FindHead(Node *root);
 Node *FindBody(Node *root);
@@ -646,12 +644,15 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
 int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
                            Out *out, PutBytes putter, int *count);
 
+/* defined in platform.h - TRT */
+/*
 void *MemAlloc(uint size);
 void *MemRealloc(void *mem, uint newsize);
 void MemFree(void *mem);
+void ClearMemory(void *, uint size);
+*/
 
 /* string functions */
-uint ToLower(uint c);
 char *wstrdup(char *str);
 char *wstrndup(char *str, int len);
 void wstrncpy(char *s1, char *s2, int size);
@@ -667,11 +668,8 @@ Bool wsubstrn(char *s1, int len1, char *s2 );
 Bool wsubstrncase(char *s1, int len1, char *s2 );
 int wstrnchr( char *s1, int len1, char cc );
 char *wstrtolower(char *s);
-void ClearMemory(void *, uint size);
 
 void tidy_out(FILE *fp, const char* msg, ...);
-
-#define uprintf fprintf
 
 /* error codes for entities */
 
@@ -944,7 +942,7 @@ extern Dict *tag_head;
 extern Dict *tag_body;
 extern Dict *tag_frameset;
 extern Dict *tag_frame;
-extern Dict *tag_iframe;	/* #433359 - fix by Randy Waki 12 Mar 01 */
+extern Dict *tag_iframe; /* #433359 - fix by Randy Waki 12 Mar 01 */
 extern Dict *tag_noframes;
 extern Dict *tag_title;
 extern Dict *tag_base;
