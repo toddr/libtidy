@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 12:49:24 $ 
-    $Revision: 1.27 $ 
+    $Date: 2005/03/03 13:03:44 $ 
+    $Revision: 1.28 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -24,6 +24,7 @@
 #include "lexer.h"
 #include "message.h"
 #include "utf8.h"
+#include "tmbstr.h"
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
 #include "win32tc.h"
