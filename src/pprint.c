@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/07/08 03:28:41 $ 
-    $Revision: 1.46 $ 
+    $Author: creitzel $ 
+    $Date: 2002/07/18 16:09:19 $ 
+    $Revision: 1.47 $ 
 
 */
 
@@ -2034,14 +2034,17 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
         PPrintJste(fout, indent, lexer, node);
     else if (node->type == PhpTag)
         PPrintPhp(fout, indent, lexer, node);
-    else if (node->tag->model & CM_EMPTY || (node->type == StartEndTag && !xHTML))
+    else if ( node->tag->model & CM_EMPTY 
+              || (node->type == StartEndTag && !xHTML) )
     {
         PCondFlushLine(fout, indent);
         PPrintTag(lexer, fout, mode, indent, node);
         PFlushLine(fout, indent);
 
+        /* CPR: folks don't want so much vertical spacing in XML
         if (node->next)
             PFlushLine(fout, indent);
+        */
     }
     else /* some kind of container element */
     {
@@ -2087,8 +2090,10 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
         PPrintEndTag(fout, mode, indent, node);
         PCondFlushLine(fout, indent);
 
+        /* CPR: folks don't want so much vertical spacing in XML
         if (node->next)
             PFlushLine(fout, indent);
+        */
     }
 }
 
