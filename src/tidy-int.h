@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/01 11:08:23 $ 
-    $Revision: 1.7 $ 
+    $Date: 2004/03/06 17:07:02 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -82,7 +82,7 @@ struct _TidyDocImpl
 #if PRESERVE_FILE_TIMES
     struct utimbuf      filetimes;
 #endif
-    Node*               givenDoctype;
+    tmbstr              givenDoctype;
 };
 
 

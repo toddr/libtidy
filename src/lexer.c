@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 15:53:41 $ 
-    $Revision: 1.144 $ 
+    $Date: 2004/03/06 17:06:54 $ 
+    $Revision: 1.145 $ 
 
 */
 
@@ -682,16 +682,6 @@ void FreeLexer( TidyDocImpl* doc )
         MemFree( lexer );
         doc->lexer = NULL;
     }
-/*
-    Moved to tidylib.c, as an object really should not be freeing
-    resources it doesn't "own"
-
-    FreeNode( doc, doc->root );
-    doc->root = NULL;
-
-    FreeNode( doc, doc->givenDoctype );
-    doc->givenDoctype = NULL;
-*/
 }
 
 /* Lexer uses bigger memory chunks than pprint as
@@ -1008,30 +998,6 @@ Node *CloneNode( TidyDocImpl* doc, Node *element )
     if ( element )
     {
         node->parent     = element->parent;
-        node->type       = element->type;
-        node->closed     = element->closed;
-        node->implicit   = element->implicit;
-        node->tag        = element->tag;
-        node->element    = tmbstrdup( element->element );
-        node->attributes = DupAttrs( doc, element->attributes );
-    }
-    return node;
-}
-
-/* Just like CloneNode but also copies node->start */
-/* and node->end; note that it does not clone the  */
-/* lexbuf pointed to by these values               */
-Node *CloneNodeEx( TidyDocImpl* doc, Node *element )
-{
-    Node *node = NULL;
-
-    if ( element )
-    {
-        node = NewNode( doc->lexer );
-
-        node->parent     = element->parent;
-        node->start      = element->start;
-        node->end        = element->end;
         node->type       = element->type;
         node->closed     = element->closed;
         node->implicit   = element->implicit;

@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 11:13:13 $ 
-    $Revision: 1.17 $ 
+    $Date: 2004/03/06 17:06:57 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -411,10 +411,6 @@ Node* NewNode( Lexer* lexer );
 
 /* used to clone heading nodes when split by an <HR> */
 Node *CloneNode( TidyDocImpl* doc, Node *element );
-
-/* clones the given node using source node attributes,
-** no lexer attributes */
-Node *CloneNodeEx( TidyDocImpl* doc, Node *element );
 
 /* free node's attributes */
 void FreeAttrs( TidyDocImpl* doc, Node *node );

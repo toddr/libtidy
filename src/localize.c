@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:53:21 $ 
-    $Revision: 1.110 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/06 17:06:57 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -1002,13 +1002,10 @@ void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
 
 void ReportMarkupVersion( TidyDocImpl* doc )
 {
-    Node* doctype = doc->givenDoctype;
-
-    if (doctype)
+    if (doc->givenDoctype)
     {
-        AttVal* fpi = GetAttrByName(doctype, "PUBLIC");
         /* todo: deal with non-ASCII characters in FPI */
-        message(doc, TidyInfo, "Doctype given is \"%s\"", fpi?fpi->value:"");
+        message(doc, TidyInfo, "Doctype given is \"%s\"", doc->givenDoctype);
     }
 
     if ( ! cfgBool(doc, TidyXmlTags) )
