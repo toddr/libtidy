@@ -2,6 +2,13 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/25 03:06:36 $ 
+    $Revision: 1.2 $ 
+
 */
 
 /* indentation modes */
@@ -527,6 +534,7 @@ void NeedsAuthorIntervention(FILE *errout);
 void MissingBody(FILE *errout);
 void ReportNumberOfSlides(FILE *errout, int count);
 void GeneralInfo(FILE *errout);
+void SetFilename (char *filename);	/* #431895 - fix by Dave Bryan 04 Jan 01 */
 void HelloMessage(FILE *errout, char *date, char *filename);
 void ReportVersion(FILE *errout, Lexer *lexer,
                    char *filename, Node *doctype);

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/13 08:16:28 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/06/25 03:07:37 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -640,9 +640,16 @@ void GeneralInfo(FILE *errout)
     tidy_out(errout, "Lobby your company to join W3C, see http://www.w3.org/Consortium\n");
 }
 
-void HelloMessage(FILE *errout, char *date, char *filename)
+/* #431895 - fix by Dave Bryan 04 Jan 01 */
+void SetFilename (char *filename) 
 {
     currentFile = filename;  /* for use with Gnu Emacs */
+}
+
+void HelloMessage(FILE *errout, char *date, char *filename)
+{
+    /* #431895 - fix by Dave Bryan 04 Jan 01 */
+    /* currentFile = filename; */  /* for use with Gnu Emacs */
 
     if (wstrcmp(filename, "stdin") == 0)
         tidy_out(errout, "\nTidy (vers %s) Parsing console input (stdin)\n", date);
