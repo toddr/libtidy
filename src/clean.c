@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/29 07:50:20 $ 
-    $Revision: 1.11 $ 
+    $Date: 2001/09/15 19:36:44 $ 
+    $Revision: 1.12 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1698,7 +1698,8 @@ void DropSections(Lexer *lexer, Node *node)
         if (node->type == SectionTag)
         {
             /* prune up to matching endif */
-            if (wstrncmp(lexer->lexbuf + node->start, "if", 2) == 0)
+            if ((wstrncmp(lexer->lexbuf + node->start, "if", 2) == 0) &&
+                (wstrncmp(lexer->lexbuf + node->start, "if !vml", 7) != 0)) /* #444394 - fix 13 Sep 01 */
             {
                 node = PruneSection(lexer, node);
                 continue;
