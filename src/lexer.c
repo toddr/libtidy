@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/04/09 03:56:28 $ 
-    $Revision: 1.60 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/04/13 16:34:16 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -1657,6 +1657,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
             }
 
             start = -1;
+            endtag = no;
         }
         /* #427844 - fix by Markus Hoenicka 21 Oct 00 */
         else if (c == '\r')
