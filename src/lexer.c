@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:45 $ 
-    $Revision: 1.79 $ 
+    $Date: 2003/03/22 18:42:00 $ 
+    $Revision: 1.80 $ 
 
 */
 
@@ -709,8 +709,9 @@ static void AddStringToLexer( Lexer *lexer, ctmbstr str )
 static void ParseEntity( TidyDocImpl* doc, int mode )
 {
     uint start;
-    Bool first = yes, semicolon = no;
-    int c, ch, startcol;
+    Bool first = yes, semicolon = no, found = no;
+    Bool isXml = cfgBool( doc, TidyXmlTags );
+    uint c, ch, startcol, entver = 0;
     Lexer* lexer = doc->lexer;
 
     start = lexer->lexsize - 1;  /* to start at "&" */
@@ -757,20 +758,24 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
     /* make sure entity is NULL terminated */
     lexer->lexbuf[lexer->lexsize] = '\0';
 
+    /* Should contrain version to XML/XHTML if &apos; 
+    ** is encountered.  But this is not possible with
+    ** Tidy's content model bit mask.
+    */
     if ( tmbstrcmp(lexer->lexbuf+start, "&apos") == 0
          && !cfgBool(doc, TidyXmlOut)
          && !lexer->isvoyager
          && !cfgBool(doc, TidyXhtmlOut) )
         ReportEntityError( doc, APOS_UNDEFINED, lexer->lexbuf+start, 39 );
 
-    /* On input, we want to recognize all possible entities.
+    /* Lookup entity code and version
     */
-    ch = EntityCode( lexer->lexbuf+start, VERS_ALL );
+    found = EntityInfo( lexer->lexbuf+start, isXml, &ch, &entver );
 
     /* deal with unrecognized or invalid entities */
     /* #433012 - fix by Randy Waki 17 Feb 01 */
     /* report invalid NCR's - Terry Teague 01 Sep 01 */
-    if ( ch <= 0 || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';') )
+    if ( !found || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';') )
     {
         /* set error position just before offending character */
         lexer->lines = doc->docIn->curline;
@@ -841,6 +846,9 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
 
         if ( ch == '&' && !cfgBool(doc, TidyQuoteAmpersand) )
             AddStringToLexer( lexer, "amp;" );
+
+        /* Detect extended vs. basic entities */
+        ConstrainVersion( doc, entver );
     }
 }
 

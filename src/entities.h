@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/22 18:41:59 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -22,5 +22,6 @@ void FreeEntities();
 /* entity starting with "&" returns zero on error */
 uint    EntityCode( ctmbstr name, uint versions );
 ctmbstr EntityName( uint charCode, uint versions );
+Bool    EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions );
 
 #endif /* __ENTITIES_H__ */

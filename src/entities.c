@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.10 $ 
+    $Date: 2003/03/22 18:42:00 $ 
+    $Revision: 1.11 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -361,6 +361,42 @@ uint EntityCode( ctmbstr name, uint versions )
     }
 
     return 0;   /* zero signifies unknown entity name */
+}
+
+Bool EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions )
+{
+    const entity* np;
+    assert( name && name[0] == '&' );
+    assert( code != NULL );
+    assert( versions != NULL );
+
+    /* numeric entitity: name = "&#" followed by number */
+    if ( name[1] == '#' )
+    {
+        uint c = 0;  /* zero on missing/bad number */
+
+        /* 'x' prefix denotes hexadecimal number format */
+        if ( name[2] == 'x' || (!isXml && name[2] == 'X') )
+            sscanf( name+3, "%x", &c );
+        else
+            sscanf( name+2, "%d", &c );
+
+        *code = c;
+        *versions = VERS_ALL;
+        return yes;
+    }
+
+    /* Named entity: name ="&" followed by a name */
+    if ( np = lookup(name+1) )
+    {
+        *code = np->code;
+        *versions = np->versions;
+        return yes;
+    }
+
+    *code = 0;
+    *versions = ( isXml ? VERS_XML : VERS_PROPRIETARY );
+    return no;
 }
 
 
