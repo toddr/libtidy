@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/22 01:22:42 $ 
-    $Revision: 1.95 $ 
+    $Date: 2003/05/22 02:51:02 $ 
+    $Revision: 1.96 $ 
 
 */
 
@@ -825,6 +825,7 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
         head = FindHEAD(doc);
         assert(head != NULL);
 
+#if 0
         /* fix for bug 723206; a better fix would avoid to insert    */
         /* the empty <title> element, but that would require to move */
         /* the relevant code after ParseDocument(), this is simpler  */
@@ -835,6 +836,7 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
             if (title && title->implicit)
                 RemoveNode(title);
         }
+#endif
 
         InsertNodeAtEnd(head, node);
 
@@ -1971,8 +1973,10 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         {
             FreeNode( doc, node);
 
+#if 0
             if (list->tag->model & CM_OBSOLETE)
                 CoerceNode( doc, list, TidyTag_UL );
+#endif
 
             list->closed = yes;
             return;
@@ -2018,8 +2022,10 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                     ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
                     UngetToken( doc );
 
+#if 0
                     if (list->tag->model & CM_OBSOLETE)
                         CoerceNode( doc, list, TidyTag_UL );
+#endif
 
                     return;
                 }
@@ -2050,8 +2056,10 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         ParseTag( doc, node, IgnoreWhitespace);
     }
 
+#if 0
     if (list->tag->model & CM_OBSOLETE)
         CoerceNode( doc, list, TidyTag_UL );
+#endif
 
     ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
 }
@@ -2619,8 +2627,10 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
     if (pre->tag->model & CM_EMPTY)
         return;
 
+#if 0
     if (pre->tag->model & CM_OBSOLETE)
         CoerceNode( doc, pre, TidyTag_PRE );
+#endif
 
     InlineDup( doc, NULL ); /* tell lexer to insert inlines if needed */
 
@@ -3199,6 +3209,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         FreeNode( doc, node);
     }
   
+#if 0
     if ( HasTitle == 0 )
     {
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
@@ -3207,6 +3218,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
             InsertNodeAtEnd(head, InferredTag(doc, "title"));
         }
     }
+#endif
 }
 
 void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
@@ -3935,6 +3947,28 @@ void EncloseBlockText(TidyDocImpl* doc, Node* node)
     }
 }
 
+void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
+{
+    Node *next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (nodeIsDIR(node) || nodeIsMENU(node))
+            CoerceNode(doc, node, TidyTag_UL);
+
+        if (nodeIsXMP(node) || nodeIsLISTING(node) ||
+            (node->tag && node->tag->id == TidyTag_PLAINTEXT))
+            CoerceNode(doc, node, TidyTag_PRE);
+
+        if (node->content)
+            ReplaceObsoleteElements(doc, node->content);
+
+        node = next;
+    }
+}
+
 /*
   HTML is the top level element
 */
@@ -4024,6 +4058,14 @@ void ParseDocument(TidyDocImpl* doc)
         ParseHTML(doc, html, no);
     }
 
+    if (!FindTITLE(doc))
+    {
+        Node* head = FindHEAD(doc);
+        ReportWarning(doc, head, NULL, MISSING_TITLE_ELEMENT);
+        InsertNodeAtEnd(head, InferredTag(doc, "title"));
+    }
+
+    ReplaceObsoleteElements(doc, &doc->root);
     DropEmptyElements(doc, &doc->root);
     CleanSpaces(doc, &doc->root);
 
