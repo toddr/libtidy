@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/12 05:57:10 $ 
-    $Revision: 1.11 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/12 09:02:11 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -222,14 +222,22 @@ typedef struct _node Node;
 
 #define VERS_MALFORMED   512
 
-#define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_HTML40_STRICT|VERS_HTML40_LOOSE|VERS_FRAMESET)
-#define VERS_HTML40 (VERS_HTML40_STRICT|VERS_HTML40_LOOSE|VERS_FRAMESET)
-#define VERS_LOOSE (VERS_HTML32|VERS_HTML40_LOOSE|VERS_FRAMESET)
-#define VERS_IFRAME (VERS_HTML40_LOOSE|VERS_FRAMESET)
-#define VERS_FROM32  (VERS_HTML40_STRICT|VERS_LOOSE)
+/* all tags and attributes are ok in proprietary version of HTML */
 #define VERS_PROPRIETARY (VERS_NETSCAPE|VERS_MICROSOFT|VERS_SUN)
 
-#define VERS_EVERYTHING (VERS_ALL|VERS_PROPRIETARY)
+/* tags/attrs in HTML4 but not in earlier version*/
+#define VERS_HTML40 (VERS_HTML40_STRICT|VERS_HTML40_LOOSE|VERS_FRAMESET)
+
+/* tags/attrs in HTML 4 loose and frameset */
+#define VERS_IFRAME (VERS_HTML40_LOOSE|VERS_FRAMESET)
+
+/* tags/attrs which are in all versions of HTML except strict */
+#define VERS_LOOSE (VERS_HTML20|VERS_HTML32|VERS_IFRAME)
+
+/* tags/attrs in all versions from HTML 3.2 onwards */
+#define VERS_FROM32 (VERS_HTML32|VERS_HTML40)
+
+#define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_HTML40)
 
 /*
   Mosaic handles inlines via a separate stack from other elements
@@ -342,6 +350,9 @@ typedef void (CheckAttribs)(Lexer *lexer, Node *node);
 
 /* declaration for methods that check attribute values */
 typedef void (AttrCheck)(Lexer *lexer, Node *node, AttVal *attval);
+
+/* each tag/attribute helps to constrain the version of HTML */
+void ConstrainVersion(Lexer *lexer, unsigned int vers);
 
 struct _attribute
 {
@@ -632,6 +643,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define UNEXPECTED_END_OF_FILE  31
 #define DTYPE_NOT_UPPER_CASE    32
 #define TOO_MANY_ELEMENTS       33
+#define UNESCAPED_ELEMENT       34
 
 /* error codes used for attribute messages */
 
@@ -640,12 +652,14 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define MISSING_ATTR_VALUE      3
 #define BAD_ATTRIBUTE_VALUE     4
 #define UNEXPECTED_GT           5
-#define PROPRIETARY_ATTR_VALUE  6
-#define REPEATED_ATTRIBUTE      7
-#define MISSING_IMAGEMAP        8
-#define XML_ATTRIBUTE_VALUE     9
-#define UNEXPECTED_QUOTEMARK    10
-#define ID_NAME_MISMATCH        11
+#define PROPRIETARY_ATTRIBUTE   6
+#define PROPRIETARY_ATTR_VALUE  7
+#define REPEATED_ATTRIBUTE      8
+#define MISSING_IMAGEMAP        9
+#define XML_ATTRIBUTE_VALUE     10
+#define UNEXPECTED_QUOTEMARK    11
+#define MISSING_QUOTEMARK       12
+#define ID_NAME_MISMATCH        13
 
 /* page transition effects */
 
