@@ -1,3 +1,0 @@
-output-xhtml: yes
-doctype: strict
-numeric-entities: no
