@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/29 02:13:30 $ 
-    $Revision: 1.49 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/29 08:02:37 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -398,17 +398,21 @@ static void ParseEntity(Lexer *lexer, int mode)
 
     ch = EntityCode(lexer->lexbuf+start);
 
-    /* deal with unrecognized entities */
+    /* deal with unrecognized or invalid entities */
     /* #433012 - fix by Randy Waki 17 Feb 01 */
-    if (ch <= 0 || (ch >= 256 && c != ';'))
+    /* report invalid entities - Terry Teague 19 Aug 01 */
+    if (ch <= 0 || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';'))
     {
         /* set error position just before offending character */
         lexer->lines = lexer->in->curline;
         lexer->columns = startcol;
 
-        if (lexer->lexsize > start +1 )
+        if (lexer->lexsize > start + 1)
         {
-            ReportEntityError(lexer, UNKNOWN_ENTITY, lexer->lexbuf+start, ch);
+            if (ch >= 128 && ch <= 159)
+                ReportEntityError(lexer, INVALID_ENTITY, lexer->lexbuf+start, ch);
+            else
+                ReportEntityError(lexer, UNKNOWN_ENTITY, lexer->lexbuf+start, ch);
 
             if (semicolon)
                 AddCharToLexer(lexer, ';');
@@ -669,7 +673,6 @@ Node *NewLiteralTextNode(Lexer *lexer, char* txt )
     return node;
 }
 
-
 static Node *TagToken(Lexer *lexer, uint type)
 {
     Node *node;
@@ -845,7 +848,6 @@ Node *FindHEAD(Node *root)
 
     return node;
 }
-
 
 Node *FindBody(Node *root)
 {
