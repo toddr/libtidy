@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/05/31 22:00:12 $ 
-    $Revision: 1.52 $ 
+    $Date: 2002/05/31 22:18:49 $ 
+    $Revision: 1.53 $ 
 
 */
 
@@ -2981,11 +2981,13 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
             continue;
 
         /* #538536 Extra endtags not detected */
-//      if (lexer->seenEndBody == 1 && !iswhitenode)
-//      {
-//          ++lexer->seenEndBody;
-//          ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
-//      }
+#if 0
+        if (lexer->seenEndBody == 1 && !iswhitenode)
+        {
+            ++lexer->seenEndBody;
+            ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
+        }
+#endif
 
         /* mixed content model permits text */
         if (node->type == TextNode)
