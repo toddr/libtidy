@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/02/21 09:09:11 $ 
-    $Revision: 1.39 $ 
+    $Author: krusch $ 
+    $Date: 2002/02/26 21:45:46 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -43,6 +43,7 @@ ParseProperty ParseInt;     /* parser for integer values */
 ParseProperty ParseBool;    /* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
 ParseProperty ParseInvBool; /* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
 ParseProperty ParseName;    /* a string excluding whitespace */
+ParseProperty ParseCSS1Selector; /* a CSS1 selector #508936 - CSS class naming for -clean option */
 ParseProperty ParseString;  /* a string including whitespace */
 ParseProperty ParseTagNames; /* a space or comma separated list of tag names */
 /* RAW, ASCII, LATIN1, UTF8, ISO2022, MACROMAN, UTF16LE, UTF16BE, UTF16, WIN1252, BIG5, SHIFTJIS */
@@ -261,7 +262,7 @@ static struct Flag
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
     {"output-bom",      {(int *)&OutputBOM},        ParseBOM},
     {"replace-color",   {(int *)&ReplaceColor},     ParseBool}, /* #477643 - replace hex color attribute values with names */
-    {"css-prefix",      {(char *)&CSSPrefix},       ParseName}, /* #508936 - CSS class naming for -clean option          */
+    {"css-prefix",      {(int *)&CSSPrefix},        ParseCSS1Selector}, /* #508936 - CSS class naming for -clean option    */
 
   /* this must be the final entry */
     {0,          0,             0}
@@ -828,6 +829,31 @@ void ParseName(Location location, char *option)
     NextProperty();
 }
 
+/* #508936 - CSS class naming for -clean option */
+void ParseCSS1Selector(Location location, char *option)
+{
+    char buf[256];
+    int i = 0;
+
+    SkipWhite();
+
+    while (i < 254 && c != EOF && !IsWhite(c))
+    {
+        buf[i++] = c;
+        AdvanceChar();
+    }
+
+    buf[i] = '\0';
+
+    if ((i == 0) | !IsCSS1Selector(buf)) {
+        ReportBadArgument(option);
+    }
+
+    *location.string = wstrdup(buf);
+    NextProperty();
+}
+
+
 /* a space or comma separated list of tag names */
 void ParseTagNames(Location location, char *option)
 {
@@ -1296,6 +1322,20 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
              else
                  vals = "" /* "whole word only" */;
          }
+
+        else if ( configItem->parser == ParseCSS1Selector )
+        {
+            type = "Name";
+            if (showCurrent)
+            {
+                 vals = *(configItem->location.string);
+                 if (!vals)
+                     vals = "";
+            }
+             else
+                 vals = "CSS1 selector";
+         }
+
 
         else if ( configItem->parser == ParseTagNames )
         {

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: krusch $ 
-    $Date: 2002/01/27 19:04:57 $ 
-    $Revision: 1.63 $ 
+    $Date: 2002/02/26 21:45:46 $ 
+    $Revision: 1.64 $ 
 
 */
 
@@ -983,6 +983,8 @@ CheckAttribs CheckMETA;
 
 /* used to control printing of null attributes */
 Bool IsBoolAttribute(AttVal *attval);
+
+Bool IsCSS1Selector(char *);
 
 extern Dict *tag_html;
 extern Dict *tag_head;

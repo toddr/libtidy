@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2002/02/02 23:11:00 $ 
-    $Revision: 1.43 $ 
+    $Author: krusch $ 
+    $Date: 2002/02/26 21:45:46 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -434,6 +434,44 @@ Bool IsAnchorElement(Node *node)
 
     return no;
 }
+
+/*
+  In CSS1, selectors can contain only the characters A-Z, 0-9, and Unicode characters 161-255, plus dash (-);
+  they cannot start with a dash or a digit; they can also contain escaped characters and any Unicode character
+  as a numeric code (see next item).
+
+  The backslash followed by at most four hexadecimal digits (0..9A..F) stands for the Unicode character with that number.
+
+  Any character except a hexadecimal digit can be escaped to remove its special meaning, by putting a backslash in front.
+
+  #508936 - CSS class naming for -clean option
+
+*/
+Bool IsCSS1Selector(char *buf) {
+    int pos1 = 1;
+    int valid = 1;
+    int escape = 0;
+    unsigned char c;
+
+    while(valid && (c = *buf++)) {
+        if (c == '\\')
+        {
+            escape = 1;
+        }
+        else {
+            escape = 0;
+            valid = (
+                (!pos1 && (isdigit(c) | c == '-')) |
+                (int)strchr("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", c) |
+                c >= 161
+                );
+        }
+        pos1 = 0;
+    }
+    return (Bool)(valid && !escape);
+}
+
+
 
 /* anchor/node hash */
 
