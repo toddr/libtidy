@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:51:03 $ 
-    $Revision: 1.59 $ 
+    $Date: 2003/03/19 01:27:09 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -237,7 +237,8 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
     if ( element->tag->model & CM_BLOCK && element->attributes != NULL )
         return no;
 
-    if ( nodeIsA(element) && element->attributes != NULL )
+    if ( element->attributes != NULL &&
+         (nodeIsA(element) || nodeIsSPAN(element)) )
         return no;
 
     if ( nodeIsP(element) && !cfgBool(doc, TidyDropEmptyParas) )
