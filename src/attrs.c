@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/02 04:19:02 $ 
-    $Revision: 1.74 $ 
+    $Author: krusch $ 
+    $Date: 2003/05/02 11:47:22 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -1329,7 +1329,6 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
             MemFree(attval->value);
             given = attval->value = s;
             valid = yes;
-            /* TODO: Emit warning */
         }
     }
     
