@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/08 14:03:28 $ 
-    $Revision: 1.53 $ 
+    $Date: 2005/03/22 17:11:47 $ 
+    $Revision: 1.54 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -270,17 +270,13 @@ TidyOption    tidyGetNextOption( TidyDoc tdoc, TidyIterator* pos )
 }
 
 
-TidyOption    tidyGetOption( TidyDoc tdoc, TidyOptionId optId )
+TidyOption    tidyGetOption( TidyDoc ARG_UNUSED(tdoc), TidyOptionId optId )
 {
-#pragma unused(tdoc)
-
     const TidyOptionImpl* option = getOption( optId );
     return tidyImplToOption( option );
 }
-TidyOption    tidyGetOptionByName( TidyDoc doc, ctmbstr optnam )
+TidyOption    tidyGetOptionByName( TidyDoc ARG_UNUSED(doc), ctmbstr optnam )
 {
-#pragma unused(doc)
-
     const TidyOptionImpl* option = lookupOption( optnam );
     return tidyImplToOption( option );
 }
@@ -680,24 +676,18 @@ int         tidyStatus( TidyDoc tdoc )
         tidyStat = tidyDocStatus( impl );
     return tidyStat;
 }
-int         tidyDetectedHtmlVersion( TidyDoc tdoc )
+int         tidyDetectedHtmlVersion( TidyDoc ARG_UNUSED(tdoc) )
 {
-#pragma unused(tdoc)
-
 /*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return 0;
 }
-Bool        tidyDetectedXhtml( TidyDoc tdoc )
+Bool        tidyDetectedXhtml( TidyDoc ARG_UNUSED(tdoc) )
 {
-#pragma unused(tdoc)
-
 /*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return no;
 }
-Bool        tidyDetectedGenericXml( TidyDoc tdoc )
+Bool        tidyDetectedGenericXml( TidyDoc ARG_UNUSED(tdoc) )
 {
-#pragma unused(tdoc)
-
 /*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return no;
 }
@@ -1483,10 +1473,8 @@ Bool  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf )
 }
 
 
-Bool tidyNodeIsProp( TidyDoc tdoc, TidyNode tnod )
+Bool tidyNodeIsProp( TidyDoc ARG_UNUSED(tdoc), TidyNode tnod )
 {
-#pragma unused(tdoc)
-
   Node* nimp = tidyNodeToImpl( tnod );
   Bool isProprietary = yes;
   if ( nimp )

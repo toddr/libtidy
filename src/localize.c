@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 17:25:00 $ 
-    $Revision: 1.128 $ 
+    $Date: 2005/03/22 17:11:38 $ 
+    $Revision: 1.129 $ 
 
 */
 
@@ -633,10 +633,9 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
         messageLexer( doc, TidyWarning, fmt, action, buf );
 }
 
-void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
+void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity,
+                        int ARG_UNUSED(c) )
 {
-#pragma unused(c)
-
     ctmbstr entityname = ( entity ? entity : "NULL" );
     ctmbstr fmt = GetFormatFromCode(code);
 

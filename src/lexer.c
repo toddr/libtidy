@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 12:46:50 $ 
-    $Revision: 1.167 $ 
+    $Date: 2005/03/22 17:11:38 $ 
+    $Revision: 1.168 $ 
 
 */
 
@@ -1422,10 +1422,8 @@ uint ApparentVersion( TidyDocImpl* doc )
         return HTMLVersion(doc);
 }
 
-ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
+ctmbstr HTMLVersionNameFromCode( uint vers, Bool ARG_UNUSED(isXhtml) )
 {
-#pragma unused(isXhtml)
-
     ctmbstr name = GetNameFromVers(vers);
 
     /* this test has moved to ReportMarkupVersion() in localize.c, for localization reasons */

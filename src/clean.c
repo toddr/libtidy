@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/21 14:12:28 $ 
-    $Revision: 1.92 $ 
+    $Date: 2005/03/22 17:11:37 $ 
+    $Revision: 1.93 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -967,10 +967,8 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
     Action: coerce <dir> <li> to <div> with indent.
 */
 
-static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
+static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode))
 {
-#pragma unused(pnode)
-
     Node *child;
 
     if ( nodeIsDIR(node) || nodeIsUL(node) || nodeIsOL(node) )
@@ -1104,10 +1102,8 @@ static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
 */
 static Bool MergeNestedElements( TidyDocImpl* doc,
                                  TidyTagId Id, TidyTriState state, Node *node,
-                                 Node **pnode)
+                                 Node **ARG_UNUSED(pnode))
 {
-#pragma unused(pnode)
-
     Node *child;
 
     if ( state == TidyNoState
@@ -1250,10 +1246,8 @@ static Bool CanApplyBlockStyle( Node *node )
   However, to avoid CSS problems with Navigator 4, this isn't done
   for the elements: caption, tr and table
 */
-static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
+static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
 {
-#pragma unused(pnode)
-
     Node *child;
 
     if (CanApplyBlockStyle(node))
@@ -1299,10 +1293,8 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 }
 
 /* the only child of table cell or an inline element such as em */
-static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **pnode )
+static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
 {
-#pragma unused(pnode)
-
     Node *child;
 
     if ( !nodeIsFONT(node) && nodeHasCM(node, CM_INLINE|CM_ROW) )
@@ -1625,10 +1617,8 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
 }
 
 
-Node* FindEnclosingCell( TidyDocImpl* doc, Node *node)
+Node* FindEnclosingCell( TidyDocImpl* ARG_UNUSED(doc), Node *node)
 {
-#pragma unused(doc)
-
     Node *check;
 
     for ( check=node; check; check = check->parent )
@@ -1712,10 +1702,8 @@ void DropSections( TidyDocImpl* doc, Node* node )
     }
 }
 
-static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
+static void PurgeWord2000Attributes( TidyDocImpl* ARG_UNUSED(doc), Node* node )
 {
-#pragma unused(doc)
-
     AttVal *attr, *next, *prev = NULL;
 
     for ( attr = node->attributes; attr; attr = next )
@@ -2284,10 +2272,8 @@ void DropComments(TidyDocImpl* doc, Node* node)
     }
 }
 
-void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode)
+void DropFontElements(TidyDocImpl* doc, Node* node, Node **ARG_UNUSED(pnode))
 {
-#pragma unused(pnode)
-
     Node* next;
 
     while (node)

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 17:48:05 $ 
-    $Revision: 1.102 $ 
+    $Date: 2005/03/22 17:11:46 $ 
+    $Revision: 1.103 $ 
 
 */
 
@@ -987,8 +987,6 @@ static void PPrintText( TidyDocImpl* doc, uint mode, uint indent,
 #if 0
 static void PPrintString( TidyDocImpl* doc, uint indent, ctmbstr str )
 {
-#pragma unused(indent)
-
     while ( *str != '\0' )
         AddChar( &doc->pprint, *str++ );
 }
@@ -1101,10 +1099,8 @@ static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
     AddChar( pprint, delim );
 }
 
-static uint AttrIndent( TidyDocImpl* doc, Node* node, AttVal* attr )
+static uint AttrIndent( TidyDocImpl* doc, Node* node, AttVal* ARG_UNUSED(attr) )
 {
-#pragma unused(attr)
-
   uint spaces = cfg( doc, TidyIndentSpaces );
   uint xtra = 2;  /* 1 for the '<', another for the ' ' */
   if ( node->element == NULL )
@@ -1378,7 +1374,8 @@ static void PPrintTag( TidyDocImpl* doc,
     }
 }
 
-static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
+static void PPrintEndTag( TidyDocImpl* doc, uint ARG_UNUSED(mode),
+                          uint ARG_UNUSED(indent), Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
     Bool uc = cfgBool( doc, TidyUpperCaseTags );
@@ -1394,9 +1391,6 @@ static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 #if 0
     if ( !(mode & NOWRAP) )
         SetWrap( doc, indent );
-#else
-#pragma unused(mode)
-#pragma unused(indent)
 #endif
 
     AddString( pprint, "</" );

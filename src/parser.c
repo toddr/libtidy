@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/21 12:30:46 $ 
-    $Revision: 1.144 $ 
+    $Date: 2005/03/22 17:11:39 $ 
+    $Revision: 1.145 $ 
 
 */
 
@@ -576,10 +576,8 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
     return no;
 }
 
-static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
+static Bool CleanLeadingWhitespace(TidyDocImpl* ARG_UNUSED(doc), Node* node)
 {
-#pragma unused(doc)
-
     if (!nodeIsText(node))
         return no;
 
@@ -1943,10 +1941,8 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
     ReportError(doc, list, node, MISSING_ENDTAG_FOR);
 }
 
-void ParseList(TidyDocImpl* doc, Node *list, uint mode)
+void ParseList(TidyDocImpl* doc, Node *list, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
 
@@ -2046,10 +2042,9 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
  the table in accordance with Netscape and IE. This code
  assumes that node hasn't been inserted into the row.
 */
-static void MoveBeforeTable( TidyDocImpl* doc, Node *row, Node *node )
+static void MoveBeforeTable( TidyDocImpl* ARG_UNUSED(doc), Node *row,
+                             Node *node )
 {
-#pragma unused(doc)
-
     Node *table;
 
     /* first find the table element */
@@ -2082,10 +2077,8 @@ static void FixEmptyRow(TidyDocImpl* doc, Node *row)
     }
 }
 
-void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
+void ParseRow(TidyDocImpl* doc, Node *row, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node;
     Bool exclude_state;
@@ -2231,10 +2224,8 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
 
 }
 
-void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
+void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
 
@@ -2379,10 +2370,8 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
 
 }
 
-void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
+void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Node *node, *parent;
 
     if (colgroup->tag->model & CM_EMPTY)
@@ -2460,10 +2449,8 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
     }
 }
 
-void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
+void ParseTableTag(TidyDocImpl* doc, Node *table, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
     uint istackbase;
@@ -2585,10 +2572,8 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
 }
 
 /* acceptable content for pre elements */
-Bool PreContent( TidyDocImpl* doc, Node* node )
+Bool PreContent( TidyDocImpl* ARG_UNUSED(doc), Node* node )
 {
-#pragma unused(doc)
-
     /* p is coerced to br's, Text OK too */
     if ( nodeIsP(node) || nodeIsText(node) )
         return yes;
@@ -2601,10 +2586,8 @@ Bool PreContent( TidyDocImpl* doc, Node* node )
     return yes;
 }
 
-void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
+void ParsePre( TidyDocImpl* doc, Node *pre, uint ARG_UNUSED(mode) )
 {
-#pragma unused(mode)
-
     Node *node;
 
     if (pre->tag->model & CM_EMPTY)
@@ -2756,10 +2739,8 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
     ReportError(doc, pre, node, MISSING_ENDTAG_FOR);
 }
 
-void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
+void ParseOptGroup(TidyDocImpl* doc, Node *field, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node;
 
@@ -2797,10 +2778,8 @@ void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
 }
 
 
-void ParseSelect(TidyDocImpl* doc, Node *field, uint mode)
+void ParseSelect(TidyDocImpl* doc, Node *field, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node;
 
@@ -2907,10 +2886,8 @@ void ParseText(TidyDocImpl* doc, Node *field, uint mode)
 }
 
 
-void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
+void ParseTitle(TidyDocImpl* doc, Node *title, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Node *node;
     while ((node = GetToken(doc, MixedContent)) != NULL)
     {
@@ -2974,10 +2951,8 @@ void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
   < + letter,  < + !, < + ?  or  < + / + letter
 */
 
-void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
+void ParseScript(TidyDocImpl* doc, Node *script, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Node *node;
     
     doc->lexer->parent = script;
@@ -3032,10 +3007,8 @@ Bool IsJavaScript(Node *node)
     return result;
 }
 
-void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
+void ParseHead(TidyDocImpl* doc, Node *head, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node;
     int HasTitle = 0;
@@ -3566,10 +3539,8 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
     ReportError(doc, noframes, node, MISSING_ENDTAG_FOR);
 }
 
-void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
+void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint ARG_UNUSED(mode))
 {
-#pragma unused(mode)
-
     Lexer* lexer = doc->lexer;
     Node *node;
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 16:35:05 $ 
-    $Revision: 1.108 $ 
+    $Date: 2005/03/22 17:11:36 $ 
+    $Revision: 1.109 $ 
 
 */
 
@@ -472,7 +472,8 @@ static Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
 }
 #endif
 
-static const Attribute* lookup(TidyAttribImpl* attribs, ctmbstr atnam)
+static const Attribute* lookup(TidyAttribImpl* ARG_UNUSED(attribs),
+                               ctmbstr atnam)
 {
     const Attribute *np;
 
@@ -488,8 +489,6 @@ static const Attribute* lookup(TidyAttribImpl* attribs, ctmbstr atnam)
         if (tmbstrcmp(atnam, np->name) == 0)
             return install(attribs, np);
 #else
-#pragma unused(attribs)
-
     for (np = attribute_defs; np && np->name; ++np)
         if (tmbstrcmp(atnam, np->name) == 0)
             return np;
@@ -590,10 +589,8 @@ Bool IsScript( TidyDocImpl* doc, ctmbstr attrname )
 }
 
 /* may id or name serve as anchor? */
-Bool IsAnchorElement( TidyDocImpl* doc, Node *node)
+Bool IsAnchorElement( TidyDocImpl* ARG_UNUSED(doc), Node* node)
 {
-#pragma unused(doc)
-
     TidyTagId tid = TagId( node );
     if ( tid == TidyTag_A      ||
          tid == TidyTag_APPLET ||
@@ -1099,11 +1096,9 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
     }
 }
 
-void CheckScript( TidyDocImpl* doc, Node *node, AttVal *attval)
+void CheckScript( TidyDocImpl* ARG_UNUSED(doc), Node* ARG_UNUSED(node),
+                  AttVal* ARG_UNUSED(attval))
 {
-#pragma unused(doc)
-#pragma unused(node)
-#pragma unused(attval)
 }
 
 Bool IsValidHTMLID(ctmbstr id)
