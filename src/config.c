@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.8 $ 
+    $Date: 2001/07/14 15:58:30 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -104,6 +104,7 @@ Bool Emacs = no;            /* if true format error output for GNU Emacs */
 Bool LiteralAttribs = no;   /* if true attributes may use newlines */
 Bool BodyOnly = no;         /* #434940 - output BODY content only */
 Bool FixUri = yes;          /* applies URI encoding if necessary */
+Bool LowerLiterals = yes;   /* folds known attribute values to lower case */
 
 typedef struct _lex PLex;
 
@@ -199,6 +200,7 @@ static struct Flag
     {"fix-backslash",   {(int *)&FixBackslash},     ParseBool},
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
     {"fix-uri",         {(int *)&FixUri},           ParseBool},
+    {"lower-literals",  {(int *)&LowerLiterals},    ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}
