@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/18 22:51:31 $ 
-    $Revision: 1.34 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/19 07:08:37 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -2236,7 +2236,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     char *name;
                     Node *asp, *php;
                     AttVal *av = NewAttribute();
-                    uint pdelim;
+                    int pdelim;
                     isempty = no;
 
                     UngetChar(c, lexer->in);
