@@ -1,0 +1,18 @@
+<html>
+<head>
+  <title>[#427826] Script source needs escaping/CDATA section</title>
+  <script language='JavaScript'>
+  function loop_de_loop()
+  {
+    for ( ix=0; ix < 5; ++ix )
+    {
+      alert( "Bob's yer uncle " + ix );
+    }
+  }
+  </script>
+</head>
+<body>
+<p>If converted to XML/XHTML, the &lt; in the javascript 
+source above causes problems for XML tools.</p>
+</body>
+</html>
