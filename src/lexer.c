@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/06/09 21:56:41 $ 
-    $Revision: 1.6 $ 
+    $Date: 2001/06/10 05:00:03 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -53,7 +53,7 @@ uint lexmap[128];
 #define voyager_strict   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 #define voyager_frameset "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
 
-#define W3C_VERSIONS 8
+#define W3C_VERSIONS 9
 
 struct _vers
 {
@@ -70,6 +70,7 @@ struct _vers
     {"HTML 4.0 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
     {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMES},
     {"HTML 3.2", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
+    {"HTML 3.2 Final", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
     {"HTML 2.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML20}
 };
 
