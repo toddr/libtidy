@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:26:54 $ 
-    $Revision: 1.40 $ 
+    $Date: 2001/09/04 08:37:34 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -39,11 +39,6 @@ void tidy_out(FILE *fp, const char* msg, ...)
     va_start(args, msg);
     vfprintf(fp, msg, args);
     va_end(args);
-}
-
-void ReadingFromStdin(void)
-{
-    fprintf(stderr, "Reading markup from standard input ...\n");
 }
 
 void ShowVersion(FILE *fp)
