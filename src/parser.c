@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/16 16:43:34 $ 
-    $Revision: 1.137 $ 
+    $Date: 2005/03/04 12:07:35 $ 
+    $Revision: 1.138 $ 
 
 */
 
@@ -139,7 +139,10 @@ Node *DiscardElement( TidyDocImpl* doc, Node *element )
     return next;
 }
 
-/* insert node into markup tree */
+/*
+ insert "node" into markup tree as the firt element
+ of content of "element"
+*/
 void InsertNodeAtStart(Node *element, Node *node)
 {
     node->parent = element;
@@ -148,13 +151,16 @@ void InsertNodeAtStart(Node *element, Node *node)
         element->last = node;
     else
         element->content->prev = node;
-    
+
     node->next = element->content;
     node->prev = NULL;
     element->content = node;
 }
 
-/* insert node into markup tree */
+/*
+ insert "node" into markup tree as the last element
+ of content of "element"
+*/
 void InsertNodeAtEnd(Node *element, Node *node)
 {
     node->parent = element;
@@ -169,7 +175,7 @@ void InsertNodeAtEnd(Node *element, Node *node)
 }
 
 /*
- insert node into markup tree in place of element
+ insert "node" into markup tree in place of "element"
  which is moved to become the child of the node
 */
 static void InsertNodeAsParent(Node *element, Node *node)
@@ -178,7 +184,7 @@ static void InsertNodeAsParent(Node *element, Node *node)
     node->last = element;
     node->parent = element->parent;
     element->parent = node;
-    
+
     if (node->parent->content == element)
         node->parent->content = node;
 
@@ -198,7 +204,7 @@ static void InsertNodeAsParent(Node *element, Node *node)
         node->next->prev = node;
 }
 
-/* insert node into markup tree before element */
+/* insert "node" into markup tree before "element" */
 void InsertNodeBeforeElement(Node *element, Node *node)
 {
     Node *parent;
@@ -216,7 +222,7 @@ void InsertNodeBeforeElement(Node *element, Node *node)
         parent->content = node;
 }
 
-/* insert node into markup tree after element */
+/* insert "node" into markup tree after "element" */
 void InsertNodeAfterElement(Node *element, Node *node)
 {
     Node *parent;
