@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/07/18 16:09:19 $ 
-    $Revision: 1.47 $ 
+    $Date: 2002/07/18 18:21:27 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -2076,7 +2076,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
 
         PPrintTag(lexer, fout, mode, indent, node);
 
-        if (!mixed)
+        if ( !mixed && node->content )
             PFlushLine(fout, indent);
  
         for (content = node->content;
@@ -2084,7 +2084,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
                 content = content->next)
             PPrintXMLTree(fout, mode, cindent, lexer, content);
 
-        if (!mixed)
+        if ( !mixed && node->content )
             PCondFlushLine(fout, cindent);
 
         PPrintEndTag(fout, mode, indent, node);
