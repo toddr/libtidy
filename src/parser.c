@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/21 16:32:04 $ 
-    $Revision: 1.94 $ 
+    $Date: 2003/05/22 01:22:42 $ 
+    $Revision: 1.95 $ 
 
 */
 
@@ -986,25 +986,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         /* mixed content model permits text */
         if (node->type == TextNode)
         {
-            Bool iswhitenode = ( node->type == TextNode &&
-                                 node->end <= node->start + 1 &&
-                                 lexer->lexbuf[node->start] == ' ' );
-
-            /* <form>, <blockquote> and <noscript> don't allow #PCDATA 
-               in HTML 4.01 Strict, %block; model instead of %flow; 
-               depending on --enclose-block-text text is wrapped in <p> */
-            if ( cfgBool(doc, TidyEncloseBlockText) && !iswhitenode &&
-                (nodeIsFORM(element) ||
-                 nodeIsBLOCKQUOTE(element) ||
-                 nodeIsNOSCRIPT(element)))
-            {
-                UngetToken( doc );
-                node = InferredTag( doc, "p" );
-                InsertNodeAtEnd( element, node );
-                ParseTag( doc, node, MixedContent );
-                continue;
-            }
-
             if ( checkstack )
             {
                 checkstack = no;
@@ -1268,22 +1249,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         {
             if (node->tag->model & CM_INLINE)
             {
-                /* DSR - 27Apr02 ensure we wrap anchors and other inline content */
-                /* infer <p> only for <form>, <blockquote> and <noscript> parents */
-                if ( cfgBool(doc, TidyEncloseBlockText) &&
-                    (nodeIsFORM(element) ||
-                     nodeIsBLOCKQUOTE(element) ||
-                     nodeIsNOSCRIPT(element)
-                    ))
-                {
-                    /* fix for bug 722753 */
-                    /* UngetToken( doc ); */
-                    node = InferredTag( doc, "p" );
-                    InsertNodeAtEnd( element, node );
-                    ParseTag( doc, node, MixedContent );
-                    continue;
-                }
-
                 if (checkstack && !node->implicit)
                 {
                     checkstack = no;
@@ -1772,7 +1737,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         if (!(node->tag->model & CM_INLINE) &&
             !(element->tag->model & CM_MIXED))
         {
-            if (node->type != StartTag)
+            if (node->type != StartTag && node->type != StartEndTag)
             {
                 ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
@@ -3353,23 +3318,8 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 continue;
             }
 
-            if ( cfgBool(doc, TidyEncloseBodyText) && !iswhitenode )
-            {
-                Node *para;
-                
-                UngetToken( doc );
-                para = InferredTag(doc, "p");
-                InsertNodeAtEnd(body, para);
-                ParseTag(doc, para, mode);
-
-                /* fix for bug 505745 */
-                TrimSpaces(doc, para);
-                mode = MixedContent;
-                continue;
-            }
-            else /* HTML 2 and HTML4 strict don't allow text here */
-                ConstrainVersion(doc, ~(VERS_HTML40_STRICT | VERS_HTML20));
-
+            /* HTML 2 and HTML4 strict don't allow text here */
+            ConstrainVersion(doc, ~(VERS_HTML40_STRICT | VERS_HTML20));
 
             if (checkstack)
             {
@@ -3914,6 +3864,77 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
     ParseTag(doc, node, mode);
 }
 
+void EncloseBodyText(TidyDocImpl* doc)
+{
+    Node* node;
+    Node* body = FindBody(doc);
+
+    if (!body)
+        return;
+
+    node = body->content;
+
+    while (node)
+    {
+        if ((node->type == TextNode && !IsBlank(doc->lexer, node)) ||
+            (nodeIsElement(node) && nodeHasCM(node, CM_INLINE)))
+        {
+            Node* p = InferredTag(doc, "p");
+            InsertNodeBeforeElement(node, p);
+            while (node && (!nodeIsElement(node) || nodeHasCM(node, CM_INLINE)))
+            {
+                Node* next = node->next;
+                RemoveNode(node);
+                InsertNodeAtEnd(p, node);
+                node = next;
+            }
+            TrimSpaces(doc, p);
+            continue;
+        }
+        node = node->next;
+    }
+}
+
+void EncloseBlockText(TidyDocImpl* doc, Node* node)
+{
+    Node *next;
+    Node *block;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->content)
+            EncloseBlockText(doc, node->content);
+
+        if (!(nodeIsFORM(node) || nodeIsNOSCRIPT(node) || nodeIsBLOCKQUOTE(node)) || !node->content)
+        {
+            node = next;
+            continue;
+        }
+
+        block = node->content;
+
+        if ((block->type == TextNode && !IsBlank(doc->lexer, block)) ||
+            (nodeIsElement(block) && nodeHasCM(block, CM_INLINE)))
+        {
+            Node* p = InferredTag(doc, "p");
+            InsertNodeBeforeElement(block, p);
+            while (block && (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
+            {
+                Node* next = block->next;
+                RemoveNode(block);
+                InsertNodeAtEnd(p, block);
+                block = next;
+            }
+            TrimSpaces(doc, p);
+            continue;
+        }
+
+        node = next;
+    }
+}
+
 /*
   HTML is the top level element
 */
@@ -4005,6 +4026,11 @@ void ParseDocument(TidyDocImpl* doc)
 
     DropEmptyElements(doc, &doc->root);
     CleanSpaces(doc, &doc->root);
+
+    if (cfgBool(doc, TidyEncloseBodyText))
+        EncloseBodyText(doc);
+    if (cfgBool(doc, TidyEncloseBlockText))
+        EncloseBlockText(doc, &doc->root);
 }
 
 Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element)
