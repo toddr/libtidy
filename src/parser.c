@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 10:50:52 $ 
-    $Revision: 1.20 $ 
+    $Date: 2001/07/16 11:17:29 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -2903,8 +2903,8 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
         */
         lexer->excludeBlocks = no;
         
-        if (!(node->tag->model & CM_BLOCK) &&
-            !(node->tag->model & CM_INLINE))
+        if ((!(node->tag->model & CM_BLOCK) &&
+            !(node->tag->model & CM_INLINE)) || node->tag == tag_input)
         {
             /* avoid this error message being issued twice */
             if (!(node->tag->model & CM_HEAD))
@@ -2947,6 +2947,12 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
             {
                 UngetToken(lexer);
                 node = InferredTag(lexer, "table");
+                lexer->excludeBlocks = yes;
+            }
+            else if (node->tag == tag_input)
+            {
+                UngetToken(lexer);
+                node = InferredTag(lexer, "form");
                 lexer->excludeBlocks = yes;
             }
             else

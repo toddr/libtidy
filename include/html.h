@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 04:24:11 $ 
-    $Revision: 1.23 $ 
+    $Date: 2001/07/16 11:17:29 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -917,3 +917,4 @@ extern Dict *tag_applet;
 extern Dict *tag_object;
 extern Dict *tag_div;
 extern Dict *tag_span;
+extern Dict *tag_input;
