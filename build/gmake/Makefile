@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2004/12/06 11:06:20 $ 
-#     $Revision: 1.6 $ 
+#     $Date: 2005/03/04 18:00:42 $ 
+#     $Revision: 1.7 $ 
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -79,7 +79,9 @@ BINDIR = ${TOPDIR}/bin
 CC= gcc
 CFLAGS= -Wall -Wno-switch -Wno-parentheses -Wno-unused -I $(INCDIR)
 
-# OTHERCFLAGS= -DSUPPORT_ACCESSIBILITY_CHECKS=1 -DSUPPORT_UTF16_ENCODINGS=1 -DSUPPORT_ASIAN_ENCODINGS=1
+OTHERCFLAGS=
+OTHERCFLAGS+= -D_DEBUG=1 -DHAS_VSNPRINTF=1
+# OTHERCFLAGS+= -DSUPPORT_ACCESSIBILITY_CHECKS=1 -DSUPPORT_UTF16_ENCODINGS=1 -DSUPPORT_ASIAN_ENCODINGS=1
 ifdef SUPPORT_UTF16_ENCODINGS
 CFLAGS += -DSUPPORT_UTF16_ENCODINGS=$(SUPPORT_UTF16_ENCODINGS)
 endif
