@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/12/09 01:10:26 $ 
-    $Revision: 1.14 $ 
+    $Date: 2004/12/09 01:13:02 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -2571,7 +2571,7 @@ static void CheckTextArea( TidyDocImpl* doc, Node* node )
 
             if (flag == 0)
             {
-                if ( nodeIsLABEL(node->next->next) )
+                if ( node->next != NULL && nodeIsLABEL(node->next->next) )
                 {
                     temp = node->next->next;
                     
