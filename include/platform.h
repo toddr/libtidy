@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/06/16 21:52:46 $ 
-    $Revision: 1.27 $ 
+    $Date: 2002/06/23 18:18:36 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -307,7 +307,7 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__) || defined(LINUX_OS)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
