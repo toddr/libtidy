@@ -3,10 +3,11 @@
   (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: charsets.c,v 1.1 2003/04/28 04:45:02 hoehrmann Exp $
+  $Id: charsets.c,v 1.2 2003/04/30 04:21:09 hoehrmann Exp $
 */
 
 #include <tidy.h>
+#include "tmbstr.h"
 
 /* todo: documentation of table and data       */
 /* todo: integration of data and routines      */
@@ -958,7 +959,7 @@ uint GetEncodingIdFromName(ctmbstr name)
     uint i;
 
     for (i = 0; charsetInfo[i].id; ++i)
-        if (stricmp(name, charsetInfo[i].charset) == 0)
+        if (tmbstrcasecmp(name, charsetInfo[i].charset) == 0)
             return charsetInfo[i].id;
 
     return 0;
@@ -980,7 +981,7 @@ uint GetEncodingCodePageFromName(ctmbstr name)
     uint i;
 
     for (i = 0; charsetInfo[i].id; ++i)
-        if (stricmp(name, charsetInfo[i].charset) == 0)
+        if (tmbstrcasecmp(name, charsetInfo[i].charset) == 0)
             return charsetInfo[i].codepage;
 
     return 0;
