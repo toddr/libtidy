@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/01 04:09:52 $ 
-    $Revision: 1.54 $ 
+    $Date: 2001/09/04 02:44:53 $ 
+    $Revision: 1.55 $ 
 
 */
 
@@ -603,7 +603,6 @@ int HTMLVersion(Lexer *lexer);
 
 /* localize.c -- used for all message text */
 void ShowVersion(FILE *fp);
-void ReadingFromStdin(void);
 void ReportUnknownOption(char *option);
 void ReportBadArgument(char *option);
 void NeedsAuthorIntervention(FILE *errout);
