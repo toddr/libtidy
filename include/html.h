@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/04 08:15:42 $ 
-    $Revision: 1.59 $ 
+    $Author: creitzel $ 
+    $Date: 2001/10/26 13:54:45 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -663,9 +663,9 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
 extern int ReplacementCharEncoding;
 
 /* Function for conversion from Windows-1252 to Unicode */
-int DecodeWin1252(int c);
+uint DecodeWin1252(uint c);
 /* Function to convert from MacRoman to Unicode */
-int DecodeMacRoman(int c);
+uint DecodeMacRoman(uint c);
 
 /* defined in platform.h - TRT */
 /*
@@ -886,6 +886,7 @@ extern Bool HideEndTags;
 extern Bool XmlTags;
 extern Bool XmlOut;
 extern Bool xHTML;
+extern Bool HtmlOut;    /* Yes means set explicitly. */
 extern Bool XmlPi;      /* add <?xml?> */
 extern Bool XmlPIs;     /* assume PIs end with ?> as per XML */
 extern Bool XmlSpace;
