@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/19 19:15:59 $ 
-    $Revision: 1.37 $ 
+    $Date: 2001/08/29 07:44:58 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -279,7 +279,7 @@ static struct _attrlist
     {null,               0,                      0}
 };
 
-/* may be used for an upcoming CheckColor() function */
+/* used by CheckColor() */
 static struct _colors
 {
     char *name;
@@ -361,7 +361,7 @@ AttVal *GetAttrByName(Node *node, char *name)
 {
     AttVal *attr;
 
-    for (attr = node->attributes; attr; attr = attr->next)
+    for (attr = node->attributes; attr != null; attr = attr->next)
     {
         if (wstrcmp(attr->attribute, name) == 0)
             break;
@@ -452,7 +452,7 @@ void RemoveAnchorByNode(Node *node)
 {
     Anchor *delme = null, *found, *prev = null, *next;
 
-    for (found = anchor_list; found; found = found->next)
+    for (found = anchor_list; found != null; found = found->next)
     {
         next = found->next;
 
@@ -512,7 +512,7 @@ Node *GetNodeByAnchor(char *name)
 {
     Anchor *found;
     
-    for (found = anchor_list; found; found = found->next)
+    for (found = anchor_list; found != null; found = found->next)
     {
         if (wstrcasecmp(found->name, name) == 0)
             break;
@@ -621,13 +621,13 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
 {
     AttVal *attval;
 
-    for (attval = node->attributes; attval;)
+    for (attval = node->attributes; attval != null;)
     {
         if (attval->asp == null && attval->php == null)
         {
             AttVal *current;
             
-            for (current = attval->next; current;)
+            for (current = attval->next; current != null;)
             {
                 if (current->asp == null && current->php == null &&
                     wstrcasecmp(attval->attribute, current->attribute) == 0)
@@ -793,16 +793,18 @@ Bool IsBoolAttribute(AttVal *attval)
 
 void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char c, *dest, *p = attval->value;
+    char c, *dest, *p;
     uint escape_count = 0, backslash_count = 0;
     uint i, pos = 0;
     size_t len;
     
-    if (p == null)
+    if (attval == null || attval->value == null)
     {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
+
+    p = attval->value;
     
     for (i = 0; c = p[i]; ++i)
     {
@@ -859,12 +861,13 @@ void CheckName(Lexer *lexer, Node *node, AttVal *attval)
 {
     Node *old;
 
-    if (attval->value == null)
+    if (attval == null || attval->value == null)
     {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
-    else if (IsAnchorElement(node))
+
+    if (IsAnchorElement(node))
     {
         ConstrainVersion(lexer, ~VERS_XHTML11);
 
@@ -879,14 +882,16 @@ void CheckName(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *p = attval->value;
+    char *p;
     Node *old;
     
-    if (p == null)
+    if (attval == null || attval->value == null)
     {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
+
+    p = attval->value;
     
     if (!IsLetter(*p++))
     {
@@ -913,7 +918,7 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
 {
-    if (attval->value == null)
+    if (attval == null || attval->value == null)
         return;
 
     if (LowerLiterals)
@@ -931,48 +936,56 @@ void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    else if (! (wstrcasecmp(value, "left") == 0 ||
-                wstrcasecmp(value, "center") == 0 ||
-                wstrcasecmp(value, "right") == 0 ||
-                wstrcasecmp(value, "justify") == 0))
-          ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (wstrcasecmp(value,    "left") == 0 ||
+           wstrcasecmp(value,  "center") == 0 ||
+           wstrcasecmp(value,   "right") == 0 ||
+           wstrcasecmp(value, "justify") == 0))
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    else if (wstrcasecmp(value, "top") == 0 ||
-           wstrcasecmp(value, "middle") == 0 ||
-           wstrcasecmp(value, "bottom") == 0 ||
-          wstrcasecmp(value, "baseline") == 0)
+    if (wstrcasecmp(value,      "top") == 0 ||
+        wstrcasecmp(value,   "middle") == 0 ||
+        wstrcasecmp(value,   "bottom") == 0 ||
+        wstrcasecmp(value, "baseline") == 0)
     {
-        /* all is fine */
+            /* all is fine */
     }
-    else if (wstrcasecmp(value, "left") == 0 ||
-              wstrcasecmp(value, "right") == 0)
+    else if (wstrcasecmp(value,  "left") == 0 ||
+             wstrcasecmp(value, "right") == 0)
     {
         if (!(node->tag && (node->tag->model & CM_IMG)))
             ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     }
-    else if (wstrcasecmp(value, "texttop") == 0 ||
-           wstrcasecmp(value, "absmiddle") == 0 ||
-           wstrcasecmp(value, "absbottom") == 0 ||
-           wstrcasecmp(value, "textbottom") == 0)
+    else if (wstrcasecmp(value,    "texttop") == 0 ||
+             wstrcasecmp(value,  "absmiddle") == 0 ||
+             wstrcasecmp(value,  "absbottom") == 0 ||
+             wstrcasecmp(value, "textbottom") == 0)
     {
         ConstrainVersion(lexer, VERS_PROPRIETARY);
         ReportAttrError(lexer, node, attval, PROPRIETARY_ATTR_VALUE);
@@ -983,10 +996,15 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *p = attval->value;
+    char *p;
     
-    if (p == null)
+    if (attval == null || attval->value == null)
+    {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
+    p = attval->value;
     
     if (!IsDigit(*p++))
     {
@@ -1007,37 +1025,48 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *value = attval->value;
+    char *value;
     
-    if (value == null)
+    if (attval == null || attval->value == null)
+    {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
+        return;
+    }
+
     /*
       target names must begin with A-Za-z or be one of
       _blank, _self, _parent and _top
     */
     
+    value = attval->value;
+
     if (IsLetter(value[0]))
         return;
-    else if (! (wstrcasecmp(value, "_blank")  == 0 ||
-        wstrcasecmp(value, "_self")   == 0 ||
-        wstrcasecmp(value, "_parent") == 0 ||
-        wstrcasecmp(value, "_top")    == 0))
+    
+    if (! (wstrcasecmp(value,  "_blank") == 0 ||
+           wstrcasecmp(value,   "_self") == 0 ||
+           wstrcasecmp(value, "_parent") == 0 ||
+           wstrcasecmp(value,    "_top") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *value = attval->value;
+    char *value;
     
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
+    value = attval->value;
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value, "get") == 0 ||
-        wstrcasecmp(value, "post") == 0))
+    if (! (wstrcasecmp(value,  "get") == 0 ||
+           wstrcasecmp(value, "post") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1045,18 +1074,21 @@ void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
         
     value = attval->value;
     
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value, "none") == 0 ||
-        wstrcasecmp(value, "left")   == 0 ||
-        wstrcasecmp(value, "right") == 0 ||
-        wstrcasecmp(value, "all") == 0))
+    if (! (wstrcasecmp(value,  "none") == 0 ||
+           wstrcasecmp(value,  "left") == 0 ||
+           wstrcasecmp(value, "right") == 0 ||
+           wstrcasecmp(value,   "all") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1064,18 +1096,21 @@ void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
     
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
     
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value, "rect") == 0 ||
-        wstrcasecmp(value, "default") == 0 ||
-        wstrcasecmp(value,  "circle") == 0 ||
-        wstrcasecmp(value,    "poly") == 0))
+    if (! (wstrcasecmp(value,    "rect") == 0 ||
+           wstrcasecmp(value, "default") == 0 ||
+           wstrcasecmp(value,  "circle") == 0 ||
+           wstrcasecmp(value,    "poly") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1083,28 +1118,36 @@ void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
     
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
     
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value,   "row") == 0 ||
-        wstrcasecmp(value, "rowgroup") == 0 ||
-        wstrcasecmp(value,      "col") == 0 ||
-        wstrcasecmp(value, "colgroup") == 0))
+    if (! (wstrcasecmp(value,      "row") == 0 ||
+           wstrcasecmp(value, "rowgroup") == 0 ||
+           wstrcasecmp(value,      "col") == 0 ||
+           wstrcasecmp(value, "colgroup") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *p = attval->value;
+    char *p;
     
-    if (p == null)
+    if (attval == null || attval->value == null)
+    {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
 
+    p  = attval->value;
+    
     /* font size may be preceded by + or - */
     if (node->tag == tag_font && (*p == '+' || *p == '-'))
         ++p;
@@ -1127,10 +1170,18 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
     Bool HexUppercase = yes;
     Bool invalid = no;
     Bool found = no;
-    char *given = attval->value;
+    char *given;
     struct _colors *color;
     uint i = 0;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
+    given = attval->value;
+    
     for (color = colors; color->name; ++color)
     {
         if (given[0] == '#')
@@ -1214,17 +1265,20 @@ void CheckVType(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value, "data") == 0 ||
-        wstrcasecmp(value, "object") == 0 ||
-        wstrcasecmp(value, "ref")  == 0))
+    if (! (wstrcasecmp(value,   "data") == 0 ||
+           wstrcasecmp(value, "object") == 0 ||
+           wstrcasecmp(value,    "ref") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1233,17 +1287,20 @@ void CheckScroll(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
-    if (! (wstrcasecmp(value, "no") == 0 ||
-        wstrcasecmp(value, "auto") == 0 ||
-        wstrcasecmp(value, "yes") == 0))
+    if (! (wstrcasecmp(value,   "no") == 0 ||
+           wstrcasecmp(value, "auto") == 0 ||
+           wstrcasecmp(value,  "yes") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1252,14 +1309,17 @@ void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
 
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (LowerLiterals)
         attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
-    if (value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
-    
     if (! (wstrcasecmp(value, "rtl") == 0 ||
            wstrcasecmp(value, "ltr") == 0))
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
@@ -1268,11 +1328,14 @@ void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
 /* checks lang and xml:lang attributes */
 void CheckLang(Lexer *lexer, Node *node, AttVal *attval)
 {
+    if (attval == null || attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
     if (wstrcasecmp(attval->attribute, "lang") == 0)
         ConstrainVersion(lexer, ~VERS_XHTML11);
-
-    if (attval->value == null)
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
 }
 
 /* default method for checking an element's attributes */
@@ -1492,7 +1555,7 @@ void CheckSCRIPT(Lexer *lexer, Node *node)
             buf[10] = '\0';
 
             if ( (wstrncasecmp(buf, "javascript", 10) == 0) ||
-                 (wstrncasecmp(buf, "jscript", 7) == 0) )
+                 (wstrncasecmp(buf,    "jscript", 7) == 0) )
             {
                 AddAttribute(node, "type", "text/javascript");
             }
