@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/07 04:45:54 $ 
-    $Revision: 1.35 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/13 02:37:49 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -1164,16 +1164,6 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
                 found = yes;
                 break;
             }
-            else
-            {
-                /* we could search for more colors and mark the file as HTML
-                   Proprietary, but I don't thinks it's worth the effort,
-                   so values not in HTML 4.01 are invalid */
-
-                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
-                invalid = yes;
-                break;
-            }
         }
         else
         {
@@ -1182,8 +1172,12 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
             break;
         }
     }
+    
     if (!found && !invalid)
     {
+        if (given[0] == '#')
+        {
+            /* check if valid hex digits and letters */
         for (i = 1; i < 7; ++i)
         {
             if (!IsDigit(given[i]) &&
@@ -1194,12 +1188,23 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
                 break;
             }
         }
+            
+            /* convert hex letters to uppercase */
         if (!invalid && HexUppercase)
         {
             for (i = 1; i < 7; ++i)
             {
                 given[i] = ToUpper(given[i]);
             }
+        }
+    }
+        else
+        {
+            /* we could search for more colors and mark the file as HTML
+               Proprietary, but I don't thinks it's worth the effort,
+               so values not in HTML 4.01 are invalid */
+
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
         }
     }
 }
