@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 19:18:57 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/05 00:46:07 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -329,7 +329,6 @@ static struct nlist *install(char *name, uint code)
     return np;
 }
 
-
 /* entity starting with "&" returns zero on error */
 uint EntityCode(char *name)
 {
@@ -342,7 +341,7 @@ uint EntityCode(char *name)
         c = 0;  /* zero on missing/bad number */
 
         /* 'x' prefix denotes hexadecimal number format */
-        if (name[2] == 'x' || (!XmlTags && name[2] == 'X')) /* #427833 - fix by Bjšrn Hšhrmann 05 Jun 01 */
+        if (name[2] == 'x' || (!XmlTags && name[2] == 'X')) /* #427833 - fix by Bjoern Hoehrmann 05 Jun 01 */
             sscanf(name+3, "%x", &c);
         else
             sscanf(name+2, "%d", &c);
@@ -352,7 +351,15 @@ uint EntityCode(char *name)
 
    /* Named entity: name ="&" followed by a name */
     if ((np = lookup(name+1)))
+    {
+        /* if input is treated as XML (-xml) only accept general entities */
+        /* i.e. only amp, gt, lt, quot, apos */
+        if (XmlTags && !(np->code == 34 || np->code == 38 || np->code == 39 ||
+                         np->code == 60 || np->code == 62))
+            return 0;
+
         return np->code;
+    }
 
     return 0;   /* zero signifies unknown entity name */
 }
