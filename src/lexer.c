@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 11:06:10 $ 
-    $Revision: 1.116 $ 
+    $Date: 2003/05/14 08:24:56 $ 
+    $Revision: 1.117 $ 
 
 */
 
@@ -1433,6 +1433,7 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 
     if (VERS_XHTML & vers)
     {
+        SetOptionBool(doc, TidyXmlOut, yes);
         SetOptionBool(doc, TidyXhtmlOut, yes);
         doc->lexer->isvoyager = yes;
     }
