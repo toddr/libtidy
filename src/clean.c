@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/02 08:25:57 $ 
-    $Revision: 1.3 $ 
+    $Author: creitzel $ 
+    $Date: 2001/06/14 04:13:37 $ 
+    $Revision: 1.4 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1122,7 +1122,7 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
         if (list->tag != node->tag)
             return no;
 
-        *pnode = node->next;
+        *pnode = list;  /* Set node to resume iteration */
 
         /* move inner list node into position of outer node */
         list->prev = node->prev;
@@ -1131,10 +1131,12 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
         FixNodeLinks(list);
 
         /* get rid of outer ul and its li */
+        /* XXX: Are we leaking the child node? -creitzel 7 Jun, 01 */
         child->content = null;
         node->content = null;
         node->next = null;
         FreeNode(node);
+        node = null;
 
         /*
           If prev node was a list the chances are this node
@@ -1144,11 +1146,10 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
 
         if (list->prev)
         {
-            node = list;
-            list = node->prev;
-
-            if (list->tag == tag_ul || list->tag == tag_ol)
+            if (list->prev->tag == tag_ul || list->prev->tag == tag_ol)
             {
+                node = list;
+                list = node->prev;
                 list->next = node->next;
 
                 if (list->next)
@@ -1160,10 +1161,10 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
                 node->next = null;
                 node->prev = child->last;
                 FixNodeLinks(node);
+                CleanNode(lexer, node);
             }
         }
 
-        CleanNode(lexer, node);
         return yes;
     }
 
@@ -1365,13 +1366,18 @@ Node *CleanNode(Lexer *lexer, Node *node)
 {
     Node *next = null;
 
-    for (next = node; IsElement(node); node = next)
+    for (next = node; node && IsElement(node); node = next)
     {
         if (Dir2Div(lexer, node, &next))
             continue;
 
+        /* Special case: true result means
+        ** that arg node and its parent no longer exist.
+        ** So we must jump back up the CreateStyleProperties()
+        ** call stack until we have a valid node reference.
+        */
         if (NestedList(lexer, node, &next))
-            continue;
+            return next;
 
         if (Center2Div(lexer, node, &next))
             continue;
@@ -1394,15 +1400,25 @@ Node *CleanNode(Lexer *lexer, Node *node)
     return next;
 }
 
-static Node *CreateStyleProperties(Lexer *lexer, Node *node)
+/* Special case: if the current node is destroyed by
+** CleanNode() lower in the tree, this node and its 
+** parent no longer exist.  So we must jump back up 
+** the CreateStyleProperties() call stack until we 
+** have a valid node reference.
+*/
+
+static Node *CreateStyleProperties(Lexer *lexer, Node *node, Node** prepl)
 {
     Node *child;
 
     if (node->content)
     {
+        Node* repl = node;
         for (child = node->content; child != null; child = child->next)
         {
-            child = CreateStyleProperties(lexer, child);
+            child = CreateStyleProperties(lexer, child, &repl);
+            if ( repl != node ) 
+                return repl;
         }
     }
 
@@ -1427,7 +1443,8 @@ static void DefineStyleRules(Lexer *lexer, Node *node)
 
 void CleanTree(Lexer *lexer, Node *doc)
 {
-    doc = CreateStyleProperties(lexer, doc);
+    Node* repl = doc;
+    doc = CreateStyleProperties(lexer, doc, &repl);
 
     if (MakeClean)
     {
