@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/29 17:45:39 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/29 23:08:33 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -112,7 +112,7 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(sun) || defined(__ATARI__) || defined(BSD_BASED_OS) || defined(MAC_OS)
+#if defined(sun) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
