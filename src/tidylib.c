@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/02/25 21:15:45 $ 
-    $Revision: 1.3 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/03/02 04:31:13 $ 
+    $Revision: 1.4 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1065,10 +1065,12 @@ int         tidyDocRunDiagnostics( TidyDocImpl* doc )
     Bool force = cfgBool( doc, TidyForceOutput );
 
     HTMLVersionCompliance( doc );
-    ReportMarkupVersion( doc );
 
     if ( !quiet )
+    {
+        ReportMarkupVersion( doc );
         ReportNumWarnings( doc );
+    }
     
     if ( doc->errors > 0 && !force )
         NeedsAuthorIntervention( doc );
