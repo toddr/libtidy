@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/05/06 20:44:55 $ 
-    $Revision: 1.66 $ 
+    $Author: krusch $ 
+    $Date: 2002/05/06 22:51:16 $ 
+    $Revision: 1.67 $ 
 
 */
 
@@ -336,7 +336,8 @@ Bool IsXMLLetter(uint c)
         (c >= 0x3021 && c <= 0x3029));
 }
 
-IsXMLNamechar(uint c)
+/* #553058 Definition of IsXMLNameChar does not match Prototype (introduced by fix #516370) */
+Bool IsXMLNamechar(uint c)
 {
     return (IsXMLLetter(c) ||
         c == '.' || c == '_' ||
