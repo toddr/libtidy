@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/11 15:30:29 $ 
-    $Revision: 1.129 $ 
+    $Date: 2005/02/11 16:23:33 $ 
+    $Revision: 1.130 $ 
 
 */
 
@@ -2005,6 +2005,11 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             for ( parent = list->parent;
                   parent != NULL; parent = parent->parent )
             {
+               /* Do not match across BODY to avoid infinite loop
+                  between ParseBody and this parser,
+                  See http://tidy.sf.net/bug/1053626. */
+                if (nodeIsBODY(parent))
+                    break;
                 if (node->tag == parent->tag)
                 {
                     ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
