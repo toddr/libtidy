@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/02 08:34:28 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/07/09 07:09:29 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -160,6 +160,10 @@ void PopInline(Lexer *lexer, Node *node)
         }
 
         MemFree(istack->element);
+
+        /* #427822 - fix by Randy Waki 7 Aug 00 */
+        if (lexer->insert >= lexer->istack + lexer->istacksize)
+            lexer->insert = null;
     }
 }
 
@@ -246,7 +250,7 @@ Node *InsertedToken(Lexer *lexer)
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;
-    node->end = lexer->txtstart;
+    node->end = lexer->txtstart;	/* suggested fix by Gary Peskin */ /* lexer->txtend; */ 
     istack = lexer->insert;
     if (lexer->istacksize == 0)	/* Andy Quick 13 Jun 99 */
         tidy_out(lexer->errout, "0-size istack!\n");
