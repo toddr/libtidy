@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/03/21 18:41:03 $ 
-    $Revision: 1.54 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/04/01 09:28:15 $ 
+    $Revision: 1.55 $ 
 
 */
 
@@ -21,7 +21,7 @@
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
 
-char *release_date = "1st March 2002";
+char *release_date = "1st April 2002 (no joke)";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
@@ -140,15 +140,6 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
 {
     char buf[256];
                 
-    /* An encoding mismatch is currently treated as a fatal error */
-    if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
-    {
-        /* actual encoding passed in "c" */
-        sprintf(buf, "specified input encoding (%s) does not match actual input encoding (%s)",
-                CharEncodingName(lexer->in->encoding), CharEncodingName(c));
-        FatalError(buf);
-    }
-    
     lexer->warnings++;
 
     /* keep quiet after <ShowErrors> errors */
@@ -159,7 +150,15 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
     {
         ReportPosition(lexer);
 
-        if ((code & ~DISCARDED_CHAR) == VENDOR_SPECIFIC_CHARS)
+        /* An encoding mismatch is currently treated as a non-fatal error */
+    if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
+    {
+        /* actual encoding passed in "c" */
+            lexer->badChars |= ENCODING_MISMATCH;
+            tidy_out(lexer->errout, "specified input encoding (%s) does not match actual input encoding (%s)",
+                CharEncodingName(lexer->in->encoding), CharEncodingName(c));
+        }
+        else if ((code & ~DISCARDED_CHAR) == VENDOR_SPECIFIC_CHARS)
         {
             NtoS(c, buf);
             lexer->badChars |= VENDOR_SPECIFIC_CHARS;
@@ -295,7 +294,7 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " attribute \"%s\" lacks value", name);
         }
-        else if (code == MISSING_IMAGEMAP)
+        else if (code == MISSING_IMAGEMAP) /* this is not used anywhere */
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
