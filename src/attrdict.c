@@ -3,7 +3,7 @@
    (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   $Id: attrdict.c,v 1.2 2003/04/11 16:21:34 hoehrmann Exp $
+   $Id: attrdict.c,v 1.3 2003/05/07 04:27:33 hoehrmann Exp $
 */
 
 #include "attrdict.h"
@@ -13,12 +13,12 @@ AttrVersion W3CAttrsFor_A[] =
 {
   { TidyAttr_ACCESSKEY,      xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_CHARSET,        xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
-  { TidyAttr_CLASS,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_CLASS,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_COORDS,         xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
   { TidyAttr_DIR,            xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
   { TidyAttr_HREF,           HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_HREFLANG,       xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
-  { TidyAttr_ID,             xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_ID,             xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_LANG,           xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
   { TidyAttr_METHODS,        HT20|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx },
   { TidyAttr_NAME,           HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
@@ -38,14 +38,14 @@ AttrVersion W3CAttrsFor_A[] =
   { TidyAttr_REV,            HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_SDAPREF,        HT20|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx },
   { TidyAttr_SHAPE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
-  { TidyAttr_STYLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
+  { TidyAttr_STYLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
   { TidyAttr_TABINDEX,       xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_TARGET,         xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|xxxx|xxxx|xxxx|xxxx|xxxx },
-  { TidyAttr_TITLE,          HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_TITLE,          HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_TYPE,           xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_URN,            HT20|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx },
-  { TidyAttr_XML_LANG,       xxxx|xxxx|xxxx|xxxx|X10T|xxxx|xxxx|X10F|xxxx|xxxx|X10S|xxxx|XB10 },
-  { TidyAttr_XMLNS,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XB10 },
+  { TidyAttr_XML_LANG,       xxxx|xxxx|xxxx|xxxx|X10T|xxxx|xxxx|X10F|xxxx|xxxx|X10S|XH11|XB10 },
+  { TidyAttr_XMLNS,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|XB10 },
   { 0,                       0                                                                },
 };
 
@@ -1058,11 +1058,11 @@ AttrVersion W3CAttrsFor_IMG[] =
   { TidyAttr_ALIGN,          HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|xxxx|xxxx|xxxx|xxxx|xxxx },
   { TidyAttr_ALT,            HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_BORDER,         xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|xxxx|xxxx|xxxx|xxxx|xxxx },
-  { TidyAttr_CLASS,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_CLASS,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_DIR,            xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
   { TidyAttr_HEIGHT,         xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_HSPACE,         xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|xxxx|xxxx|xxxx|xxxx|xxxx },
-  { TidyAttr_ID,             xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_ID,             xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_ISMAP,          HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
   { TidyAttr_LANG,           xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
   { TidyAttr_LONGDESC,       xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
@@ -1079,13 +1079,13 @@ AttrVersion W3CAttrsFor_IMG[] =
   { TidyAttr_OnMOUSEUP,      xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
   { TidyAttr_SDAPREF,        HT20|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx },
   { TidyAttr_SRC,            HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
-  { TidyAttr_STYLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|xxxx },
-  { TidyAttr_TITLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|xxxx|XB10 },
+  { TidyAttr_STYLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
+  { TidyAttr_TITLE,          xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
   { TidyAttr_USEMAP,         xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|xxxx },
   { TidyAttr_VSPACE,         xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|xxxx|xxxx|xxxx|xxxx|xxxx },
   { TidyAttr_WIDTH,          xxxx|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10 },
-  { TidyAttr_XML_LANG,       xxxx|xxxx|xxxx|xxxx|X10T|xxxx|xxxx|X10F|xxxx|xxxx|X10S|xxxx|XB10 },
-  { TidyAttr_XMLNS,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XB10 },
+  { TidyAttr_XML_LANG,       xxxx|xxxx|xxxx|xxxx|X10T|xxxx|xxxx|X10F|xxxx|xxxx|X10S|XH11|XB10 },
+  { TidyAttr_XMLNS,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|XB10 },
   { 0,                       0                                                                },
 };
 
