@@ -3,7 +3,7 @@
    (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   $Id: attrdict.c,v 1.3 2003/05/07 04:27:33 hoehrmann Exp $
+   $Id: attrdict.c,v 1.4 2003/08/16 01:42:22 hoehrmann Exp $
 */
 
 #include "attrdict.h"
@@ -1723,6 +1723,7 @@ AttrVersion W3CAttrsFor_RT[] =
   { TidyAttr_OnMOUSEOUT,     xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
   { TidyAttr_OnMOUSEOVER,    xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
   { TidyAttr_OnMOUSEUP,      xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
+  { TidyAttr_RBSPAN,         xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
   { TidyAttr_STYLE,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
   { TidyAttr_TITLE,          xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
   { TidyAttr_XML_LANG,       xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|xxxx|XH11|xxxx },
