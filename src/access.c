@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/03/19 03:02:59 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/06/18 20:52:11 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -1067,8 +1067,7 @@ static Bool CheckMissingStyleSheets( TidyDocImpl* doc, Node* node )
 
             if ( !sspresent && attrIsREL(av) )
             {
-                sspresent = ( av->value != NULL &&
-                              strcmp(av->value, "stylesheet") == 0 );
+                sspresent = AttrValueIs(av, "stylesheet");
             }
         }
 
@@ -1264,17 +1263,13 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
             {
                 checked = 1;
 
-                if ( hasValue(av) )
+                if (AttrValueIs(av, "_new"))
                 {
-                    if (strcmp (av->value, "_new") == 0)
-                    {
-                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
-                    }
-                    
-                    if (strcmp (av->value, "_blank") == 0)
-                    {
-                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
-                    }
+                    ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
+                }
+                else if (AttrValueIs(av, "_blank"))
+                {
+                    ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
                 }
             }
         }
@@ -1374,18 +1369,13 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
         {
             if ( attrIsTARGET(av) )
             {
-                if ((av->value != NULL)&&
-                    (IsWhitespace (av->value) == no))
+                if (AttrValueIs(av, "_new"))
                 {
-                    if (strcmp (av->value, "_new") == 0)
-                    {
-                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
-                    }
-                        
-                    if (strcmp (av->value, "_blank") == 0)
-                    {
-                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
-                    }
+                    ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
+                }
+                else if (AttrValueIs(av, "_blank"))
+                {
+                    ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
                 }
             }
         }
@@ -2127,11 +2117,11 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
             */
             else if ( attrIsTYPE(av) && hasValue(av) )
             {
-                if ( strstr(av->value, "checkbox") != NULL ||
-                     strstr(av->value, "radio") != NULL    ||
-                     strstr(av->value, "text") != NULL     ||
-                     strstr(av->value, "password") != NULL ||
-                     strstr(av->value, "file") != NULL )
+                if (AttrValueIs(av, "checkbox") ||
+                    AttrValueIs(av, "radio")    ||
+                    AttrValueIs(av, "text")     ||
+                    AttrValueIs(av, "password") ||
+                    AttrValueIs(av, "file"))
                 {
                     if ( node->prev != NULL &&
                          node->prev->prev != NULL )
@@ -2181,11 +2171,10 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
                 }
 
                 /* The following 'TYPES' do not require a LABEL */
-                if ( strcmp(av->value, "image") == 0  ||
-                     strcmp(av->value, "hidden") == 0 ||
-                     strcmp(av->value, "submit") == 0 ||
-                     strcmp(av->value, "reset") == 0  ||
-                     strcmp(av->value, "button") == 0 )
+                if (AttrValueIs(av, "image")  ||
+                    AttrValueIs(av, "submit") ||
+                    AttrValueIs(av, "reset")  ||
+                    AttrValueIs(av, "button"))
                 {
                     HasValidLabel = yes;
                 }
@@ -2235,7 +2224,7 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
                  doc->access.PRIORITYCHK == 2 ||
                  doc->access.PRIORITYCHK == 3 )
             {
-                if ( strcmp(av->value, "image") == 0 )
+                if (AttrValueIs(av, "image"))
                 {
                     MustHaveAlt = yes;
                 }
@@ -2243,8 +2232,8 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
 
             if ( doc->access.PRIORITYCHK == 3 )
             {
-                if ( strcmp(av->value, "text") == 0 ||
-                     strcmp(av->value, "checkbox") == 0 )
+                if (AttrValueIs(av, "text") ||
+                    AttrValueIs(av, "checkbox"))
                 {    
                     MustHaveValue = yes;
                 }
@@ -3108,7 +3097,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
                     ContainsAttr = yes;
 
                     /* Must not have an auto-refresh */
-                    if ( strcmp(av->value, "refresh") == 0 )
+                    if (AttrValueIs(av, "refresh"))
                     {
                         HasHttpEquiv = yes;
                         ReportAccessError( doc, node, REMOVE_AUTO_REFRESH );
