@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/04 23:15:25 $ 
-    $Revision: 1.49 $ 
+    $Date: 2002/05/06 06:22:44 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -963,6 +963,7 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *p;
     Node *old;
+    uint s;
     
     if (attval == null || attval->value == null)
     {
@@ -971,17 +972,25 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
     }
 
     p = attval->value;
+    s = *p++;
     
-    if (!IsLetter(*p++))
+    if (!IsLetter(s))
     {
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
-    } else {
-
-        while(*p)
+        if (lexer->isvoyager && (IsXMLLetter(s) || s == '_' || s == ':'))
+            ReportAttrError(lexer, node, attval, XML_ID_SYNTAX);
+        else
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    }
+    else
+    {
+        while(*p++)
         {
-            if (!IsNamechar(*p++))
+            if (!IsNamechar(*p))
             {
-                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                if (lexer->isvoyager && IsXMLNamechar(*p))
+                    ReportAttrError(lexer, node, attval, XML_ID_SYNTAX);
+                else
+                    ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
             }
         }

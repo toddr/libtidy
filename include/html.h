@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/05 04:02:18 $ 
-    $Revision: 1.67 $ 
+    $Date: 2002/05/06 06:22:44 $ 
+    $Revision: 1.68 $ 
 
 */
 
@@ -516,6 +516,8 @@ Bool IsWhite(uint c);
 Bool IsNamechar(uint c);
 Bool IsLower(uint c);
 Bool IsUpper(uint c);
+Bool IsXMLLetter(uint c);
+Bool IsXMLNamechar(uint c);
 uint ToLower(uint c);
 uint ToUpper(uint c);
 
@@ -772,6 +774,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define JOINING_ATTRIBUTE       21
 #define UNEXPECTED_EQUALSIGN    22
 #define ATTR_VALUE_NOT_LCASE    23
+#define XML_ID_SYNTAX           24
 
 /* page transition effects */
 

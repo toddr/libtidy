@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/05/04 23:53:52 $ 
-    $Revision: 1.57 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/06 06:22:44 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -306,6 +306,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " attribute \"%s\" has invalid value \"%s\"", name, value);
+        }
+        else if (code == XML_ID_SYNTAX)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " ID \"%s\" uses XML ID syntax", value, name);
         }
         else if (code == XML_ATTRIBUTE_VALUE)
         {
