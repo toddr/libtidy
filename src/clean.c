@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/29 02:13:30 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/29 07:50:20 $ 
+    $Revision: 1.11 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1873,9 +1873,9 @@ Bool SingleSpace(Lexer *lexer, Node *node)
 
         if ((node->end - node->start) == 2)
         {
-            unsigned int c;
+            uint c;
 
-            GetUTF8(lexer->lexbuf + node->start, &c);
+            GetUTF8((unsigned char *)lexer->lexbuf + node->start, &c);
 
             if (c == 160)
                 return yes;
