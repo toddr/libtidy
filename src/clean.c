@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 04:45:43 $ 
-    $Revision: 1.28 $ 
+    $Date: 2003/04/09 01:14:59 $ 
+    $Revision: 1.29 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2119,96 +2119,92 @@ void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
     }
 }
 
-void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
+void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
 {
-    if (!nodeIsHEAD( pHead ))
-        pHead = FindHEAD( pDoc );
-    if (NULL != pHead)
+    Node *pNode;
+    StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
+    tmbstr s, pszBegin, pszEnd;
+
+    if (!nodeIsHEAD(head))
+        head = FindHEAD(pDoc);
+
+    if (!head)
+        return;
+
+    /* Find any <meta http-equiv='Content-Type' content='...' /> */
+    for (pNode = head->content; NULL != pNode; pNode = pNode->next)
     {
-        /*  Find any meta tag which has an http-equiv tag 
-            where value is content-type  */
-        Node *pNode;
+        AttVal* httpEquiv = GetAttrByName(pNode, "http-equiv");
+        AttVal* metaContent = GetAttrByName(pNode, "content");
 
-        for (pNode = pHead->content; NULL != pNode; pNode = pNode->next)
+        if (!nodeIsMETA(pNode) || !httpEquiv || !metaContent ||
+            (0 != tmbstrcasecmp(httpEquiv->value, "Content-Type")))
+            continue;
+
+        pszBegin = s = tmbstrdup( metaContent->value );
+        while ('\0' != *pszBegin)
         {
-            if (nodeIsMETA( pNode ))
+            while (isspace( *pszBegin ))
+                pszBegin++;
+            pszEnd = pszBegin;
+            while ('\0' != *pszEnd && ';' != *pszEnd)
+                pszEnd++;
+            if (';' == *pszEnd )
+                *(pszEnd++) = '\0';
+            if (pszEnd > pszBegin)
             {
-                AttVal *pAttVal;
-                if (NULL != (pAttVal = GetAttrByName( pNode, "http-equiv" )))
-                {
-                    if (0 != tmbstrcasecmp( pAttVal->value, "CONTENT-TYPE" ))
-                        continue;
-                    if (NULL != (pAttVal = GetAttrByName( pNode, "content" )))
-                    {
-                        StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
-                        tmbstr s, pszBegin, pszEnd;
+                prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
+                prop->name = tmbstrdup( pszBegin );
+                prop->value = NULL;
+                prop->next = NULL;
 
-                        pszBegin = s = tmbstrdup( pAttVal->value );
-                        while ('\0' != *pszBegin)
-                        {
-                            while (isspace( *pszBegin ))
-                                pszBegin++;
-                            pszEnd = pszBegin;
-                            while ('\0' != *pszEnd && ';' != *pszEnd)
-                                pszEnd++;
-                            if (';' == *pszEnd )
-                                *(pszEnd++) = '\0';
-                            if (pszEnd > pszBegin)
-                            {
-                                prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-                                prop->name = tmbstrdup( pszBegin );
-                                prop->value = NULL;
-                                prop->next = NULL;
+                if (NULL != pLastProp)
+                    pLastProp->next = prop;
+                else
+                    pFirstProp = prop;
 
-                                if (NULL != pLastProp)
-                                    pLastProp->next = prop;
-                                else
-                                    pFirstProp = prop;
-                                pLastProp = prop;
-                                pszBegin = pszEnd;
-                            }
-                        }
-                        MemFree( s );
+                pLastProp = prop;
+                pszBegin = pszEnd;
+            }
+        }
+        MemFree( s );
 
-                        /*  find the charset property */
-                        for (prop = pFirstProp; NULL != prop; prop = prop->next)
-                        {
-                            if (0 == tmbstrncasecmp( prop->name, "charset", 7 ))
-                            {
-                                ctmbstr enc = NULL;
+        /*  find the charset property */
+        for (prop = pFirstProp; NULL != prop; prop = prop->next)
+        {
+            ctmbstr enc = NULL;
 
-                                MemFree( prop->name );
-                                prop->name = MemAlloc( 32 );
-                                switch ( cfg( pDoc, TidyOutCharEncoding) )
-                                {
-                                    case RAW:       enc = "raw";          break;
-                                    case ASCII:     enc = "us-ascii";     break;
-                                    case LATIN1:    enc = "iso-8859-1";   break;
-                                    case UTF8:      enc = "UTF-8";        break;
-                                    case ISO2022:   enc = "iso-2022";     break;
-                                    case MACROMAN:  enc = "mac";          break;
-                                    case WIN1252:   enc = "windows-1252"; break;
+            if (0 != tmbstrncasecmp( prop->name, "charset", 7 ))
+                continue;
+
+            MemFree( prop->name );
+            prop->name = MemAlloc( 32 );
+
+            switch ( cfg( pDoc, TidyOutCharEncoding) )
+            {
+            case RAW:       enc = "raw";          break;
+            case ASCII:     enc = "us-ascii";     break;
+            case LATIN1:    enc = "iso-8859-1";   break;
+            case UTF8:      enc = "UTF-8";        break;
+            case ISO2022:   enc = "iso-2022";     break;
+            case MACROMAN:  enc = "mac";          break;
+            case WIN1252:   enc = "windows-1252"; break;
 #if SUPPORT_UTF16_ENCODINGS
-                                    case UTF16LE:   enc = "UTF-16LE";     break;
-                                    case UTF16BE:   enc = "UTF-16BE";     break;
-                                    case UTF16:     enc = "UTF-16";       break;
+            case UTF16LE:   enc = "UTF-16LE";     break;
+            case UTF16BE:   enc = "UTF-16BE";     break;
+            case UTF16:     enc = "UTF-16";       break;
 #endif
 #if SUPPORT_ASIAN_ENCODINGS
-                                    case BIG5:      enc = "big5";         break;
-                                    case SHIFTJIS:  enc = "shiftjis";     break;
+            case BIG5:      enc = "big5";         break;
+            case SHIFTJIS:  enc = "shiftjis";     break;
 #endif
-                                }
-                                sprintf( prop->name, "charset=%s", enc );
-                                s = CreatePropString( pFirstProp );
-                                MemFree( pAttVal->value );
-                                pAttVal->value = s;
-                                FreeStyleProps(prop);
-                                break;
-                            }
-                        }
-                    }
-                }
             }
+            sprintf( prop->name, "charset=%s", enc );
+            s = CreatePropString( pFirstProp );
+            MemFree( metaContent->value );
+            metaContent->value = s;
+            FreeStyleProps(prop);
+            break;
         }
     }
 }
