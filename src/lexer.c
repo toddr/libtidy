@@ -1,14 +1,14 @@
 /*
   lexer.c - Lexer for html parser
   
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/12 05:57:10 $ 
-    $Revision: 1.20 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/12 09:06:51 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -53,7 +53,7 @@ uint lexmap[128];
 #define voyager_strict   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 #define voyager_frameset "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
 
-#define W3C_VERSIONS 9
+#define W3C_VERSIONS 10
 
 struct _vers
 {
@@ -71,8 +71,16 @@ struct _vers
     {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
     {"HTML 3.2", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
     {"HTML 3.2 Final", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
+    {"HTML 3.2 Draft", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
     {"HTML 2.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML20}
 };
+
+/* everything is allowed in proprietary version of HTML */
+/* this is handled here rather than in the tag/attr dicts */
+void ConstrainVersion(Lexer *lexer, unsigned int vers)
+{
+    lexer->versions &= (vers | VERS_PROPRIETARY);
+}
 
 Bool IsWhite(uint c)
 {
@@ -191,7 +199,7 @@ Lexer *NewLexer(StreamIn *in)
         lexer->insertspace = no;
         lexer->exiled = no;
         lexer->isvoyager = no;
-        lexer->versions = VERS_EVERYTHING;
+        lexer->versions = (VERS_ALL|VERS_PROPRIETARY);
         lexer->doctype = VERS_UNKNOWN;
         lexer->bad_doctype = no;
         lexer->txtstart = 0;
@@ -237,6 +245,7 @@ void FreeLexer(Lexer *lexer)
 
     MemFree(lexer);
 }
+
 void AddByte(Lexer *lexer, uint c)
 {
     if (lexer->lexsize + 1 >= lexer->lexlength)
@@ -1917,7 +1926,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     ReportError(lexer, null, lexer->token, UNKNOWN_ELEMENT);
                 else if (!XmlTags)
                 {
-                    lexer->versions &= lexer->token->tag->versions;
+                    ConstrainVersion(lexer, lexer->token->tag->versions);
                     
                     if (lexer->token->tag->versions & VERS_PROPRIETARY)
                     {
