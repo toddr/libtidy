@@ -2,13 +2,13 @@
 #
 #  CVS Info :
 #
-#     $Author: terry_teague $ 
-#     $Date: 2003/02/22 07:12:48 $ 
-#     $Revision: 1.4 $ 
+#     $Author: creitzel $ 
+#     $Date: 2003/03/19 18:37:38 $ 
+#     $Revision: 1.5 $ 
 #
-#  Copyright (c) 1998-2002 World Wide Web Consortium
-#  (Massachusetts Institute of Technology, Institut National de
-#  Recherche en Informatique et en Automatique, Keio University).
+#  Copyright (c) 1998-2003 World Wide Web Consortium
+#  (Massachusetts Institute of Technology, European Research 
+#  Consortium for Informatics and Mathematics, Keio University).
 #  All Rights Reserved.
 #
 #  Contributing Author(s):

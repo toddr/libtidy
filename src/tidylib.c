@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:51:03 $ 
-    $Revision: 1.6 $ 
+    $Date: 2003/03/19 18:37:50 $ 
+    $Revision: 1.7 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   

@@ -2,15 +2,15 @@
   tidy.c - HTML TidyLib command line driver
 
   Copyright (c) 1998-2003 World Wide Web Consortium
-  (Massachusetts Institute of Technology, Institut National de
-  Recherche en Informatique et en Automatique, Keio University).
+  (Massachusetts Institute of Technology, European Research 
+  Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 01:42:23 $ 
-    $Revision: 1.6 $ 
+    $Date: 2003/03/19 18:37:40 $ 
+    $Revision: 1.7 $ 
 */
 
 #include "tidy.h"

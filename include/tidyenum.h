@@ -6,16 +6,16 @@
   Simplifies enum re-use in various wrappers.  E.g. SWIG
   generated wrappers and COM IDL files.
 
-  Copyright (c) 1998-2002 World Wide Web Consortium
-  (Massachusetts Institute of Technology, Institut National de
-  Recherche en Informatique et en Automatique, Keio University).
+  Copyright (c) 1998-2003 World Wide Web Consortium
+  (Massachusetts Institute of Technology, European Research 
+  Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:09 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/19 18:37:41 $ 
+    $Revision: 1.3 $ 
 
   Contributing Author(s):
 

@@ -1,6 +1,6 @@
 /* localize.c -- text strings and routines to handle errors and general messages
 
-  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   You should only need to edit this file and tidy.c
@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:51:03 $ 
-    $Revision: 1.72 $ 
+    $Date: 2003/03/19 18:37:45 $ 
+    $Revision: 1.73 $ 
 
 */
 

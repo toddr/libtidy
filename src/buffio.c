@@ -1,13 +1,13 @@
 /* buffio.c -- Treat buffer as an I/O stream.
 
-  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:51:03 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/19 18:37:43 $ 
+    $Revision: 1.4 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
