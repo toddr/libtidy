@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/03/27 18:14:53 $ 
-    $Revision: 1.37 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/03/31 18:26:01 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -1817,6 +1817,9 @@ void PPrintTree(Out *fout, uint mode, uint indent,
         if (node->tag && node->tag->parser == ParsePre)
         {
             PCondFlushLine(fout, indent);
+
+            if (node->type == StartEndTag)
+                node->type = StartTag;
 
             indent = 0;
             PCondFlushLine(fout, indent);

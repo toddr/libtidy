@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/03/16 01:20:37 $ 
-    $Revision: 1.37 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/03/31 18:26:01 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -532,8 +532,14 @@ static void ParseTag(Lexer *lexer, Node *node, uint mode)
     else if (!(node->tag->model & CM_INLINE))
         lexer->insertspace = no;
 
-    if (node->tag->parser == null || node->type == StartEndTag)
+    if (node->tag->parser == null)
         return;
+
+    if (node->type == StartEndTag)
+    {
+        TrimEmptyElement(lexer, node);
+        return;
+    }
 
     (*node->tag->parser)(lexer, node, mode);
 }
