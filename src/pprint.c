@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/08 17:42:36 $ 
-    $Revision: 1.100 $ 
+    $Date: 2005/03/10 18:25:32 $ 
+    $Revision: 1.101 $ 
 
 */
 
@@ -1280,7 +1280,7 @@ static Bool AfterSpaceImp(Lexer *lexer, Node *node, Bool isEmpty)
     {
         if (prev->type == TextNode && prev->end > prev->start)
         {
-            uint c, i;
+            uint i, c = '\0'; /* initialised to avoid warnings */
             for (i = prev->start; i < prev->end; ++i)
             {
                 c = (byte) lexer->lexbuf[i];
