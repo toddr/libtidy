@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 08:24:56 $ 
-    $Revision: 1.117 $ 
+    $Date: 2003/05/14 09:34:05 $ 
+    $Revision: 1.118 $ 
 
 */
 
@@ -2021,6 +2021,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
             lexer->waswhite = yes;
             lexer->insertspace = no;
         }
+
+        if (c == 160 && (mode & Preformatted))
+            c = ' ';
 
         /* treat \r\n as \n and \r as \n */
 
