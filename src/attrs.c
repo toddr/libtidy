@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2003/05/01 23:15:49 $ 
-    $Revision: 1.73 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/02 04:19:02 $ 
+    $Revision: 1.74 $ 
 
 */
 
@@ -1320,16 +1320,16 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
         /* 727851 - add hash to hash-less color values */
         if (isValidColorNumber(given))
         {
-            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
             tmbstr s = NULL;
             tmbstr cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
             *cp++ = '#';
             while(*cp++ = *given++)
                 /**/;
             MemFree(attval->value);
             given = attval->value = s;
             valid = yes;
-            // TODO: Emit warning
+            /* TODO: Emit warning */
         }
     }
     
