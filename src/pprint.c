@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 10:20:07 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/17 15:57:53 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -1125,6 +1125,9 @@ static void PPrintCDATA(Out *fout, uint indent,
                    Lexer *lexer, Node *node)
 {
     int savewraplen = wraplen;
+
+    if (!IndentCdata)
+        indent = 0;
 
     PCondFlushLine(fout, indent);
 
