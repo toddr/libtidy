@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 04:27:05 $ 
-    $Revision: 1.70 $ 
+    $Date: 2003/04/30 16:52:53 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -707,8 +707,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             /* first and second attribute have same local name */
             /* now determine what to do with this duplicate... */
 
-            if ( tmbstrcasecmp(first->attribute, "class") == 0 
-                && cfgBool(doc, TidyJoinClasses) )
+            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses))
             {
                 /* concatenate classes */
 
@@ -724,8 +723,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 
                 second = temp;
             }
-            else if ( tmbstrcasecmp(first->attribute, "style") == 0 
-                && cfgBool(doc, TidyJoinStyles) )
+            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles))
             {
                 /* concatenate styles */
 
@@ -880,7 +878,7 @@ static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attva
     tmbstr p;
     Bool hasUpper = no;
     
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
         return;
 
     p = attval->value;
@@ -916,7 +914,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
     uint i, pos = 0;
     uint len;
     
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -979,7 +977,7 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     Node *old;
 
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1005,7 +1003,7 @@ void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
     Node *old;
     uint s;
     
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1047,7 +1045,7 @@ void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
 
 void CheckBool( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
         return;
 
     CheckLowerCaseAttrValue( doc, node, attval );
@@ -1055,8 +1053,6 @@ void CheckBool( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
     /* IMG, OBJECT, APPLET and EMBED use align for vertical position */
     if (node->tag && (node->tag->model & CM_IMG))
     {
@@ -1064,7 +1060,7 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
         return;
     }
 
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1072,20 +1068,16 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval);
 
-    value = attval->value;
-
-    if (! (tmbstrcasecmp(value,    "left") == 0 ||
-           tmbstrcasecmp(value,  "center") == 0 ||
-           tmbstrcasecmp(value,   "right") == 0 ||
-           tmbstrcasecmp(value, "justify") == 0))
+    if (!(AttrValueIs(attval, "left")   ||
+          AttrValueIs(attval, "right")  ||
+          AttrValueIs(attval, "center") ||
+          AttrValueIs(attval, "justify")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1093,25 +1085,23 @@ void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
 
-    value = attval->value;
-
-    if (tmbstrcasecmp(value,      "top") == 0 ||
-        tmbstrcasecmp(value,   "middle") == 0 ||
-        tmbstrcasecmp(value,   "bottom") == 0 ||
-        tmbstrcasecmp(value, "baseline") == 0)
+    if (AttrValueIs(attval, "top")    ||
+        AttrValueIs(attval, "middle") ||
+        AttrValueIs(attval, "bottom") ||
+        AttrValueIs(attval, "baseline"))
     {
             /* all is fine */
     }
-    else if (tmbstrcasecmp(value,  "left") == 0 ||
-             tmbstrcasecmp(value, "right") == 0)
+    else if (AttrValueIs(attval, "left") ||
+             AttrValueIs(attval, "right"))
     {
         if (!(node->tag && (node->tag->model & CM_IMG)))
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
-    else if (tmbstrcasecmp(value,    "texttop") == 0 ||
-             tmbstrcasecmp(value,  "absmiddle") == 0 ||
-             tmbstrcasecmp(value,  "absbottom") == 0 ||
-             tmbstrcasecmp(value, "textbottom") == 0)
+    else if (AttrValueIs(attval, "texttop")   ||
+             AttrValueIs(attval, "absmiddle") ||
+             AttrValueIs(attval, "absbottom") ||
+             AttrValueIs(attval, "textbottom"))
     {
         ConstrainVersion( doc, VERS_PROPRIETARY );
         ReportAttrError( doc, node, attval, PROPRIETARY_ATTR_VALUE);
@@ -1124,15 +1114,14 @@ void CheckLength( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr p;
     
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
     /* don't check for <col width=...> and <colgroup width=...> */
-    if ( tmbstrcmp(attval->attribute, "width") == 0 &&
-         (nodeIsCOL(node) || nodeIsCOLGROUP(node)) )
+    if (attrIsWIDTH(attval) && (nodeIsCOL(node) || nodeIsCOLGROUP(node)))
         return;
 
     p = attval->value;
@@ -1157,9 +1146,7 @@ void CheckLength( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-    
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1168,47 +1155,36 @@ void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
     /* No target attribute in strict HTML versions */
     ConstrainVersion( doc, ~VERS_HTML40_STRICT);
 
-    /*
-      target names must begin with A-Za-z or be one of
-      _blank, _self, _parent and _top
-    */
-    
-    value = attval->value;
-
-    if (IsLetter(value[0]))
+    /* target names must begin with A-Za-z ... */
+    if (IsLetter(attval->value[0]))
         return;
-    
-    if (! (tmbstrcasecmp(value,  "_blank") == 0 ||
-           tmbstrcasecmp(value,   "_self") == 0 ||
-           tmbstrcasecmp(value, "_parent") == 0 ||
-           tmbstrcasecmp(value,    "_top") == 0))
+
+    /* or be one of _blank, _self, _parent and _top */
+    if (!(AttrValueIs(attval, "_blank")  ||
+          AttrValueIs(attval, "_self")   ||
+          AttrValueIs(attval, "_parent") ||
+          AttrValueIs(attval, "_top")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckFsubmit( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-    
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    value = attval->value;
-
     CheckLowerCaseAttrValue( doc, node, attval);
 
-    if (! (tmbstrcasecmp(value,  "get") == 0 ||
-           tmbstrcasecmp(value, "post") == 0))
+    if (!(AttrValueIs(attval, "get") ||
+          AttrValueIs(attval, "post")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         if (attval->value == NULL)
@@ -1218,20 +1194,16 @@ void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
         
-    value = attval->value;
-    
-    if (! (tmbstrcasecmp(value,  "none") == 0 ||
-           tmbstrcasecmp(value,  "left") == 0 ||
-           tmbstrcasecmp(value, "right") == 0 ||
-           tmbstrcasecmp(value,   "all") == 0))
+    if (!(AttrValueIs(attval, "none")  ||
+          AttrValueIs(attval, "left")  ||
+          AttrValueIs(attval, "right") ||
+          AttrValueIs(attval, "all")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckShape( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-    
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1239,20 +1211,16 @@ void CheckShape( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
 
-    value = attval->value;
-    
-    if (! (tmbstrcasecmp(value,    "rect") == 0 ||
-           tmbstrcasecmp(value, "default") == 0 ||
-           tmbstrcasecmp(value,  "circle") == 0 ||
-           tmbstrcasecmp(value,    "poly") == 0))
+    if (!(AttrValueIs(attval, "rect")    ||
+          AttrValueIs(attval, "default") ||
+          AttrValueIs(attval, "circle")  ||
+          AttrValueIs(attval, "poly")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckScope( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-    
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1260,12 +1228,10 @@ void CheckScope( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval);
 
-    value = attval->value;
-    
-    if (! (tmbstrcasecmp(value,      "row") == 0 ||
-           tmbstrcasecmp(value, "rowgroup") == 0 ||
-           tmbstrcasecmp(value,      "col") == 0 ||
-           tmbstrcasecmp(value, "colgroup") == 0))
+    if (!(AttrValueIs(attval, "row")      ||
+          AttrValueIs(attval, "rowgroup") ||
+          AttrValueIs(attval, "col")      ||
+          AttrValueIs(attval, "colgroup")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
@@ -1273,7 +1239,7 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr p;
     
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1281,8 +1247,7 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     /* don't check <frameset cols=... rows=...> */
     if ( nodeIsFRAMESET(node) &&
-         ( tmbstrcmp(attval->attribute, "cols") == 0 ||
-           tmbstrcmp(attval->attribute, "rows") == 0 ) )
+        (attrIsCOLS(attval) || attrIsROWS(attval)))
      return;
 
     p  = attval->value;
@@ -1313,7 +1278,7 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
     const struct _colors *color;
     uint i = 0;
 
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1402,9 +1367,7 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 /* check valuetype attribute for element param */
 void CheckVType( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1412,20 +1375,16 @@ void CheckVType( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
 
-    value = attval->value;
-
-    if (! (tmbstrcasecmp(value,   "data") == 0 ||
-           tmbstrcasecmp(value, "object") == 0 ||
-           tmbstrcasecmp(value,    "ref") == 0))
+    if (!(AttrValueIs(attval, "data")   ||
+          AttrValueIs(attval, "object") ||
+          AttrValueIs(attval, "ref")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks scrolling attribute */
 void CheckScroll( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1433,20 +1392,16 @@ void CheckScroll( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
 
-    value = attval->value;
-
-    if (! (tmbstrcasecmp(value,   "no") == 0 ||
-           tmbstrcasecmp(value, "auto") == 0 ||
-           tmbstrcasecmp(value,  "yes") == 0))
+    if (!(AttrValueIs(attval, "no")   ||
+          AttrValueIs(attval, "auto") ||
+          AttrValueIs(attval, "yes")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks dir attribute */
 void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    tmbstr value;
-
-    if (attval == NULL || attval->value == NULL)
+    if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1454,17 +1409,15 @@ void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval);
 
-    value = attval->value;
-
-    if (! (tmbstrcasecmp(value, "rtl") == 0 ||
-           tmbstrcasecmp(value, "ltr") == 0))
+    if (!(AttrValueIs(attval, "rtl") ||
+          AttrValueIs(attval, "ltr")))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks lang and xml:lang attributes */
 void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if ( attval == NULL || attval->value == NULL )
+    if (!AttrHasValue(attval))
     {
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
@@ -1473,6 +1426,6 @@ void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
         return;
     }
 
-    if (tmbstrcasecmp(attval->attribute, "lang") == 0)
-        ConstrainVersion( doc, ~VERS_XHTML11 );
+    if (attrIsLANG(attval))
+        ConstrainVersion(doc, ~VERS_XHTML11);
 }
