@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/03 07:52:14 $ 
-    $Revision: 1.9 $ 
+    $Author: uid54069 $ 
+    $Date: 2001/07/04 18:41:33 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -1213,10 +1213,15 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
            an <A> tag to ends any open <A> element
            but <A href=...> is mapped to </A><A href=...>
         */
-        if (node->tag == tag_a && !node->implicit && IsPushed(lexer, node))
+        /* #427827 - fix by Randy Waki and Bjoern Hoehrmann 23 Aug 00 */
+        /* if (node->tag == tag_a && !node->implicit && IsPushed(lexer, node)) */
+        if (node->tag == tag_a && !node->implicit && 
+               (element->tag == tag_a || DescendantOf(element, tag_a)))
         {
-         /* coerce <a> to </a> unless it has some attributes */
-            if (node->attributes == null)
+            /* coerce <a> to </a> unless it has some attributes */
+            /* #427827 - fix by Randy Waki and Bjoern Hoehrmann 23 Aug 00 */
+            /* if (node->attributes == null) */
+            if (node->type != EndTag && node->attributes == null)
             {
                 node->type = EndTag;
                 ReportWarning(lexer, element, node, COERCE_TO_ENDTAG);
