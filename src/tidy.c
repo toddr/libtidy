@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/23 09:07:22 $ 
-    $Revision: 1.24 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:43:00 $ 
+    $Revision: 1.25 $ 
 
   Contributing Author(s):
 
@@ -1504,7 +1504,7 @@ void InitTidy(void)
 
     totalerrors = totalwarnings = 0;
     XmlTags = XmlOut = HideEndTags = UpperCaseTags =
-    MakeClean = writeback = OnlyErrors = no;
+    MakeBare = MakeClean = writeback = OnlyErrors = no;
 
     input = null;
     errfile = null;
@@ -1587,6 +1587,8 @@ int main(int argc, char **argv)
                 UpperCaseTags = yes;
             else if (wstrcasecmp(arg, "clean") == 0)
                 MakeClean = yes;
+            else if (wstrcasecmp(arg, "bare") == 0)
+                MakeBare = yes;
             else if (wstrcasecmp(arg, "raw") == 0)
                 CharEncoding = RAW;
             else if (wstrcasecmp(arg, "ascii") == 0)
@@ -1626,10 +1628,16 @@ int main(int argc, char **argv)
             else if (wstrcasecmp(arg, "slides") == 0)
                 BurstSlides = yes;
             else if (wstrcasecmp(arg, "help") == 0 ||
-                     argv[1][1] == '?'|| argv[1][1] == 'h')
+                     wstrcasecmp(arg, "h") == 0 ||
+                     argv[1][1] == '?')
             {
                 HelpText(stdout, prog);
                 return 1;
+            }
+            else if (wstrcasecmp(arg, "help-config") == 0)
+            {
+                PrintConfigOptions(stdout);
+                break;
             }
             else if (wstrcasecmp(arg, "config") == 0)
             {
@@ -1710,6 +1718,8 @@ int main(int argc, char **argv)
                         UpperCaseTags = yes;
                     else if (c == 'c')
                         MakeClean = yes;
+                    else if (c == 'b')
+                        MakeBare = yes;
                     else if (c == 'n')
                         NumEntities = yes;
                     else if (c == 'm')
@@ -1954,8 +1964,12 @@ int main(int argc, char **argv)
 #if PRESERVEFILETIMES
                     /* set file last accessed/modified times to original values */
                     if (haveFileTimes)
+#ifdef __linux__
+                        utime(file, &filetimes);
+#else
                         futime(fileno(input), &filetimes);
-#endif
+#endif /* __linux__ */
+#endif /* PRESERVFILETIMES */
                     fclose(input);
                 }
                 else
