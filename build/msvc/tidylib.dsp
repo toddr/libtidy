@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GX /O2 /I "../include" /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "SUPPORT_UTF16_ENCODINGS" /D "SUPPORT_ASIAN_ENCODINGS" /D "SUPPORT_ACCESSIBILITY_CHECKS" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /I "../../include" /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "SUPPORT_UTF16_ENCODINGS" /D "SUPPORT_ASIAN_ENCODINGS" /D "SUPPORT_ACCESSIBILITY_CHECKS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -50,7 +50,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"Release\tidy.lib"
+# ADD LIB32 /nologo /out:"Release\libtidy.lib"
 
 !ELSEIF  "$(CFG)" == "tidylib - Win32 Debug"
 
@@ -65,7 +65,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /Za /W4 /Gm /ZI /Od /I "../include" /D "_DEBUG" /D "_WIN32" /D "_LIB" /D "WIN32" /D "_MBCS" /D "SUPPORT_UTF16_ENCODINGS" /D "SUPPORT_ASIAN_ENCODINGS" /D "SUPPORT_ACCESSIBILITY_CHECKS" /U "WINDOWS" /FD /GZ /c
+# ADD CPP /nologo /MDd /Za /W4 /Gm /ZI /Od /I "../../include" /D "_DEBUG" /D "_WIN32" /D "_LIB" /D "WIN32" /D "_MBCS" /D "SUPPORT_UTF16_ENCODINGS" /D "SUPPORT_ASIAN_ENCODINGS" /D "SUPPORT_ACCESSIBILITY_CHECKS" /U "WINDOWS" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -74,7 +74,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"Debug\tidy.lib"
+# ADD LIB32 /nologo /out:"Debug\libtidy.lib"
 
 !ENDIF 
 
@@ -87,87 +87,87 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\src\access.c
+SOURCE=..\..\src\access.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\alloc.c
+SOURCE=..\..\src\alloc.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\attrask.c
+SOURCE=..\..\src\attrask.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\attrget.c
+SOURCE=..\..\src\attrget.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\attrs.c
+SOURCE=..\..\src\attrs.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\buffio.c
+SOURCE=..\..\src\buffio.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\clean.c
+SOURCE=..\..\src\clean.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\config.c
+SOURCE=..\..\src\config.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\entities.c
+SOURCE=..\..\src\entities.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\fileio.c
+SOURCE=..\..\src\fileio.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\istack.c
+SOURCE=..\..\src\istack.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\lexer.c
+SOURCE=..\..\src\lexer.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\localize.c
+SOURCE=..\..\src\localize.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\parser.c
+SOURCE=..\..\src\parser.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\pprint.c
+SOURCE=..\..\src\pprint.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\streamio.c
+SOURCE=..\..\src\streamio.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tagask.c
+SOURCE=..\..\src\tagask.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tags.c
+SOURCE=..\..\src\tags.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tidylib.c
+SOURCE=..\..\src\tidylib.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tmbstr.c
+SOURCE=..\..\src\tmbstr.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\utf8.c
+SOURCE=..\..\src\utf8.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -175,83 +175,83 @@ SOURCE=..\src\utf8.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=..\src\access.h
+SOURCE=..\..\src\access.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\attrs.h
+SOURCE=..\..\src\attrs.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\buffio.h
+SOURCE=..\..\include\buffio.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\clean.h
+SOURCE=..\..\src\clean.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\config.h
+SOURCE=..\..\src\config.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\entities.h
+SOURCE=..\..\src\entities.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\fileio.h
+SOURCE=..\..\include\fileio.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\forward.h
+SOURCE=..\..\src\forward.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\lexer.h
+SOURCE=..\..\src\lexer.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\message.h
+SOURCE=..\..\src\message.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\parser.h
+SOURCE=..\..\src\parser.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\platform.h
+SOURCE=..\..\include\platform.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\pprint.h
+SOURCE=..\..\src\pprint.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\streamio.h
+SOURCE=..\..\src\streamio.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tags.h
+SOURCE=..\..\src\tags.h
 # End Source File
 # Begin Source File
 
-SOURCE="..\src\tidy-int.h"
+SOURCE="..\..\src\tidy-int.h"
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\tidy.h
+SOURCE=..\..\include\tidy.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\tidyenum.h
+SOURCE=..\..\include\tidyenum.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\tmbstr.h
+SOURCE=..\..\src\tmbstr.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\src\utf8.h
+SOURCE=..\..\src\utf8.h
 # End Source File
 # End Group
 # End Target
