@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/04 23:14:24 $ 
-    $Revision: 1.66 $ 
+    $Date: 2002/05/05 04:02:18 $ 
+    $Revision: 1.67 $ 
 
 */
 
@@ -366,6 +366,7 @@ struct _lexer
     uint txtend;    /* end of current node */
     uint state;     /* state of lexer's finite state machine */
     struct _node *token;
+    struct _node *root; /* remember root node of the document */
 
     Bool seenEndBody; /* true if a </body> tag has been encountered */
     Bool seenEndHtml; /* true if a </html> tag has been encountered */

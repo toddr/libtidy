@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/04/28 19:55:52 $ 
-    $Revision: 1.48 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/05 04:02:20 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -619,6 +619,16 @@ static void MoveToHead(Lexer *lexer, Node *element, Node *node)
         ReportWarning(lexer, element, node, DISCARDING_UNEXPECTED);
         FreeNode(node);
     }
+}
+
+/* moves given node to end of body element */
+static void MoveNodeToBody(Lexer *lexer, Node *node)
+{
+    Node *body;
+    
+    RemoveNode(node);
+    body = FindBody(lexer->root);
+    InsertNodeAtEnd(body, node);
 }
 
 /*
@@ -3187,21 +3197,48 @@ void ParseNoFrames(Lexer *lexer, Node *noframes, uint mode)
 
         if (node->tag == tag_body && node->type == StartTag)
         {
+            Bool seen_body = lexer->seenEndBody;
+
             InsertNodeAtEnd(noframes, node);
             ParseTag(lexer, node, IgnoreWhitespace /*MixedContent*/);
+
+            if (seen_body)
+            {
+                CoerceNode(lexer, node, tag_div);
+                MoveNodeToBody(lexer, node);
+            }
+
             continue;
         }
 
         /* implicit body element inferred */
-        if (node->type == TextNode || node->tag)
+        if (node->type == TextNode || (node->tag && node->type != EndTag))
         {
-            UngetToken(lexer);
-            node = InferredTag(lexer, "body");
+            if (lexer->seenEndBody)
+            {
+                Node *body = FindBody(lexer->root);
 
-            if (XmlOut)
-                ReportWarning(lexer, noframes, node, INSERTING_TAG);
+                if (node->type == TextNode)
+                {
+                    UngetToken(lexer);
+                    node = InferredTag(lexer, "p");
+                    ReportWarning(lexer, noframes, node, CONTENT_AFTER_BODY);
+                }
 
-            InsertNodeAtEnd(noframes, node);
+                InsertNodeAtEnd(body, node);
+            }
+            else
+            {
+                UngetToken(lexer);
+
+                node = InferredTag(lexer, "body");
+
+                if (XmlOut)
+                    ReportWarning(lexer, noframes, node, INSERTING_TAG);
+    
+                InsertNodeAtEnd(noframes, node);
+            }
+
             ParseTag(lexer, node, IgnoreWhitespace /*MixedContent*/);
             continue;
         }
@@ -3494,6 +3531,8 @@ Node *ParseDocument(Lexer *lexer)
 
     document = NewNode();
     document->type = RootNode;
+
+    lexer->root = document;
 
     while ((node = GetToken(lexer, IgnoreWhitespace)) != null)
     {

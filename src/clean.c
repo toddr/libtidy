@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/01/27 19:04:57 $ 
-    $Revision: 1.15 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/05 04:02:19 $ 
+    $Revision: 1.16 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2125,6 +2125,9 @@ Bool IsWord2000(Node *root)
 void BumpObject(Lexer *lexer, Node *html)
 {
     Node *node, *next, *head = null, *body = null;
+
+    if (!html)
+        return;
 
     for (node = html->content; node != null; node = node->next)
     {

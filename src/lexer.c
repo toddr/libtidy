@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/04/19 10:43:05 $ 
-    $Revision: 1.62 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/05 04:02:20 $ 
+    $Revision: 1.63 $ 
 
 */
 
@@ -231,6 +231,7 @@ Lexer *NewLexer(StreamIn *in)
         lexer->txtstart = 0;
         lexer->txtend = 0;
         lexer->token = null;
+        lexer->root = null;
         lexer->lexbuf =  null;
         lexer->lexlength = 0;
         lexer->lexsize = 0;
@@ -921,8 +922,21 @@ Node *FindBody(Node *root)
 
     node = node->content;
 
-    while (node && node->tag != tag_body)
+    while (node && node->tag != tag_body && node->tag != tag_frameset)
         node = node->next;
+
+    if (node->tag = tag_frameset)
+    {
+        node = node->content;
+
+        while (node && node->tag != tag_noframes) node = node->next;
+
+        if (node)
+        {
+            node = node->content;
+            while (node && node->tag != tag_body) node = node->next;
+        }
+    }
 
     return node;
 }
