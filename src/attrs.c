@@ -2,6 +2,13 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/08 07:30:17 $ 
+    $Revision: 1.2 $ 
+
 */
 
 #include "platform.h"   /* platform independent stuff */
@@ -416,7 +423,7 @@ void DeclareLiteralAttrib(char *name)
 {
     Attribute *attrib = lookup(name);
 
-    if (attrib = null)
+    if (attrib == null)	/* #431337 - fix by Terry Teague 07 Jun 01 */
         attrib = install(name, VERS_PROPRIETARY, null);
 
     attrib->literal = yes;
