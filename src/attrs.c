@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/10 07:39:48 $ 
-    $Revision: 1.84 $ 
+    $Date: 2003/05/10 07:50:10 $ 
+    $Revision: 1.85 $ 
 
 */
 
@@ -1122,7 +1122,7 @@ Bool IsValidHTMLID(tmbstr id)
     if (!IsLetter(*s++))
         return no;
 
-    while (s)
+    while (*s)
         if (!IsNamechar(*s++))
             return no;
 
