@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/31 13:10:33 $ 
-    $Revision: 1.11 $ 
+    $Date: 2005/04/06 10:36:43 $ 
+    $Revision: 1.12 $ 
 
   Contributing Author(s):
 
@@ -659,11 +659,11 @@ void dumpNode( TidyNode tnod, int indent )
     case TidyNode_End:
     case TidyNode_StartEnd:
     default:
-      ctmbstr name = tidyNodeGetName( child );
+      name = tidyNodeGetName( child );
       break;
     }
     assert( name != NULL );
-    printf( "\%*.*sNode: \%s\\n", indent, indent, name );
+    printf( "\%*.*sNode: \%s\\n", indent, indent, " ", name );
     dumpNode( child, indent + 4 );
   }
 }
