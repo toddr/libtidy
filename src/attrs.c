@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/09 07:19:48 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 03:46:28 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -142,7 +142,7 @@ static struct _attrlist
     {"codebase",         VERS_HTML40,            URL},      /* OBJECT */
     {"codetype",         VERS_HTML40,            TYPE},     /* OBJECT */
     {"color",            VERS_LOOSE,             COLOR},    /* BASEFONT, FONT */
-    {"cols",             VERS_IFRAME,            COLS},     /* TABLE & FRAMESET */
+    {"cols",             VERS_IFRAMES,           COLS},     /* TABLE & FRAMESET */
     {"colspan",          VERS_FROM32,            NUMBER},
     {"compact",          VERS_ALL,               BOOL},     /* lists */
     {"content",          VERS_ALL,               TEXT},     /* META */
@@ -182,8 +182,8 @@ static struct _attrlist
     {"link",             VERS_LOOSE,             COLOR},    /* BODY */
     {"longdesc",         VERS_HTML40,            URL},      /* IMG */
     {"lowsrc",           VERS_PROPRIETARY,       URL},      /* IMG */
-    {"marginheight",     VERS_IFRAME,            NUMBER},   /* FRAME, IFRAME, BODY */
-    {"marginwidth",      VERS_IFRAME,            NUMBER},   /* ditto */
+    {"marginheight",     VERS_IFRAMES,           NUMBER},   /* FRAME, IFRAME, BODY */
+    {"marginwidth",      VERS_IFRAMES,           NUMBER},   /* ditto */
     {"maxlength",        VERS_ALL,               NUMBER},   /* INPUT */
     {"media",            VERS_HTML40,            MEDIA},    /* STYLE, LINK */
     {"method",           VERS_ALL,               FSUBMIT},  /* FORM: get or post */
@@ -231,7 +231,7 @@ static struct _attrlist
     {"rules",            VERS_HTML40,            TRULES},   /* TABLE */
     {"scheme",           VERS_HTML40,            TEXT},     /* META */
     {"scope",            VERS_HTML40,            SCOPE},    /* table cells */
-    {"scrolling",        VERS_IFRAME,            SCROLL},   /* yes, no or auto */
+    {"scrolling",        VERS_IFRAMES,           SCROLL},   /* yes, no or auto */
     {"selected",         VERS_ALL,               BOOL},     /* OPTION */
     {"shape",            VERS_FROM32,            SHAPE},    /* AREA, A */
     {"showgrid",         VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive */

@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/10 07:49:45 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 03:44:52 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -172,7 +172,7 @@ static struct tag
     {"noembed",    VERS_NETSCAPE, CM_INLINE, ParseInline, null},
     {"iframe",     VERS_HTML40_LOOSE, CM_INLINE, ParseBlock, null},
     {"frame",      VERS_FRAMESET, (CM_FRAMES|CM_EMPTY), null, null},
-    {"noframes",   VERS_IFRAME,  (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
+    {"noframes",   VERS_IFRAMES,  (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
     {"noscript",   VERS_HTML40,  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"b",          VERS_ALL,     CM_INLINE, ParseInline, null},
     {"i",          VERS_ALL,     CM_INLINE, ParseInline, null},
