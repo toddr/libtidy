@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.23 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:50:31 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -167,6 +167,24 @@ char FoldCase(char c, Bool tocaps)
     return c;
 }
 
+
+/*
+ return last char in string
+ this is useful when trailing quotemark
+ is missing on an attribute
+*/
+static int LastChar(char *str)
+{
+    int n;
+
+    if (str != null && *str != '\0')
+    {
+        n = wstrlen(str);
+        return str[n-1];
+    }
+
+    return 0;
+}
 
 /*
    node->type is one of these:
@@ -509,8 +527,15 @@ void FreeAttrs(Node *node)
 
         if (av->attribute)
             MemFree(av->attribute);
+
         if (av->value)
             MemFree(av->value);
+
+        if (av->asp)
+            FreeNode(av->asp);
+
+        if (av->php)
+            FreeNode(av->php);
 
         node->attributes = av->next;
         MemFree(av);
@@ -558,23 +583,12 @@ void RemoveAttribute(Node *node, AttVal *attr)
  */
 void FreeNode(Node *node)
 {
-    AttVal *av;
     Node *next;
 
     while (node)
     {
-        while (node->attributes)
-        {
-            av = node->attributes;
-
-            if (av->attribute)
-                MemFree(av->attribute);
-            if (av->value)
-                MemFree(av->value);
-
-            node->attributes = av->next;
-            MemFree(av);
-        }
+        if (node->attributes)
+            FreeAttrs(node);
 
         if (node->element)
             MemFree(node->element);
@@ -1063,10 +1077,10 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
             fpi = "-//W3C//DTD XHTML 1.0 Frameset//EN";
             sysid = voyager_frameset;
         }
-        else /* lets assume XHTML transitional */
+        else /* proprietary */
         {
-            fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
-            sysid = voyager_loose;
+            fpi = null;
+            sysid = "";
         }
     }
     else if (doctype_mode == doctype_strict)
@@ -1080,16 +1094,19 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
         sysid = voyager_loose;
     }
 
-    if (!doctype)
-    {
-        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
-            return no;
-    }
-
     if (doctype_mode == doctype_user && doctype_str)
     {
         fpi = doctype_str;
         sysid = "";
+    }
+
+    if (!fpi)
+        return no;
+
+    if (!doctype)
+    {
+        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
+            return no;
     }
 
     lexer->txtstart = lexer->txtend = lexer->lexsize;
@@ -1162,6 +1179,13 @@ int ApparentVersion(Lexer *lexer)
         break;
     }
 
+    /* 
+     kludge to avoid error appearing at end of file
+     it would be better to note the actual position
+     when first encountering the doctype declaration
+    */
+    lexer->lines = 1;
+    lexer->columns = 1;
     ReportWarning(lexer, null, null, INCONSISTENT_VERSION);
     return HTMLVersion(lexer);
 }
@@ -1900,9 +1924,11 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* swallow newline following start tag */
                 /* special check needed for CRLF sequence */
                 /* this doesn't apply to empty elements */
+                /* nor to preformatted content that needs escaping */
 
-                if (ExpectsContent(lexer->token) ||
-                    lexer->token->tag == tag_br)
+                if ((mode != Preformatted || PreContent(lexer->token))
+                    && (ExpectsContent(lexer->token) ||
+                               lexer->token->tag == tag_br))
                 {
                     c = ReadChar(lexer->in);
 
@@ -2277,7 +2303,7 @@ void InitMap(void)
  the attribute value. Here is an example of a work
  around for using ASP in attribute values:
 
-  href="<%=rsSchool.Fields("ID").Value%>"
+  href='<%=rsSchool.Fields("ID").Value%>'
 
  where the ASP that generates the attribute value
  is masked from Tidy by the quotemarks.
@@ -2293,14 +2319,18 @@ static Node *ParseAsp(Lexer *lexer)
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        if ((c = ReadChar(lexer->in)) == EndOfStream)
+            break;
+
         AddCharToLexer(lexer, c);
 
 
         if (c != '%')
             continue;
 
-        c = ReadChar(lexer->in);
+        if ((c = ReadChar(lexer->in)) == EndOfStream)
+            break;
+
         AddCharToLexer(lexer, c);
 
         if (c == '>')
@@ -2331,14 +2361,18 @@ static Node *ParsePhp(Lexer *lexer)
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        if ((c = ReadChar(lexer->in)) == EndOfStream)
+            break;
+
         AddCharToLexer(lexer, c);
 
 
         if (c != '?')
             continue;
 
-        c = ReadChar(lexer->in);
+        if ((c = ReadChar(lexer->in)) == EndOfStream)
+            break;
+
         AddCharToLexer(lexer, c);
 
         if (c == '>')
@@ -2361,7 +2395,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
 {
     int start, len = 0;
     char *attr;
-    uint c;
+    uint c, lastc;
 
     *asp = null;  /* clear asp pointer */
     *php = null;  /* clear php pointer */
@@ -2430,6 +2464,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
     }
 
     start = lexer->lexsize;
+    lastc = c;
 
     for (;;)
     {
@@ -2446,6 +2481,14 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
             break;
         }
 
+        if (lastc == '-' && (c == '"' || c == '\''))
+        {
+            lexer->lexsize--;
+            --len;
+            UngetChar(c, lexer->in);
+            break;
+        }
+
         if (IsWhite(c))
             break;
 
@@ -2458,6 +2501,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
         /* ++len; */	/* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
         AddCharToLexer(lexer, c);
 
+        lastc = c;
         c = ReadChar(lexer->in);
     }
 
@@ -2607,7 +2651,7 @@ static char *ParseValue(Lexer *lexer, char *name,
   space, '/' and '>'
 */
 
-    if (c != '=')
+    if (c != '=' && c != '"' && c != '\'')
     {
         UngetChar(c, lexer->in);
         return null;
@@ -2919,11 +2963,20 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             av = NewAttribute();
             av->attribute = attribute;
             av->value = value;
-            /* ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE); */
-            if (value == null)  /* #427664 - fix by Gary Peskin 04 Aug 00 */
+            /* #427664 - fix by Gary Peskin 04 Aug 00; other fixes by Dave Raggett */
+            /*
+            if (value == null)
             	ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
             else
             	ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
+            */
+            if (value != null)
+                ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
+            else if (LastChar(attribute) == '"')
+                ReportAttrError(lexer, lexer->token, av, MISSING_QUOTEMARK);
+            else
+                ReportAttrError(lexer, lexer->token, av, UNKNOWN_ATTRIBUTE);
+
             FreeAttribute(av);
         }
     }
