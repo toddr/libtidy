@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/01/07 17:15:08 $ 
-    $Revision: 1.21 $ 
+    $Date: 2005/01/07 17:18:29 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -274,7 +274,7 @@ struct _Node
 
     uint        start;          /* start of span onto text array */
     uint        end;            /* end of span onto text array */
-    uint        type;           /* TextNode, StartTag, EndTag etc. */
+    NodeType    type;           /* TextNode, StartTag, EndTag etc. */
 
     uint        line;           /* current line of document */
     uint        column;         /* current column of document */
