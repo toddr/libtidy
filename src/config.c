@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:16:40 $ 
-    $Revision: 1.31 $ 
+    $Date: 2001/09/04 08:20:36 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -163,7 +163,7 @@ struct _plist
 static PList *hashtable[HASHSIZE];   /* private hash table */
 static Bool initialized = no;
 
-/* used parsing the command line */
+/* used for parsing the command line */
 static char *config_text;
 
 static struct Flag
@@ -198,6 +198,7 @@ static struct Flag
     {"raw",             {(int *)&RawOut},           ParseBool},
     {"uppercase-tags",  {(int *)&UpperCaseTags},    ParseBool},
     {"uppercase-attributes", {(int *)&UpperCaseAttrs}, ParseBool},
+    {"bare",            {(int *)&MakeBare},         ParseBool},
     {"clean",           {(int *)&MakeClean},        ParseBool},
     {"logical-emphasis", {(int *)&LogicalEmphasis}, ParseBool},
     {"word-2000",       {(int *)&Word2000},         ParseBool},
@@ -1197,7 +1198,12 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
             if (showCurrent)
                 sprintf(tempvals, "%d", *(configItem->location.number));
             else
-                vals = "0, 1, 2, ...";
+            {
+                if ((uint *)configItem->location.number == &wraplen)
+                    vals = "0 (no wrapping), 1, 2, ...";
+                else
+                    vals = "0, 1, 2, ...";
+            }
         }
 
         else if ( configItem->parser == ParseIndent )
