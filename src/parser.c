@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/09/12 02:35:48 $ 
-    $Revision: 1.125 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/10/26 14:13:46 $ 
+    $Revision: 1.126 $ 
 
 */
 
@@ -3004,7 +3004,8 @@ void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
 
     node = GetToken(doc, IgnoreWhitespace);
 
-    if (!(node && node->type == EndTag && node->tag->id == script->tag->id))
+    if (!(node && node->type == EndTag && node->tag &&
+        node->tag->id == script->tag->id))
     {
         ReportError(doc, script, node, MISSING_ENDTAG_FOR);
 
