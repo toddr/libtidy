@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 17:20:19 $ 
-    $Revision: 1.48 $ 
+    $Date: 2005/02/25 12:57:30 $ 
+    $Revision: 1.49 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1175,7 +1175,11 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     Bool xhtmlOut = cfgBool( doc, TidyXhtmlOut );
     Bool xmlDecl  = cfgBool( doc, TidyXmlDecl );
     Bool tidyMark = cfgBool( doc, TidyMark );
+    Bool tidyXmlTags = cfgBool( doc, TidyXmlTags );
     Node* node;
+
+    if (tidyXmlTags)
+       return tidyDocStatus( doc );
 
     /* simplifies <b><b> ... </b> ...</b> etc. */
     NestedEmphasis( doc, &doc->root );
