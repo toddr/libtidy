@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/12 05:57:10 $ 
-    $Revision: 1.8 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/12 09:11:48 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -153,6 +153,12 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
 
 void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
 {
+    /* replacement for #427818 - fix by Tony Goodwin 11 Oct 00 */
+    char *entityname = "NULL";
+
+    if (entity)
+        entityname = entity;
+
     lexer->warnings++;
 
     if (ShowWarnings)
@@ -161,11 +167,11 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
 
         if (code == MISSING_SEMICOLON)
         {
-            tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entity?entity:"NULL");	/* #427818 - fix based on suggestion by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entityname);
         }
         else if (code == UNKNOWN_ENTITY)
         {
-            tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entity?entity:"NULL");	/* #427818 - fix based on suggestion by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entityname);
         }
         else if (code == UNESCAPED_AMPERSAND)
         {
@@ -252,6 +258,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " unexpected or duplicate quote mark");
         }
+        else if (code == MISSING_QUOTEMARK)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " attribute with missing trailing quote mark");
+        }
         else if (code == REPEATED_ATTRIBUTE)
         {
             tidy_out(lexer->errout, "Warning: ");
@@ -263,6 +275,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " proprietary attribute value \"%s\"", value);
+        }
+        else if (code == PROPRIETARY_ATTRIBUTE)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " proprietary attribute \"%s\"", name);
         }
         else if (code == UNEXPECTED_END_OF_FILE)
         {
@@ -403,6 +421,12 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
             ReportTag(lexer, element);
             tidy_out(lexer->errout, " by ");
             ReportTag(lexer, node);
+        }
+        else if (code == UNESCAPED_ELEMENT)
+        {
+            tidy_out(lexer->errout, "Warning: unescaped ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " in pre content");
         }
         else if (code == TRIM_EMPTY_ELEMENT)
         {
