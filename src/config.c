@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/05 18:07:41 $ 
-    $Revision: 1.47 $ 
+    $Date: 2003/03/07 15:19:21 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -27,7 +27,11 @@
   line continuation.
 */
 
+#ifdef WINDOWS_OS
 #include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "config.h"
 #include "tidy-int.h"
