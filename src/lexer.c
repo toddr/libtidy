@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/11 00:01:55 $ 
-    $Revision: 1.113 $ 
+    $Date: 2003/05/11 05:43:26 $ 
+    $Revision: 1.114 $ 
 
 */
 
@@ -2540,7 +2540,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     }
                 }
 
-                if ( cfgBool(doc, TidyXmlPIs) )  /* insist on ?> as terminator */
+                if (cfgBool(doc, TidyXmlPIs) || lexer->isvoyager) /* insist on ?> as terminator */
                 {
                     if (c != '?')
                         continue;
@@ -2563,11 +2563,40 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     continue;
 
                 lexer->lexsize -= 1;
-                lexer->txtend = lexer->lexsize;
-                lexer->lexbuf[lexer->lexsize] = '\0';
+
+                if (lexer->lexsize)
+                {
+                    uint i;
+                    Bool closed;
+
+                    for (i = 0; i <= lexer->lexsize &&
+                        !IsWhite(lexer->lexbuf[i + lexer->txtstart]); ++i)
+                        /**/;
+
+                    closed = lexer->lexbuf[lexer->lexsize - 1] == '?';
+
+                    if (closed)
+                        lexer->lexsize -= 1;
+
+                    lexer->txtstart += i;
+                    lexer->txtend = lexer->lexsize;
+                    lexer->lexbuf[lexer->lexsize] = '\0';
+
+                    lexer->token = PIToken(lexer);
+                    lexer->token->closed = closed;
+                    lexer->token->element = tmbstrndup(lexer->lexbuf +
+                                                       lexer->txtstart - i, i);
+                }
+                else
+                {
+                    lexer->txtend = lexer->lexsize;
+                    lexer->lexbuf[lexer->lexsize] = '\0';
+                    lexer->token = PIToken(lexer);
+                }
+
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = PIToken(lexer);
+                return lexer->token;
 
             case LEX_ASP:  /* seen <% so look for "%>" */
                 if (c != '%')

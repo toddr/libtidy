@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 02:24:47 $ 
-    $Revision: 1.64 $ 
+    $Date: 2003/05/11 05:43:26 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -858,7 +858,7 @@ void AdjustConfig( TidyDocImpl* doc )
         SetOptionBool( doc, TidyXmlOut, yes );
         SetOptionBool( doc, TidyUpperCaseTags, no );
         SetOptionBool( doc, TidyUpperCaseAttrs, no );
-        SetOptionBool( doc, TidyXmlPIs, yes );
+        /* SetOptionBool( doc, TidyXmlPIs, yes ); */
     }
 
     /* if XML in, then XML out */
