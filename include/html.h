@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:44:53 $ 
-    $Revision: 1.55 $ 
+    $Date: 2001/09/04 07:02:19 $ 
+    $Revision: 1.56 $ 
 
 */
 
@@ -648,6 +648,14 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
 int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
                            Out *out, PutBytes putter, int *count);
 
+/* char encoding used when replacing illegal SGML chars, regardless of specified encoding */
+extern int ReplacementCharEncoding;
+
+/* Function for conversion from Windows-1252 to Unicode */
+int DecodeWin1252(int c);
+/* Function to convert from MacRoman to Unicode */
+int DecodeMacRoman(int c);
+
 /* defined in platform.h - TRT */
 /*
 void *MemAlloc(uint size);
@@ -675,13 +683,13 @@ char *wstrtolower(char *s);
 
 void tidy_out(FILE *fp, const char* msg, ...);
 
-/* error codes for entities */
+/* error codes for entities/numeric character references */
 
 #define MISSING_SEMICOLON       1
-#define UNKNOWN_ENTITY          2
-#define UNESCAPED_AMPERSAND     3
-#define APOS_UNDEFINED          4
-#define INVALID_ENTITY          5
+#define MISSING_SEMICOLON_NCR   2
+#define UNKNOWN_ENTITY          3
+#define UNESCAPED_AMPERSAND     4
+#define APOS_UNDEFINED          5
 
 /* error codes for element messages */
 
@@ -801,8 +809,11 @@ void tidy_out(FILE *fp, const char* msg, ...);
 
 #define VENDOR_SPECIFIC_CHARS   2
 #define INVALID_SGML_CHARS      4
-#define ILLEGAL_UTF8            8
-#define INVALID_URI             16
+#define INVALID_UTF8            8
+#define INVALID_UTF16           16
+#define ENCODING_MISMATCH       32 /* fatal error */
+#define INVALID_URI             64
+#define INVALID_NCR             128
 
 void HelpText(FILE *errout, char *prog);
 void GeneralInfo(FILE *errout);
@@ -835,10 +846,12 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent);
 
 extern uint spaces;         /* default indentation */
 extern uint wraplen;        /* default wrap margin */
+extern int tabsize;
+
 extern int CharEncoding;
+
 /* char encoding used when replacing illegal SGML chars, regardless of specified encoding */
 extern int ReplacementCharEncoding;
-extern int tabsize;
 
 extern DocTypeMode doctype_mode;   /* see doctype property */
 extern char *doctype_str;   /* user specified doctype */

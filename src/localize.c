@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:59:12 $ 
-    $Revision: 1.35 $ 
+    $Date: 2001/09/04 07:05:41 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -155,21 +155,28 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
         {
             NtoS(c, buf);
             lexer->badChars |= VENDOR_SPECIFIC_CHARS;
-            tidy_out(lexer->errout, "Warning: %s illegal character code %s",
+            tidy_out(lexer->errout, "Warning: %s invalid character code %s",
                      code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
         else if ((code & ~DISCARDED_CHAR) == INVALID_SGML_CHARS)
         {
             NtoS(c, buf);
             lexer->badChars |= INVALID_SGML_CHARS;
-            tidy_out(lexer->errout, "Warning: %s illegal character code %s",
+            tidy_out(lexer->errout, "Warning: %s invalid character code %s",
                      code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
-        else if ((code & ~DISCARDED_CHAR) == ILLEGAL_UTF8)
+        else if ((code & ~DISCARDED_CHAR) == INVALID_UTF8)
         {
             sprintf(buf, "U+%04lX", c);
-            lexer->badChars |= ILLEGAL_UTF8;
-            tidy_out(lexer->errout, "Warning: %s illegal UTF-8 bytes (char. code %s)",
+            lexer->badChars |= INVALID_UTF8;
+            tidy_out(lexer->errout, "Warning: %s invalid UTF-8 bytes (char. code %s)",
+                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
+        }
+        else if ((code & ~DISCARDED_CHAR) == INVALID_NCR)
+        {
+            NtoS(c, buf);
+            lexer->badChars |= INVALID_NCR;
+            tidy_out(lexer->errout, "Warning: %s invalid numeric character reference %s",
                      code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
 
@@ -195,6 +202,10 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
         {
             tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entityname);
         }
+        if (code == MISSING_SEMICOLON_NCR)
+        {
+            tidy_out(lexer->errout, "Warning: numeric character reference \"%s\" doesn't end in ';'", entityname);
+        }
         else if (code == UNKNOWN_ENTITY)
         {
             tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entityname);
@@ -206,10 +217,6 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
         else if (code == APOS_UNDEFINED)
         {
             tidy_out(lexer->errout, "Warning: named entity &apos; only defined in XML/XHTML");
-        }
-        else if (code == INVALID_ENTITY)
-        {
-            tidy_out(lexer->errout, "Warning: entity \"%s\" is invalid in HTML", entityname);
         }
 
         tidy_out(lexer->errout, "\n");
@@ -657,16 +664,16 @@ void ErrorSummary(Lexer *lexer)
                      (lexer->in->encoding == MACROMAN)?"MacRoman":"specified");
             tidy_out(lexer->errout, "use named entities, e.g. &trade;.\n\n");
         }
-        if (lexer->badChars & INVALID_SGML_CHARS)
+        if ((lexer->badChars & INVALID_SGML_CHARS) || (lexer->badChars & INVALID_NCR))
         {
-            tidy_out(lexer->errout, "Character numbers 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
-            tidy_out(lexer->errout, "even if they were, they would be unprintable control characters.\n");
+            tidy_out(lexer->errout, "Character codes 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
+            tidy_out(lexer->errout, "even if they were, they would likely be unprintable control characters.\n");
             tidy_out(lexer->errout, "Tidy assumed you wanted to refer to a character with the same byte value in the \n");
             tidy_out(lexer->errout, "%s encoding and replaced that reference with the Unicode equivalent.\n\n",
                      (ReplacementCharEncoding == WIN1252)?"Windows-1252":
                      (ReplacementCharEncoding == MACROMAN)?"MacRoman":"default");
         }
-        if (lexer->badChars & ILLEGAL_UTF8)
+        if (lexer->badChars & INVALID_UTF8)
         {
             tidy_out(lexer->errout, "Character codes for UTF-8 must be in the range: U+0000 to U+10FFFF.\n");
             tidy_out(lexer->errout, "The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also\n");
