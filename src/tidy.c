@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/07/08 03:29:25 $ 
-    $Revision: 1.45 $ 
+    $Author: krusch $ 
+    $Date: 2002/09/01 13:05:40 $ 
+    $Revision: 1.46 $ 
 
   Contributing Author(s):
 
@@ -2337,7 +2337,7 @@ int main(int argc, char **argv)
                     else
                         PPrintTree(&out, null, 0, lexer, document);
 
-                    PFlushLine(&out, 0);
+                    PFlushLine(&out, 0, lexer);
 
 #if PRESERVE_FILE_TIMES
 
@@ -2384,7 +2384,7 @@ int main(int argc, char **argv)
                     else
                         PPrintTree(&out, null, 0, lexer, document);
 
-                    PFlushLine(&out, 0);
+                    PFlushLine(&out, 0, lexer);
                 }
 
             }

@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/07/18 18:21:27 $ 
-    $Revision: 1.48 $ 
+    $Author: krusch $ 
+    $Date: 2002/09/01 13:05:39 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -350,31 +350,36 @@ static void WrapAttrVal(Out *fout, uint indent, Bool inString)
     wraphere = 0;
 }
 
-void PFlushLine(Out *fout, uint indent)
+void PFlushLine(Out *fout, uint indent, Lexer *lexer)
 {
     uint i;
 
-    if (linelen > 0)
-    {
-        if (indent + linelen >= wraplen)
-            WrapLine(fout, indent);
-
-        if (!InAttVal || IndentAttributes)
+    if (lexer->seenEndHtml) {              /* #603128 tidy adds newslines after </html> tag */
+        PCondFlushLine(fout, indent, lexer);
+    }
+    else {
+        if (linelen > 0)
         {
-            for (i = 0; i < indent; ++i)
-                outc(' ', fout);
+            if (indent + linelen >= wraplen)
+                WrapLine(fout, indent);
+
+            if (!InAttVal || IndentAttributes)
+            {
+                for (i = 0; i < indent; ++i)
+                    outc(' ', fout);
+            }
+
+            for (i = 0; i < linelen; ++i)
+                outc(linebuf[i], fout);
         }
 
-        for (i = 0; i < linelen; ++i)
-            outc(linebuf[i], fout);
+        outc('\n', fout);
+        linelen = wraphere = 0;
+        InAttVal = no;
     }
-
-    outc('\n', fout);
-    linelen = wraphere = 0;
-    InAttVal = no;
 }
 
-void PCondFlushLine(Out *fout, uint indent)
+void PCondFlushLine(Out *fout, uint indent, Lexer *lexer)
 {
     uint i;
 
@@ -808,7 +813,7 @@ static void PPrintText(Out *fout, uint mode, uint indent,
 
         if (c == '\n')
         {
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
             continue;
         }
 
@@ -823,7 +828,7 @@ static void PPrintString(Out *fout, uint indent, char *str)
 }
 
 static void PPrintAttrValue(Out *fout, uint indent,
-                            char *value, int delim, Bool wrappable)
+                            char *value, int delim, Bool wrappable, Lexer *lexer)
 {
     uint c;
     Bool wasinstring = no;
@@ -854,7 +859,7 @@ static void PPrintAttrValue(Out *fout, uint indent,
         if (indent + linelen < wraplen)
             wraphere = linelen;
         else
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
     }
 
     AddC(delim, linelen++);
@@ -936,7 +941,7 @@ static void PPrintAttrValue(Out *fout, uint indent,
 
             if (c == '\n')
             {
-                PFlushLine(fout, indent);
+                PFlushLine(fout, indent, lexer);
                 continue;
             }
 
@@ -949,14 +954,14 @@ static void PPrintAttrValue(Out *fout, uint indent,
 }
 
 static void PPrintAttribute(Out *fout, uint indent,
-                            Node *node, AttVal *attr)
+                            Node *node, AttVal *attr, Lexer *lexer)
 {
     char *name;
     Bool wrappable = no;
 
     if (IndentAttributes)
     {
-        PFlushLine(fout, indent);
+        PFlushLine(fout, indent, lexer);
         indent += spaces;
     }
 
@@ -980,7 +985,7 @@ static void PPrintAttribute(Out *fout, uint indent,
     }
     else
     {
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
         AddC(' ', linelen++);
     }
 
@@ -995,15 +1000,15 @@ static void PPrintAttribute(Out *fout, uint indent,
         if (XmlTags || XmlOut)
             PPrintAttrValue(fout, indent,
               IsBool(attr->attribute) ? attr->attribute : "",
-              attr->delim, yes);
+              attr->delim, yes, lexer);
         else if (!IsBoolAttribute(attr) && !IsNewNode(node))
-            PPrintAttrValue(fout, indent, "", attr->delim, yes);
+            PPrintAttrValue(fout, indent, "", attr->delim, yes, lexer);
         else if (indent + linelen < wraplen)
             wraphere = linelen;
 
     }
     else
-        PPrintAttrValue(fout, indent, attr->value, attr->delim, wrappable);
+        PPrintAttrValue(fout, indent, attr->value, attr->delim, wrappable, lexer);
 }
 
 static void PPrintAttrs(Out *fout, uint indent,
@@ -1034,7 +1039,7 @@ static void PPrintAttrs(Out *fout, uint indent,
             if (!DropPropAttrs ||
                 !(attribute == null ||
                     (attribute->versions & VERS_PROPRIETARY)))
-            PPrintAttribute(fout, indent, node, attr);
+            PPrintAttribute(fout, indent, node, attr, lexer);
         }
         else if (attr->asp != null)
         {
@@ -1130,7 +1135,7 @@ static void PPrintTag(Lexer *lexer, Out *fout,
             }
         }
         else
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
     }
 }
 
@@ -1186,7 +1191,7 @@ static void PPrintComment(Out *fout, uint indent,
     AddC('>', linelen++);
 
     if (node->linebreak)
-        PFlushLine(fout, indent);
+        PFlushLine(fout, indent, lexer);
 }
 
 static void PPrintDocType(Out *fout, uint indent,
@@ -1200,7 +1205,7 @@ static void PPrintDocType(Out *fout, uint indent,
     if (indent + linelen < wraplen)
         wraphere = linelen;
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 
     AddC('<', linelen++);
     AddC('!', linelen++);
@@ -1237,7 +1242,7 @@ static void PPrintDocType(Out *fout, uint indent,
 
         if (c == '\n')
         {
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
             continue;
         }
 
@@ -1249,7 +1254,7 @@ static void PPrintDocType(Out *fout, uint indent,
 
     AddC('>', linelen++);
     QuoteMarks = q;
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
 static void PPrintPI(Out *fout, uint indent,
@@ -1270,7 +1275,7 @@ static void PPrintPI(Out *fout, uint indent,
 
     AddC('>', linelen++);
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
 static void PPrintXmlDecl(Out *fout, uint indent,
@@ -1292,7 +1297,7 @@ static void PPrintXmlDecl(Out *fout, uint indent,
 
     AddC('>', linelen++);
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
 /* note ASP and JSTE share <% ... %> syntax */
@@ -1318,7 +1323,7 @@ static void PPrintAsp(Out *fout, uint indent,
 
     AddC('%', linelen++);
     AddC('>', linelen++);
-    /* PCondFlushLine(fout, indent); */
+    /* PCondFlushLine(fout, indent, lexer); */
     wraplen = savewraplen;
 }
 
@@ -1341,7 +1346,7 @@ static void PPrintJste(Out *fout, uint indent,
 
     AddC('#', linelen++);
     AddC('>', linelen++);
-    /* PCondFlushLine(fout, indent); */
+    /* PCondFlushLine(fout, indent, lexer); */
     wraplen = savewraplen;
 }
 
@@ -1368,7 +1373,7 @@ static void PPrintPhp(Out *fout, uint indent,
 
     AddC('?', linelen++);
     AddC('>', linelen++);
-    /* PCondFlushLine(fout, indent); */
+    /* PCondFlushLine(fout, indent, lexer); */
     wraplen = savewraplen;
 }
 
@@ -1380,7 +1385,7 @@ static void PPrintCDATA(Out *fout, uint indent,
     if (!IndentCdata)
         indent = 0;
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 
     /* disable wrapping */
 
@@ -1402,7 +1407,7 @@ static void PPrintCDATA(Out *fout, uint indent,
     AddC(']', linelen++);
     AddC(']', linelen++);
     AddC('>', linelen++);
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
     wraplen = savewraplen;
 }
 
@@ -1429,7 +1434,7 @@ static void PPrintSection(Out *fout, uint indent,
 
     AddC(']', linelen++);
     AddC('>', linelen++);
-    /* PCondFlushLine(fout, indent); */
+    /* PCondFlushLine(fout, indent, lexer); */
     wraplen = savewraplen;
 }
 
@@ -1618,12 +1623,12 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     int   contentIndent = -1;
 
     if ( InsideHead(node) )
-      PFlushLine(fout, indent);
+      PFlushLine(fout, indent, lexer);
 /*    else
       indent = 0; */
 
     PPrintTag(lexer, fout, mode, indent, node);
-    PFlushLine(fout, indent);
+    PFlushLine(fout, indent, lexer);
 
     if (xHTML && node->content != null)
     {
@@ -1657,7 +1662,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             linelen = AddAsciiString( commentStart, linelen );
             linelen = AddAsciiString( CDATA_START,  linelen );
             linelen = AddAsciiString( commentEnd,   linelen );
-            PCondFlushLine( fout, indent );
+            PCondFlushLine(fout, indent, lexer);
 
             /* restore wrapping */
             wraplen = savewraplen;
@@ -1677,7 +1682,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
 
     if ( contentIndent < 0 )
     {
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
         contentIndent = 0;
     }
 
@@ -1701,14 +1706,14 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
 
             /* restore wrapping */
             wraplen = savewraplen;
-            PCondFlushLine( fout, 0 /* indent */ );
+            PCondFlushLine(fout, 0 /* indent */, lexer);
         }
     }
 
     PPrintEndTag(fout, mode, indent, node);
     if ( IndentContent == no && node->next != null &&
          !( (node->tag && node->tag->model & CM_INLINE) || node->type != TextNode ) )
-        PFlushLine(fout, indent);
+        PFlushLine(fout, indent, lexer);
 }
 
 
@@ -1811,10 +1816,10 @@ void PPrintTree(Out *fout, uint mode, uint indent,
     else if (node->tag->model & CM_EMPTY || (node->type == StartEndTag && !xHTML))
     {
         if (!(node->tag->model & CM_INLINE))
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
 
         if (node->tag == tag_br && node->prev && node->prev->tag != tag_br && BreakBeforeBR)
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
 
         if (MakeClean && node->tag == tag_wbr)
             PPrintString(fout, indent, " ");
@@ -1822,9 +1827,9 @@ void PPrintTree(Out *fout, uint mode, uint indent,
             PPrintTag(lexer, fout, mode, indent, node);
 
         if (node->tag == tag_param || node->tag == tag_area)
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
         else if (node->tag == tag_br || node->tag == tag_hr)
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
     }
     else /* some kind of container element */
     {
@@ -1833,24 +1838,24 @@ void PPrintTree(Out *fout, uint mode, uint indent,
 
         if (node->tag && node->tag->parser == ParsePre)
         {
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
 
             indent = 0;
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
             PPrintTag(lexer, fout, mode, indent, node);
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
 
             for (content = node->content;
                     content != null;
                     content = content->next)
                 PPrintTree(fout, (mode | PREFORMATTED | NOWRAP), indent, lexer, content);
 
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
             PPrintEndTag(fout, mode, indent, node);
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
 
             if (IndentContent == no && node->next != null)
-                PFlushLine(fout, indent);
+                PFlushLine(fout, indent, lexer);
         }
         else if (node->tag == tag_style || node->tag == tag_script)
         {
@@ -1890,7 +1895,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
 
             if (ShouldIndent(node))
             {
-                PCondFlushLine(fout, indent);
+                PCondFlushLine(fout, indent, lexer);
                 indent += spaces;
 
                 for (content = node->content;
@@ -1898,9 +1903,9 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                         content = content->next)
                     PPrintTree(fout, mode, indent, lexer, content);
 
-                PCondFlushLine(fout, indent);
+                PCondFlushLine(fout, indent, lexer);
                 indent -= spaces;
-                PCondFlushLine(fout, indent);
+                PCondFlushLine(fout, indent, lexer);
             }
             else
             {
@@ -1915,10 +1920,10 @@ void PPrintTree(Out *fout, uint mode, uint indent,
         }
         else /* other tags */
         {
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
 
             if (SmartIndent && node->prev != null)
-                PFlushLine(fout, indent);
+                PFlushLine(fout, indent, lexer);
 
             /* do not omit elements with attributes */
             if (HideEndTags == no ||
@@ -1928,10 +1933,10 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                 PPrintTag(lexer, fout, mode, indent, node);
 
                 if (ShouldIndent(node))
-                    PCondFlushLine(fout, indent);
+                    PCondFlushLine(fout, indent, lexer);
                 else if (node->tag->model & CM_HTML || node->tag == tag_noframes ||
                             (node->tag->model & CM_HEAD && !(node->tag == tag_title)))
-                    PFlushLine(fout, indent);
+                    PFlushLine(fout, indent, lexer);
             }
 
             if (node->tag == tag_body && BurstSlides)
@@ -1947,8 +1952,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                     if (last && !IndentContent && last->type == TextNode &&
                         content->tag && !(content->tag->model & CM_INLINE) )
                     {
-                        /* PFlushLine(fout, indent); */
-                        PFlushLine(fout, indent);
+                        PFlushLine(fout, indent, lexer);
                     }
 
                     PPrintTree(fout, mode,
@@ -1964,12 +1968,12 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                     (node->tag->model & CM_HEAD && !(node->tag == tag_title)))
                     && HideEndTags == no))
             {
-                PCondFlushLine(fout, (IndentContent ? indent+spaces : indent));
+                PCondFlushLine(fout, (IndentContent ? indent+spaces : indent), lexer);
 
                 if (HideEndTags == no || !(node->tag->model & CM_OPT))
                 {
                     PPrintEndTag(fout, mode, indent, node);
-                    PFlushLine(fout, indent);
+                    PFlushLine(fout, indent, lexer);
                 }
             }
             else
@@ -1977,7 +1981,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                 if (HideEndTags == no || !(node->tag->model & CM_OPT))
                     PPrintEndTag(fout, mode, indent, node);
 
-                PFlushLine(fout, indent);
+                PFlushLine(fout, indent, lexer);
             }
 
             if (IndentContent == no &&
@@ -1985,7 +1989,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                 HideEndTags == no &&
                 (node->tag->model & (CM_BLOCK|CM_LIST|CM_DEFLIST|CM_TABLE)))
             {
-                PFlushLine(fout, indent);
+                PFlushLine(fout, indent, lexer);
             }
         }
     }
@@ -2005,9 +2009,9 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
     }
     else if (node->type == CommentTag)
     {
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
         PPrintComment(fout, 0, lexer, node);
-        PCondFlushLine(fout, 0);
+        PCondFlushLine(fout, 0, lexer);
     }
     else if (node->type == RootNode)
     {
@@ -2037,13 +2041,13 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
     else if ( node->tag->model & CM_EMPTY 
               || (node->type == StartEndTag && !xHTML) )
     {
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
         PPrintTag(lexer, fout, mode, indent, node);
-        PFlushLine(fout, indent);
+        PFlushLine(fout, indent, lexer);
 
         /* CPR: folks don't want so much vertical spacing in XML
         if (node->next)
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
         */
     }
     else /* some kind of container element */
@@ -2061,7 +2065,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
             }
         }
 
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
 
         if (XMLPreserveWhiteSpace(node))
         {
@@ -2077,7 +2081,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
         PPrintTag(lexer, fout, mode, indent, node);
 
         if ( !mixed && node->content )
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
  
         for (content = node->content;
                 content != null;
@@ -2085,14 +2089,14 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
             PPrintXMLTree(fout, mode, cindent, lexer, content);
 
         if ( !mixed && node->content )
-            PCondFlushLine(fout, cindent);
+            PCondFlushLine(fout, cindent, lexer);
 
         PPrintEndTag(fout, mode, indent, node);
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
 
         /* CPR: folks don't want so much vertical spacing in XML
         if (node->next)
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
         */
     }
 }
@@ -2119,33 +2123,33 @@ int CountSlides(Node *node)
    inserts a space gif called "dot.gif" to ensure
    that the  slide is at least n pixels high
  */
-static void PrintVertSpacer(Out *fout, uint indent)
+static void PrintVertSpacer(Out *fout, uint indent, Lexer *lexer)
 {
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
     PPrintString(fout, indent , 
     "<img width=\"0\" height=\"0\" hspace=\"1\" src=\"dot.gif\" vspace=\"%d\" align=\"left\">");
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
-static void PrintNavBar(Out *fout, uint indent)
+static void PrintNavBar(Out *fout, uint indent, Lexer *lexer)
 {
     char buf[128];
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
     PPrintString(fout, indent , "<center><small>");
 
     if (slide > 1)
     {
         sprintf(buf, "<a href=\"slide%03d.html\">previous</a> | ", slide-1); /* #427666 - fix by Eric Rossen 02 Aug 00 */
         PPrintString(fout, indent , buf);
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
 
         if (slide < count)
             PPrintString(fout, indent , "<a href=\"slide001.html\">start</a> | "); /* #427666 - fix by Eric Rossen 02 Aug 00 */
         else
             PPrintString(fout, indent , "<a href=\"slide001.html\">start</a>"); /* #427666 - fix by Eric Rossen 02 Aug 00 */
 
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
     }
 
     if (slide < count)
@@ -2155,7 +2159,7 @@ static void PrintNavBar(Out *fout, uint indent)
     }
 
     PPrintString(fout, indent , "</small></center>");
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
 /*
@@ -2173,12 +2177,12 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
     sprintf(buf, "<div onclick=\"document.location='slide%03d.html'\">", /* #427666 - fix by Eric Rossen 02 Aug 00 */
                     (slide < count ? slide + 1 : 1));
     PPrintString(fout, indent, buf);
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 
     /* first print the h2 element and navbar */
     if (slidecontent && slidecontent->tag == tag_h2) /* #431716 - fix by Terry Teague 01 Jul 01 */
     {
-        PrintNavBar(fout, indent);
+        PrintNavBar(fout, indent, lexer);
 
         /* now print an hr after h2 */
 
@@ -2195,11 +2199,11 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
 
 
         if (IndentContent == yes)
-            PCondFlushLine(fout, indent);
+            PCondFlushLine(fout, indent, lexer);
 
-        /* PrintVertSpacer(fout, indent); */
+        /* PrintVertSpacer(fout, indent, lexer); */
 
-        /*PCondFlushLine(fout, indent); */
+        /*PCondFlushLine(fout, indent, lexer); */
 
         /* print the h2 element */
         PPrintTree(fout, mode,
@@ -2222,8 +2226,8 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
         if (last && !IndentContent && last->type == TextNode &&
             content->tag && content->tag->model & CM_BLOCK)
         {
-            PFlushLine(fout, indent);
-            PFlushLine(fout, indent);
+            PFlushLine(fout, indent, lexer);
+            PFlushLine(fout, indent, lexer);
         }
 
         PPrintTree(fout, mode,
@@ -2236,10 +2240,10 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
 
     /* now print epilog */
 
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 
     PPrintString(fout, indent , "<br clear=\"all\">");
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 
     AddC('<', linelen++);
 
@@ -2254,13 +2258,13 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
 
 
     if (IndentContent == yes)
-        PCondFlushLine(fout, indent);
+        PCondFlushLine(fout, indent, lexer);
 
-    PrintNavBar(fout, indent);
+    PrintNavBar(fout, indent, lexer);
 
     /* end tag for div */
     PPrintString(fout, indent, "</div>");
-    PCondFlushLine(fout, indent);
+    PCondFlushLine(fout, indent, lexer);
 }
 
 /*
@@ -2308,7 +2312,7 @@ void CreateSlides(Lexer *lexer, Node *root)
         {
             out.fp = fp;
             PPrintTree(&out, null, 0, lexer, root);
-            PFlushLine(&out, 0);
+            PFlushLine(&out, 0, lexer);
             fclose(fp);
         }
     }
