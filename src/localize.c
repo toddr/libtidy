@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 20:13:54 $ 
-    $Revision: 1.91 $ 
+    $Date: 2003/05/23 23:29:44 $ 
+    $Revision: 1.92 $ 
 
 */
 
@@ -58,31 +58,41 @@ struct _msgfmt
   { APOS_UNDEFINED,               "named entity &apos; only defined in XML/XHTML"                           },
 
 /* ReportAttrError */
+
+  /* attribute name */
   { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             },
   { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           },
   { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         },
-  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     },
+  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             },
+  { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         },
+  { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          },
+
+  /* attribute value */
+  { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   },
+  { ANCHOR_NOT_UNIQUE,            "%s anchor \"%s\" already defined"                                        },
+  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  },
+  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         },
+
+  /* attribute name, attribute value */
   { BAD_ATTRIBUTE_VALUE,          "%s attribute \"%s\" has invalid value \"%s\""                            },
   { BAD_ATTRIBUTE_VALUE_REPLACED, "%s attribute \"%s\" had invalid value \"%s\" and has been replaced"      },
   { INVALID_ATTRIBUTE,            "%s attribute name \"%s\" (value=\"%s\") is invalid"                      },
-  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         },
-  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             },
+
+  /* attribute value, attribute name */
+  { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  },
+
+  /* no arguments */
+  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     },
   { UNEXPECTED_QUOTEMARK,         "%s unexpected or duplicate quote mark"                                   },
   { MISSING_QUOTEMARK,            "%s attribute with missing trailing quote mark"                           },
-  { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  },
-  { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   },
-  { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         },
-  { UNEXPECTED_END_OF_FILE_ATTR,  "end of file while parsing attributes"                                    },
+  { UNEXPECTED_END_OF_FILE_ATTR,  "%s end of file while parsing attributes"                                 },
   { ID_NAME_MISMATCH,             "%s id and name attribute value mismatch"                                 },
   { BACKSLASH_IN_URI,             "%s URI reference contains backslash. Typo?"                              },
   { FIXED_BACKSLASH,              "%s converting backslash in URI to slash"                                 },
   { ILLEGAL_URI_REFERENCE,        "%s improperly escaped URI reference"                                     },
   { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     },
   { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  },
-  { ANCHOR_NOT_UNIQUE,            "%s Anchor \"%s\" already defined"                                        },
-  { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          },
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              },
-  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  },
   { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           },
   { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     },
 
@@ -94,7 +104,6 @@ struct _msgfmt
   { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      },
   { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        },
   { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       },
-  { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 },
   { MISSING_STARTTAG,             "missing <%s>"                                                            },
   { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                },
   { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            },
@@ -105,11 +114,19 @@ struct _msgfmt
   { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           },
   { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             },
   { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       },
-  { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       },
   { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  },
   { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        },
+  { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               },
+  { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      },
+  { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                },
+  { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            },
+
+  /* no arguments */
+  { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 },
+  { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       },
   { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      },
   { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             },
+  { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          },
   { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        },
   { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         },
   { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       },
@@ -117,14 +134,9 @@ struct _msgfmt
   { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     },
   { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    },
   { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         },
-  { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               },
   { NESTED_QUOTATION,             "nested q elements, possible typo."                                       },
-  { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      },
   { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      },
-  { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          },
   { SPACE_PRECEDING_XMLDECL,      "removing whitespace preceding XML Declaration"                           },
-  { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                },
-  { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            },
 
 /* ReportError */
   { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  },
@@ -535,7 +547,7 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
         /* on end of file adjust reported position to end of input */
         doc->lexer->lines   = doc->docIn->curline;
         doc->lexer->columns = doc->docIn->curcol;
-        messageLexer(doc, TidyWarning, fmt);
+        messageLexer(doc, TidyWarning, fmt, tagdesc);
         break;
     }
 }
