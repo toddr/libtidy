@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 04:50:58 $ 
-    $Revision: 1.106 $ 
+    $Date: 2003/05/08 05:58:06 $ 
+    $Revision: 1.107 $ 
 
 */
 
@@ -66,6 +66,8 @@ static void AddAttrToList( AttVal** list, AttVal* av );
 /* used to classify characters for lexical purposes */
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
 uint lexmap[128];
+
+#define IsValidXMLAttrName(name) IsValidXMLID(name)
 
 struct _doctypes
 {
@@ -932,23 +934,23 @@ static tmbchar ParseTagName( TidyDocImpl* doc )
 {
     Lexer *lexer = doc->lexer;
     uint c = lexer->lexbuf[ lexer->txtstart ];
+    Bool xml = cfgBool(doc, TidyXmlTags);
 
     /* fold case of first character in buffer */
-
-    if ( !cfgBool(doc, TidyXmlTags) && IsUpper(c) )
+    if (!xml && IsUpper(c))
         lexer->lexbuf[lexer->txtstart] = (tmbchar) ToLower(c);
 
-    while ( (c = ReadChar(doc->docIn)) != EndOfStream )
+    while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
-        if (!IsNamechar(c))
+        if ((!xml && !IsNamechar(c)) ||
+            (xml && !IsXMLNamechar(c)))
             break;
 
         /* fold case of subsequent characters */
-
-        if ( !cfgBool(doc, TidyXmlTags) && IsUpper(c) )
+        if (!xml && IsUpper(c))
              c = ToLower(c);
 
-        AddCharToLexer( lexer, c );
+        AddCharToLexer(lexer, c);
     }
 
     lexer->txtend = lexer->lexsize;
@@ -3418,7 +3420,6 @@ Bool IsValidAttrName( ctmbstr attr )
     return yes;
 }
 
-
 /* create a new attribute */
 AttVal *NewAttribute(void)
 {
@@ -3491,7 +3492,8 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
 
         value = ParseValue( doc, attribute, no, isempty, &delim );
 
-        if ( attribute && IsValidAttrName(attribute) )
+        if (attribute && (IsValidAttrName(attribute) ||
+            (cfgBool(doc, TidyXmlTags) && IsValidXMLAttrName(attribute))))
         {
             av = NewAttribute();
             av->delim = delim;
