@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/17 11:50:48 $ 
-    $Revision: 1.23 $ 
+    $Date: 2005/03/21 16:26:08 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -2938,12 +2938,11 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
 **********************************************************/
 
 
-static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
+static Bool CheckMetaData( TidyDocImpl* doc, Node* node, Bool HasMetaData )
 {
     Bool HasHttpEquiv = no;
     Bool HasContent = no;
     Bool ContainsAttr = no;
-    Bool HasMetaData = no;
 
     if (Level2_Enabled( doc ))
     {
@@ -3005,8 +3004,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
                 HasMetaData = yes;
         }
 
-        if ( !HasMetaData &&
-             nodeIsLINK(node) )
+        if ( nodeIsLINK(node) )
         {
             AttVal* av = attrGetREL(node);
             HasMetaData = yes;
@@ -3018,9 +3016,9 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
         }
             
         /* Check for MetaData */
-        for ( node = node->content; !HasMetaData && node; node = node->next )
+        for ( node = node->content; node; node = node->next )
         {
-            HasMetaData = CheckMetaData( doc, node);
+            HasMetaData = CheckMetaData( doc, node, HasMetaData );
         }
     }
     return HasMetaData;
@@ -3263,7 +3261,7 @@ static void AccessibilityCheckNode( TidyDocImpl* doc, Node* node )
     /* Checks document for MetaData */
     else if ( nodeIsHEAD(node) )
     {
-        if ( !CheckMetaData( doc, node ) )
+        if ( !CheckMetaData( doc, node, no ) )
           MetaDataPresent( doc, node );
     }
     
