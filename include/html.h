@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 10:56:56 $ 
-    $Revision: 1.29 $ 
+    $Date: 2001/07/17 16:00:32 $ 
+    $Revision: 1.30 $ 
 
 */
 
@@ -698,6 +698,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 
 #define NEWLINE_IN_URI          18
 #define ANCHOR_NOT_UNIQUE       19
+#define ENTITY_IN_ID            20
 
 /* page transition effects */
 
@@ -836,6 +837,7 @@ extern Bool BodyOnly; /* #434940 - output BODY content only */
 extern Bool FixUri;
 extern Bool LowerLiterals;
 extern Bool HideComments;
+extern Bool IndentCdata;
 
 /* Parser methods for tags */
 

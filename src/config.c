@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:46:08 $ 
-    $Revision: 1.11 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/17 16:00:32 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -106,6 +106,7 @@ Bool BodyOnly = no;         /* #434940 - output BODY content only */
 Bool FixUri = yes;          /* applies URI encoding if necessary */
 Bool LowerLiterals = yes;   /* folds known attribute values to lower case */
 Bool HideComments = no;     /* hides all (real) comments in output */
+Bool IndentCdata = no;      /* indent <!CDATA[ ... ]]> section */
 
 typedef struct _lex PLex;
 
@@ -203,6 +204,7 @@ static struct Flag
     {"fix-uri",         {(int *)&FixUri},           ParseBool},
     {"lower-literals",  {(int *)&LowerLiterals},    ParseBool},
     {"hide-comments",   {(int *)&HideComments},     ParseBool},
+    {"indent-cdata",    {(int *)&IndentCdata},      ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}
