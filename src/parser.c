@@ -1,14 +1,14 @@
 /*
   parser.c - HTML Parser
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/12 09:08:53 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/13 07:34:10 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -317,6 +317,22 @@ static void TrimTrailingSpace(Lexer *lexer, Node *element, Node *last)
             }
         }
     }
+}
+
+/* assumes node is a text node */
+Bool IsBlank(Lexer *lexer, Node *node)
+{
+    if (node->type == TextNode)
+    {
+        if (node->end == node->start)
+            return yes;
+
+        if (node->end == node->start + 1 &&
+            lexer->lexbuf[node->end - 1] == ' ')
+            return yes;
+    }
+
+    return no;
 }
 
 /*
@@ -2220,6 +2236,21 @@ void ParseTableTag(Lexer *lexer, Node *table, uint mode)
     ReportWarning(lexer, table, node, MISSING_ENDTAG_FOR);
     TrimEmptyElement(lexer, table);
     lexer->istackbase = istackbase;
+}
+
+/* acceptable content for pre elements */
+Bool PreContent(Node *node)
+{
+    /* p is coerced to br's */
+    if (node->tag == tag_p)
+        return yes;
+
+    if (node->tag == null ||
+            node->tag == tag_param ||
+            !(node->tag->model & (CM_INLINE|CM_NEW)))
+            return no;
+
+    return yes;
 }
 
 void ParsePre(Lexer *lexer, Node *pre, uint mode)
