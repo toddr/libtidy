@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 23:29:44 $ 
-    $Revision: 1.92 $ 
+    $Date: 2003/05/24 15:40:40 $ 
+    $Revision: 1.93 $ 
 
 */
 
@@ -43,106 +43,106 @@ struct _msgfmt
 } const msgFormat[] = 
 {
 /* ReportEncodingError */
-  { ENCODING_MISMATCH,            "specified input encoding (%s) does not match actual input encoding (%s)" },
-  { VENDOR_SPECIFIC_CHARS,        "%s invalid character code %s"                                            },
-  { INVALID_SGML_CHARS,           "%s invalid character code %s"                                            },
-  { INVALID_UTF8,                 "%s invalid UTF-8 bytes (char. code %s)"                                  },
-  { INVALID_UTF16,                "%s invalid UTF-16 surrogate pair (char. code %s)"                        },
-  { INVALID_NCR,                  "%s invalid numeric character reference %s"                               },
+  { ENCODING_MISMATCH,            "specified input encoding (%s) does not match actual input encoding (%s)" }, /* Warning (user knows better than Tidy) */
+  { VENDOR_SPECIFIC_CHARS,        "%s invalid character code %s"                                            }, /* Error */
+  { INVALID_SGML_CHARS,           "%s invalid character code %s"                                            }, /* Error */
+  { INVALID_UTF8,                 "%s invalid UTF-8 bytes (char. code %s)"                                  }, /* Error */
+  { INVALID_UTF16,                "%s invalid UTF-16 surrogate pair (char. code %s)"                        }, /* Error */
+  { INVALID_NCR,                  "%s invalid numeric character reference %s"                               }, /* Error */
 
 /* ReportEntityError */
-  { MISSING_SEMICOLON,            "entity \"%s\" doesn't end in ';'"                                        },
-  { MISSING_SEMICOLON_NCR,        "numeric character reference \"%s\" doesn't end in ';'"                   },
-  { UNKNOWN_ENTITY,               "unescaped & or unknown entity \"%s\""                                    },
-  { UNESCAPED_AMPERSAND,          "unescaped & which should be written as &amp;"                            },
-  { APOS_UNDEFINED,               "named entity &apos; only defined in XML/XHTML"                           },
+  { MISSING_SEMICOLON,            "entity \"%s\" doesn't end in ';'"                                        }, /* Warning in HTML, Error in XML/XHTML */
+  { MISSING_SEMICOLON_NCR,        "numeric character reference \"%s\" doesn't end in ';'"                   }, /* Warning in HTML, Error in XML/XHTML */
+  { UNKNOWN_ENTITY,               "unescaped & or unknown entity \"%s\""                                    }, /* Error */
+  { UNESCAPED_AMPERSAND,          "unescaped & which should be written as &amp;"                            }, /* Warning in HTML, Error in XHTML */
+  { APOS_UNDEFINED,               "named entity &apos; only defined in XML/XHTML"                           }, /* Error in HTML (should only occur for HTML input) */
 
 /* ReportAttrError */
 
   /* attribute name */
-  { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             },
-  { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           },
-  { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         },
-  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             },
-  { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         },
-  { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          },
+  { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             }, /* Error */
+  { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           }, /* ambiguous? */
+  { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         }, /* ambiguous? */
+  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             }, /* Error (but defuncted) */
+  { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         }, /* Error */
+  { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          }, /* Error */
 
   /* attribute value */
-  { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   },
-  { ANCHOR_NOT_UNIQUE,            "%s anchor \"%s\" already defined"                                        },
-  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  },
-  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         },
+  { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   }, /* Error */
+  { ANCHOR_NOT_UNIQUE,            "%s anchor \"%s\" already defined"                                        }, /* Error */
+  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  }, /* Error if XHTML input, Notice if HTML input and XHTML outout */
+  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         }, /* Warning if XHTML, Error if HTML */
 
   /* attribute name, attribute value */
-  { BAD_ATTRIBUTE_VALUE,          "%s attribute \"%s\" has invalid value \"%s\""                            },
-  { BAD_ATTRIBUTE_VALUE_REPLACED, "%s attribute \"%s\" had invalid value \"%s\" and has been replaced"      },
-  { INVALID_ATTRIBUTE,            "%s attribute name \"%s\" (value=\"%s\") is invalid"                      },
+  { BAD_ATTRIBUTE_VALUE,          "%s attribute \"%s\" has invalid value \"%s\""                            }, /* Error */
+  { BAD_ATTRIBUTE_VALUE_REPLACED, "%s attribute \"%s\" had invalid value \"%s\" and has been replaced"      }, /* Error */
+  { INVALID_ATTRIBUTE,            "%s attribute name \"%s\" (value=\"%s\") is invalid"                      }, /* Error */
 
   /* attribute value, attribute name */
-  { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  },
+  { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  }, /* Error */
 
   /* no arguments */
-  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     },
-  { UNEXPECTED_QUOTEMARK,         "%s unexpected or duplicate quote mark"                                   },
-  { MISSING_QUOTEMARK,            "%s attribute with missing trailing quote mark"                           },
-  { UNEXPECTED_END_OF_FILE_ATTR,  "%s end of file while parsing attributes"                                 },
-  { ID_NAME_MISMATCH,             "%s id and name attribute value mismatch"                                 },
-  { BACKSLASH_IN_URI,             "%s URI reference contains backslash. Typo?"                              },
-  { FIXED_BACKSLASH,              "%s converting backslash in URI to slash"                                 },
-  { ILLEGAL_URI_REFERENCE,        "%s improperly escaped URI reference"                                     },
-  { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     },
-  { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  },
-  { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              },
-  { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           },
-  { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     },
+  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but defuncted) */
+  { UNEXPECTED_QUOTEMARK,         "%s unexpected or duplicate quote mark"                                   }, /* Error */
+  { MISSING_QUOTEMARK,            "%s attribute with missing trailing quote mark"                           }, /* Error */
+  { UNEXPECTED_END_OF_FILE_ATTR,  "%s end of file while parsing attributes"                                 }, /* Error */
+  { ID_NAME_MISMATCH,             "%s id and name attribute value mismatch"                                 }, /* Error */
+  { BACKSLASH_IN_URI,             "%s URI reference contains backslash. Typo?"                              }, /* Error */
+  { FIXED_BACKSLASH,              "%s converting backslash in URI to slash"                                 }, /* Error */
+  { ILLEGAL_URI_REFERENCE,        "%s improperly escaped URI reference"                                     }, /* Error */
+  { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     }, /* Error */
+  { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  }, /* Error */
+  { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              }, /* Error */
+  { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           }, /* Warning if HTML, Error if XML/XHTML */
+  { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     }, /* Warning */
 
 /* ReportWarning */
-  { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           },
-  { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 },
-  { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                },
-  { NESTED_EMPHASIS,              "nested emphasis %s"                                                      },
-  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      },
-  { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        },
-  { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       },
-  { MISSING_STARTTAG,             "missing <%s>"                                                            },
-  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                },
-  { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            },
-  { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               },
-  { INSERTING_TAG,                "inserting implicit <%s>"                                                 },
-  { CANT_BE_NESTED,               "%s can't be nested"                                                      },
-  { PROPRIETARY_ELEMENT,          "%s is not approved by W3C"                                               },
-  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           },
-  { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             },
-  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       },
-  { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  },
-  { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        },
-  { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               },
-  { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      },
-  { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                },
-  { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            },
+  { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           }, /* Error */
+  { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 }, /* Error */
+  { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                }, /* Error */
+  { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
+  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* ambiguous? */
+  { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        }, /* Error */
+  { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       }, /* Error */
+  { MISSING_STARTTAG,             "missing <%s>"                                                            }, /* Error */
+  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                }, /* Error */
+  { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            }, /* Error */
+  { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               }, /* Notice? */
+  { INSERTING_TAG,                "inserting implicit <%s>"                                                 }, /* Notice? */
+  { CANT_BE_NESTED,               "%s can't be nested"                                                      }, /* Error */
+  { PROPRIETARY_ELEMENT,          "%s is not approved by W3C"                                               }, /* Error */
+  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Notice? */
+  { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             }, /* Error (but defuncted) */
+  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
+  { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  }, /* Error */
+  { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        }, /* Error? */
+  { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               }, /* Error */
+  { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      }, /* Error */
+  { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                }, /* Error */
+  { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            }, /* Error */
 
   /* no arguments */
-  { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 },
-  { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       },
-  { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      },
-  { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             },
-  { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          },
-  { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        },
-  { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         },
-  { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       },
-  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           },
-  { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     },
-  { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    },
-  { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         },
-  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       },
-  { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      },
-  { SPACE_PRECEDING_XMLDECL,      "removing whitespace preceding XML Declaration"                           },
+  { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 }, /* Error */
+  { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       }, /* Error */
+  { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      }, /* Error */
+  { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             }, /* Error (but defuncted) */
+  { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          }, /* Error */
+  { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        }, /* Error */
+  { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         }, /* Error */
+  { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       }, /* Error */
+  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           }, /* Error? */
+  { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     }, /* Error */
+  { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    }, /* Error */
+  { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         }, /* Error (but defuncted) */
+  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
+  { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      }, /* Error (but defuncted) */
+  { SPACE_PRECEDING_XMLDECL,      "removing whitespace preceding XML Declaration"                           }, /* Error */
 
 /* ReportError */
-  { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  },
-  { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               },
-  { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   },
-  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                },
+  { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  }, /* Error? (not really sometimes) */
+  { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               }, /* Error */
+  { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   }, /* Error */
+  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                }, /* Error */
   { 0,                            NULL                                                                      }
 };
 
