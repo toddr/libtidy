@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:50:31 $ 
-    $Revision: 1.24 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/15 22:20:08 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -2807,8 +2807,12 @@ static char *ParseValue(Lexer *lexer, char *name,
             {
                 /* discard line breaks in quoted URLs */ 
                 /* #438650 - fix by Randy Waki */
-                if (c == '\n' && IsUrl(name)) 
+                if (c == '\n' && IsUrl(name))
+                {
+                    /* warn that we discard this newline */
+                    ReportAttrError(lexer, lexer->token, null, NEWLINE_IN_URI);
                     continue;
+                }
                 
                 c = ' ';
 

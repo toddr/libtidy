@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:48:23 $ 
-    $Revision: 1.14 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/15 22:20:08 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -315,6 +315,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " escaping malformed URI reference");
+        }
+        else if (code == NEWLINE_IN_URI)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " discarding newline in URI reference");
         }
 
         tidy_out(lexer->errout, "\n");
