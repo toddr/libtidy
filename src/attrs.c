@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/03/30 23:57:25 $ 
-    $Revision: 1.57 $ 
+    $Date: 2003/03/31 01:37:32 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -213,7 +213,15 @@ static const Attribute attribute_defs [] =
   {TidyAttr_xml_lang, "xml:lang",     VERS_XML,          TEXT},     /* XML language */
   {TidyAttr_xml_space,"xml:space",    VERS_XML,          TEXT},     /* XML language */
   {TidyAttr_xmlns,    "xmlns",        VERS_ALL,          TEXT},     /* name space */
-   
+
+  {TidyAttr_event,    "event",        VERS_HTML40,       TEXT},     /* reserved for <script> */
+  {TidyAttr_methods,  "methods",      VERS_HTML20,       TEXT},     /* for <a>, never implemented */
+  {TidyAttr_n,        "n",            VERS_HTML20,       TEXT},     /* for <nextid> */
+  {TidyAttr_sdaform,  "sdaform",      VERS_HTML20,       TEXT},     /* SDATA attribute in HTML 2.0 */
+  {TidyAttr_sdapref,  "sdapref",      VERS_HTML20,       TEXT},     /* SDATA attribute in HTML 2.0 */
+  {TidyAttr_sdasuff,  "sdasuff",      VERS_HTML20,       TEXT},     /* SDATA attribute in HTML 2.0 */
+  {TidyAttr_urn,      "urn",          VERS_HTML20,       TEXT},     /* for <a>, never implemented */
+
   /* this must be the final entry */
   {N_TIDY_ATTRIBS,    NULL}
 };

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/03/30 23:57:25 $ 
-    $Revision: 1.26 $ 
+    $Date: 2003/03/31 01:37:32 $ 
+    $Revision: 1.27 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -140,8 +140,10 @@ static const Dict tag_defs[] =
   { TidyElem_VAR,       "var",        VERS_ALL,     CM_INLINE, ParseInline, NULL},
   { TidyElem_WBR,       "wbr",        VERS_PROPRIETARY, (CM_INLINE|CM_EMPTY), ParseEmpty, NULL},
   { TidyElem_XMP,       "xmp",        VERS_ALL,     (CM_BLOCK|CM_OBSOLETE), ParsePre, NULL},
+  { TidyElem_NEXTID,    "nextid",     VERS_HTML20,  (CM_HEAD|CM_EMPTY), ParseEmpty, NULL},
+
   /* this must be the final entry */
-    {0,         NULL,            0,          0,       0}
+  { 0,                  NULL,         0,            0, 0, NULL }
 };
 
 /* choose what version to use for new doctype */
