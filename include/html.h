@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/29 08:01:09 $ 
-    $Revision: 1.51 $ 
+    $Date: 2001/08/29 08:15:47 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -790,10 +790,14 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define USING_BODY              16
 
 /* character encoding errors */
-#define WINDOWS_CHARS           1
-#define ILLEGAL_UTF8            2
-#define FOUND_UTF16             4
-#define INVALID_URI             8
+/* "or" DISCARDED_CHAR with the other errors if discarding char; otherwise default is replacing */
+#define REPLACED_CHAR           0
+#define DISCARDED_CHAR          1
+
+#define VENDOR_SPECIFIC_CHARS   2
+#define INVALID_SGML_CHARS      4
+#define ILLEGAL_UTF8            8
+#define INVALID_URI             16
 
 void HelpText(FILE *errout, char *prog);
 void GeneralInfo(FILE *errout);
@@ -827,6 +831,8 @@ void PrintConfigOptions(FILE *errout);
 extern uint spaces;         /* default indentation */
 extern uint wraplen;        /* default wrap margin */
 extern int CharEncoding;
+/* char encoding used when replacing illegal SGML chars, regardless of specified encoding */
+extern int ReplacementCharEncoding;
 extern int tabsize;
 
 extern DocTypeMode doctype_mode;   /* see doctype property */

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/29 08:07:36 $ 
-    $Revision: 1.31 $ 
+    $Date: 2001/08/29 08:16:45 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -140,17 +140,26 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
     {
         ReportPosition(lexer);
 
-        if (code == WINDOWS_CHARS)
+        if ((code & ~DISCARDED_CHAR) == VENDOR_SPECIFIC_CHARS)
         {
             NtoS(c, buf);
-            lexer->badChars |= WINDOWS_CHARS;
-            tidy_out(lexer->errout, "Warning: replacing illegal character code %s", buf);
+            lexer->badChars |= VENDOR_SPECIFIC_CHARS;
+            tidy_out(lexer->errout, "Warning: %s illegal character code %s",
+                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
-        else if (code == ILLEGAL_UTF8)
+        else if ((code & ~DISCARDED_CHAR) == INVALID_SGML_CHARS)
+        {
+            NtoS(c, buf);
+            lexer->badChars |= INVALID_SGML_CHARS;
+            tidy_out(lexer->errout, "Warning: %s illegal character code %s",
+                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
+        }
+        else if ((code & ~DISCARDED_CHAR) == ILLEGAL_UTF8)
         {
             sprintf(buf, "U+%04lX", c);
             lexer->badChars |= ILLEGAL_UTF8;
-            tidy_out(lexer->errout, "Warning: replacing illegal UTF-8 bytes (char. code %s)", buf);
+            tidy_out(lexer->errout, "Warning: %s illegal UTF-8 bytes (char. code %s)",
+                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
 
         tidy_out(lexer->errout, "\n");
@@ -612,6 +621,7 @@ void ErrorSummary(Lexer *lexer)
 
     if (lexer->badChars)
     {
+#if 0
         if (lexer->badChars & WINDOWS_CHARS)
         {
             tidy_out(lexer->errout, "Characters codes for the Microsoft Windows fonts in the range\n");
@@ -619,6 +629,25 @@ void ErrorSummary(Lexer *lexer)
             tidy_out(lexer->errout, "instead recommended to use named entities, e.g. &trade; rather\n");
             tidy_out(lexer->errout, "than Windows character code 153 (0x2122 in Unicode). Note that\n");
             tidy_out(lexer->errout, "as of February 1998 few browsers support the new entities.\n\n");
+        }
+#endif
+        if (lexer->badChars & VENDOR_SPECIFIC_CHARS)
+        {
+            tidy_out(lexer->errout, "It is unlikely that vendor-specific, system-dependent encodings\n");
+            tidy_out(lexer->errout, "work widely enough on the World Wide Web; you should avoid using the \n");
+            tidy_out(lexer->errout, "%s character encoding, instead you are recommended to\n",
+                     (lexer->in->encoding == WIN1252)?"Windows-1252":
+                     (lexer->in->encoding == MACROMAN)?"MacRoman":"specified");
+            tidy_out(lexer->errout, "use named entities, e.g. &trade;.\n\n");
+        }
+        if (lexer->badChars & INVALID_SGML_CHARS)
+        {
+            tidy_out(lexer->errout, "Character numbers 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
+            tidy_out(lexer->errout, "even if they were, they would be unprintable control characters.\n");
+            tidy_out(lexer->errout, "Tidy assumed you wanted to refer to a character with the same byte value in the \n");
+            tidy_out(lexer->errout, "%s encoding and replaced that reference with the Unicode equivalent.\n\n",
+                     (ReplacementCharEncoding == WIN1252)?"Windows-1252":
+                     (ReplacementCharEncoding == MACROMAN)?"MacRoman":"default");
         }
         if (lexer->badChars & ILLEGAL_UTF8)
         {
