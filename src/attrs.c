@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 12:56:15 $ 
-    $Revision: 1.22 $ 
+    $Date: 2001/07/14 16:02:45 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -650,6 +650,11 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
 {
+    if (attval->value == null)
+        return;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
 }
 
 void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
@@ -662,6 +667,9 @@ void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
         CheckValign(lexer, node, attval);
         return;
     }
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
@@ -677,6 +685,9 @@ void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
 void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
 
     value = attval->value;
 
@@ -721,10 +732,7 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
 
         while (*p)
         {
-            /* elements th and td must not use percentages */
-
-            if ((!IsDigit(*p) && (node->tag == tag_td ||
-                node->tag == tag_th)) || (!IsDigit(*p) && *p != '%'))
+            if (!IsDigit(*p) && *p != '%')
             {
                 ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
@@ -769,7 +777,12 @@ void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *value = attval->value;
+    char *value;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+        
+    value = attval->value;
     
     if (value == null)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
@@ -783,7 +796,12 @@ void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *value = attval->value;
+    char *value;
+    
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
+    value = attval->value;
     
     if (value == null)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
@@ -797,7 +815,12 @@ void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char *value = attval->value;
+    char *value;
+    
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
+    value = attval->value;
     
     if (value == null)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
