@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/06/14 04:13:37 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/06/14 04:17:58 $ 
+    $Revision: 1.5 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1826,7 +1826,7 @@ void CleanWord2000(Lexer *lexer, Node *node)
                 /* remove node and append to contents of list */
                 RemoveNode(node);
                 InsertNodeAtEnd(list, node);
-                node = list->next;
+                node = list;
             }
             /* map sequence of <p class="Code"> to <pre>...</pre> */
             else if (attr && wstrcmp(attr->value, "Code") == 0)
