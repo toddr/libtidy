@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/06 13:28:40 $ 
-    $Revision: 1.29 $ 
+    $Date: 2005/04/06 13:41:12 $ 
+    $Revision: 1.30 $ 
 */
 
 #include "tidy.h"
@@ -333,6 +333,55 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     }
 }
 
+/* Array holding all options. Contains a trailing sentinel. */
+typedef struct {
+    TidyOption topt[N_TIDY_OPTIONS];
+} AllOption_t;
+
+static
+int cmpOpt(const void* e1_, const void *e2_)
+{
+    const TidyOption* e1 = e1_;
+    const TidyOption* e2 = e2_;
+    return strcmp(tidyOptGetName(*e1), tidyOptGetName(*e2));
+}
+
+static
+void getSortedOption( TidyDoc tdoc, AllOption_t *tOption )
+{
+    TidyIterator pos = tidyGetOptionList( tdoc );
+    uint i = 0;
+
+    while ( pos )
+    {
+        TidyOption topt = tidyGetNextOption( tdoc, &pos );
+        tOption->topt[i] = topt;
+        ++i;
+    }
+    tOption->topt[i] = NULL; /* sentinel */
+
+    qsort(tOption->topt,
+          /* Do not sort the sentinel: hence `-1' */
+          sizeof(tOption->topt)/sizeof(tOption->topt[0])-1,
+          sizeof(tOption->topt[0]),
+          cmpOpt);
+}
+
+static void ForEachSortedOption( TidyDoc tdoc, OptionFunc OptionPrint )
+{
+    AllOption_t tOption;
+    const TidyOption *topt;
+
+    getSortedOption( tdoc, &tOption );
+    for( topt = tOption.topt; *topt; ++topt)
+    {
+        OptionDesc d;
+
+        GetOption( tdoc, *topt, &d );
+        (*OptionPrint)( tdoc, *topt, &d );
+    }
+}
+
 static void ForEachOption( TidyDoc tdoc, OptionFunc OptionPrint )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
@@ -523,7 +572,7 @@ static void optionhelp( TidyDoc tdoc )
     printf( fmt, "Name", "Type", "Allowable values" );
     printf( fmt, ul, ul, ul );
 
-    ForEachOption( tdoc, printOption );
+    ForEachSortedOption( tdoc, printOption );
 }
 
 static
@@ -579,7 +628,7 @@ static void optionvalues( TidyDoc tdoc )
     printf( fmt, "Name", "Type", "Current Value" );
     printf( fmt, ul, ul, ul );
 
-    ForEachOption( tdoc, printOptionValues );
+    ForEachSortedOption( tdoc, printOptionValues );
 
     printf( "\n\nValues marked with an *asterisk are calculated \n"
             "internally by HTML Tidy\n\n" );
