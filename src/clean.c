@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:20:38 $ 
-    $Revision: 1.70 $ 
+    $Date: 2004/12/06 12:26:42 $ 
+    $Revision: 1.71 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1181,7 +1181,8 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 
         if (list->prev)
         {
-            if ( nodeIsUL(list->prev) || nodeIsOL(list->prev) )
+            if ( (nodeIsUL(list->prev) || nodeIsOL(list->prev))
+                 && list->prev->last )
             {
                 node = list;
                 list = node->prev;
