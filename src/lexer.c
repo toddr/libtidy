@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 02:42:03 $ 
-    $Revision: 1.105 $ 
+    $Date: 2003/05/08 04:50:58 $ 
+    $Revision: 1.106 $ 
 
 */
 
@@ -3610,7 +3610,14 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             }
             else if (c == '>')
             {
+                AttVal* si;
+
                 node->end = --(lexer->lexsize);
+
+                si = GetAttrByName(node, "SYSTEM");
+                if (si)
+                    CheckUrl(doc, node, si);
+
                 return node;
             }
             else
