@@ -1,24 +1,24 @@
 /*
   tidy.c - HTML parser and pretty printer
 
-  Copyright (c) 1998-2000 World Wide Web Consortium
+  Copyright (c) 1998-2001 World Wide Web Consortium
   (Massachusetts Institute of Technology, Institut National de
   Recherche en Informatique et en Automatique, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 15:58:00 $ 
-    $Revision: 1.7 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:49:13 $ 
+    $Revision: 1.8 $ 
 
   Contributing Author(s):
 
      Dave Raggett <dsr@w3.org>
 
   The contributing author(s) would like to thank all those who
-  helped with testing, bug fixes, and patience.  This wouldn't
-  have been possible without all of you.
+  helped with testing, bug fixes and suggestions for improvements. 
+  This wouldn't have been possible without your help.
 
   COPYRIGHT NOTICE:
  
@@ -30,7 +30,7 @@
   documentation will not infringe any third party patents,
   copyrights, trademarks or other rights. 
 
-  The copyright holders and contributing author(s) will not be
+  The copyright holders and contributing author(s) will not be held
   liable for any direct, indirect, special or consequential damages
   arising out of any use of the software or documentation, even if
   advised of the possibility of such damage.
@@ -614,8 +614,6 @@ char *wstrtolower(char *s)
     return s;
 }
 
-
-
 /* For mac users, should we map Unicode back to MacRoman? */
 void outc(uint c, Out *out)
 {
@@ -1027,8 +1025,6 @@ int main(int argc, char **argv)
                     exit(1);
                 }
 
-                doctype = FindDocType(document);
-
                 if (document->content)
                 {
                     if (xHTML)
@@ -1049,6 +1045,7 @@ int main(int argc, char **argv)
 
                 if (!Quiet && document->content)
                 {
+                    doctype = FindDocType(document);
                     ReportVersion(errout, lexer, file, doctype);
                     ReportNumWarnings(errout, lexer);
                 }
@@ -1108,7 +1105,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = input;
 
-                    if (XmlOut && !xHTML)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
+                    if (XmlOut && !xHTML /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
                     else if (BodyOnly)
@@ -1129,7 +1126,7 @@ int main(int argc, char **argv)
                 {
                     out.fp = stdout;
 
-                    if (XmlOut && !xHTML)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
+                    if (XmlOut && !xHTML /*XmlTags*/)	/* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
                     /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
                     else if (BodyOnly)

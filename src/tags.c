@@ -1,6 +1,6 @@
 /* tags.c -- recognize HTML tags
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
 
@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:38:57 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:48:51 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -170,7 +170,7 @@ static struct tag
     {"param",      VERS_FROM32,  (CM_INLINE|CM_EMPTY), null, null},
     {"embed",      VERS_NETSCAPE, (CM_INLINE|CM_IMG|CM_EMPTY), null, null},
     {"noembed",    VERS_NETSCAPE, CM_INLINE, ParseInline, null},
-    {"iframe",     VERS_HTML40_LOOSE, CM_INLINE, ParseBlock, null},
+    {"iframe",     VERS_IFRAME,  CM_INLINE, ParseBlock, null},
     {"frame",      VERS_FRAMESET, (CM_FRAMES|CM_EMPTY), null, null},
     {"noframes",   VERS_IFRAME,  (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
     {"noscript",   VERS_HTML40,  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},

@@ -1,13 +1,13 @@
 /* attrs.c -- recognize HTML attributes
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 20:44:32 $ 
-    $Revision: 1.24 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:45:24 $ 
+    $Revision: 1.25 $ 
 
 */
 

@@ -1,14 +1,14 @@
 /*
   ilstack.c - inline stack for compatibility with Mosaic
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 07:09:29 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/07/14 21:47:59 $ 
+    $Revision: 1.4 $ 
 
 */
 

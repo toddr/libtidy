@@ -1,14 +1,14 @@
 /*
   pprint.c -- pretty print parse tree  
   
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 19:40:23 $ 
-    $Revision: 1.12 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:46:58 $ 
+    $Revision: 1.13 $ 
 
 */
 

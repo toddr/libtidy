@@ -1,7 +1,7 @@
 /*
   localize.c
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
   You should only need to edit this file and tidy.c
@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.13 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/14 21:48:23 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -576,7 +576,7 @@ void ErrorSummary(Lexer *lexer)
         if (lexer->badChars & INVALID_URI)
         {
             tidy_out(lexer->errout, "URIs must be properly escaped, they must not contain unescaped\n");
-            tidy_out(lexer->errout, "characters below U+0021 including the space charcter and not\n");
+            tidy_out(lexer->errout, "characters below U+0021 including the space character and not\n");
             tidy_out(lexer->errout, "above U+007E. Tidy escapes the URI for you as recommended by\n");
             tidy_out(lexer->errout, "HTML 4.01 section B.2.1 and XML 1.0 section 4.2.2. Some user agents\n");
             tidy_out(lexer->errout, "use another algorithm to escape such URIs and some server-sided\n");
