@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/13 23:29:22 $ 
-    $Revision: 1.61 $ 
+    $Author: lpassey $ 
+    $Date: 2004/06/15 20:35:52 $ 
+    $Revision: 1.62 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -689,14 +689,20 @@ static void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
 {
     AttVal *av = AttrGetById(node, TidyAttr_STYLE);
 
-
     /* if style attribute already exists then insert property */
 
     if ( av )
     {
-        tmbstr s = MergeProperties( av->value, property );
-        MemFree( av->value );
-        av->value = s;
+        if (av->value != NULL)
+        {
+            tmbstr s = MergeProperties( av->value, property );
+            MemFree( av->value );
+            av->value = s;
+        }
+        else
+        {
+            av->value = tmbstrdup( property );
+        }
     }
     else /* else create new style attribute */
     {
@@ -1324,7 +1330,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
         if ( cfgBool(doc, TidyDropFontTags) )
         {
             DiscardContainer( doc, node, pnode );
-            return no;
+            return yes;
         }
 
         /* if FONT is only child of parent element then leave alone */
