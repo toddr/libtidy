@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/07 03:29:13 $ 
-    $Revision: 1.66 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/10/25 21:18:03 $ 
+    $Revision: 1.67 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -378,6 +378,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
             uint len = tmbstrlen(classattr->value) +
                       tmbstrlen(classname) + 2;
             tmbstr s = (tmbstr) MemAlloc( len );
+            s[0] = '\0';
             if (classattr->value)
             {
                 tmbstrcpy(s, classattr->value);
@@ -934,13 +935,15 @@ static void AddFontStyles( TidyDocImpl* doc, Node *node, AttVal *av)
 {
     while (av)
     {
-        if (attrIsFACE(av))
-            AddFontFace( doc, node, av->value );
-        else if (attrIsSIZE(av))
-            AddFontSize( doc, node, av->value );
-        else if (attrIsCOLOR(av))
-            AddFontColor( doc, node, av->value );
-
+        if (AttrHasValue(av))
+        {
+            if (attrIsFACE(av))
+                AddFontFace( doc, node, av->value );
+            else if (attrIsSIZE(av))
+                AddFontSize( doc, node, av->value );
+            else if (attrIsCOLOR(av))
+                AddFontColor( doc, node, av->value );
+        }
         av = av->next;
     }
 }
@@ -1578,7 +1581,7 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
             RenameElem( node, TidyTag_DIV );
 
             attval = AttrGetById(node, TidyAttr_STYLE);
-            if (attval)
+            if (AttrHasValue(attval))
             {
                 tmbstr s = (tmbstr) MemAlloc(len + 3 + tmbstrlen(attval->value));
                 tmbstrcpy(s, indent_buf);

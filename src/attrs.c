@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/07/30 20:42:22 $ 
-    $Revision: 1.98 $ 
+    $Date: 2004/10/25 21:18:02 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -827,7 +827,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             /* first and second attribute have same local name */
             /* now determine what to do with this duplicate... */
 
-            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses) && AttrHasValue(first))
+            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses) && AttrHasValue(first) && AttrHasValue(second))
             {
                 /* concatenate classes */
 
@@ -843,7 +843,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 
                 second = temp;
             }
-            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles) && AttrHasValue(first))
+            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles) && AttrHasValue(first) && AttrHasValue(second))
             {
                 /* concatenate styles */
 
