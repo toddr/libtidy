@@ -3,14 +3,14 @@
 
 /* platform.h -- Platform specifics
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/03/19 03:10:19 $ 
-    $Revision: 1.49 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/03/22 15:18:44 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -160,6 +160,10 @@ extern "C" {
 
 #define strcasecmp _stricmp
 
+#endif
+
+#if defined(__BORLANDC__)
+#define strcasecmp stricmp
 #endif
 
 #define FILENAMES_CASE_SENSITIVE 0
