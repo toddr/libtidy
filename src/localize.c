@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/15 22:20:08 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/16 18:36:04 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -321,6 +321,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " discarding newline in URI reference");
+        }
+        else if (code == ANCHOR_NOT_UNIQUE)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " Anchor \"%s\" already defined", av->value);
         }
 
         tidy_out(lexer->errout, "\n");

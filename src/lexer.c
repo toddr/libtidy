@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 16:37:44 $ 
-    $Revision: 1.26 $ 
+    $Date: 2001/07/16 18:36:04 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -531,7 +531,14 @@ void FreeAttrs(Node *node)
         av = node->attributes;
 
         if (av->attribute)
+        {
+            if ((wstrcasecmp(av->attribute, "id") == 0) ||
+               ((wstrcasecmp(av->attribute, "name") == 0) &&
+               IsAnchorElement(node)))
+                RemoveAnchorByNode(node);
+
             MemFree(av->attribute);
+        }
 
         if (av->value)
             MemFree(av->value);

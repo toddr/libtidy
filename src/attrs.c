@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 16:37:44 $ 
-    $Revision: 1.28 $ 
+    $Date: 2001/07/16 18:36:04 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -51,6 +51,7 @@ AttrCheck CheckColor;
 AttrCheck CheckVType;
 AttrCheck CheckScroll;
 AttrCheck CheckTextDir;
+AttrCheck CheckLang;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -89,7 +90,7 @@ static Attribute *hashtab[HASHSIZE];
 #define COLOR       CheckColor
 #define CLEAR       CheckClear
 #define BORDER      CheckBool     /* kludge */
-#define LANG        null
+#define LANG        CheckLang
 #define BOOL        CheckBool
 #define COLS        null
 #define NUMBER      CheckNumber
@@ -417,6 +418,128 @@ Bool IsLiteralAttribute(char *attrname)
     return (Bool)((np = lookup(attrname)) && np->literal);
 }
 
+/* may id or name serve as anchor? */
+Bool IsAnchorElement(Node *node)
+{
+    if (node->tag == tag_a      ||
+        node->tag == tag_applet ||
+        node->tag == tag_form   ||
+        node->tag == tag_frame  ||
+        node->tag == tag_iframe ||
+        node->tag == tag_img    ||
+        node->tag == tag_map)
+        return yes;
+
+    return no;
+}
+
+/* anchor/node hash */
+
+Anchor *anchor_list = null;
+
+/* free single anchor */
+void FreeAnchor(Anchor *a)
+{
+    if (a->name)
+        MemFree(a->name);
+
+    MemFree(a);
+}
+
+/* removes anchor for specific node */
+void RemoveAnchorByNode(Node *node)
+{
+    Anchor *delme = null, *found, *prev = null, *next;
+
+    for (found = anchor_list; found; found = found->next)
+    {
+        next = found->next;
+
+        if (found->node == node)
+        {
+            if (prev)
+                prev->next = next;
+            else
+                anchor_list = next;
+
+            delme = found;
+        }
+        else
+            prev = found;
+    }
+    if (delme)
+        FreeAnchor(delme);
+}
+
+/* initialize new anchor */
+Anchor *NewAnchor(void)
+{
+    Anchor *a = (Anchor *)MemAlloc(sizeof(Anchor));
+
+    a->name = null;
+    a->next = null;
+    a->node = null;
+
+    return a;
+}
+
+/* add new anchor to namespace */
+Anchor *AddAnchor(char *name, Node *node)
+{
+    Anchor *a = NewAnchor();
+
+    a->name = wstrdup(name);
+    a->node = node;
+
+    if (anchor_list == null)
+        anchor_list = a;
+    else
+    {
+        Anchor *here = anchor_list;
+
+        while (here->next)
+            here = here->next;
+
+        here->next = a;
+    }
+
+    return anchor_list;
+}
+
+/* return node associated with anchor */
+Node *GetNodeByAnchor(char *name)
+{
+    Anchor *found;
+    
+    for (found = anchor_list; found; found = found->next)
+    {
+        if (wstrcasecmp(found->name, name) == 0)
+            break;
+    }
+    
+    if (found == null)
+        return null;
+    else
+        return found->node;
+}
+
+/* free all anchors */
+FreeAnchors(void)
+{
+    Anchor *a;
+    
+    while (anchor_list)
+    {
+        a = anchor_list;
+        
+        if (a->name)
+            MemFree(a->name);
+        
+        anchor_list = a->next;
+        MemFree(a);
+    }
+}
+
 /* public method for inititializing attribute dictionary */
 void InitAttrs(void)
 {
@@ -484,6 +607,8 @@ void FreeAttrTable(void)
 
         hashtab[i] = null;
     }
+
+    FreeAnchors();
 }
 
 /*
@@ -631,12 +756,31 @@ void CheckScript(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckName(Lexer *lexer, Node *node, AttVal *attval)
 {
+    Node *old;
+
+    if (attval->value == null)
+    {
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+    else if (IsAnchorElement(node))
+    {
+        ConstrainVersion(lexer, ~VERS_XHTML11);
+
+        if ((old = GetNodeByAnchor(attval->value)) &&  old != node)
+        {
+            ReportAttrError(lexer, node, attval, ANCHOR_NOT_UNIQUE);
+        }
+        else
+            anchor_list = AddAnchor(attval->value, node);
+    }
 }
 
 void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *p = attval->value;
     uint i = 0;
+    Node *old;
     
     if (p == null)
     {
@@ -658,6 +802,13 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
             }
         }
     }
+
+    if ((old = GetNodeByAnchor(attval->value)) &&  old != node)
+    {
+        ReportAttrError(lexer, node, attval, ANCHOR_NOT_UNIQUE);
+    }
+    else
+        anchor_list = AddAnchor(attval->value, node);
 }
 
 void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
@@ -1006,6 +1157,15 @@ void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
         ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
+/* checks lang and xml:lang attributes */
+void CheckLang(Lexer *lexer, Node *node, AttVal *attval)
+{
+    if (wstrcasecmp(attval->attribute, "lang") == 0)
+        ConstrainVersion(lexer, ~VERS_XHTML11);
+
+    if (attval->value == null)
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+}
 
 /* default method for checking an element's attributes */
 void CheckAttributes(Lexer *lexer, Node *node)
