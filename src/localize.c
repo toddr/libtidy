@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/07/05 02:02:27 $ 
-    $Revision: 1.116 $ 
+    $Date: 2004/07/07 01:04:37 $ 
+    $Revision: 1.117 $ 
 
 */
 
@@ -1224,6 +1224,10 @@ void ReportMarkupVersion( TidyDocImpl* doc )
             apparentVers = HTMLVersion(doc);
 
         vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
+
+        if (!vers)
+            vers = "HTML Proprietary";
+
         message( doc, TidyInfo, "Document content looks like %s", vers );
     }
 }
