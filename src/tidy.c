@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/09/01 13:05:40 $ 
-    $Revision: 1.46 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/09/03 04:06:09 $ 
+    $Revision: 1.47 $ 
 
   Contributing Author(s):
 
@@ -1994,7 +1994,7 @@ int main(int argc, char **argv)
             {
                 if (argc >= 3)
                 {
-                    sscanf(argv[2], "%d", (int *)&wraplen); /* #578005 - fix by Anonymous 05 Jul 02 */
+                    sscanf(argv[2], "%u", &wraplen); /* #578005 - fix by Shane Turner 08 Jul 02 */
                     --argc;
                     ++argv;
                 }
