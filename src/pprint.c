@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:38:45 $ 
-    $Revision: 1.31 $ 
+    $Date: 2001/09/04 07:59:42 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -65,6 +65,8 @@ do {\
     AddC( (uint) *cp, llen++ );\
 } while (0)
 
+#if SUPPORT_ASIAN_ENCODINGS
+
 /* #431953 - start RJ Wraplen adjusted for smooth international ride */
 uint CWrapLen(uint ind)
 {
@@ -84,6 +86,8 @@ uint CWrapLen(uint ind)
     return (wraplen);
 }
 /* #431953 - end RJ */
+
+#endif
 
 /* return one less than the number of bytes used by the UTF-8 byte sequence */
 /* str points to the UTF-8 byte sequence */
@@ -502,6 +506,8 @@ static void PPrintChar(uint c, uint mode)
         }
     }
 
+#if SUPPORT_ASIAN_ENCODINGS
+
     /* #431953 - start RJ */
     /* Handle encoding-specific issues */
     switch (outCharEncoding)
@@ -598,6 +604,7 @@ static void PPrintChar(uint c, uint mode)
         }
     }
     break;
+
     case BIG5:
     /* Allow linebreak at Chinese punctuation characters */
     /* There are not many spaces in Chinese */
@@ -610,6 +617,7 @@ static void PPrintChar(uint c, uint mode)
             wraphere--; 
     }
     return;
+
     case SHIFTJIS:
     case ISO2022: /* ISO 2022 characters are passed raw */
     case RAW:
@@ -617,6 +625,17 @@ static void PPrintChar(uint c, uint mode)
         return;
     }
     /* #431953 - end RJ */
+
+#else
+
+    /* otherwise ISO 2022 characters are passed raw */
+    if (outCharEncoding == ISO2022 || outCharEncoding == RAW)
+    {
+        AddC(c, linelen++);
+        return;
+    }
+
+#endif
 
     /* if preformatted text, map &nbsp; to space */
     if (c == 160 && (mode & PREFORMATTED))
@@ -695,12 +714,16 @@ static void PPrintChar(uint c, uint mode)
         return;
     }
 
+#if SUPPORT_UTF16_ENCODINGS
+
     /* don't map UTF-16 chars to entities */
     if (outCharEncoding == UTF16 || outCharEncoding == UTF16LE || outCharEncoding == UTF16BE)
     {
         AddC(c, linelen++);
         return;
     }
+
+#endif
 
     /* use numeric entities only  for XML */
     if (XmlTags)

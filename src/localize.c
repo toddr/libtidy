@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:37:34 $ 
-    $Revision: 1.37 $ 
+    $Date: 2001/09/04 07:57:49 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -172,6 +172,9 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
             tidy_out(lexer->errout, "Warning: %s invalid UTF-8 bytes (char. code %s)",
                      code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
+
+#if SUPPORT_UTF16_ENCODINGS
+
         else if ((code & ~DISCARDED_CHAR) == INVALID_UTF16)
         {
             sprintf(buf, "U+%04lX", c);
@@ -179,6 +182,9 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
             tidy_out(lexer->errout, "Warning: %s invalid UTF-16 surrogate pair (char. code %s)",
                      code & DISCARDED_CHAR?"discarding":"replacing", buf);
         }
+
+#endif
+
         else if ((code & ~DISCARDED_CHAR) == INVALID_NCR)
         {
             NtoS(c, buf);
@@ -692,6 +698,9 @@ void ErrorSummary(Lexer *lexer)
             tidy_out(lexer->errout, "(but it does allow other noncharacters). For more information please refer to\n");
             tidy_out(lexer->errout, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
         }
+
+#if SUPPORT_UTF16_ENCODINGS
+
         if (lexer->badChars & INVALID_UTF16)
         {
             tidy_out(lexer->errout, "Character codes for UTF-16 must be in the range: U+0000 to U+10FFFF.\n");
@@ -699,6 +708,9 @@ void ErrorSummary(Lexer *lexer)
             tidy_out(lexer->errout, "mapping of unpaired surrogates. For more information please refer to\n");
             tidy_out(lexer->errout, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
         }
+
+#endif
+
         if (lexer->badChars & INVALID_URI)
         {
             tidy_out(lexer->errout, "URIs must be properly escaped, they must not contain unescaped\n");
@@ -987,13 +999,25 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -iso2022        use ISO-2022 for both input and output\n");
     tidy_out(out, "  -utf8           use UTF-8 for both input and output\n");
     tidy_out(out, "  -mac            use Mac OS Roman for input, US-ASCII for output\n");
+
+#if SUPPORT_UTF16_ENCODINGS
+
     tidy_out(out, "  -utf16le        use UTF-16LE for both input and output\n");
     tidy_out(out, "  -utf16be        use UTF-16BE for both input and output\n");
     tidy_out(out, "  -utf16          use UTF-16 for both input and output\n");
+
+#endif
+
     tidy_out(out, "  -win1252        use Windows-1252 for input, US-ASCII for output\n");
+
+#if SUPPORT_ASIAN_ENCODINGS
+
     tidy_out(out, "  -big5           use Big5 for both input and output\n"); /* #431953 - RJ */
     tidy_out(out, "  -shiftjis       use Shift_JIS for both input and output\n"); /* #431953 - RJ */
     tidy_out(out, "  -language       set the two-letter language code (for future use)\n"); /* #431953 - RJ */
+
+#endif
+
     tidy_out(out, "\n");
 
     tidy_out(out, "File manipulation\n");

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:39:59 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/09/04 08:00:58 $ 
+    $Revision: 1.31 $ 
 
   Contributing Author(s):
 
@@ -760,9 +760,14 @@ static int ReadCharFromStream(StreamIn *in)
     c = (uint)tempchar;
         
     if (lookingForBOM &&
-       (in->encoding == UTF16   ||
+       (
+#if SUPPORT_UTF16_ENCODINGS
+
+        in->encoding == UTF16   ||
         in->encoding == UTF16LE ||
         in->encoding == UTF16BE ||
+
+#endif
         in->encoding == UTF8))
     {
         /* check for a Byte Order Mark */
@@ -780,6 +785,8 @@ static int ReadCharFromStream(StreamIn *in)
         ReadRawBytesFromStream(in, &tempchar, &count, no);
         c1 = (uint)tempchar;
         
+#if SUPPORT_UTF16_ENCODINGS
+
         bom = (c << 8) + c1;
         
         if (bom == UNICODE_BOM_BE)
@@ -809,6 +816,8 @@ static int ReadCharFromStream(StreamIn *in)
             return UNICODE_BOM; /* return decoded BOM */
         }
         else
+
+#endif
         {
             uint c2;
 
@@ -912,6 +921,8 @@ static int ReadCharFromStream(StreamIn *in)
         return c;
     }
 
+#if SUPPORT_UTF16_ENCODINGS
+
     if (in->encoding == UTF16LE)
     {
         uint c1;
@@ -941,6 +952,8 @@ static int ReadCharFromStream(StreamIn *in)
 
         return n;
     }
+
+#endif
 
     if (in->encoding == UTF8)
 #if 0
@@ -1014,6 +1027,8 @@ static int ReadCharFromStream(StreamIn *in)
     }
 #endif
     
+#if SUPPORT_ASIAN_ENCODINGS
+
     /* #431953 - start RJ */ 
     /*
        This section is suitable for any "multibyte" variable-width 
@@ -1042,6 +1057,9 @@ static int ReadCharFromStream(StreamIn *in)
         }
     }
     /* #431953 - end RJ */
+
+#endif
+
     else
         n = c;
         
@@ -1131,16 +1149,24 @@ int ReadChar(StreamIn *in)
         /* IS02022, UTF-8 etc, that don't require further decoding */
 
         if (
-            in->encoding == RAW      ||
-            in->encoding == ISO2022  ||
-            in->encoding == UTF8     ||
-            in->encoding == SHIFTJIS || /* #431953 - RJ */
-            in->encoding == BIG5        /* #431953 - RJ */
+            in->encoding == RAW
+         || in->encoding == ISO2022
+         || in->encoding == UTF8
+
+#if SUPPORT_ASIAN_ENCODINGS
+
+         || in->encoding == SHIFTJIS /* #431953 - RJ */
+         || in->encoding == BIG5     /* #431953 - RJ */
+
+#endif
+
            )
         {
             in->curcol++;
             break;
         }
+
+#if SUPPORT_UTF16_ENCODINGS
 
         /* handle surrogate pairs */
         if ((in->encoding == UTF16LE) || (in->encoding == UTF16) || (in->encoding == UTF16BE))
@@ -1189,6 +1215,8 @@ int ReadChar(StreamIn *in)
             }
         }
         
+#endif
+
         if (in->encoding == MACROMAN)
             c = DecodeMacRoman(c);
 
@@ -1614,6 +1642,8 @@ void outc(uint c, Out *out)
         putc(c, out->fp);
     }
 
+#if SUPPORT_UTF16_ENCODINGS
+
     else if (out->encoding == UTF16LE || out->encoding == UTF16BE || out->encoding == UTF16)
     {
         int i, numChars = 1;
@@ -1670,6 +1700,11 @@ void outc(uint c, Out *out)
             }
         }
     }
+    
+#endif
+
+#if SUPPORT_ASIAN_ENCODINGS
+
     /* #431953 - start RJ */
     else if (out->encoding == BIG5 || out->encoding == SHIFTJIS)
     {
@@ -1682,6 +1717,9 @@ void outc(uint c, Out *out)
         }
     }
     /* #431953 - end RJ */
+
+#endif
+
     else
         putc(c, out->fp);
 }
@@ -1797,18 +1835,30 @@ int main(int argc, char **argv)
                 AdjustCharEncoding(ISO2022);
             else if (wstrcasecmp(arg, "mac") == 0)
                 AdjustCharEncoding(MACROMAN);
+
+#if SUPPORT_UTF16_ENCODINGS
+
             else if (wstrcasecmp(arg, "utf16le") == 0)
                 AdjustCharEncoding(UTF16LE);
             else if (wstrcasecmp(arg, "utf16be") == 0)
                 AdjustCharEncoding(UTF16BE);
             else if (wstrcasecmp(arg, "utf16") == 0)
                 AdjustCharEncoding(UTF16);
+
+#endif
+
             else if (wstrcasecmp(arg, "win1252") == 0)
                 AdjustCharEncoding(WIN1252);
+
+#if SUPPORT_ASIAN_ENCODINGS
+
             else if (wstrcasecmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
                 AdjustCharEncoding(SHIFTJIS);
             else if (wstrcasecmp(argv[1], "-big5") == 0) /* #431953 - RJ */
                 AdjustCharEncoding(BIG5);
+
+#endif
+
             else if (wstrcasecmp(arg, "numeric") == 0)
                 NumEntities = yes;
             else if (wstrcasecmp(arg, "modify") == 0)
@@ -1855,6 +1905,9 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
+
+#if SUPPORT_ASIAN_ENCODINGS
+
             /* #431953 - start RJ */
             else if (wstrcasecmp(argv[1], "-language") == 0 ||
                      wstrcasecmp(argv[1], "-lang") == 0)
@@ -1867,6 +1920,9 @@ int main(int argc, char **argv)
                 }
             }
             /* #431953 - end RJ */
+
+#endif
+
             else if (wstrcasecmp(argv[1], "-file") == 0 ||
                      wstrcasecmp(argv[1], "--file") == 0 ||
                         wstrcasecmp(argv[1], "-f") == 0)
@@ -2019,10 +2075,17 @@ int main(int argc, char **argv)
             SetFilename(file); /* #431895 - fix by Dave Bryan 04 Jan 01 */
             
             /* skip byte order mark */
-            if (lexer->in->encoding == UTF8    ||
-                lexer->in->encoding == UTF16LE ||
-                lexer->in->encoding == UTF16BE ||
-                lexer->in->encoding == UTF16)
+            if (lexer->in->encoding == UTF8
+
+#if SUPPORT_UTF16_ENCODINGS
+
+             || lexer->in->encoding == UTF16LE
+             || lexer->in->encoding == UTF16BE
+             || lexer->in->encoding == UTF16
+
+#endif
+
+                )
             {
                 uint c = ReadChar(lexer->in);
                 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:34:07 $ 
-    $Revision: 1.57 $ 
+    $Date: 2001/09/04 07:54:11 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -25,15 +25,26 @@
 #define UTF8        3
 #define ISO2022     4
 #define MACROMAN    5
+
+#if SUPPORT_UTF16_ENCODINGS
+
 #define UTF16LE     6
 #define UTF16BE     7
 #define UTF16       8
+
+#endif
+
 #define WIN1252     9
+
+#if SUPPORT_ASIAN_ENCODINGS
+
 #define BIG5        10  /* #431953 - RJ */
 #define SHIFTJIS    11  /* #431953 - RJ */
 /* RJ.  Note that Big5 and SHIFTJIS are not converted to ISO 10646
 codepoints (i.e., to Unicode) before being recoded into UTF-8. This
 may be confusing: usually UTF-8 implies ISO10646 codepoints. */
+
+#endif
 
 typedef struct
 {

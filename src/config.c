@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:35:04 $ 
-    $Revision: 1.28 $ 
+    $Date: 2001/09/04 07:55:07 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -215,10 +215,20 @@ static struct Flag
     {"new-empty-tags",  {(int *)&empty_tags},       ParseTagNames},
     {"new-pre-tags",    {(int *)&pre_tags},         ParseTagNames},
     {"char-encoding",   {(int *)&CharEncoding},     ParseCharEncoding},
+/* turn off the following if you don't want the user to */
+/* control the output encoding separately from the input encoding */
+#if 1
     {"input-encoding",  {(int *)&inCharEncoding},   ParseCharEncoding},
     {"output-encoding", {(int *)&outCharEncoding},  ParseCharEncoding},
+#endif
+
+#if SUPPORT_ASIAN_ENCODINGS
+
     {"language",        {(void *)&Language},        ParseName},  /* #431953 - RJ */
     {"ncr",             {(void *)&NCR},             ParseBool},  /* #431953 - RJ */
+
+#endif
+
     {"doctype",         {(int *)&doctype_str},      ParseDocType},
     {"fix-backslash",   {(int *)&FixBackslash},     ParseBool},
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
@@ -582,6 +592,9 @@ void AdjustCharEncoding(int encoding)
         inCharEncoding = MACROMAN;
         outCharEncoding = ASCII;
     }
+
+#if SUPPORT_UTF16_ENCODINGS
+
     else if (CharEncoding == UTF16LE)
     {
         inCharEncoding = UTF16LE;
@@ -597,11 +610,17 @@ void AdjustCharEncoding(int encoding)
         inCharEncoding = UTF16;
         outCharEncoding = UTF16;
     }
+
+#endif
+
     else if (CharEncoding == WIN1252)
     {
         inCharEncoding = WIN1252;
         outCharEncoding = ASCII;
     }
+
+#if SUPPORT_ASIAN_ENCODINGS
+
     else if (CharEncoding == SHIFTJIS) /* #431953 - RJ */
     {
         inCharEncoding = SHIFTJIS;
@@ -612,6 +631,9 @@ void AdjustCharEncoding(int encoding)
         inCharEncoding = BIG5;
         outCharEncoding = BIG5;
     }
+
+#endif
+
 }
 
 /* ensure that config is self consistent */
@@ -919,18 +941,30 @@ void ParseCharEncoding(Location location, char *option)
         *location.number = ISO2022;
     else if (wstrcasecmp(buf, "mac") == 0)
         *location.number = MACROMAN;
+
+#if SUPPORT_UTF16_ENCODINGS
+
     else if (wstrcasecmp(buf, "utf16le") == 0)
         *location.number = UTF16LE;
     else if (wstrcasecmp(buf, "utf16be") == 0)
         *location.number = UTF16BE;
     else if (wstrcasecmp(buf, "utf16") == 0)
         *location.number = UTF16;
+
+#endif
+
     else if (wstrcasecmp(buf, "win1252") == 0)
         *location.number = WIN1252;
+
+#if SUPPORT_ASIAN_ENCODINGS
+
     else if (wstrcasecmp(buf, "big5") == 0) /* #431953 - RJ */
         *location.number = BIG5; /* #431953 - RJ */
     else if (wstrcasecmp(buf, "shiftjis") == 0) /* #431953 - RJ */
         *location.number = SHIFTJIS; /* #431953 - RJ */
+
+#endif
+
     else
     {
         validEncoding = no;
@@ -955,12 +989,23 @@ char *CharEncodingName(int encoding)
         case UTF8     : encodingName = "utf8"; break;
         case ISO2022  : encodingName = "iso2022"; break;
         case MACROMAN : encodingName = "mac"; break;
+
+#if SUPPORT_UTF16_ENCODINGS
+
         case UTF16LE  : encodingName = "utf16le"; break;
         case UTF16BE  : encodingName = "utf16be"; break;
         case UTF16    : encodingName = "utf16"; break;
+
+#endif
+
         case WIN1252  : encodingName = "win1252"; break;
+
+#if SUPPORT_ASIAN_ENCODINGS
+
         case BIG5     : encodingName = "big5"; break;
         case SHIFTJIS : encodingName = "shiftjis"; break;
+
+#endif
         default       : encodingName = "unknown"; break;
     }
     
@@ -1234,9 +1279,23 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
                 tidy_out( errout, fmt, name, type, vals );
                 name = "";
                 type = "";
+
+#if SUPPORT_UTF16_ENCODINGS
+
                 vals = "utf16le, utf16be, utf16,";
                 tidy_out( errout, fmt, name, type, vals );
+
+#endif
+
+#if SUPPORT_ASIAN_ENCODINGS
+
                 vals = "win1252, big5, shiftjis";
+ 
+ #else
+ 
+                vals = "win1252";
+ 
+ #endif
             }
        }
         
