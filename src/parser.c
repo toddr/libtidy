@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/10/26 14:13:46 $ 
-    $Revision: 1.126 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 12:33:37 $ 
+    $Revision: 1.127 $ 
 
 */
 
@@ -2057,17 +2057,7 @@ static void MoveBeforeTable( TidyDocImpl* doc, Node *row, Node *node )
     {
         if ( nodeIsTABLE(table) )
         {
-            if (table->parent->content == table)
-                table->parent->content = node;
-
-            node->prev = table->prev;
-            node->next = table;
-            table->prev = node;
-            node->parent = table->parent;
-        
-            if (node->prev)
-                node->prev->next = node;
-
+            InsertNodeBeforeElement( table, node );
             break;
         }
     }
