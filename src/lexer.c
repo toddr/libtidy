@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: uid54069 $ 
-    $Date: 2001/07/04 19:03:38 $ 
-    $Revision: 1.13 $ 
+    $Date: 2001/07/05 01:19:08 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -2755,6 +2755,11 @@ static char *ParseValue(Lexer *lexer, char *name,
 
             if (munge)
             {
+                /* discard line breaks in quoted URLs */ 
+                /* #438650 - fix by Randy Waki */
+                if (c == '\n' && IsUrl(name)) 
+                    continue;
+                
                 c = ' ';
 
                 if (lastc == ' ')
