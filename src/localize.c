@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/29 08:04:29 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/08/29 08:07:36 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -875,7 +875,7 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "\n");
 
     tidy_out(out, "Processing directives\n");
-    tidy_out(out, "--------------------\n");
+    tidy_out(out, "---------------------\n");
     tidy_out(out, "  -indent or -i   indent element content\n");
     tidy_out(out, "  -omit   or -o   omit optional endtags\n");
     tidy_out(out, "  -wrap 72        wrap text at column 72 (default is 68)\n");
@@ -891,10 +891,10 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "\n");
 
     tidy_out(out, "Character encodings\n");
-    tidy_out(out, "------------------\n");
+    tidy_out(out, "-------------------\n");
     tidy_out(out, "  -raw            leave chars > 128 unchanged upon output\n");
-    tidy_out(out, "  -ascii          use US-ASCII for output, Latin-1 for input\n");
-    tidy_out(out, "  -latin1         use Latin-1 for both input and output\n");
+    tidy_out(out, "  -ascii          use US-ASCII for output, ISO-8859-1 for input\n");
+    tidy_out(out, "  -latin1         use ISO-8859-1 for both input and output\n");
     tidy_out(out, "  -iso2022        use ISO2022 for both input and output\n");
     tidy_out(out, "  -utf8           use UTF-8 for both input and output\n");
     tidy_out(out, "  -mac            use Mac OS Roman for input, US-ASCII for output\n");
@@ -906,19 +906,18 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -shiftjis       use Shift-JIS for both input and output\n"); /* #431953 - RJ */
     tidy_out(out, "  -language       set the two-letter language code (for future use)\n"); /* #431953 - RJ */
     tidy_out(out, "\n");
-    tidy_out(out, "\n");
 
     tidy_out(out, "File manipulation\n");
-    tidy_out(out, "---------------\n");
+    tidy_out(out, "-----------------\n");
     tidy_out(out, "  -config <file>  set options from config file\n");
     tidy_out(out, "  -f <file>       write errors to named <file>\n");
     tidy_out(out, "  -modify or -m   to modify original files\n");
     tidy_out(out, "\n");
 
     tidy_out(out, "Miscellaneous\n");
-    tidy_out(out, "------------\n");
+    tidy_out(out, "-------------\n");
     tidy_out(out, "  -version or -v  show version\n");
-    tidy_out(out, "  -help   or -h   list command line options (this message)\n");
+    tidy_out(out, "  -help   or -h   list command line options\n");
     tidy_out(out, "  -help-config    list all configuration file options\n");
     tidy_out(out, "You can also use --blah for any config file option blah\n");
     tidy_out(out, "\n");
