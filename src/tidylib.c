@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.7 $ 
+    $Date: 2003/03/19 19:33:16 $ 
+    $Revision: 1.8 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -141,13 +141,13 @@ void          tidyDocRelease( TidyDocImpl* doc )
 /* Let application store a chunk of data w/ each Tidy tdocance.
 ** Useful for callbacks.
 */
-void        tidySetAppData( TidyDoc tdoc, unsigned appData )
+void        tidySetAppData( TidyDoc tdoc, ulong appData )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
   if ( impl )
     impl->appData = appData;
 }
-uint        tidyGetAppData( TidyDoc tdoc )
+ulong       tidyGetAppData( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
   if ( impl )
@@ -279,12 +279,12 @@ ctmbstr       tidyOptGetDefault( TidyOption topt )
         return (ctmbstr) option->dflt;
     return NULL;
 }
-uint           tidyOptGetDefaultInt( TidyOption topt )
+ulong          tidyOptGetDefaultInt( TidyOption topt )
 {
     const TidyOptionImpl* option = tidyOptionToImpl( topt );
     if ( option && option->type != TidyString )
         return option->dflt;
-    return (uint) -1;
+    return ~0U;
 }
 Bool          tidyOptGetDefaultBool( TidyOption topt )
 {
@@ -341,16 +341,16 @@ Bool        tidyOptParseValue( TidyDoc tdoc, ctmbstr optnam, ctmbstr val )
   return no;
 }
 
-uint         tidyOptGetInt( TidyDoc tdoc, TidyOptionId optId )
+ulong        tidyOptGetInt( TidyDoc tdoc, TidyOptionId optId )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
-    uint opti = 0;
+    ulong opti = 0;
     if ( impl )
         opti = cfg( impl, optId );
     return opti;
 }
 
-Bool        tidyOptSetInt( TidyDoc tdoc, TidyOptionId optId, uint val )
+Bool        tidyOptSetInt( TidyDoc tdoc, TidyOptionId optId, ulong val )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )

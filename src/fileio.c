@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/03/19 19:33:16 $ 
+    $Revision: 1.5 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -26,7 +26,7 @@ typedef struct _fp_input_source
     TidyBuffer   unget;
 } FileSource;
 
-int filesrc_getByte( uint sourceData )
+int filesrc_getByte( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   int bv;
@@ -36,7 +36,7 @@ int filesrc_getByte( uint sourceData )
     bv = fgetc( fin->fp );
   return bv;
 }
-Bool filesrc_eof( uint sourceData )
+Bool filesrc_eof( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   Bool isEOF = ( fin->unget.size == 0 );
@@ -44,7 +44,7 @@ Bool filesrc_eof( uint sourceData )
     isEOF = feof( fin->fp );
   return isEOF;
 }
-void filesrc_ungetByte( uint sourceData, byte bv )
+void filesrc_ungetByte( ulong sourceData, byte bv )
 {
   FileSource* fin = (FileSource*) sourceData;
   tidyBufPutByte( &fin->unget, bv );
@@ -61,7 +61,7 @@ void initFileSource( TidyInputSource* inp, FILE* fp )
   fin = (FileSource*) MemAlloc( sizeof(FileSource) );
   ClearMemory( fin, sizeof(FileSource) );
   fin->fp = fp;
-  inp->sourceData = (uint) fin;
+  inp->sourceData = (ulong) fin;
 }
 
 void freeFileSource( TidyInputSource* inp, Bool closeIt )
@@ -73,7 +73,7 @@ void freeFileSource( TidyInputSource* inp, Bool closeIt )
     MemFree( fin );
 }
 
-void filesink_putByte( uint sinkData, byte bv )
+void filesink_putByte( ulong sinkData, byte bv )
 {
   FILE* fout = (FILE*) sinkData;
   fputc( bv, fout );
@@ -82,6 +82,6 @@ void filesink_putByte( uint sinkData, byte bv )
 void  initFileSink( TidyOutputSink* outp, FILE* fp )
 {
   outp->putByte  = filesink_putByte;
-  outp->sinkData = (uint) fp;
+  outp->sinkData = (ulong) fp;
 }
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:43 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/03/19 19:33:15 $ 
+    $Revision: 1.5 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -22,17 +22,17 @@
    TIDY
 **************/
 
-static int insrc_getByte( uint appData )
+static int insrc_getByte( ulong appData )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   return tidyBufGetByte( buf );
 }
-static Bool insrc_eof( uint appData )
+static Bool insrc_eof( ulong appData )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   return tidyBufEndOfInput( buf );
 }
-static void insrc_ungetByte( uint appData, byte bv )
+static void insrc_ungetByte( ulong appData, byte bv )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   tidyBufUngetByte( buf, bv );
@@ -43,10 +43,10 @@ void  initInputBuffer( TidyInputSource* inp, TidyBuffer* buf )
   inp->getByte    = insrc_getByte;
   inp->eof        = insrc_eof;
   inp->ungetByte  = insrc_ungetByte;
-  inp->sourceData = (uint) buf;
+  inp->sourceData = (ulong) buf;
 }
 
-static void outsink_putByte( uint appData, byte bv )
+static void outsink_putByte( ulong appData, byte bv )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   tidyBufPutByte( buf, bv );
@@ -55,7 +55,7 @@ static void outsink_putByte( uint appData, byte bv )
 void  initOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
 {
   outp->putByte  = outsink_putByte;
-  outp->sinkData = (uint) buf;
+  outp->sinkData = (ulong) buf;
 }
 
 

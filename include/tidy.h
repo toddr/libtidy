@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:41 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/03/19 19:33:14 $ 
+    $Revision: 1.5 $ 
 
   Contributing Author(s):
 
@@ -177,10 +177,10 @@ TIDY_EXPORT void        tidyRelease( TidyDoc tdoc );
 /** Let application store a chunk of data w/ each Tidy instance.
 **  Useful for callbacks.
 */
-TIDY_EXPORT void        tidySetAppData( TidyDoc tdoc, uint appData );
+TIDY_EXPORT void        tidySetAppData( TidyDoc tdoc, ulong appData );
 
 /** Get application data set previously */
-TIDY_EXPORT uint        tidyGetAppData( TidyDoc tdoc );
+TIDY_EXPORT ulong       tidyGetAppData( TidyDoc tdoc );
 
 /** Get release date (version) for current library */
 TIDY_EXPORT ctmbstr     tidyReleaseDate();
@@ -295,7 +295,7 @@ TIDY_EXPORT TidyConfigCategory tidyOptGetCategory( TidyOption opt );
 TIDY_EXPORT ctmbstr       tidyOptGetDefault( TidyOption opt );
 
 /** Get default value of given Option as an unsigned integer */
-TIDY_EXPORT uint          tidyOptGetDefaultInt( TidyOption opt );
+TIDY_EXPORT ulong         tidyOptGetDefaultInt( TidyOption opt );
 
 /** Get default value of given Option as a Boolean value */
 TIDY_EXPORT Bool          tidyOptGetDefaultBool( TidyOption opt );
@@ -313,9 +313,9 @@ TIDY_EXPORT Bool          tidyOptSetValue( TidyDoc tdoc, TidyOptionId optId, ctm
 TIDY_EXPORT Bool          tidyOptParseValue( TidyDoc tdoc, ctmbstr optnam, ctmbstr val );
 
 /** Get current Option value as an integer */
-TIDY_EXPORT uint          tidyOptGetInt( TidyDoc tdoc, TidyOptionId optId );
+TIDY_EXPORT ulong         tidyOptGetInt( TidyDoc tdoc, TidyOptionId optId );
 /** Set Option value as an integer */
-TIDY_EXPORT Bool          tidyOptSetInt( TidyDoc tdoc, TidyOptionId optId, uint val );
+TIDY_EXPORT Bool          tidyOptSetInt( TidyDoc tdoc, TidyOptionId optId, ulong val );
 
 /** Get current Option value as a Boolean flag */
 TIDY_EXPORT Bool          tidyOptGetBool( TidyDoc tdoc, TidyOptionId optId );
@@ -374,13 +374,13 @@ TIDY_EXPORT ctmbstr       tidyOptGetNextDeclTag( TidyDoc tdoc,
    Input Source
 *****************/
 /** Input Callback: get next byte of input */
-typedef int  (*TidyGetByteFunc)( uint sourceData );
+typedef int  (*TidyGetByteFunc)( ulong sourceData );
 
 /** Input Callback: unget a byte of input */
-typedef void (*TidyUngetByteFunc)( uint sourceData, byte bt );
+typedef void (*TidyUngetByteFunc)( ulong sourceData, byte bt );
 
 /** Input Callback: is end of input? */
-typedef Bool (*TidyEOFFunc)( uint sourceData );
+typedef Bool (*TidyEOFFunc)( ulong sourceData );
 
 /** End of input "character" */
 #define EndOfStream (~0u)
@@ -391,7 +391,7 @@ TIDY_STRUCT
 typedef struct _TidyInputSource
 {
   /* Instance data */
-  uint                sourceData;  /**< Input context.  Passed to callbacks */
+  ulong               sourceData;  /**< Input context.  Passed to callbacks */
 
   /* Methods */
   TidyGetByteFunc     getByte;     /**< Pointer to "get byte" callback */
@@ -423,7 +423,7 @@ TIDY_EXPORT Bool tidyIsEOF( TidyInputSource* source );
    Output Sink
 ****************/
 /** Output callback: send a byte to output */
-typedef void (*TidyPutByteFunc)( uint sinkData, byte bt );
+typedef void (*TidyPutByteFunc)( ulong sinkData, byte bt );
 
 
 /** TidyOutputSink - accepts raw bytes of output
@@ -432,7 +432,7 @@ TIDY_STRUCT
 typedef struct _TidyOutputSink
 {
   /* Instance data */
-  uint                sinkData;  /**< Output context.  Passed to callbacks */
+  ulong               sinkData;  /**< Output context.  Passed to callbacks */
 
   /* Methods */
   TidyPutByteFunc     putByte;   /**< Pointer to "put byte" callback */

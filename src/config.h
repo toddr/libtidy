@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/03/19 19:33:16 $ 
+    $Revision: 1.5 $ 
 
   config files associate a property name with a value.
 
@@ -42,7 +42,7 @@ struct _tidy_option
     TidyConfigCategory  category;   /* put 'em in groups */
     ctmbstr             name;       /* property name */
     TidyOptionType      type;       /* string, int or bool */
-    uint                dflt;       /* factory default */
+    ulong               dflt;       /* factory default */
     ParseProperty*      parser;     /* parsing method, read-only if NULL */
     const ctmbstr*      pickList;   /* pick list */
 };
@@ -50,8 +50,8 @@ struct _tidy_option
 
 typedef struct _tidy_config
 {
-    uint  value[ N_TIDY_OPTIONS + 1 ];     /* current config values */
-    uint  snapshot[ N_TIDY_OPTIONS + 1 ];  /* Snapshot of values to be restored later */
+    ulong value[ N_TIDY_OPTIONS + 1 ];     /* current config values */
+    ulong snapshot[ N_TIDY_OPTIONS + 1 ];  /* Snapshot of values to be restored later */
 
     /* track what tags user has defined to eliminate unnecessary searches */
     uint  defined_tags;
@@ -75,7 +75,7 @@ void InitConfig( TidyDocImpl* doc );
 void FreeConfig( TidyDocImpl* doc );
 
 Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val );
-Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, uint val );
+Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, ulong val );
 Bool SetOptionBool( TidyDocImpl* doc, TidyOptionId optId, Bool val );
 
 Bool ResetOptionToDefault( TidyDocImpl* doc, TidyOptionId optId );
@@ -126,7 +126,7 @@ void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename );
 #ifdef _DEBUG
 
 /* Debug lookup functions will be type-safe and assert option type match */
-uint    _cfgGet( TidyDocImpl* doc, TidyOptionId optId );
+ulong   _cfgGet( TidyDocImpl* doc, TidyOptionId optId );
 Bool    _cfgGetBool( TidyDocImpl* doc, TidyOptionId optId );
 ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
 

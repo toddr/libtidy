@@ -11,8 +11,8 @@
 
   CVS Info:
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:40 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/19 19:33:13 $ 
+    $Revision: 1.4 $ 
 */
 
 #include "buffio.h"
@@ -30,7 +30,7 @@ void freeFileSource( TidyInputSource* source, Bool closeIt );
 void initFileSink( TidyOutputSink* sink, FILE* fp );
 
 /* Needed for internal declarations */
-void filesink_putByte( uint sinkData, byte bv );
+void filesink_putByte( ulong sinkData, byte bv );
 
 #ifdef __cplusplus
 }

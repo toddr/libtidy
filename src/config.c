@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.53 $ 
+    $Date: 2003/03/19 19:33:15 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -276,7 +276,7 @@ const TidyOptionImpl* getOption( TidyOptionId optId )
 }
 
 
-static void FreeOptionValue( const TidyOptionImpl* option, uint value )
+static void FreeOptionValue( const TidyOptionImpl* option, ulong value )
 {
     if ( value && option->type == TidyString && value != option->dflt )
     {
@@ -285,13 +285,13 @@ static void FreeOptionValue( const TidyOptionImpl* option, uint value )
 }
 
 static void CopyOptionValue( const TidyOptionImpl* option,
-                             uint* oldval, uint newval )
+                             ulong* oldval, ulong newval )
 {
     assert( oldval != NULL );
     FreeOptionValue( option, *oldval );
 
     if ( newval && option->type == TidyString && newval != option->dflt )
-        *oldval = (uint) tmbstrdup( (ctmbstr) newval );
+        *oldval = (ulong) tmbstrdup( (ctmbstr) newval );
     else
         *oldval = newval;
 }
@@ -305,12 +305,12 @@ Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val )
    {
       assert( option->id == optId && option->type == TidyString );
       FreeOptionValue( option, doc->config.value[ optId ] );
-      doc->config.value[ optId ] = (uint) tmbstrdup( val );
+      doc->config.value[ optId ] = (ulong) tmbstrdup( val );
    }
    return ok;
 }
 
-Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, uint val )
+Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, ulong val )
 {
    Bool ok = ( optId < N_TIDY_OPTIONS );
    if ( ok )
@@ -338,7 +338,7 @@ Bool ResetOptionToDefault( TidyDocImpl* doc, TidyOptionId optId )
     if ( ok )
     {
         const TidyOptionImpl* option = option_defs + optId;
-        uint* value = &doc->config.value[ optId ];
+        ulong* value = &doc->config.value[ optId ];
         assert( optId == option->id );
         CopyOptionValue( option, value, option->dflt );
     }
@@ -372,7 +372,7 @@ void ResetConfigToDefault( TidyDocImpl* doc )
 {
     uint ixVal;
     const TidyOptionImpl* option = option_defs;
-    uint* value = &doc->config.value[ 0 ];
+    ulong* value = &doc->config.value[ 0 ];
     for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
     {
         assert( ixVal == (uint) option->id );
@@ -385,8 +385,8 @@ void TakeConfigSnapshot( TidyDocImpl* doc )
 {
     uint ixVal;
     const TidyOptionImpl* option = option_defs;
-    uint* value = &doc->config.value[ 0 ];
-    uint* snap  = &doc->config.snapshot[ 0 ];
+    ulong* value = &doc->config.value[ 0 ];
+    ulong* snap  = &doc->config.snapshot[ 0 ];
 
     AdjustConfig( doc );  /* Make sure it's consistent */
     for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
@@ -400,8 +400,8 @@ void ResetConfigToSnapshot( TidyDocImpl* doc )
 {
     uint ixVal;
     const TidyOptionImpl* option = option_defs;
-    uint* value = &doc->config.value[ 0 ];
-    uint* snap  = &doc->config.snapshot[ 0 ];
+    ulong* value = &doc->config.value[ 0 ];
+    ulong* snap  = &doc->config.snapshot[ 0 ];
 
     for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
     {
@@ -418,8 +418,8 @@ void CopyConfig( TidyDocImpl* docTo, TidyDocImpl* docFrom )
     {
         uint ixVal;
         const TidyOptionImpl* option = option_defs;
-        uint* from = &docFrom->config.value[ 0 ];
-        uint* to   = &docTo->config.value[ 0 ];
+        ulong* from = &docFrom->config.value[ 0 ];
+        ulong* to   = &docTo->config.value[ 0 ];
 
         TakeConfigSnapshot( docTo );
         for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
@@ -436,7 +436,7 @@ void CopyConfig( TidyDocImpl* docTo, TidyDocImpl* docFrom )
 #ifdef _DEBUG
 
 /* Debug accessor functions will be type-safe and assert option type match */
-uint    _cfgGet( TidyDocImpl* doc, TidyOptionId optId )
+ulong   _cfgGet( TidyDocImpl* doc, TidyOptionId optId )
 {
   assert( 0 <= optId && optId < N_TIDY_OPTIONS );
   return doc->config.value[ optId ];
@@ -884,7 +884,7 @@ void AdjustConfig( TidyDocImpl* doc )
     {
 #if SUPPORT_UTF16_ENCODINGS
         /* XML requires a BOM on output if using UTF-16 encoding */
-        uint enc = cfg( doc, TidyOutCharEncoding );
+        ulong enc = cfg( doc, TidyOutCharEncoding );
         if ( enc == UTF16LE || enc == UTF16BE || enc == UTF16 )
             SetOptionInt( doc, TidyOutputBOM, yes );
 #endif
@@ -896,7 +896,7 @@ void AdjustConfig( TidyDocImpl* doc )
 /* unsigned integers */
 Bool ParseInt( TidyDocImpl* doc, const TidyOptionImpl* entry )
 {
-    uint number = 0;
+    ulong number = 0;
     Bool digits = no;
     TidyConfigImpl* cfg = &doc->config;
     tchar c = SkipWhite( cfg );
@@ -917,7 +917,7 @@ Bool ParseInt( TidyDocImpl* doc, const TidyOptionImpl* entry )
 
 /* true/false or yes/no or 0/1 or "auto" only looks at 1st char */
 Bool ParseTriState( TidyTriState theState, TidyDocImpl* doc,
-                    const TidyOptionImpl* entry, uint* flag )
+                    const TidyOptionImpl* entry, ulong* flag )
 {
     TidyConfigImpl* cfg = &doc->config;
     tchar c = SkipWhite( cfg );
@@ -969,7 +969,7 @@ Bool ParseNewline( TidyDocImpl* doc, const TidyOptionImpl* entry )
 
 Bool ParseBool( TidyDocImpl* doc, const TidyOptionImpl* entry )
 {
-    uint flag = 0;
+    ulong flag = 0;
     Bool ok = ParseTriState( TidyNoState, doc, entry, &flag );
     if ( ok )
         SetOptionBool( doc, entry->id, (Bool) flag );
@@ -1274,7 +1274,7 @@ ctmbstr CharEncodingName( int encoding )
 
 Bool ParseIndent( TidyDocImpl* doc, const TidyOptionImpl* option )
 {
-    uint flag = 0;
+    ulong flag = 0;
     Bool ok = ParseTriState( TidyAutoState, doc, option, &flag );
 
     if ( ok )
@@ -1369,7 +1369,7 @@ Bool ParseRepeatAttr( TidyDocImpl* doc, const TidyOptionImpl* option )
 #if SUPPORT_UTF16_ENCODINGS
 Bool ParseBOM( TidyDocImpl* doc, const TidyOptionImpl* option )
 {
-    uint flag = 0;
+    ulong flag = 0;
     Bool ok = ParseTriState( TidyAutoState, doc, option, &flag );
     if ( ok )
     {
@@ -1479,7 +1479,7 @@ Bool  ConfigDiffThanDefault( TidyDocImpl* doc )
 {
   Bool diff = no;
   const TidyOptionImpl* option = option_defs + 1;
-  uint* ival = doc->config.value;
+  ulong* ival = doc->config.value;
   for ( /**/; !diff && option && option->name; ++option, ++ival )
   {
     diff = ( *ival != option->dflt );
