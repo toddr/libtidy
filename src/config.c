@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 19:18:16 $ 
-    $Revision: 1.22 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:52:30 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -78,6 +78,7 @@ Bool XmlPi = no;            /* add <?xml?> for XML docs */
 Bool RawOut = no;           /* avoid mapping values > 127 to entities */
 Bool UpperCaseTags = no;    /* output tags in upper not lower case */
 Bool UpperCaseAttrs = no;   /* output attributes in upper not lower case */
+Bool MakeBare = no;         /* Make bare HTML: remove Microsoft cruft */
 Bool MakeClean = no;        /* replace presentational clutter by style rules */
 Bool LogicalEmphasis = no;  /* replace i by em and b by strong */
 Bool DropPropAttrs = no;    /* discard proprietary attributes */
@@ -939,6 +940,49 @@ void ParseDocType(Location location, char *option)
         ReportBadArgument(option);
 
     NextProperty();
+}
+
+void PrintConfigOptions(FILE *errout)
+{
+    static const char* fmt = "%-24.24s  %-9.9s  %-40.40s\n";
+    static const char* ul 
+        = "=================================================================";
+    struct Flag* configItem;
+
+    fprintf( stderr, "\nConfiguration File Settings:\n\n" );
+    fprintf( stderr, fmt, "Name", "Type", "Values" );
+    fprintf( stderr, fmt, ul, ul, ul );
+
+    for ( configItem = flags; configItem && configItem->name; configItem++ )
+    {
+        const char* type = "String";
+        const char* vals = "";
+
+        if ( configItem->parser == ParseBool 
+             || configItem->parser == ParseInvBool )
+            type = "Boolean", vals = "yes, no, true, false";
+
+        else if ( configItem->parser == ParseInt )
+            type = "Integer", vals = "0, 1, 2, ...";
+
+        else if ( configItem->parser == ParseIndent )
+            type = "Indent", vals = "auto, yes, no, true, false";
+
+        else if ( configItem->parser == ParseDocType )
+            type = "DocType", vals = "auto, omit, user, strict, loose or transitional";
+
+        else if ( configItem->parser == ParseTagNames )
+            type = "Tag names", vals = "tagX, tagY, ...";
+
+        else if ( configItem->parser == ParseCharEncoding )
+            type = "Encoding", vals = "ascii, latin1, raw, utf8, iso2022, mac";
+
+        else if ( configItem->parser == ParseRepeatedAttribute )
+            type = "-", vals = "keep-first, keep-last";
+
+        tidy_out( errout, fmt, configItem->name, type, vals );
+    }
+    
 }
 
 void ParseRepeatedAttribute(Location location, char *option)
