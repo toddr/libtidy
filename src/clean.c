@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 16:42:32 $ 
-    $Revision: 1.83 $ 
+    $Date: 2005/03/04 13:42:10 $ 
+    $Revision: 1.84 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -843,7 +843,8 @@ static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
             x *= 1.2;
 
         x *= 100;
-        tmbsnprintf(buf, count, "%d%%", (int)(x));
+        /* Add 0.001 to avoid roundoff error - see #1004512 */
+        tmbsnprintf(buf, count, "%d%%", (int)(x+0.001));
         return buf;
     }
 
