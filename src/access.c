@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/05/31 21:54:53 $ 
-    $Revision: 1.1 $ 
+    $Date: 2002/06/02 23:48:25 $ 
+    $Revision: 1.2 $ 
 
 */
 
@@ -1948,7 +1948,7 @@ static void CheckIFrame (Lexer* lexer, Node* node) /* TRT */
 
 /**********************************************************************
 ********
-* CheckAnchor
+* CheckAnchorAccess
 *
 * Checks that the sound file is valid, and to ensure that
 * text transcript is present describing the 'HREF' within the 
@@ -1957,7 +1957,7 @@ static void CheckIFrame (Lexer* lexer, Node* node) /* TRT */
 ***********************************************************************
 ********/
 
-static void CheckAnchor (Lexer* lexer, Node* node) /* TRT */
+static void CheckAnchorAccess (Lexer* lexer, Node* node) /* TRT */
 {
 	char *word;
 	int checked = 0;
@@ -3766,14 +3766,14 @@ static void CheckEmbed (Lexer* lexer, Node* node)
 
 /*********************************************************************
 ************
-* CheckHTML
+* CheckHTMLAccess
 *
 * Checks HTML element for valid 'LANG' attribute.  Must be a valid
 * language.  ie. 'fr' or 'en'
 *********************************************************************
 ***********/
 
-static void CheckHTML (Lexer* lexer, Node* node) /* TRT */
+static void CheckHTMLAccess (Lexer* lexer, Node* node) /* TRT */
 {
     Bool ValidLang = no;
 
@@ -5115,7 +5115,7 @@ void AccessibilityChecks (Lexer* lexer, Node* node)
 	/* Check the ANCHOR tag */
 	else if (node->tag == tag_a)
 	{
-		CheckAnchor (lexer, node);
+		CheckAnchorAccess (lexer, node);	/* TRT */
 	}
 
 	/* Check the IMAGE tag */
@@ -5251,7 +5251,7 @@ void AccessibilityChecks (Lexer* lexer, Node* node)
 	else if (node->tag == tag_html)
 	{
 		checkedHTML = yes;
-		CheckHTML (lexer, node);
+		CheckHTMLAccess (lexer, node);	/* TRT */
 	}
 
 	/* Checks BLINK for any blinking text */
