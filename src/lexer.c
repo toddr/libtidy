@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 07:08:27 $ 
-    $Revision: 1.87 $ 
+    $Date: 2003/04/10 17:04:29 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -2057,10 +2057,23 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             matches = tmbstrncasecmp(container->element, lexer->lexbuf + start,
                                      tmbstrlen(container->element)) == 0;
 
-            if (isEmpty && !matches && container->parent->tag->model & CM_OMITST)
+            if (isEmpty && !matches)
             {
+                Node* node = NewNode(lexer);
+
+                node->element = tmbstrndup(lexer->lexbuf + start, lexer->lexsize - start - 1);
+                node->type = EndTag;
+                node->implicit = yes;
+                FindTag(doc, node);
+
                 ReportWarning(doc, container, NULL, MISSING_ENDTAG_FOR);
                 lexer->lexsize -= (lexer->lexsize - start) + 2;
+
+                assert(lexer->pushed == no);
+
+                lexer->token = node;
+                lexer->pushed = yes;
+
                 break;
             }
 
