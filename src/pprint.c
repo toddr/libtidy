@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 00:39:01 $ 
-    $Revision: 1.63 $ 
+    $Date: 2003/04/18 15:31:20 $ 
+    $Revision: 1.64 $ 
 
 */
 
@@ -2022,8 +2022,14 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                  node->attributes != NULL )
             {
                 PPrintTag( doc, mode, indent, node );
+
                 if ( ShouldIndent(doc, node) )
-                    PCondFlushLine( doc, contentIndent );
+                {
+                    /* fix for bug 530791, don't wrap after */
+                    /* <li> if first child is text node     */
+                    if (!(nodeIsLI(node) && nodeIsText(node->content)))
+                        PCondFlushLine( doc, contentIndent );
+                }
                 else if ( nodeHasCM(node, CM_HTML) || nodeIsNOFRAMES(node) ||
                           (nodeHasCM(node, CM_HEAD) && !nodeIsTITLE(node)) )
                     PFlushLine( doc, contentIndent );
