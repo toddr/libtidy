@@ -1,155 +1,149 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta name="generator"
-    content="HTML Tidy for Windows (vers 1st March 2002), see www.w3.org" />
-    <link type="text/css" rel="stylesheet" href="tidy.css" />
+<head>
+<meta name="generator"
+content="HTML Tidy for Mac OS X (vers 1st April 2002 (Terry's build)), see www.w3.org" />
+<link type="text/css" rel="stylesheet" href="tidy.css" />
+<title>HTML Tidy - Frequently Asked Questions</title>
+</head>
+<body>
+<h1>HTML Tidy - Frequently Asked Questions</h1>
 
-    <title>HTML Tidy - Frequently Asked Questions</title>
-  </head>
+<h2>Overview</h2>
 
-  <body>
-    <h1>HTML Tidy - Frequently Asked Questions</h1>
+<p class="abstract">Certain questions about Tidy come up on a
+regular basis. These are some that have been culled from postings
+to the html-tidy@w3.org and tidy-develop@lists.sourceforge.net
+mailing lists. If you don't see your question addressed here, see
+<a href="#support">How To Get Support</a> below.</p>
 
-    <h2>Overview</h2>
+<ul>
+<li><a href="#support">How to Get Support?</a></li>
 
-    <p class="abstract">Certain questions about Tidy come up on a
-    regular basis. These are some that have been culled from
-    postings to html-tidy@w3.org and
-    tidy-develop@lists.sourceforge.net. If you don't see your
-    question addressed here, see <a href="#support">How To Get
-    Support</a> below.</p>
+<li><a href="#bug">How to Submit A Bug Report</a></li>
 
-    <ul>
-      <li><a href="#support" >How to Get Support?</a>
-      <li><a href="#bug"     >How to Submit A Bug Report</a></li>
-      <li><a href="#feature" >How to Submit A Feature Request</a></li>
-      <li><a href="#version" >What Version of Tidy Should I Use?</a></li>
-    </ul>
+<li><a href="#feature">How to Submit A Feature Request</a></li>
 
-    <hr />
+<li><a href="#version">What Version of Tidy Should I Use?</a></li>
+</ul>
 
-    <dl>
-      <dt><a name="support" id="support"></a>How To Get
-      Support</dt>
+<hr />
+<dl>
+<dt><a name="support" id="support"></a>How To Get Support</dt>
 
-      <dd>
-        <p>For general HTML Tidy support, the original mailing list
-        html-tidy@w3.org is best. Sometimes developers are the last
-        to know... Also, this list covers both Java and C versions,
-        not to mention various value-added products such as GUI
-        front ends, Perl and Python integration, etc. If you don't
-        get a response after a couple tries or if you have a bug
-        fix, bump it over to the developer list at
-        tidy-develop@lists.sourceforge.net. It's not a hard line,
-        but that is the general arrangement.</p>
-      </dd>
+<dd>
+<p>For general HTML Tidy support, the original mailing list
+html-tidy@w3.org is best. Sometimes developers are the last to
+know... Also, this list covers both Java and C versions, not to
+mention various value-added products such as GUI front ends, Perl
+and Python integration, etc. If you don't get a response after a
+couple tries or if you have a bug fix, bump it over to the
+developer list at tidy-develop@lists.sourceforge.net. It's not a
+hard line, but that is the general arrangement.</p>
+</dd>
 
-      <dt><a name="bug" id="bug"></a>How to Submit A Bug
-      Report</dt>
+<dt><a name="bug" id="bug"></a>How to Submit A Bug Report</dt>
 
-      <dd>
-        <p>You are encouraged to report bugs you found to the Tidy
-        devloper team. Tidy's quality depends on your feedback. You
-        can either file your bug report in the Sourceforge <a
-        href="http://sourceforge.net/tracker/?func=add&amp;group_id=27659&amp;atid=390963">bug tracker</a> for HTML Tidy (<em>recommended</em>) or
-        send a mail to the mailing list at html-tidy@w3.org. Note
-        you do <em>not</em> have to have a Sourceforge account in
-        order to file bug reports or be subscribed to
-        html-tidy@w3.org in order to post messages to the list.</p>
+<dd>
+<p>You are encouraged to report bugs you found to the Tidy
+developer team. Tidy's quality depends on your feedback. You can
+either file your bug report in the Sourceforge <a
+href="http://sourceforge.net/tracker/?func=add&amp;group_id=27659&amp;atid=390963">
+bug tracker</a> for HTML Tidy (<em>recommended</em>) or send a mail
+to the mailing list at html-tidy@w3.org. Note you do <em>not</em>
+have to have a Sourceforge account in order to file bug reports, or
+be subscribed to html-tidy@w3.org in order to post messages to the
+list.</p>
 
-        <p>Prior to submitting a bug report, please check that the
-        bug is not already known. Many are. If you are not sure,
-        just ask. If it is new bug, make sure to include at least
-        the following information in your report:</p>
+<p>Prior to submitting a bug report, please check that the bug is
+not already known. Many are. If you are not sure, just ask. If it
+is new bug, make sure to include at least the following information
+in your report:</p>
 
-        <ul>
-          <li>A desciption of what you think went wrong.</li>
+<ul>
+<li>A desciption of what you think went wrong.</li>
 
-          <li>The HTML Tidy version (find it out by running
-          <code>tidy -v</code>) and operating system you are
-          running.</li>
+<li>The HTML Tidy version (find it out by running <code>tidy
+-v</code>) and operating system you are running.</li>
 
-          <li>The input, that exposes the bug.<br />
-          A small HTML document that reproduces the problem is
-          best.</li>
+<li>The input, that exposes the bug.<br />
+ A small HTML document that reproduces the problem is best.</li>
 
-          <li>The configuration options you've used. Command line
-          options like<br />
-          <code>-asxml</code>, configuration files, etc. You may
-          use <code>tidy -show-config</code> to get an overview of
-          the active Tidy settings.</li>
+<li>The configuration options you've used. Command line options
+like<br />
+ <code>-asxml</code>, configuration files, etc. You may use
+<code>tidy -show-config</code> to get an overview of the active
+Tidy settings.</li>
 
-          <li>Your e-mail address for further questions and
-          comments.</li>
-        </ul>
+<li>Your e-mail address for further questions and comments.</li>
+</ul>
 
-        <p>These information are necessary to reproduce whatever is
-        failing, without them we cannot help you. Additional
-        information - and patches - are very welcome!</p>
+<p>These information are necessary to reproduce whatever is
+failing, without them we cannot help you. Additional information -
+and patches - are very welcome!</p>
 
-        <p><em>Please include only one bug per report.</em> Reports
-        with multiple bugs are less easy to track and some bugs may
-        get missed.</p>
-      </dd>
+<p><em>Please include only one bug per report.</em> Reports with
+multiple bugs are less easy to track and some bugs may get
+missed.</p>
+</dd>
 
-      <dt><a name="feature" id="feature"></a>How to Submit A
-      Feature Request</dt>
+<dt><a name="feature" id="feature"></a>How to Submit A Feature
+Request</dt>
 
-      <dd>
-        <p>If you want Tidy to do something new that it doesn't do
-        today (or stop doing something), then it is probably a
-        feature request.</p>
+<dd>
+<p>If you want Tidy to do something new that it doesn't do today
+(or stop doing something), then it is probably a feature
+request.</p>
 
-        <p>The process for submitting a feature request is very
-        similar to bug requests. A different <a
-        href="http://sourceforge.net/tracker/?atid=390966&amp;group_id=27659">tracker</a>
-        is used on SourceForge to denote the difference
-        in subject matter.</p>
+<p>The process for submitting a feature request is very similar to
+bug requests. A different <a
+href="http://sourceforge.net/tracker/?atid=390966&amp;group_id=27659">
+tracker</a> is used on SourceForge to denote the difference in
+subject matter.</p>
 
-        <p>As with bugs, please be sure that the feature has not
-        already been requested. If so, just send a +1 vote to the
-        <a href="mailto:html-tidy@w3.org">The List</a>. If not,
-        send the same information as for a bug report, but place
-        special emphasis on the desired output for a given input,
-        desired options, etc. I.e. please be as specific as
-        possible about what you want Tidy to <em>do</em>.</p>
-      </dd>
+<p>As with bugs, please be sure that the feature has not already
+been requested. If the feature has already requested, you can add
+your comments to the feature request tracker, or send mail to the
+<a href="mailto:html-tidy@w3.org">mailing list</a> indicating your
+wish to also have the feature implemented. If the feature has not
+already been requested, send the same information as for a bug
+report, but place special emphasis on the desired output for a
+given input, desired options, etc. - please be as specific as
+possible about what you want Tidy to <em>do</em>.</p>
+</dd>
 
-      <dt><a name="version" id="version"></a>What Version of Tidy
-      Should I Use?</dt>
+<dt><a name="version" id="version"></a>What Version of Tidy Should
+I Use?</dt>
 
-      <dd>
-        <p>The current Source Forge builds - which you can find at
-        <a
-        href="http://tidy.sourceforge.net">http://tidy.sourceforge.net</a>
-        - are recommended. People continue to report examples where
-        Tidy does not catch some ill-formed HTML or, worse,
-        generates ill-formed HTML. These cases have been
-        significantly reduced. That said, be sure to test Tidy with
-        some representative files from your environment.</p>
+<dd>
+<p>The current Source Forge builds - which you can find at <a
+href="http://tidy.sourceforge.net">http://tidy.sourceforge.net</a>
+- are recommended. People continue to report examples where Tidy
+does not catch some ill-formed HTML or, worse, generates ill-formed
+HTML. These cases have been significantly reduced. That said, be
+sure to test Tidy with some representative files from your
+environment.</p>
 
-        <p>For development work, use CVS directly on your
-        development system. For information on how to pull Tidy
-        sources from <a 
-        href="http://sourceforge.net/cvs/?group_id=27659">CVS</a>.
-        This way you can keep abreast of changes to Tidy and
-        quickly resolve conflicts.</p>
+<p>For development work, use CVS directly on your development
+system. For information on how to pull Tidy sources from <a
+href="http://sourceforge.net/cvs/?group_id=27659">CVS</a>. This way
+you can keep abreast of changes to Tidy and quickly resolve
+conflicts.</p>
 
-        <p>For building a front end (e.g. GUI or Perl wrapper), the
-        simplest approach is to shell out to the command line tool
-        and parse the output. This way, users of your tool can drop
-        in the latest version of Tidy without even a re-link.</p>
+<p>For building a front end (e.g. GUI or Perl wrapper), the
+simplest approach is to shell out to the command line tool and
+parse the output. This way, users of your tool can drop in the
+latest version of Tidy without even a re-link.</p>
 
-        <p>The other basic approach is to replace Tidy's
-        <code>main()</code> function with some other calls to use
-        Tidy source as a library. This approach requires more work
-        to synchronize changes with Tidy proper. It is more
-        flexible in deployment, however.</p>
-      </dd>
-      <!--
+<p>The other basic approach is to replace Tidy's
+<code>main()</code> function with some other calls to use Tidy
+source as a library. This approach requires more work to
+synchronize changes with Tidy proper. It is more flexible in
+deployment, however.</p>
+</dd>
+
+<!--
         <dt><a name="" id=""></a></dt>
         <dd>
         </dd>
@@ -162,12 +156,11 @@
         <dd>
         </dd>
         -->
-      <!-- Save for future questions
+<!-- Save for future questions
         <dt><a name="" id=""></a></dt>
         <dd>
         </dd>
         -->
-    </dl>
-  </body>
+</dl>
+</body>
 </html>
-
