@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/14 17:23:30 $ 
-    $Revision: 1.139 $ 
+    $Date: 2005/03/15 15:49:55 $ 
+    $Revision: 1.140 $ 
 
 */
 
@@ -3854,6 +3854,11 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
     ParseTag(doc, node, mode);
 }
 
+static Bool nodeCMIsOnlyInline( Node* node )
+{
+    return nodeHasCM( node, CM_INLINE ) && !nodeHasCM( node, CM_BLOCK );
+}
+
 static void EncloseBodyText(TidyDocImpl* doc)
 {
     Node* node;
@@ -3867,12 +3872,11 @@ static void EncloseBodyText(TidyDocImpl* doc)
     while (node)
     {
         if ((node->type == TextNode && !IsBlank(doc->lexer, node)) ||
-            (nodeIsElement(node) && nodeHasCM(node, CM_INLINE)))
+            (nodeIsElement(node) && nodeCMIsOnlyInline(node)))
         {
             Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(node, p);
-            while (node &&
-                   (!nodeIsElement(node) || nodeHasCM(node, CM_INLINE)))
+            while (node && (!nodeIsElement(node) || nodeCMIsOnlyInline(node)))
             {
                 Node* next = node->next;
                 RemoveNode(node);
@@ -3912,12 +3916,12 @@ static void EncloseBlockText(TidyDocImpl* doc, Node* node)
         block = node->content;
 
         if ((block->type == TextNode && !IsBlank(doc->lexer, block)) ||
-            (nodeIsElement(block) && nodeHasCM(block, CM_INLINE)))
+            (nodeIsElement(block) && nodeCMIsOnlyInline(block)))
         {
             Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(block, p);
             while (block &&
-                   (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
+                   (!nodeIsElement(block) || nodeCMIsOnlyInline(block)))
             {
                 Node* tempNext = block->next;
                 RemoveNode(block);
