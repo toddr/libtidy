@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/06 20:35:58 $ 
-    $Revision: 1.81 $ 
+    $Date: 2003/04/07 02:06:51 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -2551,6 +2551,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     if (badcomment)
                         ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
 
+                    /* do not store closing -- in lexbuf */
+                    lexer->lexsize -= 2;
                     lexer->txtend = lexer->lexsize;
                     lexer->lexbuf[lexer->lexsize] = '\0';
                     lexer->state = LEX_CONTENT;

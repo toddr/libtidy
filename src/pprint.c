@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:49 $ 
-    $Revision: 1.56 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/07 02:06:53 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -1270,6 +1270,7 @@ static void PPrintComment( TidyDocImpl* doc, uint indent, Node* node )
     AddString( pprint, "--" );
 #endif
 
+    AddString(pprint, "--");
     AddChar( pprint, '>' );
     if ( node->linebreak )
         PFlushLine( doc, indent );
