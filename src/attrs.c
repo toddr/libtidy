@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 22:58:52 $ 
-    $Revision: 1.80 $ 
+    $Date: 2003/05/08 01:57:15 $ 
+    $Revision: 1.81 $ 
 
 */
 
@@ -380,16 +380,61 @@ static const struct _colors fancy_colors[] =
     { NULL,                   NULL      }
 };
 
-
-static const Attribute* lookup( ctmbstr atnam )
+#ifdef ATTRIBUTE_HASH_LOOKUP
+static uint hash(ctmbstr s)
 {
-    if ( atnam )
-    {
-        const Attribute *np = attribute_defs;
-        for ( /**/; np && np->name; ++np )
-            if ( tmbstrcmp(atnam, np->name) == 0 )
-                return np;
-    }
+    uint hashval;
+
+    for (hashval = 0; *s != '\0'; s++)
+        hashval = *s + 31*hashval;
+
+    return hashval % ATTRIBUTE_HASH_SIZE;
+}
+
+static Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
+{
+    Attribute *np;
+    uint hashval;
+
+    np = (Attribute *)MemAlloc(sizeof(*np));
+
+    np->name = tmbstrdup(old->name);
+
+    hashval = hash(np->name);
+    np->next = attribs->hashtab[hashval];
+    attribs->hashtab[hashval] = np;
+
+    np->id       = old->id;
+    np->versions = old->versions;
+    np->attrchk  = old->attrchk;
+    np->nowrap   = old->nowrap;
+    np->literal  = old->literal;
+
+    return np;
+}
+#endif
+
+static const Attribute* lookup(TidyAttribImpl* attribs, ctmbstr atnam)
+{
+    const Attribute *np;
+
+    if (!atnam)
+        return NULL;
+
+#ifdef ATTRIBUTE_HASH_LOOKUP
+    for (np = attribs->hashtab[hash(atnam)]; np != NULL; np = np->next)
+        if (tmbstrcmp(atnam, np->name) == 0)
+            return np;
+
+    for (np = attribute_defs; np && np->name; ++np)
+        if (tmbstrcmp(atnam, np->name) == 0)
+            return install(attribs, np);
+#else
+    for (np = attribute_defs; np && np->name; ++np)
+        if (tmbstrcmp(atnam, np->name) == 0)
+            return np;
+#endif
+
     return NULL;
 }
 
@@ -410,7 +455,7 @@ AttVal* AttrGetById( Node* node, TidyAttrId id )
 const Attribute* FindAttribute( TidyDocImpl* doc, AttVal *attval )
 {
     if ( attval )
-       return lookup( attval->attribute );
+       return lookup( &doc->attribs, attval->attribute );
     return NULL;
 }
 
@@ -432,7 +477,7 @@ AttVal* AddAttribute( TidyDocImpl* doc,
     av->delim = '"';
     av->attribute = tmbstrdup( name );
     av->value = tmbstrdup( value );
-    av->dict = lookup( name );
+    av->dict = lookup( &doc->attribs, name );
 
     if ( node->attributes == NULL )
         node->attributes = av;
@@ -464,7 +509,7 @@ AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr valu
 static Bool CheckAttrType( TidyDocImpl* doc,
                            ctmbstr attrname, AttrCheck type )
 {
-    const Attribute* np = lookup( attrname );
+    const Attribute* np = lookup( &doc->attribs, attrname );
     return (Bool)( np && np->attrchk == type );
 }
 
@@ -485,7 +530,7 @@ Bool IsScript( TidyDocImpl* doc, ctmbstr attrname )
 
 Bool IsLiteralAttribute( TidyDocImpl* doc, ctmbstr attrname )
 {
-    const Attribute* np = lookup( attrname );
+    const Attribute* np = lookup( &doc->attribs, attrname );
     return (Bool)( np && np->literal );
 }
 
@@ -672,7 +717,7 @@ declared and handled specially!
 static void DeclareAttribute( TidyDocImpl* doc, ctmbstr name,
                               uint versions, Bool nowrap, Bool isliteral )
 {
-    const Attribute *exist = lookup( name );
+    const Attribute *exist = lookup( &doc->attribs, name );
     if ( exist == NULL )
     {
         TidyAttribImpl* attribs = &doc->attribs;
@@ -709,6 +754,26 @@ void DeclareLiteralAttrib( TidyDocImpl* doc, ctmbstr name )
 
 void FreeAttrTable( TidyDocImpl* doc )
 {
+#ifdef ATTRIBUTE_HASH_LOOKUP
+    Attribute *dict, *next;
+    uint i;
+
+    for (i = 0; i < ATTRIBUTE_HASH_SIZE; ++i)
+    {
+        dict = doc->attribs.hashtab[i];
+
+        while(dict)
+        {
+            next = dict->next;
+            MemFree(dict->name);
+            MemFree(dict);
+            dict = next;
+        }
+
+        doc->attribs.hashtab[i] = NULL;
+    }
+#endif
+
     FreeAnchors( doc );
     FreeDeclaredAttributes( doc );
 }

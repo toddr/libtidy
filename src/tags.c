@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 22:58:54 $ 
-    $Revision: 1.39 $ 
+    $Date: 2003/05/08 01:57:15 $ 
+    $Revision: 1.40 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -252,20 +252,73 @@ static const Dict tag_defs[] =
   { 0,                  NULL,         0,                    NULL,                       (0),                                           NULL,          NULL           }
 };
 
+#ifdef ELEMENT_HASH_LOOKUP
+static uint hash(ctmbstr s)
+{
+    uint hashval;
+
+    for (hashval = 0; *s != '\0'; s++)
+        hashval = *s + 31*hashval;
+
+    return hashval % ELEMENT_HASH_SIZE;
+}
+
+static Dict *install(TidyTagImpl* tags, const Dict* old)
+{
+    Dict *np;
+    uint hashval;
+
+    np = (Dict *)MemAlloc(sizeof(*np));
+    np->name = tmbstrdup(old->name);
+
+    hashval = hash(np->name);
+    np->next = tags->hashtab[hashval];
+    tags->hashtab[hashval] = np;
+
+    np->id       = old->id;
+    np->versions = old->versions;
+    np->model    = old->model;
+    np->parser   = old->parser;
+    np->chkattrs = old->chkattrs;
+
+    return np;
+}
+#endif /* ELEMENT_HASH_LOOKUP */
+
 static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
 {
-    Dict *np = NULL;
-    if ( s )
-    {
-        const Dict *np = tag_defs + 1;  /* Skip Unknown */
-        for ( /**/; np < tag_defs + N_TIDY_TAGS; ++np )
-            if ( tmbstrcmp(s, np->name) == 0 )
-                return np;
+    const Dict *np;
 
-        for ( np = tags->declared_tag_list; np; np = np->next )
-            if ( tmbstrcmp(s, np->name) == 0 )
-                return np;
-    }
+    if (!s)
+        return NULL;
+
+#ifdef ELEMENT_HASH_LOOKUP
+    /* this breaks if declared elements get changed between two   */
+    /* parser runs since Tidy would use the cached version rather */
+    /* than the new one                                           */
+    for (np = tags->hashtab[hash(s)]; np != NULL; np = np->next)
+        if (tmbstrcmp(s, np->name) == 0)
+            return np;
+
+    for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
+        if (tmbstrcmp(s, np->name) == 0)
+            return install(tags, np);
+
+    for (np = tags->declared_tag_list; np; np = np->next)
+        if (tmbstrcmp(s, np->name) == 0)
+            return install(tags, np);
+#else
+
+    for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
+        if (tmbstrcmp(s, np->name) == 0)
+            return np;
+
+    for (np = tags->declared_tag_list; np; np = np->next)
+        if (tmbstrcmp(s, np->name) == 0)
+            return np;
+
+#endif /* ELEMENT_HASH_LOOKUP */
+
     return NULL;
 }
 
@@ -414,20 +467,6 @@ void InitTags( TidyDocImpl* doc )
     Dict* xml;
     TidyTagImpl* tags = &doc->tags;
 
-#if 0
-#ifdef _DEBUG
-    {
-        /* Tag ID is index position in element type lookup table */
-        uint ix;
-        for ( ix=0; ix < N_TIDY_TAGS; ++ix )
-        {
-          const Dict* dict = &tag_defs[ ix ];
-          assert( (uint) dict->id == ix );
-        }
-    }
-#endif
-#endif
-
     ClearMemory( tags, sizeof(TidyTagImpl) );
 
     /* create dummy entry for all xml tags */
@@ -491,8 +530,29 @@ void FreeDeclaredTags( TidyDocImpl* doc, int tagType )
 void FreeTags( TidyDocImpl* doc )
 {
     TidyTagImpl* tags = &doc->tags;
-    FreeDeclaredTags( doc, 0 );
 
+#ifdef ELEMENT_HASH_LOOKUP
+    uint i;
+    Dict *prev, *next;
+
+    for (i = 0; i < ELEMENT_HASH_SIZE; ++i)
+    {
+        prev = NULL;
+        next = tags->hashtab[i];
+
+        while(next)
+        {
+            prev = next->next;
+            MemFree(next->name);
+            MemFree(next);
+            next = prev;
+        }
+
+        tags->hashtab[i] = NULL;
+    }
+#endif
+
+    FreeDeclaredTags( doc, 0 );
     MemFree( tags->xml_tags );
 
     /* get rid of dangling tag references */

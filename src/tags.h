@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:55 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/05/08 01:57:16 $ 
+    $Revision: 1.9 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -45,10 +45,17 @@ struct _Dict
     Dict*           next;
 };
 
+#ifdef ELEMENT_HASH_LOOKUP
+#define ELEMENT_HASH_SIZE 178
+#endif
+
 struct _TidyTagImpl
 {
     Dict* xml_tags;                /* placeholder for all xml tags */
     Dict* declared_tag_list;       /* User declared tags */
+#ifdef ELEMENT_HASH_LOOKUP
+    Dict* hashtab[ELEMENT_HASH_SIZE];
+#endif
 };
 
 typedef struct _TidyTagImpl TidyTagImpl;
