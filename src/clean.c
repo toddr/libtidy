@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 12:46:49 $ 
-    $Revision: 1.80 $ 
+    $Date: 2005/02/22 13:09:37 $ 
+    $Revision: 1.81 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2473,11 +2473,15 @@ void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool
             }
             else if (lang && wantXmlLang)
             {
-                RepairAttrValue(doc, node, "xml:lang", lang->value);
+                if (NodeAttributeVersions( node, TidyAttr_XML_LANG )
+                    & doc->lexer->versionEmitted)
+                    RepairAttrValue(doc, node, "xml:lang", lang->value);
             }
             else if (xmlLang && wantLang)
             {
-                RepairAttrValue(doc, node, "lang", xmlLang->value);
+                if (NodeAttributeVersions( node, TidyAttr_LANG )
+                    & doc->lexer->versionEmitted)
+                    RepairAttrValue(doc, node, "lang", xmlLang->value);
             }
 
             if (lang && !wantLang)
