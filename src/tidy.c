@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/06 00:07:38 $ 
-    $Revision: 1.16 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/15 02:15:06 $ 
+    $Revision: 1.17 $ 
 
   Contributing Author(s):
 
@@ -696,6 +696,32 @@ int wstrncasecmp(char *s1, char *s2, int n)
         return 0;
 
     return (*s1 > *s2 ? 1 : -1);
+}
+
+Bool wsubstrn(char *s1, int len1, char *s2 )
+{
+    int i, len2 = wstrlen(s2);
+
+    for (i = 0; i <= len1 - len2; ++i)
+    {
+        if (wstrncmp(s1+i, s2, len2) == 0)
+            return yes;
+    }
+
+    return no;
+}
+
+Bool wsubstrncase(char *s1, int len1, char *s2 )
+{
+    int i, len2 = wstrlen(s2);
+
+    for (i = 0; i <= len1 - len2; ++i)
+    {
+        if (wstrncasecmp(s1+i, s2, len2) == 0)
+            return yes;
+    }
+
+    return no;
 }
 
 Bool wsubstr(char *s1, char *s2)

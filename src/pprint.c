@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/08 01:47:05 $ 
-    $Revision: 1.22 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/15 02:15:06 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -1245,6 +1245,22 @@ static char* DEFAULT_COMMENT_START = "";
 static char* DEFAULT_COMMENT_END   = "";
 
 
+static Bool HasCDATA( Lexer* lexer, Node* node )
+{
+    /* Scan forward through the textarray. Since the characters we're
+    ** looking for are < 0x7f, we don't have to do any UTF-8 decoding.
+    */
+    char* start = lexer->lexbuf + node->start;
+    int len = node->end - node->start + 1;
+
+    if ( node->type != TextNode )
+        return no;
+
+    return wsubstrn( start, len, CDATA_START );
+}
+
+
+#if 0 
 static Bool StartsWithCDATA( Lexer* lexer, Node* node, char* commentStart )
 {
     /* Scan forward through the textarray. Since the characters we're
@@ -1335,6 +1351,7 @@ static Bool EndsWithCDATA( Lexer* lexer, Node* node,
 
     return yes;
 }
+#endif /* 0 */
 
 void PPrintScriptStyle( Out* fout, uint mode, uint indent,
                         Lexer* lexer, Node* node )
@@ -1342,6 +1359,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     Node* content;
     char* commentStart = DEFAULT_COMMENT_START;
     char* commentEnd = DEFAULT_COMMENT_END;
+    Bool  hasCData = no;
 
     PCondFlushLine(fout, indent);
 
@@ -1371,7 +1389,8 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             }
         }
 
-        if ( ! StartsWithCDATA( lexer, node->content, commentStart ) )
+        hasCData = HasCDATA( lexer, node->content );
+        if ( ! hasCData )
         {
             /* disable wrapping */
             uint savewraplen = wraplen;
@@ -1399,8 +1418,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
 
     if (xHTML && node->content != null)
     {
-        if ( ! EndsWithCDATA( lexer, node->content,
-                              commentStart, commentEnd ) )
+        if ( ! hasCData )
         {
             /* disable wrapping */
             uint savewraplen = wraplen;
