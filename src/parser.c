@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/10/17 15:20:24 $ 
-    $Revision: 1.32 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/12/27 02:28:55 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -3613,6 +3613,12 @@ Node *ParseXMLDocument(Lexer *lexer)
                 ReportWarning(lexer, RootNode, node, DISCARDING_UNEXPECTED);
                 FreeNode(node);
             }
+            continue;
+        }
+
+        if (node->type == StartEndTag)
+        {
+            InsertNodeAtEnd(document, node);
             continue;
         }
 
