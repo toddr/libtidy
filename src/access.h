@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/03/30 23:57:25 $ 
-    $Revision: 1.4 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/03/19 03:03:46 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -115,9 +115,14 @@ struct _TidyAccessImpl
 /* 
     Determines which error/warning message should be displayed,
     depending on the error code that was called.
+
+    Offset accessibility error codes by FIRST_ACCESS_ERR to avoid conflict with
+    other error codes defined in message.h and used in localize.c.
 */
 enum accessErrorCodes
 {
+                           FIRST_ACCESS_ERR = 1000,    /* must be first */
+ 
     /* [1.1.1.1] */        IMG_MISSING_ALT,
     /* [1.1.1.2] */        IMG_ALT_SUSPICIOUS_FILENAME,
     /* [1.1.1.3] */        IMG_ALT_SUSPICIOUS_FILE_SIZE,
@@ -253,6 +258,9 @@ enum accessErrorCodes
     LAST_ACCESS_ERR    /* must be last */
 };
 
+
+void AccessibilityHelloMessage( TidyDocImpl* doc );
+void DisplayHTMLTableAlgorithm( TidyDocImpl* doc );
 
 /************************************************************
 * AccessibilityChecks

@@ -1,14 +1,14 @@
 /* access.c -- carry out accessibility checks
 
   Copyright University of Toronto
-  Portions (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  Portions (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.8 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/03/19 03:02:59 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -138,149 +138,6 @@ static const ctmbstr colorNames[] =
 #define N_COLORS N_COLOR_NAMES
 
 
-/* 
-    List of error/warning messages.  The error code corresponds to
-    the check that is listed in the AERT (HTML specifications).
-*/
-static const ctmbstr errorMsgs[] =  
-{
-    "[1.1.1.1]: <img> missing 'alt' text.",
-    "[1.1.1.2]: suspicious 'alt' text (filename).",
-    "[1.1.1.3]: suspicious 'alt' text (file size).",
-    "[1.1.1.4]: suspicious 'alt' text (placeholder).",
-    "[1.1.1.10]: suspicious 'alt' text (too long).",
-    "[1.1.1.11]: <img> missing 'alt' text (bullet).",
-    "[1.1.1.12]: <img> missing 'alt' text (horizontal rule).",
-    "[1.1.2.1]: <img> missing 'longdesc' and d-link.",
-    "[1.1.2.2]: <img> missing d-link.",
-    "[1.1.2.3]: <img> missing 'longdesc'.",
-    "[1.1.2.5]: 'longdesc' not required.",
-    "[1.1.3.1]: <img> (button) missing 'alt' text.", 
-    "[1.1.4.1]: <applet> missing alternate content.",
-    "[1.1.5.1]: <object> missing alternate content.",
-    "[1.1.6.1]: audio missing text transcript (wav).",
-    "[1.1.6.2]: audio missing text transcript (au).",
-    "[1.1.6.3]: audio missing text transcript (aiff).",
-    "[1.1.6.4]: audio missing text transcript (snd).",
-    "[1.1.6.5]: audio missing text transcript (ra).",
-    "[1.1.6.6]: audio missing text transcript (rm).",
-    "[1.1.8.1]: <frame> may require 'longdesc'.",
-    "[1.1.9.1]: <area> missing 'alt' text.",
-    "[1.1.10.1]: <script> missing <noscript> section.",
-    "[1.1.12.1]: ascii art requires description.",
-    "[1.2.1.1]: image map (server-side) requires text links.",
-    "[1.4.1.1]: multimedia requires synchronized text equivalents.", 
-    "[1.5.1.1]: image map (client-side) missing text links.",
-    "[2.1.1.1]: ensure information not conveyed through color alone (image).",
-    "[2.1.1.2]: ensure information not conveyed through color alone (applet).",
-    "[2.1.1.3]: ensure information not conveyed through color alone (object).",
-    "[2.1.1.4]: ensure information not conveyed through color alone (script).",
-    "[2.1.1.5]: ensure information not conveyed through color alone (input).",
-    "[2.2.1.1]: poor color contrast (text).",
-    "[2.2.1.2]: poor color contrast (link).",
-    "[2.2.1.3]: poor color contrast (active link).",
-    "[2.2.1.4]: poor color contrast (visited link).",
-    "[3.2.1.1]: <doctype> missing.",
-    "[3.3.1.1]: use style sheets to control presentation.",
-    "[3.5.1.1]: headers improperly nested.",
-    "[3.5.2.1]: potential header (bold).",
-    "[3.5.2.2]: potential header (italics).",
-    "[3.5.2.3]: potential header (underline).",
-    "[3.5.3.1]: header used to format text.",
-    "[3.6.1.1]: list usage invalid <ul>.",
-    "[3.6.1.2]: list usage invalid <ol>.",
-    "[3.6.1.4]: list usage invalid <li>.",
-    "[4.1.1.1]: indicate changes in language.",
-    "[4.3.1.1]: language not identified.",
-    "[4.3.1.2]: language attribute invalid.",
-    "[5.1.2.1]: data <table> missing row/column headers (all).",
-    "[5.1.2.2]: data <table> missing row/column headers (1 col).",
-    "[5.1.2.3]: data <table> missing row/column headers (1 row).",
-    "[5.2.1.1]: data <table> may require markup (column headers).",
-    "[5.2.1.2]: data <table> may require markup (row headers).",
-    "[5.3.1.1]: verify layout tables linearize properly.",
-    "[5.4.1.1]: invalid markup used in layout <table>.",
-    "[5.5.1.1]: <table> missing summary.",
-    "[5.5.1.2]: <table> summary invalid (null).",
-    "[5.5.1.3]: <table> summary invalid (spaces).",
-    "[5.5.1.6]: <table> summary invalid (placeholder text).",
-    "[5.5.2.1]: <table> missing <caption>.",
-    "[5.6.1.1]: <table> may require header abbreviations.",
-    "[5.6.1.2]: <table> header abbreviations invalid (null).",
-    "[5.6.1.3]: <table> header abbreviations invalid (spaces).",
-    "[6.1.1.1]: style sheets require testing (link).",
-    "[6.1.1.2]: style sheets require testing (style element).",
-    "[6.1.1.3]: style sheets require testing (style attribute).",
-    "[6.2.1.1]: <frame> source invalid.",
-    "[6.2.2.1]: text equivalents require updating (applet).",
-    "[6.2.2.2]: text equivalents require updating (script).",
-    "[6.2.2.3]: text equivalents require updating (object).",
-    "[6.3.1.1]: programmatic objects require testing (script).",
-    "[6.3.1.2]: programmatic objects require testing (object).",
-    "[6.3.1.3]: programmatic objects require testing (embed).",
-    "[6.3.1.4]: programmatic objects require testing (applet).",
-    "[6.5.1.1]: <frameset> missing <noframes> section.", 
-    "[6.5.1.2]: <noframes> section invalid (no value).",
-    "[6.5.1.3]: <noframes> section invalid (content).",
-    "[6.5.1.4]: <noframes> section invalid (link).",
-    "[7.1.1.1]: remove flicker (script).",
-    "[7.1.1.2]: remove flicker (object).",
-    "[7.1.1.3]: remove flicker (embed).",
-    "[7.1.1.4]: remove flicker (applet).",
-    "[7.1.1.5]: remove flicker (animated gif).",
-    "[7.2.1.1]: remove blink/marquee.",
-    "[7.4.1.1]: remove auto-refresh.",
-    "[7.5.1.1]: remove auto-redirect.",
-    "[8.1.1.1]: ensure programmatic objects are accessible (script).",
-    "[8.1.1.2]: ensure programmatic objects are accessible (object).",
-    "[8.1.1.3]: ensure programmatic objects are accessible (applet).",
-    "[8.1.1.4]: ensure programmatic objects are accessible (embed).",
-    "[9.1.1.1]: image map (server-side) requires conversion.",
-    "[9.3.1.1]: <script> not keyboard accessible (onMouseDown).",
-    "[9.3.1.2]: <script> not keyboard accessible (onMouseUp).",
-    "[9.3.1.3]: <script> not keyboard accessible (onClick).",
-    "[9.3.1.4]: <script> not keyboard accessible (onMouseOver).",
-    "[9.3.1.5]: <script> not keyboard accessible (onMouseOut).",
-    "[9.3.1.6]: <script> not keyboard accessible (onMouseMove).",
-    "[10.1.1.1]: new windows require warning (_new).",
-    "[10.1.1.2]: new windows require warning (_blank).",
-    "[10.2.1.1]: <label> needs repositioning (<label> before <input>).",
-    "[10.2.1.2]: <label> needs repositioning (<label> after <input>).",
-    "[10.4.1.1]: form control requires default text.",
-    "[10.4.1.2]: form control default text invalid (null).",
-    "[10.4.1.3]: form control default text invalid (spaces).",
-    "[11.2.1.1]: replace deprecated html <applet>.",
-    "[11.2.1.2]: replace deprecated html <basefont>.",
-    "[11.2.1.3]: replace deprecated html <center>.",
-    "[11.2.1.4]: replace deprecated html <dir>.",
-    "[11.2.1.5]: replace deprecated html <font>.",
-    "[11.2.1.6]: replace deprecated html <isindex>.",
-    "[11.2.1.7]: replace deprecated html <menu>.",
-    "[11.2.1.8]: replace deprecated html <s>.",
-    "[11.2.1.9]: replace deprecated html <strike>.",
-    "[11.2.1.10]: replace deprecated html <u>.",
-    "[12.1.1.1]: <frame> missing title.",
-    "[12.1.1.2]: <frame> title invalid (null).",
-    "[12.1.1.3]: <frame> title invalid (spaces).",
-    "[12.4.1.1]: associate labels explicitly with form controls.",
-    "[12.4.1.2]: associate labels explicitly with form controls (for).",
-    "[12.4.1.3]: associate labels explicitly with form controls (id).",
-    "[13.1.1.1]: link text not meaningful.",
-    "[13.1.1.2]: link text missing.",
-    "[13.1.1.3]: link text too long.",
-    "[13.1.1.4]: link text not meaningful (click here).",
-    "[13.1.1.5]: link text not meaningful (more).",
-    "[13.1.1.6]: link text not meaningful (follow this).",
-    "[13.2.1.1]: Metadata missing.",
-    "[13.2.1.2]: Metadata missing (link element).",
-    "[13.2.1.3]: Metadata missing (redirect/auto-refresh).",
-    "[13.10.1.1]: skip over ascii art.",
-    
-    "Unknown error.",    /* must be last */
-};
-
-#define N_ERROR_MSGS (sizeof(errorMsgs)/sizeof(ctmbstr))
-
 /* function prototypes */
 void InitAccessibilityChecks( TidyDocImpl* doc, int level123 );
 void FreeAccessibilityChecks( TidyDocImpl* doc );
@@ -289,7 +146,6 @@ static Bool GetRgb( ctmbstr color, int rgb[3] );
 static Bool CompareColors( int rgbBG[3], int rgbFG[3] );
 static int  ctox( tmbchar ch );
 
-static void DisplayHTMLTableAlgorithm( TidyDocImpl* doc);
 /*
 static void CheckMapAccess( TidyDocImpl* doc, Node* node, Node* front);
 static void GetMapLinks( TidyDocImpl* doc, Node* node, Node* front);
@@ -322,24 +178,6 @@ static void GetFileExtension( ctmbstr path, tmbchar *ext, uint maxExt )
         }
     } while ( --i > 0 );
 }
-
-/*************************************************************************
-* AccessReport
-*
-* Reports and displays errors/warnings.
-*************************************************************************/
-
-static void AccessReport( TidyDocImpl* doc, Node* node,
-                          TidyReportLevel level, uint errorCode )
-{
-    ctmbstr error = "";
-    if ( errorCode >= N_ERROR_MSGS )
-        errorCode = LAST_ACCESS_ERR;
-    error = errorMsgs[ errorCode ];
-    doc->badAccess = yes;
-    messageNode( doc, level, node, error );
-}
-
 
 /************************************************************************
 * IsImage
@@ -622,24 +460,19 @@ static void CheckColorAvailable( TidyDocImpl* doc, Node* node )
          doc->access.PRIORITYCHK == 3 )
     {
         if ( nodeIsIMG(node) )
-            AccessReport( doc, node, TidyWarning,
-                          INFORMATION_NOT_CONVEYED_IMAGE );
+            ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_IMAGE );
 
         else if ( nodeIsAPPLET(node) )
-            AccessReport( doc, node, TidyWarning,
-                          INFORMATION_NOT_CONVEYED_APPLET );
+            ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_APPLET );
 
         else if ( nodeIsOBJECT(node) )
-            AccessReport( doc, node, TidyWarning,
-                          INFORMATION_NOT_CONVEYED_OBJECT );
+            ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_OBJECT );
 
         else if ( nodeIsSCRIPT(node) )
-            AccessReport( doc, node, TidyWarning,
-                          INFORMATION_NOT_CONVEYED_SCRIPT );
+            ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_SCRIPT );
 
         else if ( nodeIsINPUT(node) )
-            AccessReport( doc, node, TidyWarning,
-                          INFORMATION_NOT_CONVEYED_INPUT );
+            ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_INPUT );
     }
 }
 
@@ -701,7 +534,7 @@ static void CheckColorContrast( TidyDocImpl* doc, Node* node )
                 if ( GetRgb(av->value, rgbFG) &&
                      !CompareColors(rgbBG, rgbFG) )
                 {
-                    AccessReport( doc, node, TidyWarning, errcode );
+                    ReportAccessWarning( doc, node, errcode );
                 }
             }
         }
@@ -824,7 +657,6 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
 {
     Bool HasAlt = no;
     Bool HasIsMap = no;
-    Bool HasDataFld = no;
     Bool HasLongDesc = no;
     Bool HasDLINK = no;
     Bool HasValidHeight = no;
@@ -834,7 +666,6 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
     Bool HasTriggeredMissingLongDesc = no;
 
     AttVal* av;
-    Node* current = node;
     tmbstr word;
                 
     if ((doc->access.PRIORITYCHK == 1)||
@@ -865,29 +696,25 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                     else if (tmbstrlen (av->value) > 150)
                     {
                         HasAlt = yes;
-                        AccessReport( doc, node, TidyWarning,
-                                      IMG_ALT_SUSPICIOUS_TOO_LONG );
+                        ReportAccessWarning( doc, node, IMG_ALT_SUSPICIOUS_TOO_LONG );
                     }
 
                     else if (IsImage (av->value) == yes)
                     {
                         HasAlt = yes;
-                        AccessReport( doc, node, TidyWarning,
-                                      IMG_ALT_SUSPICIOUS_FILENAME);
+                        ReportAccessWarning( doc, node, IMG_ALT_SUSPICIOUS_FILENAME);
                     }
             
                     else if (IsPlaceholderAlt (av->value) == yes)
                     {
                         HasAlt = yes;
-                        AccessReport( doc, node, TidyWarning,
-                                      IMG_ALT_SUSPICIOUS_PLACEHOLDER);
+                        ReportAccessWarning( doc, node, IMG_ALT_SUSPICIOUS_PLACEHOLDER);
                     }
 
                     else if (EndsWithBytes (av->value) == yes)
                     {
                         HasAlt = yes;
-                        AccessReport( doc, node, TidyWarning,
-                                      IMG_ALT_SUSPICIOUS_FILE_SIZE);
+                        ReportAccessWarning( doc, node, IMG_ALT_SUSPICIOUS_FILE_SIZE);
                     }
                 }
             }
@@ -1018,7 +845,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             (HasValidWidthBullet == yes)&&
             (HasValidHeight == yes))
         {
-            AccessReport( doc, node, TidyError, IMG_MISSING_ALT_BULLET);
+            ReportAccessError( doc, node, IMG_MISSING_ALT_BULLET);
             HasTriggeredMissingAlt = yes;
         }
 
@@ -1026,7 +853,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             (HasValidWidthHR == yes)&&
             (HasValidHeight == yes))
         {
-            AccessReport( doc, node, TidyError, IMG_MISSING_ALT_H_RULE);
+            ReportAccessError( doc, node, IMG_MISSING_ALT_H_RULE);
             HasTriggeredMissingAlt = yes;
         }
         
@@ -1034,7 +861,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
         {
             if (HasAlt == no)
             {
-                AccessReport( doc, node, TidyError, IMG_MISSING_ALT);
+                ReportAccessError( doc, node, IMG_MISSING_ALT);
             }
         }
 
@@ -1044,7 +871,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             (HasValidWidthBullet == yes))
         {
             HasTriggeredMissingLongDesc = yes;
-            AccessReport( doc, node, TidyWarning, LONGDESC_NOT_REQUIRED);
+            ReportAccessWarning( doc, node, LONGDESC_NOT_REQUIRED);
         }
 
         if (HasTriggeredMissingLongDesc == no)
@@ -1052,27 +879,27 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             if ((HasDLINK == yes)&&
                 (HasLongDesc == no))
             {
-                AccessReport( doc, node, TidyWarning, IMG_MISSING_LONGDESC);
+                ReportAccessWarning( doc, node, IMG_MISSING_LONGDESC);
             }
 
             if ((HasLongDesc == yes)&&
                 (HasDLINK == no))
             {
-                AccessReport( doc, node, TidyWarning, IMG_MISSING_DLINK);
+                ReportAccessWarning( doc, node, IMG_MISSING_DLINK);
             }
             
             if ((HasLongDesc == no)&&
                 (HasDLINK == no))
             {
-                AccessReport( doc, node, TidyWarning, IMG_MISSING_LONGDESC_DLINK);
+                ReportAccessWarning( doc, node, IMG_MISSING_LONGDESC_DLINK);
             }
         }
         
         if (HasIsMap == yes)
         {
-            AccessReport( doc, node, TidyError, IMAGE_MAP_SERVER_SIDE_REQUIRES_CONVERSION);
+            ReportAccessError( doc, node, IMAGE_MAP_SERVER_SIDE_REQUIRES_CONVERSION);
 
-            AccessReport( doc, node, TidyWarning, IMG_MAP_SERVER_REQUIRES_TEXT_LINKS);
+            ReportAccessWarning( doc, node, IMG_MAP_SERVER_REQUIRES_TEXT_LINKS);
         }
     }
 }
@@ -1140,7 +967,7 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
 
         if ( !HasDescription && !HasAlt )
         {
-            AccessReport( doc, node, TidyError, APPLET_MISSING_ALT );
+            ReportAccessError( doc, node, APPLET_MISSING_ALT );
         }
     }
 }
@@ -1158,7 +985,6 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
 static void CheckObject( TidyDocImpl* doc, Node* node )
 {
     tmbstr word = NULL;
-    Node* tnode = NULL;
 
     Bool HasAlt = no;
     Bool HasDescription = no;
@@ -1204,7 +1030,7 @@ static void CheckObject( TidyDocImpl* doc, Node* node )
 
         if ( !HasAlt && !HasDescription )
         {
-            AccessReport( doc, node, TidyError, OBJECT_MISSING_ALT );
+            ReportAccessError( doc, node, OBJECT_MISSING_ALT );
         }
     }
 }
@@ -1290,7 +1116,7 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
             {
                 if ( hasValue(av) && !IsValidSrcExtension(av->value) )
                 {
-                    AccessReport( doc, node, TidyError, FRAME_SRC_INVALID );
+                    ReportAccessError( doc, node, FRAME_SRC_INVALID );
                 }
             }
 
@@ -1305,14 +1131,14 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
                     if ( av->value == NULL || tmbstrlen(av->value) == 0 )
                     {
                         HasTitle = yes;
-                        AccessReport( doc, node, TidyError, FRAME_TITLE_INVALID_NULL);
+                        ReportAccessError( doc, node, FRAME_TITLE_INVALID_NULL);
                     }
                     else
                     {
                         if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
                         {
                             HasTitle = yes;
-                            AccessReport( doc, node, TidyError, FRAME_TITLE_INVALID_SPACES );
+                            ReportAccessError( doc, node, FRAME_TITLE_INVALID_SPACES );
                         }
                     }
                 }
@@ -1321,13 +1147,13 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
 
         if ( !HasTitle )
         {
-            AccessReport( doc, node, TidyError, FRAME_MISSING_TITLE);
+            ReportAccessError( doc, node, FRAME_MISSING_TITLE);
         }
 
         if ( doc->access.numFrames==3 && doc->access.HasCheckedLongDesc<3 )
         {
             doc->access.numFrames = 0;
-            AccessReport( doc, node, TidyWarning, FRAME_MISSING_LONGDESC );
+            ReportAccessWarning( doc, node, FRAME_MISSING_LONGDESC );
         }
     }
 }
@@ -1351,7 +1177,7 @@ static void CheckIFrame( TidyDocImpl* doc, Node* node )
         if ( hasValue(av) )
         {
             if ( !IsValidSrcExtension(av->value) )
-                AccessReport( doc, node, TidyError, FRAME_SRC_INVALID );
+                ReportAccessError( doc, node, FRAME_SRC_INVALID );
         }
     }
 }
@@ -1392,7 +1218,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                     /* Checks to see if multimedia is used */
                     if ( IsValidMediaExtension(av->value) )
                     {
-                        AccessReport( doc, node, TidyError, MULTIMEDIA_REQUIRES_TEXT );
+                        ReportAccessError( doc, node, MULTIMEDIA_REQUIRES_TEXT );
                     }
             
                     /* 
@@ -1422,7 +1248,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                             /* Must contain text description of sound file */
                             if ( !HasDescription )
                             {
-                                AccessReport( doc, node, TidyError, errcode );
+                                ReportAccessError( doc, node, errcode );
                             }
                         }
                     }
@@ -1442,12 +1268,12 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                 {
                     if (strcmp (av->value, "_new") == 0)
                     {
-                        AccessReport( doc, node, TidyWarning, NEW_WINDOWS_REQUIRE_WARNING_NEW);
+                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
                     }
                     
                     if (strcmp (av->value, "_blank") == 0)
                     {
-                        AccessReport( doc, node, TidyWarning, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
+                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
                     }
                 }
             }
@@ -1468,30 +1294,30 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                 if (strcmp (word, "more") == 0)
                 {
                     HasTriggeredLink = yes;
-                    AccessReport( doc, node, TidyWarning, LINK_TEXT_NOT_MEANINGFUL_MORE);
+                    ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL_MORE);
                 }
 
                 if (strcmp (word, "follow this") == 0)
                 {
-                    AccessReport( doc, node, TidyWarning, LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS);
+                    ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS);
                 }
 
                 if (strcmp (word, "click here") == 0)
                 {
-                    AccessReport( doc, node, TidyWarning, LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE);
+                    ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE);
                 }
 
                 if (HasTriggeredLink == no)
                 {
                     if (tmbstrlen (word) < 6)
                     {
-                        AccessReport( doc, node, TidyWarning, LINK_TEXT_NOT_MEANINGFUL);
+                        ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL);
                     }
                 }
 
                 if (tmbstrlen (word) > 60)
                 {
-                    AccessReport( doc, node, TidyWarning, LINK_TEXT_TOO_LONG);
+                    ReportAccessWarning( doc, node, LINK_TEXT_TOO_LONG);
                 }
 
             }
@@ -1499,7 +1325,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
         
         if (node->content == NULL)
         {
-            AccessReport( doc, node, TidyWarning, LINK_TEXT_MISSING);
+            ReportAccessWarning( doc, node, LINK_TEXT_MISSING);
         }
     }
 }
@@ -1518,7 +1344,6 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 static void CheckArea( TidyDocImpl* doc, Node* node )
 {
     Bool HasAlt = no;
-    int checked = 0;
     AttVal* av;
 
     /* Checks all attributes within the AREA element */
@@ -1554,12 +1379,12 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
                 {
                     if (strcmp (av->value, "_new") == 0)
                     {
-                        AccessReport( doc, node, TidyWarning, NEW_WINDOWS_REQUIRE_WARNING_NEW);
+                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
                     }
                         
                     if (strcmp (av->value, "_blank") == 0)
                     {
-                        AccessReport( doc, node, TidyWarning, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
+                        ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_BLANK);
                     }
                 }
             }
@@ -1573,7 +1398,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
         /* AREA must contain alt text */
         if (HasAlt == no)
         {
-            AccessReport( doc, node, TidyError, AREA_MISSING_ALT);
+            ReportAccessError( doc, node, AREA_MISSING_ALT);
         }    
     }
 }
@@ -1595,7 +1420,7 @@ static void CheckScriptAcc( TidyDocImpl* doc, Node* node )
         /* NOSCRIPT element must appear immediately following SCRIPT element */
         if ( node->next == NULL || !nodeIsNOSCRIPT(node->next) )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_MISSING_NOSCRIPT);
+            ReportAccessError( doc, node, SCRIPT_MISSING_NOSCRIPT);
         }
     }
 }
@@ -1737,14 +1562,14 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
                     (tmbstrlen (av->value) == 0))
                 {
                     HasAbbr = yes;
-                    AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR_NULL);
+                    ReportAccessWarning( doc, node, TABLE_MAY_REQUIRE_HEADER_ABBR_NULL);
                 }
                 
                 if ((IsWhitespace (av->value) == yes)&&
                     (tmbstrlen (av->value) > 0))
                 {
                     HasAbbr = yes;
-                    AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR_SPACES);
+                    ReportAccessWarning( doc, node, TABLE_MAY_REQUIRE_HEADER_ABBR_SPACES);
                 }
             }
         }
@@ -1759,7 +1584,7 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
             if ((tmbstrlen (word) > 15)&&
                 (HasAbbr == no))
             {
-                AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR);
+                ReportAccessWarning( doc, node, TABLE_MAY_REQUIRE_HEADER_ABBR);
             }
         }
     }
@@ -1858,13 +1683,13 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
             /* Displays HTML 4 Table Algorithm when multiple column of headers used */
             if (validColSpanRows == no)
             {
-                AccessReport( doc, node, TidyWarning, DATA_TABLE_REQUIRE_MARKUP_ROW_HEADERS );
+                ReportAccessWarning( doc, node, DATA_TABLE_REQUIRE_MARKUP_ROW_HEADERS );
                 DisplayHTMLTableAlgorithm( doc );
             }
 
             if (validColSpanColumns == no)
             {
-                AccessReport( doc, node, TidyWarning, DATA_TABLE_REQUIRE_MARKUP_COLUMN_HEADERS );
+                ReportAccessWarning( doc, node, DATA_TABLE_REQUIRE_MARKUP_COLUMN_HEADERS );
                 DisplayHTMLTableAlgorithm( doc );
             }
         }
@@ -1886,7 +1711,6 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     Node* temp;
 
     tmbstr word = NULL;
-    tmbstr value = NULL;
 
     int numTR = 0;
 
@@ -1913,19 +1737,19 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
                          strstr(av->value, "table") != NULL )
                     {
                         HasSummary = yes;
-                        AccessReport( doc, node, TidyError, TABLE_SUMMARY_INVALID_PLACEHOLDER );
+                        ReportAccessError( doc, node, TABLE_SUMMARY_INVALID_PLACEHOLDER );
                     }
                 }
 
                 if ( av->value == NULL || tmbstrlen(av->value) == 0 )
                 {
                     HasSummary = yes;
-                    AccessReport( doc, node, TidyError, TABLE_SUMMARY_INVALID_NULL );
+                    ReportAccessError( doc, node, TABLE_SUMMARY_INVALID_NULL );
                 }
                 else if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
                 {
                     HasSummary = yes;
-                    AccessReport( doc, node, TidyError, TABLE_SUMMARY_INVALID_SPACES );
+                    ReportAccessError( doc, node, TABLE_SUMMARY_INVALID_SPACES );
                 }
             }
         }
@@ -1933,7 +1757,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         /* TABLE must have content. */
         if (node->content == NULL)
         {
-            AccessReport( doc, node, TidyError, DATA_TABLE_MISSING_HEADERS);
+            ReportAccessError( doc, node, DATA_TABLE_MISSING_HEADERS);
         
             return;
         }
@@ -1968,7 +1792,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
 
         if (HasCaption == no)
         {
-            AccessReport( doc, node, TidyError, TABLE_MISSING_CAPTION);
+            ReportAccessError( doc, node, TABLE_MISSING_CAPTION);
         }
     }
 
@@ -2006,7 +1830,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         /* Suppress warning for missing 'SUMMARY for HTML 2.0 and HTML 3.2 */
         if (HasSummary == no)
         {
-            AccessReport( doc, node, TidyError, TABLE_MISSING_SUMMARY);
+            ReportAccessError( doc, node, TABLE_MISSING_SUMMARY);
         }
     }
 
@@ -2029,13 +1853,13 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
 
             if (numTR == 1)
             {
-                AccessReport( doc, node, TidyWarning, LAYOUT_TABLES_LINEARIZE_PROPERLY);
+                ReportAccessWarning( doc, node, LAYOUT_TABLES_LINEARIZE_PROPERLY);
             }
         }
     
         if ( doc->access.HasTH )
         {
-            AccessReport( doc, node, TidyWarning, LAYOUT_TABLE_INVALID_MARKUP);
+            ReportAccessWarning( doc, node, LAYOUT_TABLE_INVALID_MARKUP);
         }
     }
 
@@ -2050,51 +1874,22 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
                  !doc->access.HasInvalidRowHeader &&
                  !doc->access.HasInvalidColumnHeader  )
             {
-                AccessReport( doc, node, TidyError, DATA_TABLE_MISSING_HEADERS);
+                ReportAccessError( doc, node, DATA_TABLE_MISSING_HEADERS);
             }
 
             if ( !doc->access.HasValidRowHeaders && 
                  doc->access.HasInvalidRowHeader )
             {
-                AccessReport( doc, node, TidyError, DATA_TABLE_MISSING_HEADERS_ROW);
+                ReportAccessError( doc, node, DATA_TABLE_MISSING_HEADERS_ROW);
             }
 
             if ( !doc->access.HasValidColumnHeaders &&
                  doc->access.HasInvalidColumnHeader )
             {
-                AccessReport( doc, node, TidyError, DATA_TABLE_MISSING_HEADERS_COLUMN);
+                ReportAccessError( doc, node, DATA_TABLE_MISSING_HEADERS_COLUMN);
             }
         }
     }
-}
-
-
-/*********************************************************
-* DisplayHTMLTableAlgorithm()
-*
-* If the table does contain 2 or more logical levels of 
-* row or column headers, the HTML 4 table algorithm 
-* to show the author how the headers are currently associated 
-* with the cells.
-*********************************************************/
- 
-static void DisplayHTMLTableAlgorithm( TidyDocImpl* doc )
-{
-    tidy_out(doc, " \n");
-    tidy_out(doc, "      - First, search left from the cell's position to find row header cells.\n");
-    tidy_out(doc, "      - Then search upwards to find column header cells.\n");
-    tidy_out(doc, "      - The search in a given direction stops when the edge of the table is\n");
-    tidy_out(doc, "        reached or when a data cell is found after a header cell.\n"); 
-    tidy_out(doc, "      - Row headers are inserted into the list in the order they appear in\n");
-    tidy_out(doc, "        the table. \n");
-    tidy_out(doc, "      - For left-to-right tables, headers are inserted from left to right.\n");
-    tidy_out(doc, "      - Column headers are inserted after row headers, in \n");
-    tidy_out(doc, "        the order they appear in the table, from top to bottom. \n");
-    tidy_out(doc, "      - If a header cell has the headers attribute set, then the headers \n");
-    tidy_out(doc, "        referenced by this attribute are inserted into the list and the \n");
-    tidy_out(doc, "        search stops for the current direction.\n");
-    tidy_out(doc, "        TD cells that set the axis attribute are also treated as header cells.\n");
-    tidy_out(doc, " \n");
 }
 
 
@@ -2225,14 +2020,14 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
 
         if (IsAscii == yes)
         {
-            AccessReport( doc, node, TidyError, ASCII_REQUIRES_DESCRIPTION);
+            ReportAccessError( doc, node, ASCII_REQUIRES_DESCRIPTION);
         }
 
         if (HasSkipOverLink < 2)
         {
             if (IsAscii == yes)
             {
-                AccessReport( doc, node, TidyError, SKIPOVER_ASCII_ART);
+                ReportAccessError( doc, node, SKIPOVER_ASCII_ART);
             }
         }
     }
@@ -2251,19 +2046,19 @@ static void CheckFormControls( TidyDocImpl* doc, Node* node )
     if ( !doc->access.HasValidFor &&
          doc->access.HasValidId )
     {
-        AccessReport( doc, node, TidyError, ASSOCIATE_LABELS_EXPLICITLY_FOR);
+        ReportAccessError( doc, node, ASSOCIATE_LABELS_EXPLICITLY_FOR);
     }    
 
     if ( !doc->access.HasValidId &&
          doc->access.HasValidFor )
     {
-        AccessReport( doc, node, TidyError, ASSOCIATE_LABELS_EXPLICITLY_ID);
+        ReportAccessError( doc, node, ASSOCIATE_LABELS_EXPLICITLY_ID);
     }
 
     if ( !doc->access.HasValidId &&
          !doc->access.HasValidFor )
     {
-        AccessReport( doc, node, TidyError, ASSOCIATE_LABELS_EXPLICITLY);
+        ReportAccessError( doc, node, ASSOCIATE_LABELS_EXPLICITLY);
     }
 }
 
@@ -2400,12 +2195,10 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
         if ( !HasValidLabel )
         {
             if ( HasLabelBefore )
-              AccessReport( doc, node, TidyError,
-                            LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT );
+              ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT );
        
             if ( HasLabelAfter )
-              AccessReport( doc, node, TidyError,
-                            LABEL_NEEDS_REPOSITIONING_AFTER_INPUT );
+              ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT );
         }
         
         if ( ++doc->access.ForID == 2 )
@@ -2472,26 +2265,24 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
             else if ( av->value == NULL || tmbstrlen(av->value) == 0 )
             {
                 HasValue = yes;
-                AccessReport( doc, node, TidyError,
-                              FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL );
+                ReportAccessError( doc, node, FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL );
             }
             else if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
             {
                 HasValue = yes;
-                AccessReport( doc, node, TidyError,
-                              FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES );
+                ReportAccessError( doc, node, FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES );
             }
         }
     }
 
     if ( MustHaveAlt && !HasAlt )
     {
-        AccessReport( doc, node, TidyError, IMG_BUTTON_MISSING_ALT );
+        ReportAccessError( doc, node, IMG_BUTTON_MISSING_ALT );
     }
 
     if ( MustHaveValue && !HasValue )
     {
-        AccessReport( doc, node, TidyError, FORM_CONTROL_REQUIRES_DEFAULT_TEXT );
+        ReportAccessError( doc, node, FORM_CONTROL_REQUIRES_DEFAULT_TEXT );
     }
 }
 
@@ -2523,7 +2314,7 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
             {
                 if ( nodeIsA(temp) )
                 {
-                    AccessReport( doc, temp, TidyError, NOFRAMES_INVALID_LINK);
+                    ReportAccessError( doc, temp, NOFRAMES_INVALID_LINK);
                 }
                 else if ( nodeIsNOFRAMES(temp) )
                 {
@@ -2537,18 +2328,18 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
                             word = textFromOneNode( doc, para->content );
                             if ( word && strstr(word, "browser") != NULL )
                             {
-                                AccessReport( doc, para, TidyError, NOFRAMES_INVALID_CONTENT );
+                                ReportAccessError( doc, para, NOFRAMES_INVALID_CONTENT );
                             }
                         }
                     }
                     else if (temp->content == NULL)
                     {
-                        AccessReport( doc, temp, TidyError, NOFRAMES_INVALID_NO_VALUE);
+                        ReportAccessError( doc, temp, NOFRAMES_INVALID_NO_VALUE);
                     }
                     else if ( temp->content &&
                               IsWhitespace(textFromOneNode(doc, temp->content)) )
                     {
-                        AccessReport( doc, temp, TidyError, NOFRAMES_INVALID_NO_VALUE);
+                        ReportAccessError( doc, temp, NOFRAMES_INVALID_NO_VALUE);
                     }
                 }
 
@@ -2558,7 +2349,7 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
 
         if (HasNoFrames == no)
         {
-            AccessReport( doc, node, TidyError, FRAME_MISSING_NOFRAMES);
+            ReportAccessError( doc, node, FRAME_MISSING_NOFRAMES);
         }
     }
 }
@@ -2628,10 +2419,10 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
         }
 
         if ( !IsValidIncrease )
-            AccessReport( doc, node, TidyWarning, HEADERS_IMPROPERLY_NESTED );
+            ReportAccessWarning( doc, node, HEADERS_IMPROPERLY_NESTED );
     
         if ( NeedsDescription )
-            AccessReport( doc, node, TidyWarning, HEADER_USED_FORMAT_TEXT );    
+            ReportAccessWarning( doc, node, HEADER_USED_FORMAT_TEXT );    
     }
 }
 
@@ -2646,7 +2437,6 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
 
 static void CheckParagraphHeader( TidyDocImpl* doc, Node* node )
 {
-    Bool IsHeading = yes;
     Bool IsNotHeader = no;
     Node* temp;
 
@@ -2676,17 +2466,17 @@ static void CheckParagraphHeader( TidyDocImpl* doc, Node* node )
             {
                 if ( nodeIsSTRONG(node->content) )
                 {
-                    AccessReport( doc, node, TidyWarning, POTENTIAL_HEADER_BOLD);
+                    ReportAccessWarning( doc, node, POTENTIAL_HEADER_BOLD);
                 }
 
                 if ( nodeIsU(node->content) )
                 {
-                    AccessReport( doc, node, TidyWarning, POTENTIAL_HEADER_UNDERLINE);
+                    ReportAccessWarning( doc, node, POTENTIAL_HEADER_UNDERLINE);
                 }
 
                 if ( nodeIsEM(node->content) )
                 {
-                    AccessReport( doc, node, TidyWarning, POTENTIAL_HEADER_ITALICS);
+                    ReportAccessWarning( doc, node, POTENTIAL_HEADER_ITALICS);
                 }
             }
         }
@@ -2750,10 +2540,10 @@ static void CheckSelect( TidyDocImpl* doc, Node* node )
             }
 
             if ( !HasLabelAfter )
-                AccessReport( doc, node, TidyError, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
+                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
 
             if (HasLabelBefore == no)
-                AccessReport( doc, node, TidyError, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
+                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
         }
     }
 }
@@ -2817,10 +2607,10 @@ static void CheckTextArea( TidyDocImpl* doc, Node* node )
             }
         
             if ( !HasLabelAfter )
-                AccessReport( doc, node, TidyError, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
+                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
 
             if ( !HasLabelBefore )
-                AccessReport( doc, node, TidyError, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
+                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
         }
     }
 }
@@ -2842,7 +2632,7 @@ static void CheckEmbed( TidyDocImpl* doc, Node* node )
         AttVal* av = attrGetSRC( node );
         if ( hasValue(av) && IsValidMediaExtension(av->value) )
         {
-             AccessReport( doc, node, TidyError, MULTIMEDIA_REQUIRES_TEXT );
+             ReportAccessError( doc, node, MULTIMEDIA_REQUIRES_TEXT );
         }
     }
 }
@@ -2866,10 +2656,10 @@ static void CheckHTMLAccess( TidyDocImpl* doc, Node* node )
         {
             ValidLang = yes;
             if ( !hasValue(av) )
-                AccessReport( doc, node, TidyError, LANGUAGE_INVALID );
+                ReportAccessError( doc, node, LANGUAGE_INVALID );
         }
         if ( !ValidLang )
-            AccessReport( doc, node, TidyError, LANGUAGE_NOT_IDENTIFIED );
+            ReportAccessError( doc, node, LANGUAGE_NOT_IDENTIFIED );
     }
 }
 
@@ -2893,7 +2683,7 @@ static void CheckBlink( TidyDocImpl* doc, Node* node )
             tmbstr word = textFromOneNode( doc, node->content );
             if ( !IsWhitespace(word) )
             {
-                AccessReport( doc, node, TidyError, REMOVE_BLINK_MARQUEE );
+                ReportAccessError( doc, node, REMOVE_BLINK_MARQUEE );
             }
         }
     }
@@ -2919,7 +2709,7 @@ static void CheckMarquee( TidyDocImpl* doc, Node* node )
             tmbstr word = textFromOneNode( doc, node->content);
             if ( !IsWhitespace(word) )
             {
-                AccessReport( doc, node, TidyError, REMOVE_BLINK_MARQUEE );
+                ReportAccessError( doc, node, REMOVE_BLINK_MARQUEE );
             }
         }
     }
@@ -2959,8 +2749,7 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
             }
         }
 
-        AccessReport( doc, node, TidyWarning,
-                      STYLESHEETS_REQUIRE_TESTING_LINK );
+        ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_LINK );
     }
 }
 
@@ -2978,8 +2767,7 @@ static void CheckStyle( TidyDocImpl* doc, Node* node )
          doc->access.PRIORITYCHK == 2 ||
          doc->access.PRIORITYCHK == 3 )
     {
-        AccessReport( doc, node, TidyWarning,
-                      STYLESHEETS_REQUIRE_TESTING_STYLE_ELEMENT );
+        ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_STYLE_ELEMENT );
     }
 }
 
@@ -3007,7 +2795,7 @@ static void DynamicContent( TidyDocImpl* doc, Node* node )
             msgcode = TEXT_EQUIVALENTS_REQUIRE_UPDATING_OBJECT;
 
         if ( msgcode )
-            AccessReport( doc, node, TidyWarning, msgcode );
+            ReportAccessWarning( doc, node, msgcode );
     }
 }
 
@@ -3036,7 +2824,7 @@ static void ProgrammaticObjects( TidyDocImpl* doc, Node* node )
             msgcode = PROGRAMMATIC_OBJECTS_REQUIRE_TESTING_APPLET;
 
         if ( msgcode )
-            AccessReport( doc, node, TidyWarning, msgcode );
+            ReportAccessWarning( doc, node, msgcode );
     }
 }
 
@@ -3064,7 +2852,7 @@ static void AccessibleCompatible( TidyDocImpl* doc, Node* node )
             msgcode = ENSURE_PROGRAMMATIC_OBJECTS_ACCESSIBLE_APPLET;
 
         if ( msgcode )
-            AccessReport( doc, node, TidyWarning, msgcode );
+            ReportAccessWarning( doc, node, msgcode );
     }
 }
 
@@ -3151,7 +2939,7 @@ static void CheckFlicker( TidyDocImpl* doc, Node* node )
         }            
 
         if ( msgcode )
-            AccessReport( doc, node, TidyWarning, msgcode );
+            ReportAccessWarning( doc, node, msgcode );
     }
 }
 
@@ -3192,7 +2980,7 @@ static void CheckDeprecated( TidyDocImpl* doc, Node* node )
             msgcode = REPLACE_DEPRECATED_HTML_U;
 
         if ( msgcode )
-            AccessReport( doc, node, TidyError, msgcode );
+            ReportAccessError( doc, node, msgcode );
     }
 }
 
@@ -3258,32 +3046,32 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
 
         if ( HasOnMouseDown == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_DOWN);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_DOWN);
         }
 
         if ( HasOnMouseUp == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_UP);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_UP);
         }
         
         if ( HasOnClick == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_CLICK);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_CLICK);
         }
             
         if ( HasOnMouseOut == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OUT);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OUT);
         }
         
         if ( HasOnMouseOver == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OVER);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OVER);
         }
 
         if ( HasOnMouseMove == 1 )
         {
-            AccessReport( doc, node, TidyError, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE);
+            ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE);
         }
     }
 }
@@ -3323,7 +3111,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
                     if ( strcmp(av->value, "refresh") == 0 )
                     {
                         HasHttpEquiv = yes;
-                        AccessReport( doc, node, TidyError, REMOVE_AUTO_REFRESH );
+                        ReportAccessError( doc, node, REMOVE_AUTO_REFRESH );
                     }
                 }
 
@@ -3335,7 +3123,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
                     if ( tmbstrncmp(av->value, "http:", 5) == 0)
                     {
                         HasContent = yes;
-                        AccessReport( doc, node, TidyError, REMOVE_AUTO_REDIRECT);
+                        ReportAccessError( doc, node, REMOVE_AUTO_REDIRECT);
                     }
                 }
             }
@@ -3343,7 +3131,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
             if ( HasContent || HasHttpEquiv )
             {
                 HasMetaData = yes;
-                AccessReport( doc, node, TidyError, METADATA_MISSING_REDIRECT_AUTOREFRESH);
+                ReportAccessError( doc, node, METADATA_MISSING_REDIRECT_AUTOREFRESH);
             }
             else
             {
@@ -3378,7 +3166,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
                  strstr(av->value, "stylesheet") != NULL )
             {
                 HasRel = yes;
-                AccessReport( doc, node, TidyError, METADATA_MISSING_LINK );
+                ReportAccessError( doc, node, METADATA_MISSING_LINK );
             }
         }
             
@@ -3403,7 +3191,7 @@ static void MetaDataPresent( TidyDocImpl* doc, Node* node )
     if ( doc->access.PRIORITYCHK == 2 ||
          doc->access.PRIORITYCHK == 3 )
     {
-        AccessReport( doc, node, TidyError, METADATA_MISSING );
+        ReportAccessError( doc, node, METADATA_MISSING );
     }
 }
 
@@ -3418,7 +3206,6 @@ static void MetaDataPresent( TidyDocImpl* doc, Node* node )
 static void CheckDocType( TidyDocImpl* doc, Node* node )
 {
     tmbstr word;
-    Bool HasDocType = no;
 
     if ((doc->access.PRIORITYCHK == 2)||
         (doc->access.PRIORITYCHK == 3))
@@ -3430,7 +3217,7 @@ static void CheckDocType( TidyDocImpl* doc, Node* node )
             if ((strstr (word, "HTML PUBLIC") == NULL) &&
                 (strstr (word, "html PUBLIC") == NULL))
             {
-                AccessReport( doc, node, TidyError, DOCTYPE_MISSING);
+                ReportAccessError( doc, node, DOCTYPE_MISSING);
             }
         }
     }
@@ -3484,8 +3271,7 @@ static void CheckMapLinks( TidyDocImpl* doc, Node* node )
             if ( hasValue(href) &&
                  !FindLinkA( doc, &doc->root, href->value ) )
             {
-                AccessReport( doc, node, TidyError,
-                              IMG_MAP_CLIENT_MISSING_TEXT_LINKS );
+                ReportAccessError( doc, node, IMG_MAP_CLIENT_MISSING_TEXT_LINKS );
             }
         }
     }
@@ -3509,8 +3295,7 @@ static void CheckForStyleAttribute( TidyDocImpl* doc, Node* node )
         AttVal* style = attrGetSTYLE( node );
         if ( hasValue(style) )
         {
-            AccessReport( doc, node, TidyWarning,
-                          STYLESHEETS_REQUIRE_TESTING_STYLE_ATTR );
+            ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_STYLE_ATTR );
         }
     }
 }
@@ -3559,7 +3344,7 @@ static void CheckListUsage( TidyDocImpl* doc, Node* node )
     if ( msgcode )
     {
         if ( !nodeIsLI(node->content) )
-            AccessReport( doc, node, TidyWarning, msgcode );
+            ReportAccessWarning( doc, node, msgcode );
     }
     else if ( nodeIsLI(node) )
     {
@@ -3570,7 +3355,7 @@ static void CheckListUsage( TidyDocImpl* doc, Node* node )
         if ( node->parent == NULL ||
              ( !nodeIsOL(node->parent) && !nodeIsUL(node->parent) ) )
         {
-            AccessReport( doc, node, TidyWarning, LIST_USAGE_INVALID_LI );
+            ReportAccessWarning( doc, node, LIST_USAGE_INVALID_LI );
         }
     }
 }
@@ -3596,6 +3381,8 @@ void InitAccessibilityChecks( TidyDocImpl* doc, int level123 )
 
 void FreeAccessibilityChecks( TidyDocImpl* doc )
 {
+#pragma unused(doc)
+
     /* free any memory allocated for the lists
 
     Linked List of Links not used.  Just search document as 
@@ -3849,9 +3636,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
     InitAccessibilityChecks( doc, cfg(doc, TidyAccessibilityCheckLevel) );
 
     /* Hello there, ladies and gentlemen... */
-    tidy_out( doc, "\n" );
-    tidy_out( doc, "Accessibility Checks: Version 0.1\n" );
-    tidy_out( doc, "\n" );
+    AccessibilityHelloMessage( doc );
 
     /* Checks all elements for script accessibility */
     CheckScriptKeyboardAccessible( doc, &doc->root );
@@ -3866,8 +3651,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
     /* Checks to see if stylesheets are used to control the layout */
     if ( ! CheckMissingStyleSheets( doc, &doc->root ) )
     {
-        AccessReport( doc, &doc->root, TidyWarning,
-                      STYLE_SHEET_CONTROL_PRESENTATION );
+        ReportAccessWarning( doc, &doc->root, STYLE_SHEET_CONTROL_PRESENTATION );
     }
 
     /* Check to see if any list elements are found within the document */
@@ -3883,7 +3667,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
 
     if ( WordCount(doc, &doc->root) > 3 )
     {
-        AccessReport( doc, node, TidyWarning, INDICATE_CHANGES_IN_LANGUAGE);
+        ReportAccessWarning( doc, node, INDICATE_CHANGES_IN_LANGUAGE);
     }
     */
 
