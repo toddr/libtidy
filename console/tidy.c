@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/03/09 19:35:39 $ 
-    $Revision: 1.4 $ 
+    $Author: creitzel $ 
+    $Date: 2003/03/18 23:47:08 $ 
+    $Revision: 1.5 $ 
 */
 
 #include "tidy.h"
@@ -20,8 +20,8 @@ uint  contentWarnings = 0;
 uint  optionErrors = 0;
 uint  accessWarnings = 0;
 
-FILE* errout = null;  /* set to stderr */
-FILE* txtout = null;  /* set to stdout */
+FILE* errout = NULL;  /* set to stderr */
+FILE* txtout = NULL;  /* set to stdout */
 
 Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 {
@@ -263,7 +263,7 @@ void optionvalues( TidyDoc tdoc, ctmbstr prog )
         Bool isReadOnly = tidyOptIsReadOnly( topt );
 
         Bool bval = no;
-        ctmbstr sval = null;
+        ctmbstr sval = NULL;
         uint ival = 0;
 
         tmbstr name = (tmbstr) tidyOptGetName( topt );
@@ -393,7 +393,7 @@ void unknownOption( TidyDoc tdoc, uint c )
 int main( int argc, char** argv )
 {
     ctmbstr prog = argv[0];
-    ctmbstr cfgfil = null, errfil = null, htmlfil = null;
+    ctmbstr cfgfil = NULL, errfil = NULL, htmlfil = NULL;
     TidyDoc tdoc = tidyCreate();
     int status = 0;
 
@@ -436,6 +436,8 @@ int main( int argc, char** argv )
             else if ( strcasecmp(arg, "indent") == 0 )
             {
                 tidyOptSetInt( tdoc, TidyIndentContent, TidyYesState );
+                if ( tidyOptGetInt(tdoc, TidyIndentSpaces) == 0 )
+                    tidyOptResetToDefault( tdoc, TidyIndentSpaces );
             }
             else if ( strcasecmp(arg, "omit") == 0 )
                 tidyOptSetBool( tdoc, TidyHideEndTags, yes );
@@ -616,7 +618,9 @@ int main( int argc, char** argv )
                     switch ( c )
                     {
                     case 'i':
-                        tidyOptSetInt(tdoc, TidyIndentContent, TidyYesState);
+                        tidyOptSetInt( tdoc, TidyIndentContent, TidyYesState );
+                        if ( tidyOptGetInt(tdoc, TidyIndentSpaces) == 0 )
+                            tidyOptResetToDefault( tdoc, TidyIndentSpaces );
                         break;
 
                     /* Usurp -o for output file.  Anyone hiding end tags?
