@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/03/01 04:47:12 $ 
-    $Revision: 1.45 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/03/31 23:59:54 $ 
+    $Revision: 1.46 $ 
 
 */
 
@@ -806,7 +806,7 @@ Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
         /* if attribute looks like <foo/> check XML is ok */
         if (attribute->versions & VERS_XML)
         {
-            if (!(XmlTags || XmlOut))
+            if (!(XmlTags || XmlOut || xHTML)) /* added xHTML to fix bug 517528 */
                 ReportAttrError(lexer, node, attval, XML_ATTRIBUTE_VALUE);
         } /* title first appeared in HTML 4.0 except for a/link */
         else if (attribute != attr_title ||
@@ -1530,17 +1530,21 @@ void CheckCaption(Lexer *lexer, Node *node)
 void CheckHTML(Lexer *lexer, Node *node)
 {
     AttVal *attval;
+    AttVal *xmlns;
     Attribute *attribute;
+
+    xmlns = GetAttrByName(node, "xmlns");
+
+    if (xmlns != null && wstrcmp(xmlns->value, XHTML_NAMESPACE) == 0)
+    {
+        lexer->isvoyager = yes;
+        if (!HtmlOut)    /* Unless user has specified plain HTML output, */
+            xHTML = yes; /* output format will be XHTML. */
+    }
 
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
         attribute = CheckAttribute(lexer, node, attval);
-        if (attribute == attr_xmlns && wstrcmp(attval->value, XHTML_NAMESPACE)==0 )
-        {
-            lexer->isvoyager = yes;
-            if ( ! HtmlOut )  /* Unless user has specified plain HTML output, */
-              xHTML = yes;    /* output format will be XHTML. */
-        }
     }
 }
 
