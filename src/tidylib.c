@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 03:57:07 $ 
-    $Revision: 1.21 $ 
+    $Date: 2003/05/09 02:24:48 $ 
+    $Revision: 1.22 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1154,8 +1154,11 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     FixBrakes( doc, FindBody( doc ));
 
     /*  Reconcile http-equiv meta element with output encoding  */
-    if (cfg( doc, TidyOutCharEncoding) != RAW &&
-        cfg( doc, TidyOutCharEncoding) != ISO2022)
+    if (cfg( doc, TidyOutCharEncoding) != RAW
+#ifndef NO_NATIVE_ISO2022_SUPPORT
+        && cfg( doc, TidyOutCharEncoding) != ISO2022
+#endif
+        )
         VerifyHTTPEquiv( doc, FindHEAD( doc ));
 
     if ( !CheckNodeIntegrity(doc->root) )

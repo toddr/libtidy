@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.10 $ 
+    $Date: 2003/05/09 02:24:48 $ 
+    $Revision: 1.11 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -214,7 +214,9 @@ uint ReadChar( StreamIn *in )
 
         if (
             in->encoding == RAW
+#ifndef NO_NATIVE_ISO2022_SUPPORT
          || in->encoding == ISO2022
+#endif
          || in->encoding == UTF8
 
 #if SUPPORT_ASIAN_ENCODINGS
@@ -437,6 +439,7 @@ void WriteChar( uint c, StreamOut* out )
             PutByte(0xEF, out); PutByte(0xBF, out); PutByte(0xBF, out);
         }
     }
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     else if (out->encoding == ISO2022)
     {
         if (c == 0x1b)  /* ESC */
@@ -477,6 +480,7 @@ void WriteChar( uint c, StreamOut* out )
 
         PutByte(c, out);
     }
+#endif /* NO_NATIVE_ISO2022_SUPPORT */
 
 #if SUPPORT_UTF16_ENCODINGS
     else if ( out->encoding == UTF16LE ||
@@ -1031,6 +1035,7 @@ uint ReadCharFromStream( StreamIn* in )
     
     in->lookingForBOM = no;
     
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     /*
        A document in ISO-2022 based encoding uses some ESC sequences
        called "designator" to switch character sets. The designators
@@ -1091,6 +1096,7 @@ uint ReadCharFromStream( StreamIn* in )
 
         return c;
     }
+#endif /* #ifndef NO_NATIVE_ISO2022_SUPPORT */
 
 #if SUPPORT_UTF16_ENCODINGS
     if ( in->encoding == UTF16LE )
@@ -1221,7 +1227,9 @@ static struct _enc2iana
   { BIG5,     "big5"         },
   { SHIFTJIS, "shift_jis"    },
 #endif
+#ifndef NO_NATIVE_ISO2022_SUPPORT
   { ISO2022,  NULL           },
+#endif
   { RAW,      NULL           }
 };
 

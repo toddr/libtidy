@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 03:15:46 $ 
-    $Revision: 1.83 $ 
+    $Date: 2003/05/09 02:24:47 $ 
+    $Revision: 1.84 $ 
 
 */
 
@@ -1194,7 +1194,9 @@ void HelpText( TidyDocImpl* doc, ctmbstr prog )
     tidy_out(doc, "  -ascii            to use US-ASCII for output, ISO-8859-1 for input\n");
     tidy_out(doc, "  -latin0           to use ISO-8859-15 for input and US-ASCII for output\n");
     tidy_out(doc, "  -latin1           to use ISO-8859-1 for both input and output\n");
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     tidy_out(doc, "  -iso2022          to use ISO-2022 for both input and output\n");
+#endif
     tidy_out(doc, "  -utf8             to use UTF-8 for both input and output\n");
     tidy_out(doc, "  -mac              to use MacRoman for input, US-ASCII for output\n");
     tidy_out(doc, "  -win1252          to use Windows-1252 for input, US-ASCII for output\n");

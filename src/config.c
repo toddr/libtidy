@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.63 $ 
+    $Date: 2003/05/09 02:24:47 $ 
+    $Revision: 1.64 $ 
 
 */
 
@@ -105,7 +105,9 @@ static const ctmbstr charEncPicks[] =
   "latin0",
   "latin1",
   "utf8",
+#ifndef NO_NATIVE_ISO2022_SUPPORT
   "iso2022",
+#endif
   "mac",
   "win1252",
   "ibm858",
@@ -799,7 +801,9 @@ Bool  AdjustCharEncoding( TidyDocImpl* doc, int encoding )
     case RAW:
     case LATIN1:
     case UTF8:
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     case ISO2022:
+#endif
 
 #if SUPPORT_UTF16_ENCODINGS
     case UTF16LE:
@@ -1222,8 +1226,10 @@ int CharEncodingId( ctmbstr charenc )
         enc = RAW;
     else if ( tmbstrcasecmp(charenc, "utf8") == 0 )
         enc = UTF8;
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     else if ( tmbstrcasecmp(charenc, "iso2022") == 0 )
         enc = ISO2022;
+#endif
     else if ( tmbstrcasecmp(charenc, "mac") == 0 )
         enc = MACROMAN;
     else if ( tmbstrcasecmp(charenc, "win1252") == 0 )

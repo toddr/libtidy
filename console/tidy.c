@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/04 20:40:55 $ 
-    $Revision: 1.10 $ 
+    $Date: 2003/05/09 02:24:47 $ 
+    $Revision: 1.11 $ 
 */
 
 #include "tidy.h"
@@ -79,7 +79,9 @@ void help( TidyDoc tdoc, ctmbstr prog )
     printf( "  -ascii            use US-ASCII for output, ISO-8859-1 for input\n");
     printf( "  -latin0           use US-ASCII for output, ISO-8859-1 for input\n");
     printf( "  -latin1           use ISO-8859-1 for both input and output\n");
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     printf( "  -iso2022          use ISO-2022 for both input and output\n");
+#endif
     printf( "  -utf8             use UTF-8 for both input and output\n");
     printf( "  -mac              use MacRoman for input, US-ASCII for output\n");
     printf( "  -win1252          use Windows-1252 for input, US-ASCII for output\n");
@@ -456,7 +458,9 @@ int main( int argc, char** argv )
                       strcasecmp(arg, "latin0") == 0   ||
                       strcasecmp(arg, "latin1") == 0   ||
                       strcasecmp(arg, "utf8") == 0     ||
+#ifndef NO_NATIVE_ISO2022_SUPPORT
                       strcasecmp(arg, "iso2022") == 0  ||
+#endif
 #if SUPPORT_UTF16_ENCODINGS
                       strcasecmp(arg, "utf16le") == 0  ||
                       strcasecmp(arg, "utf16be") == 0  ||

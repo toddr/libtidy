@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 21:59:04 $ 
-    $Revision: 1.73 $ 
+    $Date: 2003/05/09 02:24:48 $ 
+    $Revision: 1.74 $ 
 
 */
 
@@ -828,7 +828,9 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         return;
 
     case SHIFTJIS:
+#ifndef NO_NATIVE_ISO2022_SUPPORT
     case ISO2022: /* ISO 2022 characters are passed raw */
+#endif
     case RAW:
         AddChar( pprint, c );
         return;
@@ -838,7 +840,11 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 #else /* SUPPORT_ASIAN_ENCODINGS */
 
     /* otherwise ISO 2022 characters are passed raw */
-    if ( outenc == ISO2022 || outenc == RAW )
+    if (
+#ifndef NO_NATIVE_ISO2022_SUPPORT
+        outenc == ISO2022 ||
+#endif
+        outenc == RAW )
     {
         AddChar( pprint, c );
         return;
