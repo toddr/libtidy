@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/19 00:52:52 $ 
-    $Revision: 1.81 $ 
+    $Date: 2003/05/23 03:25:24 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -798,9 +798,11 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     switch ( outenc )
     {
     case UTF8:
+#if SUPPORT_UTF16_ENCODINGS
     case UTF16:
     case UTF16LE:
     case UTF16BE:
+#endif
         if (!(mode & PREFORMATTED) && cfg(doc, TidyPunctWrap))
         {
             WrapPoint wp = CharacterWrapPoint(c);
