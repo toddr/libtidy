@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/04/30 20:18:08 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/03 01:48:25 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -68,6 +68,9 @@ ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 );
 
 /* transform string to lower case */
 tmbstr tmbstrtolower( tmbstr s );
+
+/* Transform ASCII chars in string to upper case */
+tmbstr tmbstrtoupper(tmbstr s);
 
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 );
 

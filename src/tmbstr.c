@@ -5,13 +5,14 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.5 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/03 01:48:25 $ 
+    $Revision: 1.6 $ 
 
 */
 
 #include "tmbstr.h"
+#include "lexer.h"
 
 /* like strdup but using MemAlloc */
 tmbstr tmbstrdup( ctmbstr str )
@@ -112,8 +113,6 @@ uint tmbstrlen( ctmbstr str )
 
  Neither does ToLower()!
 */
-uint ToLower( uint c );
-
 int tmbstrcasecmp( ctmbstr s1, ctmbstr s2 )
 {
     uint c;
@@ -232,8 +231,7 @@ ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 )
     return NULL;
 }
 
-/* Transform ASCII chars in string to lower case.
-*/
+/* Transform ASCII chars in string to lower case */
 tmbstr tmbstrtolower( tmbstr s )
 {
     tmbstr cp;
@@ -242,6 +240,16 @@ tmbstr tmbstrtolower( tmbstr s )
     return s;
 }
 
+/* Transform ASCII chars in string to upper case */
+tmbstr tmbstrtoupper(tmbstr s)
+{
+    tmbstr cp;
+
+    for (cp = s; *cp; ++cp)
+        *cp = (tmbchar)ToUpper(*cp);
+
+    return s;
+}
 
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 )
 {
