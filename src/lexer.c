@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/07/08 03:25:47 $ 
-    $Revision: 1.73 $ 
+    $Author: krusch $ 
+    $Date: 2002/08/22 16:48:52 $ 
+    $Revision: 1.74 $ 
 
 */
 
@@ -2127,7 +2127,9 @@ Node *GetCDATA(Lexer *lexer, Node *container)
         /* treat \r\n as \n and \r as \n */
         if ( qt > 0 )
         {
-            if ( c == qt && (!esc || lastc != esc) )
+                                    /* #598860 script parsing fails with quote chars */
+                                    /* A quoted string is ended by the quotation character, or end of line */
+            if ( (c == '\r' || c == '\n' || c == qt) && (!esc || lastc != esc) )
             {
                 qt = 0;
             }
