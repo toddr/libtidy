@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 10:56:56 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/07/17 15:58:50 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -2794,9 +2794,18 @@ static char *ParseValue(Lexer *lexer, char *name,
 
         if (c == '&')
         {
-            AddCharToLexer(lexer, c);
-            ParseEntity(lexer, null);
-            continue;
+            /* no entities in ID attributes */
+            if (wstrcasecmp(name, "id") == 0)
+            {
+                ReportAttrError(lexer, null, null, ENTITY_IN_ID);
+                continue;
+            }
+            else
+            {
+                AddCharToLexer(lexer, c);
+                ParseEntity(lexer, null);
+                continue;
+            }
         }
 
         /*
