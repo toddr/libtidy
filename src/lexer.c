@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/09 00:34:30 $ 
-    $Revision: 1.5 $ 
+    $Author: creitzel $ 
+    $Date: 2001/06/09 21:56:41 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -970,6 +970,43 @@ static void FixHTMLNameSpace(Lexer *lexer, Node *root, char *profile)
     }
 }
 
+
+/* Put DOCTYPE declaration between the
+** <?xml version "1.0" ... ?> declaration, if any,
+** and the <html> tag.  Should also work for any comments, 
+** etc. that may precede the <html> tag.
+*/
+
+static Node* NewXhtmlDocTypeNode( Node* root )
+{
+    Node *doctype, *html;
+
+    html = FindHTML( root );
+    if ( !html )
+        return null;
+
+    doctype = NewNode();
+    doctype->type = DocTypeTag;
+    doctype->next = html;
+    doctype->parent = root;
+
+    if ( html == root->content )
+    {
+        /* No <?xml ... ?> declaration. */
+        root->content->prev = doctype;
+        root->content = doctype;
+        doctype->prev = null;
+    }
+    else
+    {
+        /* we have an <?xml ... ?> declaration. */
+        doctype->prev = html->prev;
+        doctype->prev->next = doctype;
+    }
+    html->prev = doctype;
+    return doctype;
+}
+
 Bool SetXHTMLDocType(Lexer *lexer, Node *root)
 {
     char *fpi, *sysid, *name_space = XHTML_NAMESPACE;
@@ -1024,12 +1061,8 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
 
     if (!doctype)
     {
-        doctype = NewNode();
-        doctype->type = DocTypeTag;
-        doctype->next = root->content;
-        doctype->parent = root;
-        doctype->prev = null;
-        root->content = doctype;
+        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
+            return no;
     }
 
     if (doctype_mode == doctype_user && doctype_str)
@@ -1111,6 +1144,7 @@ int ApparentVersion(Lexer *lexer)
     ReportWarning(lexer, null, null, INCONSISTENT_VERSION);
     return HTMLVersion(lexer);
 }
+
 
 /* fixup doctype if missing */
 Bool FixDocType(Lexer *lexer, Node *root)
@@ -1205,26 +1239,29 @@ Bool FixDocType(Lexer *lexer, Node *root)
         if (doctype)
             DiscardElement(doctype);
 
-        for (i = 0; i < W3C_VERSIONS; ++i)
-        {
-            if (guessed == W3C_Version[i].code)
-            {
-                FixHTMLNameSpace(lexer, root, W3C_Version[i].profile);
-                break;
-            }
-        }
+        FixHTMLNameSpace(lexer, root, XHTML_NAMESPACE);
 
-        return yes;
+        /*  Namespace is the same for all XHTML variants
+        **  Also, don't return yet.  Still need to add
+        **  DOCTYPE declaration.
+        **  
+        **  for (i = 0; i < W3C_VERSIONS; ++i)
+        **  {
+        **      if (guessed == W3C_Version[i].code)
+        **      {
+        **          FixHTMLNameSpace(lexer, root, W3C_Version[i].profile);
+        **          break;
+        **      }
+        **  }
+        **  
+        **  return yes;
+        */
     }
 
     if (!doctype)
     {
-        doctype = NewNode();
-        doctype->type = DocTypeTag;
-        doctype->next = root->content;
-        doctype->parent = root;
-        doctype->prev = null;
-        root->content = doctype;
+        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
+            return no;
     }
 
     lexer->txtstart = lexer->txtend = lexer->lexsize;
