@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/21 16:26:08 $ 
-    $Revision: 1.24 $ 
+    $Date: 2005/03/21 17:22:06 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -2847,6 +2847,7 @@ static void CheckDeprecated( TidyDocImpl* doc, Node* node )
 
 static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
 {
+    Node* content;
     int HasOnMouseDown = 0;
     int HasOnMouseUp = 0;
     int HasOnClick = 0;
@@ -2896,34 +2897,26 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
         }
 
         if ( HasOnMouseDown == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_DOWN);
-        }
 
         if ( HasOnMouseUp == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_UP);
-        }
-        
+
         if ( HasOnClick == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_CLICK);
-        }
-            
         if ( HasOnMouseOut == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OUT);
-        }
-        
+
         if ( HasOnMouseOver == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_OVER);
-        }
 
         if ( HasOnMouseMove == 1 )
-        {
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE);
-        }
+
+	/* Recursively check all child nodes.
+	 */
+	for ( content = node->content; content != NULL; content = content->next )
+	    CheckScriptKeyboardAccessible( doc, content );
     }
 }
 
@@ -3128,6 +3121,7 @@ static void CheckMapLinks( TidyDocImpl* doc, Node* node )
 
 static void CheckForStyleAttribute( TidyDocImpl* doc, Node* node )
 {
+    Node* content;
     if (Level1_Enabled( doc ))
     {
         /* Must not contain 'STYLE' attribute */
@@ -3137,6 +3131,11 @@ static void CheckForStyleAttribute( TidyDocImpl* doc, Node* node )
             ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_STYLE_ATTR );
         }
     }
+
+    /* Recursively check all child nodes.
+    */
+    for ( content = node->content; content != NULL; content = content->next )
+        CheckForStyleAttribute( doc, content );
 }
 
 
