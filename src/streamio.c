@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/03 07:19:32 $ 
-    $Revision: 1.25 $ 
+    $Date: 2004/08/04 08:09:16 $ 
+    $Revision: 1.26 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -36,7 +36,6 @@
 static uint ReadCharFromStream( StreamIn* in );
 
 static uint ReadByte( StreamIn* in );
-Bool IsEOF( StreamIn* in );
 static void UngetByte( StreamIn* in, uint byteValue );
 
 static void PutByte( uint byteValue, StreamOut* out );
@@ -45,8 +44,6 @@ static void EncodeWin1252( uint c, StreamOut* out );
 static void EncodeMacRoman( uint c, StreamOut* out );
 static void EncodeIbm858( uint c, StreamOut* out );
 static void EncodeLatin0( uint c, StreamOut* out );
-
-void outBOM( StreamOut *out );
 
 /******************************
 ** Static (duration) Globals
