@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:51:03 $ 
-    $Revision: 1.51 $ 
+    $Date: 2003/03/19 01:55:18 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -401,7 +401,7 @@ static void WrapAttrVal( TidyDocImpl* doc )
     TidyPrintImpl* pprint = &doc->pprint;
     uint i;
 
-    assert( IsWrapInAttrVal(pprint) );
+    /* assert( IsWrapInAttrVal(pprint) ); */
     if ( WantIndent(doc) )
     {
         uint spaces = GetSpaces( pprint );
