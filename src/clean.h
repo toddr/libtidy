@@ -3,17 +3,19 @@
 
 /* clean.h -- clean up misuse of presentation markup
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info:
-    $Author: hoehrmann $ 
-    $Date: 2004/03/06 15:53:41 $ 
-    $Revision: 1.9 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/02/15 13:48:24 $ 
+    $Revision: 1.10 $ 
 
 */
 
 void RenameElem( Node* node, TidyTagId tid );
+
+void FixNodeLinks(Node *node);
 
 Node* CleanNode( TidyDocImpl* doc, Node* node );
 

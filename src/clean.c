@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/11 14:46:59 $ 
-    $Revision: 1.76 $ 
+    $Date: 2005/02/15 13:48:23 $ 
+    $Revision: 1.77 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -577,7 +577,7 @@ static void CreateStyleElement( TidyDocImpl* doc )
 
 
 /* ensure bidirectional links are consistent */
-static void FixNodeLinks(Node *node)
+void FixNodeLinks(Node *node)
 {
     Node *child;
 
