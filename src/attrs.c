@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/06 08:57:58 $ 
-    $Revision: 1.60 $ 
+    $Date: 2003/04/06 21:29:31 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -536,7 +536,7 @@ Bool IsCSS1Selector( ctmbstr buf )
         {
             esclen = 1;  /* ab\555\444 is 4 chars {'a', 'b', \555, \444} */
         }
-        else if ( isxdigit( c ) )
+        else if ( isdigit( c ) )
         {
             /* Digit not 1st, unless escaped (Max length "\112F") */
             if ( esclen > 0 )
