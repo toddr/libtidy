@@ -3,42 +3,11 @@
    (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   $Id: attrdict.c,v 1.1 2003/04/07 22:56:57 hoehrmann Exp $
+   $Id: attrdict.c,v 1.2 2003/04/11 16:21:34 hoehrmann Exp $
 */
 
 #include "attrdict.h"
-
-/*
-    xxxx - unsupported
-    HT20 - HTML 2.0
-    HT32 - HTML 3.2
-    H40S - HTML 4.0 Strict
-    H40T - HTML 4.0 Transitional
-    H40F - HTML 4.0 Frameset
-    H41S - HTML 4.01 Strict
-    H41T - HTML 4.01 Transitional
-    H41F - HTML 4.01 Frameset
-    X10S - XHTML 1.0 Strict
-    X10T - XHTML 1.0 Transitional
-    X10F - XHTML 1.0 Frameset
-    XH11 - XHTML 1.1
-    XB10 - XHTML Basic 1.0
-*/
-
-#define xxxx 0
-#define HT20 1
-#define HT32 2
-#define H40S 4
-#define H40T 8
-#define H40F 16
-#define H41S 32
-#define H41T 64
-#define H41F 128
-#define X10S 256
-#define X10T 512
-#define X10F 1024
-#define XH11 2048
-#define XB10 4096
+#include "lexer.h"
 
 AttrVersion W3CAttrsFor_A[] = 
 {

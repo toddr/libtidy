@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 04:35:03 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/04/11 16:21:37 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -127,50 +127,55 @@
 ** flavors of Voyager (strict, loose or frameset).
 */
 
-#define VERS_UNKNOWN       0u
+/* unknown */
+#define xxxx                   0u
 
-#define VERS_HTML20        1u
-#define VERS_HTML32        2u
-#define VERS_HTML40_STRICT 4u
-#define VERS_HTML40_LOOSE  8u
-#define VERS_FRAMESET      16u
+/* W3C defined HTML/XHTML family document types */
+#define HT20                   1u
+#define HT32                   2u
+#define H40S                   4u
+#define H40T                   8u
+#define H40F                  16u
+#define H41S                  32u
+#define H41T                  64u
+#define H41F                 128u
+#define X10S                 256u
+#define X10T                 512u
+#define X10F                1024u
+#define XH11                2048u
+#define XB10                4096u
 
-#define VERS_XML           32u  /* special flag */
+/* proprietary stuff */
+#define VERS_SUN            8192u
+#define VERS_NETSCAPE      16384u
+#define VERS_MICROSOFT     32768u
 
-#define VERS_NETSCAPE      64u
-#define VERS_MICROSOFT     128u
-#define VERS_SUN           256u
+/* special flag */
+#define VERS_XML           65536u
 
-#define VERS_MALFORMED     512u
+/* compatibility symbols */
+#define VERS_UNKNOWN       (xxxx)
+#define VERS_HTML20        (HT20)
+#define VERS_HTML32        (HT32)
+#define VERS_HTML40_STRICT (H40S|H41S|X10S)
+#define VERS_HTML40_LOOSE  (H40T|H41T|X10T)
+#define VERS_FRAMESET      (H40F|H41F|X10F)
+#define VERS_XHTML11       (XH11)
+#define VERS_BASIC         (XB10)
 
-#define VERS_XHTML11       1024u
-#define VERS_BASIC         2048u
+/* meta symbols */
+#define VERS_HTML40        (VERS_HTML40_STRICT|VERS_HTML40_LOOSE|VERS_FRAMESET)
+#define VERS_IFRAME        (VERS_HTML40_LOOSE|VERS_FRAMESET)
+#define VERS_LOOSE         (VERS_HTML20|VERS_HTML32|VERS_IFRAME)
+#define VERS_EVENTS        (VERS_HTML40|VERS_XHTML11)
+#define VERS_FROM32        (VERS_HTML32|VERS_HTML40)
+#define VERS_FROM40        (VERS_HTML40|VERS_XHTML11|VERS_BASIC)
 
-/* all tags and attributes are ok in proprietary version of HTML */
-#define VERS_PROPRIETARY (VERS_NETSCAPE|VERS_MICROSOFT|VERS_SUN)
+/* all W3C defined document types */
+#define VERS_ALL           (VERS_HTML20|VERS_HTML32|VERS_FROM40)
 
-/* tags/attrs in HTML4 but not in earlier version*/
-#define VERS_HTML40 (VERS_HTML40_STRICT|VERS_HTML40_LOOSE|VERS_FRAMESET)
-
-/* tags/attrs in HTML 4 loose and frameset */
-#define VERS_IFRAME (VERS_HTML40_LOOSE|VERS_FRAMESET)
-
-/* tags/attrs which are in all versions of HTML except strict */
-#define VERS_LOOSE (VERS_HTML20|VERS_HTML32|VERS_IFRAME)
-
-/* tags/attrs in all versions from HTML 3.2 onwards */
-#define VERS_FROM32 (VERS_HTML32|VERS_HTML40)
-
-/* versions with on... attributes */
-#define VERS_EVENTS (VERS_HTML40|VERS_XHTML11)
-
-/* Extended character entities in all versions from HTML 4.0 onwards */
-#define VERS_FROM40 (VERS_HTML40|VERS_XHTML11|VERS_BASIC)
-
-#define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_FROM40)
-
-
-
+/* all proprietary types */
+#define VERS_PROPRIETARY   (VERS_NETSCAPE|VERS_MICROSOFT|VERS_SUN)
 
 /* Linked list of class names and styles
 */
