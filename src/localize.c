@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/12 09:11:48 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 04:38:46 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -61,7 +61,7 @@ static void ReportTag(Lexer *lexer, Node *tag)
 {
     if (tag)
     {
-        if (tag->type == StartTag)
+        if (tag->type == StartTag || tag->type == StartEndTag)
             tidy_out(lexer->errout, "<%s>", tag->element);
         else if (tag->type == EndTag)
             tidy_out(lexer->errout, "</%s>", tag->element);
@@ -237,7 +237,7 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " unknown attribute value \"%s\"", value);
+            tidy_out(lexer->errout, " attribute \"%s\" has invalid value \"%s\"", name, value);
         }
         else if (code == XML_ATTRIBUTE_VALUE)
         {
@@ -291,6 +291,18 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " id and name attribute value mismatch");
+        }
+        else if (code == BACKSLASH_IN_URI)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " converting backslash in URI to slash");
+        }
+        else if (code == ESCAPED_ILLEGAL_URI)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " escaping malformed URI");
         }
 
         tidy_out(lexer->errout, "\n");

@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/12 09:04:12 $ 
-    $Revision: 1.14 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 04:38:46 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -597,11 +597,11 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
     }
     if (backslash_count)
     {
-        /* shout: backslash in URI */
+        ReportAttrError(lexer, node, attval, BACKSLASH_IN_URI);
     }
     if (escape_count)
     {
-        /* shout: illegal characters in URI */
+        ReportAttrError(lexer, node, attval, ESCAPED_ILLEGAL_URI);
     }
 }
 
@@ -626,14 +626,14 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
     
     if (!IsLetter(*p++))
     {
-        /* shout: illegal ID value in HTML */
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     } else {
 
         while(*p)
         {
             if (!IsNamechar(*p++))
             {
-                /* shout: illegal ID value in HTML */
+                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
             }
         }
@@ -708,7 +708,7 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
     
     if (!IsDigit(*p++))
     {
-        /* shout: bad length */
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     } else {
 
         while (*p)
@@ -718,7 +718,7 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
             if ((!IsDigit(*p) && (node->tag == tag_td ||
                 node->tag == tag_th)) || (!IsDigit(*p) && *p != '%'))
             {
-                /* shout: bad length */
+                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
             }
             ++p;
@@ -744,7 +744,7 @@ void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
         wstrcasecmp(value, "_self")   == 0 ||
         wstrcasecmp(value, "_parent") == 0 ||
         wstrcasecmp(value, "_top")    == 0))
-        return; /* change to shout: illegal target name */
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
@@ -811,7 +811,10 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
     while (*p)
     {
         if (!IsDigit(*p))
-            break; /* and shout: illegal number */
+        {
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            break;
+        }
         ++p;
     }
 }

@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/12 09:02:11 $ 
-    $Revision: 1.12 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 04:38:46 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -660,6 +660,8 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define UNEXPECTED_QUOTEMARK    11
 #define MISSING_QUOTEMARK       12
 #define ID_NAME_MISMATCH        13
+#define BACKSLASH_IN_URI        14
+#define ESCAPED_ILLEGAL_URI     15
 
 /* page transition effects */
 
