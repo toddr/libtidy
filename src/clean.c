@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:45 $ 
-    $Revision: 1.25 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/06 22:27:07 $ 
+    $Revision: 1.26 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2337,6 +2337,8 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
                     attr = AttrGetById( node, TidyAttr_HEIGHT );
                 break;
 
+            /* check is accessibility issue -- misplaced here; see tags.c */
+#if 0
             case TidyTag_TABLE: /* want summary */
                 attr = AttrGetById( node, TidyAttr_SUMMARY );
                 if ( !attr )
@@ -2346,6 +2348,7 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
                 }
                 attr = NULL;
                 break;
+#endif
 
             case TidyTag_UL: /* no type */
                 attr = AttrGetById( node, TidyAttr_TYPE );
@@ -2417,4 +2420,3 @@ Bool  HTMLVersionCompliance( TidyDocImpl* doc )
         NodeCompliance( doc, doc->root, versWanted );
     return compliant;
 }
-

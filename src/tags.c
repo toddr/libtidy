@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:51 $ 
-    $Revision: 1.29 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/06 22:27:07 $ 
+    $Revision: 1.30 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -616,20 +616,17 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
             HasSummary = yes;
     }
 
-    /* suppress warning for missing summary for HTML 2.0 and HTML 3.2 
-    ** Now handled in HTMLVersionCompliance()
-    ** if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
-    ** {
-    **     Lexer* lexer = doc->lexer;
-    **     if ( !HasSummary 
-    **          && lexer->doctype != VERS_HTML20
-    **          && lexer->doctype != VERS_HTML32 )
-    **     {
-    **         doc->badAccess |= MISSING_SUMMARY;
-    **         ReportMissingAttr( doc, node, "summary");
-    **     }
-    ** }
-    */
+    /* a missing summary attribute is bad accessibility, no matter
+       what HTML version is involved; a document wihtout is valid */
+    if (cfg(doc, TidyAccessibilityCheckLevel) == 0)
+    {
+        Lexer* lexer = doc->lexer;
+        if (!HasSummary)
+        {
+            doc->badAccess |= MISSING_SUMMARY;
+            ReportMissingAttr( doc, node, "summary");
+        }
+    }
 
     /* convert <table border> to <table border="1"> */
     if ( cfgBool(doc, TidyXmlOut) && (attval = GetAttrByName(node, "border")) )
