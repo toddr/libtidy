@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/15 09:34:50 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/07/16 09:16:45 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -2592,7 +2592,14 @@ void ParseTitle(Lexer *lexer, Node *title, uint mode)
 
     while ((node = GetToken(lexer, MixedContent)) != null)
     {
-        if (node->tag == title->tag && node->type == EndTag)
+        if (node->tag == title->tag && node->type == StartTag)
+        {
+            ReportWarning(lexer, title, node, COERCE_TO_ENDTAG);
+            node->type = EndTag;
+            UngetToken(lexer);
+            continue;
+        }
+        else if (node->tag == title->tag && node->type == EndTag)
         {
             FreeNode(node);
             title->closed = yes;
