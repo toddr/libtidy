@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/04/30 20:21:07 $ 
-    $Revision: 1.7 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/03 05:09:21 $ 
+    $Revision: 1.8 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -103,6 +103,8 @@ void       ReleaseStreamOut( StreamOut* out );
 
 void WriteChar( uint c, StreamOut* out );
 void outBOM( StreamOut *out );
+
+ctmbstr GetEncodingNameFromTidyId(uint id);
 
 /************************
 ** Misc

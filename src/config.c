@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 05:16:16 $ 
-    $Revision: 1.62 $ 
+    $Date: 2003/05/03 05:09:21 $ 
+    $Revision: 1.63 $ 
 
 */
 
@@ -1261,32 +1261,11 @@ int CharEncodingId( ctmbstr charenc )
 
 ctmbstr CharEncodingName( int encoding )
 {
-    ctmbstr encodingName = "unknown";
-    
-    switch ( encoding )
-    {
-    case ASCII:     encodingName = "ascii";    break;
-    case LATIN0:    encodingName = "latin0";   break;
-    case LATIN1:    encodingName = "latin1";   break;
-    case RAW:       encodingName = "raw";      break;
-    case UTF8:      encodingName = "utf8";     break;
-    case ISO2022:   encodingName = "iso2022";  break;
-    case MACROMAN:  encodingName = "mac";      break;
-    case WIN1252:   encodingName = "win1252";  break;
-    case IBM858:    encodingName = "ibm858";   break;
+    ctmbstr encodingName = GetEncodingNameFromTidyId(encoding);
 
-#if SUPPORT_UTF16_ENCODINGS
-    case UTF16LE:   encodingName = "utf16le";  break;
-    case UTF16BE:   encodingName = "utf16be";  break;
-    case UTF16:     encodingName = "utf16";    break;
-#endif
+    if (!encodingName)
+        encodingName = "unknown";
 
-#if SUPPORT_ASIAN_ENCODINGS
-    case BIG5:      encodingName = "big5";     break;
-    case SHIFTJIS:  encodingName = "shiftjis"; break;
-#endif
-    }
-    
     return encodingName;
 }
 

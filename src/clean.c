@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 20:53:57 $ 
-    $Revision: 1.33 $ 
+    $Date: 2003/05/03 05:09:21 $ 
+    $Revision: 1.34 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2124,6 +2124,10 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
     Node *pNode;
     StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
     tmbstr s, pszBegin, pszEnd;
+    ctmbstr enc = GetEncodingNameFromTidyId(cfg(pDoc, TidyOutCharEncoding));
+
+    if (!enc)
+        return;
 
     if (!nodeIsHEAD(head))
         head = FindHEAD(pDoc);
@@ -2172,33 +2176,11 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         /*  find the charset property */
         for (prop = pFirstProp; NULL != prop; prop = prop->next)
         {
-            ctmbstr enc = NULL;
-
             if (0 != tmbstrncasecmp( prop->name, "charset", 7 ))
                 continue;
 
             MemFree( prop->name );
             prop->name = MemAlloc( 32 );
-
-            switch ( cfg( pDoc, TidyOutCharEncoding) )
-            {
-            case RAW:       enc = "raw";          break;
-            case ASCII:     enc = "us-ascii";     break;
-            case LATIN1:    enc = "iso-8859-1";   break;
-            case UTF8:      enc = "UTF-8";        break;
-            case ISO2022:   enc = "iso-2022";     break;
-            case MACROMAN:  enc = "mac";          break;
-            case WIN1252:   enc = "windows-1252"; break;
-#if SUPPORT_UTF16_ENCODINGS
-            case UTF16LE:   enc = "UTF-16LE";     break;
-            case UTF16BE:   enc = "UTF-16BE";     break;
-            case UTF16:     enc = "UTF-16";       break;
-#endif
-#if SUPPORT_ASIAN_ENCODINGS
-            case BIG5:      enc = "big5";         break;
-            case SHIFTJIS:  enc = "shiftjis";     break;
-#endif
-            }
             sprintf( prop->name, "charset=%s", enc );
             s = CreatePropString( pFirstProp );
             MemFree( metaContent->value );

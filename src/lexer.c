@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 15:49:08 $ 
-    $Revision: 1.97 $ 
+    $Date: 2003/05/03 05:09:21 $ 
+    $Revision: 1.98 $ 
 
 */
 
@@ -44,7 +44,7 @@
 #include "tmbstr.h"
 #include "clean.h"
 #include "utf8.h"
-
+#include "streamio.h"
 
 /* Forward references
 */
@@ -1875,32 +1875,9 @@ Bool FixXmlDecl( TidyDocImpl* doc )
 
     if ( encoding == NULL && cfg(doc, TidyOutCharEncoding) != UTF8 )
     {
-        ctmbstr enc = NULL;
-        switch ( cfg(doc, TidyOutCharEncoding) )
-        {
-        case LATIN1:    enc = "iso-8859-1";   break;
-        case ISO2022:   enc = "iso-2022";     break;
-
-        /* TODO: Add declarations for other encodings!
-        case RAW:       enc = "raw";          break;
-        case MACROMAN:  enc = "mac";          break;
-        */
-
-#if SUPPORT_UTF16_ENCODINGS
-        case UTF16LE:   enc = "UTF-16LE";      break;
-        case UTF16BE:   enc = "UTF-16BE";      break;
-        case UTF16:     enc = "UTF-16";        break;
-#endif
-        /* TODO: Add declarations for other encodings!
-        case WIN1252:   enc = "win1252";      break;
-#if SUPPORT_ASIAN_ENCODINGS
-        case BIG5:      enc = "big5";         break;
-        case SHIFTJIS:  enc = "shiftjis";     break;
-#endif
-        */
-        }
+        ctmbstr enc = GetEncodingNameFromTidyId(cfg(doc, TidyOutCharEncoding));
         if ( enc )
-            AddAttribute( doc, xml, "encoding", enc );
+            AddAttribute( doc, xml, "encoding", tmbstrdup(enc) );
     }
 
     if ( version == NULL )
