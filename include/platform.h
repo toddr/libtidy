@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:39:23 $ 
-    $Revision: 1.14 $ 
+    $Date: 2001/09/04 02:40:46 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -29,6 +29,16 @@
 */
 
 /* #define SUPPORT_GETPWNAM */
+
+/* Enable/disable support for Big5 and Shift_JIS character encodings */
+#ifndef SUPPORT_ASIAN_ENCODINGS
+#define SUPPORT_ASIAN_ENCODINGS 0
+#endif
+
+/* Enable/disable support for UTF-16 character encodings */
+#ifndef SUPPORT_UTF16_ENCODINGS
+#define SUPPORT_UTF16_ENCODINGS 0
+#endif
 
 /* Convenience defines for Mac platform */
 
