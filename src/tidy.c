@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 20:35:48 $ 
-    $Revision: 1.22 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/21 04:06:42 $ 
+    $Revision: 1.23 $ 
 
   Contributing Author(s):
 
@@ -446,7 +446,7 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
         int tempCount; /* no. of additional bytes to get */
         
         /* successor bytes should have the form 10XX XXXX */
-        if (getter && (bytes - i > 0))
+        if ( getter!=null && (bytes - i) > 0 )
         {
             tempCount = 1; /* to simplify things, get 1 byte at a time */
             getter(in, (unsigned char *)&buf[i - 1], &tempCount, no);
@@ -463,7 +463,7 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
             /* illegal successor byte value */
             hasError = yes;
             bytes = i;
-            if (getter)
+            if (getter != null)
             {
                 tempCount = 1; /* to simplify things, unget 1 byte at a time */
                 getter(in, (unsigned char *)&buf[i - 1], &tempCount, yes); /* Unget the byte */
@@ -547,7 +547,7 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
 {
     unsigned char tempbuf[10];
     unsigned char *buf = &tempbuf[0];
-    int i, bytes = 0;
+    int bytes = 0;
     Bool hasError = no;
     
     if (encodebuf)
@@ -610,25 +610,11 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
     else
         hasError = yes;
         
-    if (hasError)
-    {
-#if 0
-        /* do this in the caller ? */
-        /* replacement char 0xFFFD encoded as UTF-8 */
-        buf[0] = 0xEF;
-        buf[1] = 0xBF;
-        buf[2] = 0xBD;
-        bytes = 3;
-#else
-        putter = NULL; /* don't output invalid UTF-8 byte sequence to a stream */
-#endif
-    }
-        
-    if (putter)
+    /* don't output invalid UTF-8 byte sequence to a stream */
+    if ( !hasError && putter != null )
     {
         int tempCount = bytes;
-        
-        putter(out, buf, &tempCount);
+        putter( out, buf, &tempCount );
         if (tempCount < bytes)
             hasError = yes;
     }
@@ -637,14 +623,14 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
     
     if (hasError)
     {
-#if 0
+#if _DEBUG
+        int i;
         /* debug */
         tidy_out(errout, "UTF-8 encoding error for U+%x : ", c);
         for (i = 0; 0 < bytes; i++)
             tidy_out(errout, "0x%02x ", buf[i]);
         tidy_out(errout, "\n");
 #endif
-
         return -1;
     }
     
@@ -676,7 +662,7 @@ StreamIn *OpenInput(FILE *fp)
 */
 static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count, Bool unget)
 {
-    uint i;
+    int i;
     
     for (i = 0; i < *count; i++)
     {
@@ -1390,7 +1376,7 @@ char *wstrtolower(char *s)
 /* output UTF-8 bytes to output stream */
 static void outcUTF8Bytes(Out *out, unsigned char *buf, int *count)
 {
-    uint i;
+    int i;
     
     for (i = 0; i < *count; i++)
     {
