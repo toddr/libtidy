@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/19 11:36:38 $ 
-    $Revision: 1.21 $ 
+    $Date: 2001/07/20 19:37:22 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -201,8 +201,8 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
 
     lexer->warnings++;
 
-    /* keep quiet after 6 errors */
-    if (lexer->errors > 6)
+    /* keep quiet after <ShowErrors> errors */
+    if (lexer->errors > ShowErrors)
         return;
 
     if (ShowWarnings)
