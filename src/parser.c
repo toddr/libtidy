@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/30 20:05:07 $ 
-    $Revision: 1.8 $ 
+    $Date: 2001/07/03 07:52:14 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -943,6 +943,8 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
     if (element->tag->model & CM_EMPTY)
         return;
 
+/* #433040 - fix by Richard O'Keefe 5 Mar 01 */
+#if 0
     if (element->tag == tag_a)
     {
         if (element->attributes == null)
@@ -952,6 +954,7 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
             return;
         }
     }
+#endif
 
     /*
      ParseInline is used for some block level elements like H1 to H6
