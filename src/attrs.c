@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 04:39:59 $ 
-    $Revision: 1.86 $ 
+    $Date: 2003/05/14 08:00:12 $ 
+    $Revision: 1.87 $ 
 
 */
 
@@ -947,12 +947,8 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
 
     if ( attribute != NULL )
     {
-        /* if attribute looks like <foo/> check XML is ok */
-        if ( attribute->versions & VERS_XML )
-        {
-            if ( !(cfgBool(doc, TidyXmlTags) || cfgBool(doc, TidyXmlOut)) )
-                ReportAttrError( doc, node, attval, XML_ATTRIBUTE_VALUE);
-        }
+        if (attribute->versions & VERS_XML)
+            doc->lexer->isvoyager = yes;
 
         ConstrainVersion(doc, AttributeVersions(node, attval));
         
