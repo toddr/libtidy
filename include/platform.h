@@ -3,7 +3,7 @@
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
-  $Id: platform.h,v 1.2 2001/06/07 06:03:35 creitzel Exp $
+  $Id: platform.h,v 1.3 2001/07/10 18:18:41 tinle Exp $
 */
 
 /*
@@ -111,5 +111,6 @@ typedef enum
 #define unlink _unlink
 #endif
 
-
-
+#if defined(DMALLOC)
+#include "dmalloc.h"
+#endif
