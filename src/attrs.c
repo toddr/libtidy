@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2003/05/02 11:47:22 $ 
-    $Revision: 1.75 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/03 01:47:51 $ 
+    $Revision: 1.76 $ 
 
 */
 
@@ -212,6 +212,28 @@ static const struct _colors colors[] =
     { "aqua",    "#00FFFF" },
     { NULL,      NULL      }
 };
+
+ctmbstr GetColorCode(ctmbstr name)
+{
+    uint i;
+
+    for (i = 0; colors[i].name; ++i)
+        if (tmbstrcasecmp(name, colors[i].name) == 0)
+            return colors[i].hex;
+
+    return NULL;
+}
+
+ctmbstr GetColorName(ctmbstr code)
+{
+    uint i;
+
+    for (i = 0; colors[i].name; ++i)
+        if (tmbstrcasecmp(code, colors[i].hex) == 0)
+            return colors[i].name;
+
+    return NULL;
+}
 
 static const struct _colors fancy_colors[] =
 {
@@ -1268,40 +1290,26 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 }
 
 /* check hexadecimal color value */
-Bool isValidColorNumber( tmbstr color)
+Bool IsValidColorCode(ctmbstr color)
 {
-    Bool valid = yes;
-    int i;
+    uint i;
 
-    if (tmbstrlen(color) == 6)
-    {
-        /* check if valid hex digits and letters */
-        for (i = 0; i < 6; i++)
-        {
-            if (!IsDigit(color[i]) &&
-                !strchr("abcdef", ToLower(color[i])))
-            {
-                valid = no;
-                break;
-            }
-        }
-    }
-    else
-    {
-        valid = no;
-    }
-    return valid;
+    if (tmbstrlen(color) != 6)
+        return no;
+
+    /* check if valid hex digits and letters */
+    for (i = 0; i < 6; i++)
+        if (!IsDigit(color[i]) && !strchr("abcdef", ToLower(color[i])))
+            return no;
+
+    return yes;
 }
 
 /* check color syntax and beautify value by option */
 void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    /* Bool ReplaceColor = yes; */ /* #477643 - replace hex color attribute values with names */
-    Bool HexUppercase = yes;
     Bool valid = no;
     tmbstr given;
-    const struct _colors *color;
-    uint i = 0;
 
     if (!AttrHasValue(attval))
     {
@@ -1311,82 +1319,47 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     given = attval->value;
 
-    if (given[0] == '#')
+    /* 727851 - add hash to hash-less color values */
+    if (given[0] != '#' && (valid = IsValidColorCode(given)))
     {
-        valid = isValidColorNumber(given + 1);
+        tmbstr cp;
+        tmbstr s = NULL;
+
+        cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
+        *cp++ = '#';
+        while(*cp++ = *given++);
+
+        ReportAttrError(doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
+
+        MemFree(attval->value);
+        given = attval->value = s;
     }
-    else
+
+    if (!valid && given[0] == '#')
+        valid = IsValidColorCode(given + 1);
+
+    if (valid && given[0] == '#' && cfgBool(doc, TidyReplaceColor))
     {
-        /* 727851 - add hash to hash-less color values */
-        if (isValidColorNumber(given))
+        ctmbstr newName = GetColorName(given);
+
+        if (newName)
         {
-            tmbstr s = NULL;
-            tmbstr cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
-            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
-            *cp++ = '#';
-            while(*cp++ = *given++)
-                /**/;
             MemFree(attval->value);
-            given = attval->value = s;
-            valid = yes;
-        }
-    }
-    
-    for (color = colors; color->name; ++color)
-    {
-        if (given[0] == '#' && valid)
-        {
-            if (tmbstrcasecmp(given, color->hex) == 0)
-            {
-                if ( cfgBool(doc, TidyReplaceColor) )
-                {
-                    MemFree(attval->value);
-                    attval->value = tmbstrdup(color->name);
-                }
-                break;
-            }
-        }
-        else if (IsLetter(given[0]))
-        {
-            if (tmbstrcasecmp(given, color->name) == 0)
-            {
-                valid = yes;
-                if ( cfgBool(doc, TidyReplaceColor) )
-                {
-                    MemFree(attval->value);
-                    attval->value = tmbstrdup(color->name);
-                }
-                break;
-            }
-        }
-        else
-        {
-            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-            break;
+            attval->value = tmbstrdup(newName);
         }
     }
 
-    if (valid)
-    {
-        if (given[0] == '#')
-        {
-            if (HexUppercase)
-            {
-                for (i = 1; i < 7; ++i)
-                {
-                    given[i] = (tmbchar) ToUpper( given[i] );
-                }
-            }
-        }
-    }
-    else
-    {
-        /* we could search for more colors and mark the file as HTML
-           Proprietary, but I don't thinks it's worth the effort,
-           so values not in HTML 4.01 are invalid */
+    /* if it is not a valid color code, it is a color name */
+    if (!valid)
+        valid = GetColorCode(given) != NULL;
 
+    if (!valid)
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-    }
+
+    if (valid && given[0] == '#')
+        attval->value = tmbstrtoupper(attval->value);
+    else if (valid)
+        attval->value = tmbstrtolower(attval->value);
 }
 
 /* check valuetype attribute for element param */
