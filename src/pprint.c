@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 02:24:48 $ 
-    $Revision: 1.74 $ 
+    $Date: 2003/05/10 07:39:49 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -1279,10 +1279,7 @@ static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
     {
         if ( av->attribute != NULL )
         {
-            const Attribute *dict = av->dict;
-            if ( !cfgBool(doc, TidyDropPropAttrs) ||
-                 ( dict != NULL && !(dict->versions & VERS_PROPRIETARY) ) )
-                PPrintAttribute( doc, indent, node, av );
+            PPrintAttribute( doc, indent, node, av );
         }
         else if ( av->asp != NULL )
         {

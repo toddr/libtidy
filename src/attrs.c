@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 03:55:56 $ 
-    $Revision: 1.83 $ 
+    $Date: 2003/05/10 07:39:48 $ 
+    $Revision: 1.84 $ 
 
 */
 
@@ -200,8 +200,29 @@ uint AttributeVersions(Node* node, AttVal* attval)
         if (node->tag->attrvers[i].attribute == (uint)attval->dict->id)
             return node->tag->attrvers[i].versions;
 
-    return attval->dict->versions;
+    return attval->dict->versions & VERS_ALL
+             ? VERS_UNKNOWN
+             : attval->dict->versions;
 
+}
+
+/* returns true if the element is a W3C defined element */
+/* but the element/attribute combination is not         */
+Bool AttributeIsProprietary(Node* node, AttVal* attval)
+{
+    if (!node || !attval)
+        return no;
+
+    if (!node->tag)
+        return no;
+
+    if (!(node->tag->versions & VERS_ALL))
+        return no;
+
+    if (AttributeVersions(node, attval) & VERS_ALL)
+        return no;
+
+    return yes;
 }
 
 /* used by CheckColor() */
@@ -932,22 +953,19 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
             if ( !(cfgBool(doc, TidyXmlTags) || cfgBool(doc, TidyXmlOut)) )
                 ReportAttrError( doc, node, attval, XML_ATTRIBUTE_VALUE);
         }
-        else
-        {
-            ConstrainVersion(doc, AttributeVersions(node, attval));
-        }
+
+        ConstrainVersion(doc, AttributeVersions(node, attval));
         
         if (attribute->attrchk)
             attribute->attrchk( doc, node, attval );
-        else if ( attval->dict->versions & VERS_PROPRIETARY )
-            ReportAttrError( doc, node, attval, PROPRIETARY_ATTRIBUTE);
     }
-    else if ( !cfgBool(doc, TidyXmlTags)
-              && attval->asp == NULL 
-              && node->tag != NULL 
-              && !(node->tag->versions & VERS_PROPRIETARY) )
+
+    if (AttributeIsProprietary(node, attval))
     {
-        ReportAttrError( doc, node, attval, UNKNOWN_ATTRIBUTE );
+        ReportAttrError(doc, node, attval, PROPRIETARY_ATTRIBUTE);
+
+        if (cfgBool(doc, TidyDropPropAttrs))
+            RemoveAttribute(node, attval);
     }
 
     return attribute;

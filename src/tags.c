@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 03:55:56 $ 
-    $Revision: 1.41 $ 
+    $Date: 2003/05/10 07:39:49 $ 
+    $Revision: 1.42 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -566,50 +566,31 @@ void FreeTags( TidyDocImpl* doc )
 /* default method for checking an element's attributes */
 void CheckAttributes( TidyDocImpl* doc, Node *node )
 {
-    AttVal *attval;
-    for ( attval = node->attributes; attval != NULL; attval = attval->next )
+    AttVal *next, *attval = node->attributes;
+    while (attval)
+    {
+        next = attval->next;
         CheckAttribute( doc, node, attval );
+        attval = next;
+    }
 }
 
 /* methods for checking attributes for specific elements */
 
 void CheckHR( TidyDocImpl* doc, Node *node )
 {
-    AttVal* av = GetAttrByName( node, "src" );
     CheckAttributes( doc, node );
-    if ( av )
-        ReportAttrError( doc, node, av, PROPRIETARY_ATTR_VALUE );
 }
 
 void CheckIMG( TidyDocImpl* doc, Node *node )
 {
-    Bool HasAlt = no;
-    Bool HasSrc = no;
-    Bool HasUseMap = no;
-    Bool HasIsMap = no;
-    Bool HasDataFld = no;
+    Bool HasAlt = AttrGetById(node, TidyAttr_ALT) != NULL;
+    Bool HasSrc = AttrGetById(node, TidyAttr_SRC) != NULL;
+    Bool HasUseMap = AttrGetById(node, TidyAttr_USEMAP) != NULL;
+    Bool HasIsMap = AttrGetById(node, TidyAttr_ISMAP) != NULL;
+    Bool HasDataFld = AttrGetById(node, TidyAttr_DATAFLD) != NULL;
 
-    AttVal *attval;
-    for ( attval = node->attributes; attval != NULL; attval = attval->next )
-    {
-        const Attribute* dict = CheckAttribute( doc, node, attval );
-        if ( dict )
-        {
-            TidyAttrId id = dict->id;
-            if ( id == TidyAttr_ALT )
-                HasAlt = yes;
-            else if ( id == TidyAttr_SRC )
-                HasSrc = yes;
-            else if ( id == TidyAttr_USEMAP )
-                HasUseMap = yes;
-            else if ( id == TidyAttr_ISMAP )
-                HasIsMap = yes;
-            else if ( id == TidyAttr_DATAFLD )
-                HasDataFld = yes;
-            else if ( id == TidyAttr_WIDTH || id == TidyAttr_HEIGHT )
-                ConstrainVersion( doc, ~VERS_HTML20 );
-        }
-    }
+    CheckAttributes(doc, node);
 
     if ( !HasAlt )
     {
@@ -648,14 +629,6 @@ void CheckMap( TidyDocImpl* doc, Node *node )
 void CheckTableCell( TidyDocImpl* doc, Node *node )
 {
     CheckAttributes( doc, node );
-
-    /*
-      HTML4 strict doesn't allow mixed content for
-      elements with %block; as their content model
-    */
-    if ( GetAttrByName(node, "width") 
-         || GetAttrByName(node, "height") )
-        ConstrainVersion( doc, ~VERS_HTML40_STRICT );
 }
 
 void CheckCaption( TidyDocImpl* doc, Node *node )
@@ -689,10 +662,9 @@ void CheckCaption( TidyDocImpl* doc, Node *node )
 
 void CheckHTML( TidyDocImpl* doc, Node *node )
 {
-    AttVal *attval;
     AttVal *xmlns;
 
-    xmlns = GetAttrByName(node, "xmlns");
+    xmlns = AttrGetById(node, TidyAttr_XMLNS);
 
     if ( xmlns != NULL && tmbstrcmp(xmlns->value, XHTML_NAMESPACE) == 0 )
     {
@@ -709,29 +681,16 @@ void CheckHTML( TidyDocImpl* doc, Node *node )
         }
     }
 
-    for (attval = node->attributes; attval != NULL; attval = attval->next)
-    {
-        CheckAttribute( doc, node, attval );
-    }
+    CheckAttributes(doc, node);
+
 }
 
 void CheckAREA( TidyDocImpl* doc, Node *node )
 {
-    Bool HasAlt = no;
-    Bool HasHref = no;
-    AttVal *attval;
+    Bool HasAlt = AttrGetById(node, TidyAttr_ALT) != NULL;
+    Bool HasHref = AttrGetById(node, TidyAttr_HREF) != NULL;
 
-    for (attval = node->attributes; attval != NULL; attval = attval->next)
-    {
-        const Attribute* dict = CheckAttribute( doc, node, attval );
-        if ( dict )
-        {
-          if ( dict->id == TidyAttr_ALT )
-              HasAlt = yes;
-          else if ( dict->id == TidyAttr_HREF )
-              HasHref = yes;
-        }
-    }
+    CheckAttributes(doc, node);
 
     if ( !HasAlt )
     {
@@ -748,15 +707,10 @@ void CheckAREA( TidyDocImpl* doc, Node *node )
 
 void CheckTABLE( TidyDocImpl* doc, Node *node )
 {
-    Bool HasSummary = no;
-    AttVal *attval;
+    AttVal* attval;
+    Bool HasSummary = AttrGetById(node, TidyAttr_SUMMARY) != NULL;
 
-    for (attval = node->attributes; attval != NULL; attval = attval->next)
-    {
-        const Attribute* dict = CheckAttribute( doc, node, attval );
-        if ( dict && dict->id == TidyAttr_SUMMARY )
-            HasSummary = yes;
-    }
+    CheckAttributes(doc, node);
 
     /* a missing summary attribute is bad accessibility, no matter
        what HTML version is involved; a document wihtout is valid */
@@ -771,17 +725,10 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
     }
 
     /* convert <table border> to <table border="1"> */
-    if ( cfgBool(doc, TidyXmlOut) && (attval = GetAttrByName(node, "border")) )
+    if ( cfgBool(doc, TidyXmlOut) && (attval = AttrGetById(node, TidyAttr_BORDER)) )
     {
         if (attval->value == NULL)
             attval->value = tmbstrdup("1");
-    }
-
-    /* <table height="..."> is proprietary */
-    if ( attval = GetAttrByName(node, "height") )
-    {
-        ReportAttrError( doc, node, attval, PROPRIETARY_ATTRIBUTE );
-        ConstrainVersion( doc, VERS_PROPRIETARY );
     }
 }
 
@@ -793,8 +740,8 @@ void CheckSCRIPT( TidyDocImpl* doc, Node *node )
 
     CheckAttributes( doc, node );
 
-    lang = GetAttrByName( node, "language" );
-    type = GetAttrByName( node, "type" );
+    lang = AttrGetById(node, TidyAttr_LANGUAGE);
+    type = AttrGetById(node, TidyAttr_TYPE);
 
     if ( !type )
     {
@@ -819,7 +766,7 @@ void CheckSCRIPT( TidyDocImpl* doc, Node *node )
         }
         else
             AddAttribute( doc, node, "type", "text/javascript" );
-        type = GetAttrByName( node, "type" );
+        type = AttrGetById(node, TidyAttr_TYPE);
         ReportAttrError( doc, node, type, INSERTING_ATTRIBUTE );
     }
 }
@@ -828,7 +775,7 @@ void CheckSCRIPT( TidyDocImpl* doc, Node *node )
 /* add missing type attribute when appropriate */
 void CheckSTYLE( TidyDocImpl* doc, Node *node )
 {
-    AttVal *type = GetAttrByName( node, "type" );
+    AttVal *type = AttrGetById(node, TidyAttr_TYPE);
 
     CheckAttributes( doc, node );
 
@@ -842,18 +789,18 @@ void CheckSTYLE( TidyDocImpl* doc, Node *node )
 /* add missing type attribute when appropriate */
 void CheckLINK( TidyDocImpl* doc, Node *node )
 {
-    AttVal *rel = GetAttrByName( node, "rel" );
+    AttVal *rel = AttrGetById(node, TidyAttr_REL);
 
     CheckAttributes( doc, node );
 
     if ( rel && rel->value &&
          tmbstrcmp(rel->value, "stylesheet") == 0 )
     {
-        AttVal *type = GetAttrByName(node, "type");
+        AttVal *type = AttrGetById(node, TidyAttr_TYPE);
         if (!type)
         {
             AddAttribute( doc, node, "type", "text/css" );
-            type = GetAttrByName( node, "type" );
+            type = AttrGetById(node, TidyAttr_TYPE);
             ReportAttrError( doc, node, type, INSERTING_ATTRIBUTE );
         }
     }
@@ -862,7 +809,7 @@ void CheckLINK( TidyDocImpl* doc, Node *node )
 /* reports missing action attribute */
 void CheckFORM( TidyDocImpl* doc, Node *node )
 {
-    AttVal *action = GetAttrByName( node, "action" );
+    AttVal *action = AttrGetById(node, TidyAttr_ACTION);
     CheckAttributes( doc, node );
     if (!action)
         ReportMissingAttr( doc, node, "action");
@@ -871,7 +818,7 @@ void CheckFORM( TidyDocImpl* doc, Node *node )
 /* reports missing content attribute */
 void CheckMETA( TidyDocImpl* doc, Node *node )
 {
-    AttVal *content = GetAttrByName( node, "content" );
+    AttVal *content = AttrGetById(node, TidyAttr_CONTENT);
     CheckAttributes( doc, node );
     if ( ! content )
         ReportMissingAttr( doc, node, "content" );
