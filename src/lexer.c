@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 03:56:13 $ 
-    $Revision: 1.86 $ 
+    $Date: 2003/04/10 07:08:27 $ 
+    $Revision: 1.87 $ 
 
 */
 
@@ -3850,7 +3850,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
     int start = lexer->lexsize;
     int state = DT_DOCTYPENAME;
     uint c;
-    int delim = 0;
+    uint delim = 0;
     Bool hasfpi = yes;
 
     lexer->waswhite = no;
