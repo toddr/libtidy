@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 13:42:51 $ 
-    $Revision: 1.22 $ 
+    $Date: 2004/03/07 14:38:47 $ 
+    $Revision: 1.23 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -116,6 +116,8 @@ static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
     in->encoding = encoding;
     in->state = FSM_ASCII;
     in->doc = doc;
+    in->bufsize = CHARBUF_SIZE;
+    in->charbuf = MemAlloc(sizeof(tchar) * in->bufsize);
 #ifdef TIDY_STORE_ORIGINAL_TEXT
     in->otextbuf = NULL;
     in->otextlen = 0;
@@ -130,6 +132,7 @@ void freeStreamIn(StreamIn* in)
     if (in->otextbuf)
         MemFree(in->otextbuf);
 #endif
+    MemFree(in->charbuf);
     MemFree(in);
 }
 
@@ -493,11 +496,9 @@ void UngetChar( uint c, StreamIn *in )
     
     in->pushed = yes;
 
-    if (in->bufpos >= CHARBUF_SIZE)
-    {
-        memcpy(in->charbuf, in->charbuf + 1, CHARBUF_SIZE - 1);
-        (in->bufpos)--;
-    }
+    if (in->bufpos + 1 >= in->bufsize)
+        in->charbuf = MemRealloc(in->charbuf, sizeof(tchar) * ++(in->bufsize));
+
     in->charbuf[(in->bufpos)++] = c;
 
     if (c == '\n')
