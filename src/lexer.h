@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 12:46:52 $ 
-    $Revision: 1.28 $ 
+    $Date: 2005/03/22 17:36:04 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -430,7 +430,7 @@ void FreeAttrs( TidyDocImpl* doc, Node *node );
 void FreeAttribute( TidyDocImpl* doc, AttVal *av );
 
 /* detach attribute from node */
-void DetachAttribute( TidyDocImpl* doc, Node *node, AttVal *attr );
+void DetachAttribute( Node *node, AttVal *attr );
 
 /* detach attribute from node then free it
 */

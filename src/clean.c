@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:37 $ 
-    $Revision: 1.93 $ 
+    $Date: 2005/03/22 17:36:03 $ 
+    $Revision: 1.94 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1077,7 +1077,7 @@ static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
             RemoveAttribute( doc, node, av1 );
 
         /* Move attribute from child to node */
-        DetachAttribute( doc, child, av2 );
+        DetachAttribute( child, av2 );
         av1 = av2;
         av2 = av2->next;
         av1->next = NULL;
