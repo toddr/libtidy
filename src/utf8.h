@@ -3,14 +3,14 @@
 
 /* utf8.h -- convert characters to/from UTF-8
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.3 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:32:47 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -21,14 +21,14 @@
 ** Does not convert character "codepoints", i.e. to/from 10646.
 */
 
-int DecodeUTF8BytesToChar( uint* c, uint firstByte, tmbstr successorBytes,
+int DecodeUTF8BytesToChar( uint* c, uint firstByte, ctmbstr successorBytes,
                            TidyInputSource* inp, int* count );
 
 int EncodeCharToUTF8Bytes( uint c, tmbstr encodebuf,
                            TidyOutputSink* outp, int* count );
 
 
-uint  GetUTF8( tmbstr str, uint *ch );
+uint  GetUTF8( ctmbstr str, uint *ch );
 tmbstr PutUTF8( tmbstr buf, uint c );
 
 #define UNICODE_BOM_BE   0xFEFF   /* big-endian (default) UNICODE BOM */

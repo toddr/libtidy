@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/02/29 03:55:35 $ 
-    $Revision: 1.14 $ 
+    $Date: 2004/08/02 02:25:13 $ 
+    $Revision: 1.15 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -337,7 +337,7 @@ uint EntityCode( ctmbstr name, uint versions )
         if ( name[2] == 'x' || (!isXml && name[2] == 'X') )
             sscanf( name+3, "%x", &c );
         else
-            sscanf( name+2, "%d", &c );
+            sscanf( name+2, "%u", &c );
 
         return (uint) c;
     }
@@ -369,7 +369,7 @@ Bool EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions )
         if ( name[2] == 'x' || (!isXml && name[2] == 'X') )
             sscanf( name+3, "%x", &c );
         else
-            sscanf( name+2, "%d", &c );
+            sscanf( name+2, "%u", &c );
 
         *code = c;
         *versions = VERS_ALL;

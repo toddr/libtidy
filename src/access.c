@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/18 20:58:38 $ 
-    $Revision: 1.11 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:19:05 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -139,11 +139,11 @@ static const ctmbstr colorNames[] =
 
 
 /* function prototypes */
-void InitAccessibilityChecks( TidyDocImpl* doc, int level123 );
-void FreeAccessibilityChecks( TidyDocImpl* doc );
+static void InitAccessibilityChecks( TidyDocImpl* doc, int level123 );
+static void FreeAccessibilityChecks( TidyDocImpl* doc );
 
 static Bool GetRgb( ctmbstr color, int rgb[3] );
-static Bool CompareColors( int rgbBG[3], int rgbFG[3] );
+static Bool CompareColors( const int rgbBG[3], const int rgbFG[3] );
 static int  ctox( tmbchar ch );
 
 /*
@@ -188,7 +188,7 @@ static void GetFileExtension( ctmbstr path, tmbchar *ext, uint maxExt )
 
 static Bool IsImage( ctmbstr iType )
 {
-    int i;
+    uint i;
 
     /* Get the file extension */
     tmbchar ext[20];
@@ -214,7 +214,7 @@ static Bool IsImage( ctmbstr iType )
 
 static int IsSoundFile( ctmbstr sType )
 {
-    int i;
+    uint i;
     tmbchar ext[ 20 ];
     GetFileExtension( sType, ext, sizeof(ext) );
 
@@ -239,7 +239,7 @@ static int IsSoundFile( ctmbstr sType )
 
 static Bool IsValidSrcExtension( ctmbstr sType )
 {
-    int i;
+    uint i;
     tmbchar ext[20];
     GetFileExtension( sType, ext, sizeof(ext) );
 
@@ -261,7 +261,7 @@ static Bool IsValidSrcExtension( ctmbstr sType )
 
 static Bool IsValidMediaExtension( ctmbstr sType )
 {
-    int i;
+    uint i;
     tmbchar ext[20];
     GetFileExtension( sType, ext, sizeof(ext) );
 
@@ -368,7 +368,7 @@ static Bool EndsWithBytes( ctmbstr txt )
 static tmbstr textFromOneNode( TidyDocImpl* doc, Node* node )
 {
     uint i;
-    int x = 0;
+    uint x = 0;
     tmbstr txt = doc->access.text;
     
     if ( node )
@@ -551,12 +551,12 @@ static int minmax( int i1, int i2 )
 {
    return MAX(i1, i2) - MIN(i1,i2);
 }
-static int brightness( int rgb[3] )
+static int brightness( const int rgb[3] )
 {
    return ((rgb[0]*299) + (rgb[1]*587) + (rgb[2]*114)) / 1000;
 }
 
-static Bool CompareColors( int rgbBG[3], int rgbFG[3] )
+static Bool CompareColors( const int rgbBG[3], const int rgbFG[3] )
 {
     int brightBG = brightness( rgbBG );
     int brightFG = brightness( rgbFG );
@@ -584,7 +584,7 @@ static Bool CompareColors( int rgbBG[3], int rgbFG[3] )
 
 static Bool GetRgb( ctmbstr color, int rgb[] )
 {
-    int x;
+    uint x;
 
     /* Check if we have a color name */
     for (x = 0; x < N_COLORS; x++)
@@ -1195,7 +1195,6 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 {
     AttVal* av;
     tmbstr word = NULL;
-    int checked = 0;
     Bool HasDescription = no;
     Bool HasTriggeredLink = no;
 
@@ -1261,8 +1260,6 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
             /* Checks 'TARGET' attribute for validity if it exists */
             if ( attrIsTARGET(av) )
             {
-                checked = 1;
-
                 if (AttrValueIs(av, "_new"))
                 {
                     ReportAccessWarning( doc, node, NEW_WINDOWS_REQUIRE_WARNING_NEW);
@@ -3354,7 +3351,7 @@ static void CheckListUsage( TidyDocImpl* doc, Node* node )
 * Initializes the AccessibilityChecks variables as necessary
 ************************************************************/
 
-void InitAccessibilityChecks( TidyDocImpl* doc, int level123 )
+static void InitAccessibilityChecks( TidyDocImpl* doc, int level123 )
 {
     ClearMemory( &doc->access, sizeof(doc->access) );
     doc->access.PRIORITYCHK = level123;
@@ -3367,7 +3364,7 @@ void InitAccessibilityChecks( TidyDocImpl* doc, int level123 )
 ************************************************************/
 
 
-void FreeAccessibilityChecks( TidyDocImpl* doc )
+static void FreeAccessibilityChecks( TidyDocImpl* doc )
 {
 #pragma unused(doc)
 

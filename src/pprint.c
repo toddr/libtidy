@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/18 21:10:31 $ 
-    $Revision: 1.94 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:29:59 $ 
+    $Revision: 1.95 $ 
 
 */
 
@@ -115,7 +115,7 @@ static struct _unicode4cat
 {
   unsigned long code;
   char category;
-} unicode4cat[] =
+} const unicode4cat[] =
 {
 #if 0
   { 0x037E, UCPO }, { 0x0387, UCPO }, { 0x055A, UCPO }, { 0x055B, UCPO },
@@ -226,7 +226,7 @@ typedef enum
   (U+0009, U+000A, U+000D, U+000C, U+0020) other characters could
   be used to determine a wrap point. Since user agents would
   normalize the inserted newline character to a space character,
-  this wrapping behaivour would insert visual whitespace into the
+  this wrapping behaviour would insert visual whitespace into the
   document.
 
   Characters of the General Category Pi and Ps in the Unicode
@@ -867,7 +867,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 
         if (c > 126 && c < 160)
         {
-            tmbsnprintf(entity, sizeof(entity), "&#%d;", c);
+            tmbsnprintf(entity, sizeof(entity), "&#%u;", c);
             AddString( pprint, entity );
             return;
         }
@@ -992,7 +992,7 @@ static void PPrintString( TidyDocImpl* doc, uint indent, ctmbstr str )
 
 
 static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
-                             tmbstr value, uint delim, Bool wrappable, Bool scriptAttr )
+                             ctmbstr value, uint delim, Bool wrappable, Bool scriptAttr )
 {
     TidyPrintImpl* pprint = &doc->pprint;
     Bool scriptlets = cfg(doc, TidyWrapScriptlets);
@@ -1296,17 +1296,20 @@ static void PPrintTag( TidyDocImpl* doc,
     if ( node->type == EndTag )
         AddChar( pprint, '/' );
 
-    while (*s)
+    if (s)
     {
-        c = (unsigned char)*s;
+        while (*s)
+        {
+            c = (unsigned char)*s;
 
-        if (c > 0x7F)
-            s += GetUTF8(s, &c);
-        else if (uc)
-            c = ToUpper(c);
+            if (c > 0x7F)
+                s += GetUTF8(s, &c);
+            else if (uc)
+                c = ToUpper(c);
 
-        AddChar(pprint, c);
-        ++s;
+            AddChar(pprint, c);
+            ++s;
+        }
     }
 
     PPrintAttrs( doc, indent, node );
@@ -1362,17 +1365,20 @@ static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 
     AddString( pprint, "</" );
 
-    while (*s)
+    if (s)
     {
-        c = (unsigned char)*s;
+        while (*s)
+        {
+             c = (unsigned char)*s;
 
-        if (c > 0x7F)
-            s += GetUTF8(s, &c);
-        else if (uc)
-            c = ToUpper(c);
+             if (c > 0x7F)
+                 s += GetUTF8(s, &c);
+             else if (uc)
+                 c = ToUpper(c);
 
-        AddChar(pprint, c);
-        ++s;
+             AddChar(pprint, c);
+             ++s;
+        }
     }
 
     AddChar( pprint, '>' );
@@ -1417,7 +1423,10 @@ static void PPrintDocType( TidyDocImpl* doc, uint indent, Node *node )
 
     AddString( pprint, "<!DOCTYPE " );
     SetWrap( doc, indent );
-    AddString(pprint, node->element);
+    if (node->element)
+    {
+        AddString(pprint, node->element);
+    }
 
     if (fpi && fpi->value)
     {

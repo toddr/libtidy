@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2004/07/20 22:00:45 $ 
-    $Revision: 1.155 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:26:04 $ 
+    $Revision: 1.156 $ 
 
 */
 
@@ -63,12 +63,12 @@ static void AddAttrToList( AttVal** list, AttVal* av );
 
 /* used to classify characters for lexical purposes */
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
-uint lexmap[128];
+static uint lexmap[128];
 
 #define IsValidXMLAttrName(name) IsValidXMLID(name)
 #define IsValidXMLElemName(name) IsValidXMLID(name)
 
-struct _doctypes
+static struct _doctypes
 {
     uint score;
     uint vers;
@@ -690,11 +690,11 @@ void FreeLexer( TidyDocImpl* doc )
 */
 void AddByte( Lexer *lexer, tmbchar ch )
 {
-    if ( lexer->lexsize + 1 >= lexer->lexlength )
+    if ( lexer->lexsize + 2 >= lexer->lexlength )
     {
         tmbstr buf = NULL;
         uint allocAmt = lexer->lexlength;
-        while ( lexer->lexsize + 1 >= allocAmt )
+        while ( lexer->lexsize + 2 >= allocAmt )
         {
             if ( allocAmt == 0 )
                 allocAmt = 8192;
@@ -866,7 +866,8 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
             {
                 /* invalid numeric character reference */
                 
-                int c1 = 0, replaceMode = DISCARDED_CHAR;
+                uint c1 = 0;
+                int replaceMode = DISCARDED_CHAR;
             
                 if ( ReplacementCharEncoding == WIN1252 )
                     c1 = DecodeWin1252( ch );
@@ -1458,7 +1459,7 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
 {
     Lexer *lexer = doc->lexer;
     Node *doctype = FindDocType( doc );
-    uint dtmode = cfg(doc, TidyDoctypeMode);
+    TidyDoctypeModes dtmode = cfg(doc, TidyDoctypeMode);
     ctmbstr pub = "PUBLIC";
     ctmbstr sys = "SYSTEM";
 
@@ -1910,7 +1911,7 @@ void UngetToken( TidyDocImpl* doc )
 Node* GetToken( TidyDocImpl* doc, uint mode )
 {
     Lexer* lexer = doc->lexer;
-    uint c, lastc, badcomment = 0;
+    uint c, badcomment = 0;
     Bool isempty = no;
     AttVal *attributes = NULL;
 
@@ -1996,7 +1997,6 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     else /* prev character wasn't white */
                     {
                         lexer->waswhite = yes;
-                        lastc = c;
 
                         if (mode != Preformatted && mode != IgnoreMarkup && c != ' ')
                             ChangeChar(lexer, ' ');
@@ -2482,7 +2482,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     uint i;
                     Bool closed;
 
-                    for (i = 0; i <= lexer->lexsize &&
+                    for (i = 0; i <= lexer->lexsize - lexer->txtstart &&
                         !IsWhite(lexer->lexbuf[i + lexer->txtstart]); ++i)
                         /**/;
 
@@ -2984,7 +2984,8 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
 static int ParseServerInstruction( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
-    int c, delim = '"';
+    uint c;
+    int delim = '"';
     Bool isrule = no;
 
     c = ReadChar(doc->docIn);
@@ -3415,7 +3416,7 @@ static void AddAttrToList( AttVal** list, AttVal* av )
   }
 }
 
-AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
+static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
 {
     Lexer* lexer = doc->lexer;
     AttVal *av, *list;

@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/22 09:07:28 $ 
-    $Revision: 1.64 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:23:49 $ 
+    $Revision: 1.65 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -209,7 +209,7 @@ static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
 static tmbstr CreatePropString(StyleProp *props)
 {
     tmbstr style, p, s;
-    int len;
+    uint len;
     StyleProp *prop;
 
     /* compute length */
@@ -290,7 +290,7 @@ static tmbstr GensymClass( TidyDocImpl* doc )
     if ( pfx == NULL || *pfx == 0 )
       pfx = "c";
 
-    tmbsnprintf(buf, sizeof(buf), "%s%d", pfx, ++doc->nClassId );
+    tmbsnprintf(buf, sizeof(buf), "%s%u", pfx, ++doc->nClassId );
     return tmbstrdup(buf);
 }
 
@@ -328,7 +328,7 @@ void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
     */
     if (classattr)
     {
-        int len = tmbstrlen(classattr->value) +
+        uint len = tmbstrlen(classattr->value) +
                   tmbstrlen(classname) + 2;
         tmbstr s = (tmbstr) MemAlloc( len );
         tmbstrcpy( s, classattr->value );
@@ -375,7 +375,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
         */
         if (classattr)
         {
-            int len = tmbstrlen(classattr->value) +
+            uint len = tmbstrlen(classattr->value) +
                       tmbstrlen(classname) + 2;
             tmbstr s = (tmbstr) MemAlloc( len );
             if (classattr->value)
@@ -743,7 +743,7 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
     {
         if (s2)  /* merge class names from both */
         {
-            int l1, l2;
+            uint l1, l2;
             l1 = tmbstrlen(s1);
             l2 = tmbstrlen(s2);
             names = (tmbstr) MemAlloc(l1 + l2 + 2);
@@ -914,13 +914,15 @@ static void AddFontColor( TidyDocImpl* doc, Node *node, ctmbstr color)
 /* force alignment value to lower case */
 static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
 {
-    tmbchar buf[128], *p;
+    int i;
+    tmbchar buf[128];
 
     tmbstrcpy( buf, "text-align: " );
-    for ( p = buf + 12; (0 != (*p++ = (tmbchar)ToLower(*align++))); /**/ )
-    {
-    	/**/
-	}
+	for ( i = 12; i < sizeof(buf)/sizeof(buf[0])-1; ++i ) {
+		if ( (buf[i] = (tmbchar)ToLower(*align++)) == '\0' )
+			break;
+ 	}
+	buf[i] = '\0';
     AddStyleProperty( doc, node, buf );
 }
 
@@ -1155,8 +1157,9 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
         FixNodeLinks(list);
 
         /* get rid of outer ul and its li */
-        /* XXX: Are we leaking the child node? -creitzel 7 Jun, 01 */
         child->content = NULL;
+        FreeNode( doc, child ); /* See test #427841. */
+        child = NULL;
         node->content = NULL;
         node->next = NULL;
         FreeNode( doc, node );
@@ -2218,11 +2221,12 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
             if (0 != tmbstrncasecmp( prop->name, "charset", 7 ))
                 continue;
 
-            MemFree( prop->name );
-            prop->name = (char*)MemAlloc( 32 );
-            tmbsnprintf(prop->name, 32, "charset=%s", enc);
-            s = CreatePropString( pFirstProp );
-            MemFree( metaContent->value );
+ 			MemFree( prop->name );
+ 			prop->name = MemAlloc( 8 + tmbstrlen(enc) + 1 );
+ 			tmbstrcpy(prop->name, "charset=");
+ 			tmbstrcpy(prop->name+8, enc);
+ 			s = CreatePropString( pFirstProp );
+ 			MemFree( metaContent->value );
             metaContent->value = s;
             break;
         }

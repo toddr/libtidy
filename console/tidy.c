@@ -8,17 +8,17 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/07/30 21:05:14 $ 
-    $Revision: 1.18 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:18:11 $ 
+    $Revision: 1.19 $ 
 */
 
 #include "tidy.h"
 
-FILE* errout = NULL;  /* set to stderr */
-FILE* txtout = NULL;  /* set to stdout */
+static FILE* errout = NULL;  /* set to stderr */
+static FILE* txtout = NULL;  /* set to stdout */
 
-Bool samefile( ctmbstr filename1, ctmbstr filename2 )
+static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 {
 #if FILENAMES_CASE_SENSITIVE
     return ( strcmp( filename1, filename2 ) == 0 );
@@ -27,7 +27,7 @@ Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 #endif
 }
 
-void help( TidyDoc tdoc, ctmbstr prog )
+static void help( TidyDoc tdoc, ctmbstr prog )
 {
     printf( "%s [option...] [file...] [option...] [file...]\n", prog );
     printf( "Utility to clean up and pretty print HTML/XHTML/XML\n");
@@ -143,10 +143,10 @@ void optionhelp( TidyDoc tdoc, ctmbstr prog )
         TidyOptionId optId = tidyOptGetId( topt );
         TidyOptionType optTyp = tidyOptGetType( topt );
 
-        tmbstr name = (tmbstr) tidyOptGetName( topt );
-        tmbstr type = "String";
+        ctmbstr name = (tmbstr) tidyOptGetName( topt );
+        ctmbstr type = "String";
         tmbchar tempvals[80] = {0};
-        tmbstr vals = &tempvals[0];
+        ctmbstr vals = &tempvals[0];
 
         if ( tidyOptIsReadOnly(topt) )
             continue;
@@ -244,7 +244,7 @@ void optionhelp( TidyDoc tdoc, ctmbstr prog )
     }
 }
 
-void optionvalues( TidyDoc tdoc, ctmbstr prog )
+static void optionvalues( TidyDoc tdoc, ctmbstr prog )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
@@ -263,11 +263,11 @@ void optionvalues( TidyDoc tdoc, ctmbstr prog )
         ctmbstr sval = NULL;
         uint ival = 0;
 
-        tmbstr name = (tmbstr) tidyOptGetName( topt );
-        tmbstr type = "String";
+        ctmbstr name = (tmbstr) tidyOptGetName( topt );
+        ctmbstr type = "String";
         tmbchar tempvals[80] = {0};
-        tmbstr vals = &tempvals[0];
-        tmbstr ro   = ( isReadOnly ? "*" : "" );
+        ctmbstr vals = &tempvals[0];
+        ctmbstr ro   = ( isReadOnly ? "*" : "" );
 
         /* Handle special cases first.
         */
@@ -347,7 +347,7 @@ void optionvalues( TidyDoc tdoc, ctmbstr prog )
             case TidyInteger:
                 type = "Integer";
                 ival = tidyOptGetInt( tdoc, optId );
-                sprintf( tempvals, "%d", ival );
+                sprintf( tempvals, "%u", ival );
                 break;
 
             case TidyString:
@@ -373,7 +373,7 @@ void optionvalues( TidyDoc tdoc, ctmbstr prog )
             "internally by HTML Tidy\n\n" );
 }
 
-void version( TidyDoc tdoc, ctmbstr prog )
+static void version( TidyDoc tdoc, ctmbstr prog )
 {
 #ifdef PLATFORM_NAME
     printf( "HTML Tidy for %s released on %s\n",
@@ -383,7 +383,7 @@ void version( TidyDoc tdoc, ctmbstr prog )
 #endif
 }
 
-void unknownOption( TidyDoc tdoc, uint c )
+static void unknownOption( TidyDoc tdoc, uint c )
 {
     fprintf( errout, "HTML Tidy: unknown option: %c\n", c );
 }
@@ -397,7 +397,6 @@ int main( int argc, char** argv )
 
     uint contentErrors = 0;
     uint contentWarnings = 0;
-    uint optionErrors = 0;
     uint accessWarnings = 0;
 
     errout = stderr;  /* initialize to stderr */
@@ -588,7 +587,7 @@ int main( int argc, char** argv )
                 if ( argc >= 3 )
                 {
                     uint wraplen = 0;
-                    sscanf( argv[2], "%d", &wraplen );
+                    sscanf( argv[2], "%u", &wraplen );
                     tidyOptSetInt( tdoc, TidyWrapLen, wraplen );
                     --argc;
                     ++argv;
@@ -626,7 +625,7 @@ int main( int argc, char** argv )
                 if ( argc >= 3 )
                 {
                     uint acclvl = 0;
-                    sscanf( argv[2], "%d", &acclvl );
+                    sscanf( argv[2], "%u", &acclvl );
                     tidyOptSetInt( tdoc, TidyAccessibilityCheckLevel, acclvl );
                     --argc;
                     ++argv;

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/07 14:38:47 $ 
-    $Revision: 1.23 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:30:49 $ 
+    $Revision: 1.24 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -33,18 +33,18 @@
 ** Forward Declarations
 ************************/
 
-uint ReadCharFromStream( StreamIn* in );
+static uint ReadCharFromStream( StreamIn* in );
 
-uint ReadByte( StreamIn* in );
+static uint ReadByte( StreamIn* in );
 Bool IsEOF( StreamIn* in );
-void UngetByte( StreamIn* in, uint byteValue );
+static void UngetByte( StreamIn* in, uint byteValue );
 
-void PutByte( uint byteValue, StreamOut* out );
+static void PutByte( uint byteValue, StreamOut* out );
 
-void EncodeWin1252( uint c, StreamOut* out );
-void EncodeMacRoman( uint c, StreamOut* out );
-void EncodeIbm858( uint c, StreamOut* out );
-void EncodeLatin0( uint c, StreamOut* out );
+static void EncodeWin1252( uint c, StreamOut* out );
+static void EncodeMacRoman( uint c, StreamOut* out );
+static void EncodeIbm858( uint c, StreamOut* out );
+static void EncodeLatin0( uint c, StreamOut* out );
 
 void outcUTF8Bytes( StreamOut *out, byte* buf, int* count );
 void outBOM( StreamOut *out );
@@ -729,7 +729,7 @@ uint DecodeWin1252(uint c)
     return c;
 }
 
-void EncodeWin1252( uint c, StreamOut* out )
+static void EncodeWin1252( uint c, StreamOut* out )
 {
     if (c < 128 || (c > 159 && c < 256))
         PutByte(c, out);
@@ -792,7 +792,7 @@ uint DecodeMacRoman(uint c)
     return c;
 }
 
-void EncodeMacRoman( uint c, StreamOut* out )
+static void EncodeMacRoman( uint c, StreamOut* out )
 {
         if (c < 128)
             PutByte(c, out);
@@ -814,7 +814,7 @@ void EncodeMacRoman( uint c, StreamOut* out )
 /* Mapping for OS/2 Western character set CP 850
 ** (chars 128-255) to Unicode.
 */
-const uint IBM2Unicode[128] =
+static const uint IBM2Unicode[128] =
 {
     0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7,
     0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
@@ -844,7 +844,7 @@ uint DecodeIbm850(uint c)
 }
 
 /* For OS/2,Java users, map Unicode back to IBM858 (IBM850+Euro). */
-void EncodeIbm858( uint c, StreamOut* out )
+static void EncodeIbm858( uint c, StreamOut* out )
 {
     if (c < 128)
         PutByte(c, out);
@@ -884,7 +884,7 @@ uint DecodeLatin0(uint c)
 }
 
 /* Map Unicode back to ISO-8859-15. */
-void EncodeLatin0( uint c, StreamOut* out )
+static void EncodeLatin0( uint c, StreamOut* out )
 {
     switch (c)
     {
@@ -1027,7 +1027,7 @@ void tidyPutByte( TidyOutputSink* sink, uint ch )
     sink->putByte( sink->sinkData, (byte) ch );
 }
 
-uint ReadByte( StreamIn* in )
+static uint ReadByte( StreamIn* in )
 {
     return tidyGetByte( &in->source );
 }
@@ -1035,11 +1035,11 @@ Bool IsEOF( StreamIn* in )
 {
     return tidyIsEOF( &in->source );
 }
-void UngetByte( StreamIn* in, uint byteValue )
+static void UngetByte( StreamIn* in, uint byteValue )
 {
     tidyUngetByte( &in->source, byteValue );
 }
-void PutByte( uint byteValue, StreamOut* out )
+static void PutByte( uint byteValue, StreamOut* out )
 {
     tidyPutByte( &out->sink, byteValue );
 }
@@ -1093,7 +1093,7 @@ static void ReadRawBytesFromStream( StreamIn *in, byte* buf, int *count )
 #endif /* 0 */
 
 /* read char from stream */
-uint ReadCharFromStream( StreamIn* in )
+static uint ReadCharFromStream( StreamIn* in )
 {
     uint c, n;
 #ifdef TIDY_WIN32_MLANG_SUPPORT
@@ -1282,7 +1282,7 @@ static struct _enc2iana
 {
     uint id;
     ctmbstr name;
-} enc2iana[] =
+} const enc2iana[] =
 {
   { ASCII,    "us-ascii"     },
   { LATIN0,   "iso-8859-15"  },

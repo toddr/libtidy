@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/07/07 01:04:37 $ 
-    $Revision: 1.117 $ 
+    $Date: 2004/08/02 02:27:09 $ 
+    $Revision: 1.118 $ 
 
 */
 
@@ -30,14 +30,14 @@
 */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-const static char *release_date = "1st July 2004";
+static const char *release_date = "1st August 2004";
 
 ctmbstr ReleaseDate(void)
 {
   return release_date;
 }
 
-struct _msgfmt
+static struct _msgfmt
 {
     uint code;
     ctmbstr fmt;
@@ -310,31 +310,31 @@ static ctmbstr GetFormatFromCode(uint code)
     return NULL;
 }
 
-static char* LevelPrefix( TidyReportLevel level, char* buf )
+static char* LevelPrefix( TidyReportLevel level, char* buf, size_t count )
 {
   *buf = 0;
   switch ( level )
   {
   case TidyInfo:
-    tmbstrcpy( buf, "Info: " );
+    tmbstrncpy( buf, "Info: ", count );
     break;
   case TidyWarning:
-    tmbstrcpy( buf, "Warning: " );
+    tmbstrncpy( buf, "Warning: ", count );
     break;
   case TidyConfig:
-    tmbstrcpy( buf, "Config: " );
+    tmbstrncpy( buf, "Config: ", count );
     break;
   case TidyAccess:
-    tmbstrcpy( buf, "Access: " );
+    tmbstrncpy( buf, "Access: ", count );
     break;
   case TidyError:
-    tmbstrcpy( buf, "Error: " );
+    tmbstrncpy( buf, "Error: ", count );
     break;
   case TidyBadDocument:
-    tmbstrcpy( buf, "Document: " );
+    tmbstrncpy( buf, "Document: ", count );
     break;
   case TidyFatal:
-    tmbstrcpy( buf, "panic: " );
+    tmbstrncpy( buf, "panic: ", count );
     break;
   }
   return buf + tmbstrlen( buf );
@@ -428,7 +428,7 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
                 WriteChar( *cp, doc->errout );
         }
 
-        LevelPrefix( level, buf );
+        LevelPrefix( level, buf, sizeof(buf) );
         for ( cp = buf; *cp; ++cp )
             WriteChar( *cp, doc->errout );
 
@@ -638,7 +638,8 @@ void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
 
 void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 {
-    char *name = "NULL", *value = "NULL", tagdesc[64];
+    char const *name = "NULL", *value = "NULL";
+    char tagdesc[64];
     ctmbstr fmt = GetFormatFromCode(code);
 
     assert( fmt != NULL );

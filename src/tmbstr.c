@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/13 23:29:22 $ 
-    $Revision: 1.9 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:32:09 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -156,7 +156,7 @@ int tmbstrncasecmp( ctmbstr s1, ctmbstr s2, uint n )
 {
     uint c;
 
-    while ( (c = tolower(*s1)) == (uint) tolower(*s2) )
+    while (c = (uint)(*s1), ToLower(c) == ToLower((uint)(*s2)))
     {
         if (c == '\0')
             return 0;

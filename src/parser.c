@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2004/07/28 18:08:06 $ 
-    $Revision: 1.121 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:28:52 $ 
+    $Revision: 1.122 $ 
 
 */
 
@@ -1492,6 +1492,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                     TrimSpaces( doc, element );
                     InsertNodeAtEnd( element, node );
                     node = InferredTag(doc, TidyTag_BR);
+                    InsertNodeAtEnd( element, node ); /* todo: check this */
                     continue;
                 }
            }
@@ -3464,14 +3465,12 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
-    Bool checkstack;
 
     if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
     {
         doc->badAccess |=  USING_NOFRAMES;
     }
     mode = IgnoreWhitespace;
-    checkstack = yes;
 
     while ( (node = GetToken(doc, mode)) != NULL )
     {
@@ -3816,6 +3815,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             if ( frameset != NULL && nodeIsFRAME(node) )
             {
                 ReportError(doc, html, node, DISCARDING_UNEXPECTED);
+                FreeNode(doc, node);
                 continue;
             }
         }
@@ -4143,7 +4143,9 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
 
     while ((node = GetToken(doc, mode)) != NULL)
     {
-        if (node->type == EndTag && tmbstrcmp(node->element, element->element) == 0)
+        if (node->type == EndTag &&
+           node->element && element->element &&
+           tmbstrcmp(node->element, element->element) == 0)
         {
             FreeNode( doc, node);
             element->closed = yes;

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/22 09:53:04 $ 
-    $Revision: 1.50 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/08/02 02:31:32 $ 
+    $Revision: 1.51 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -698,6 +698,8 @@ void CheckSCRIPT( TidyDocImpl* doc, Node *node )
         /* check for javascript */
         if ( lang )
         {
+            /* Test #696799. lang->value can be NULL. */
+            buf[0] = '\0';
             tmbstrncpy( buf, lang->value, sizeof(buf) );
             buf[10] = '\0';
 

@@ -3,7 +3,7 @@
   (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: charsets.c,v 1.3 2004/02/29 03:57:42 terry_teague Exp $
+  $Id: charsets.c,v 1.4 2004/08/02 02:22:48 terry_teague Exp $
 */
 
 #include "tidy.h"
@@ -19,7 +19,7 @@ static struct _charsetInfo
     ctmbstr charset;
     uint codepage;
     uint stateful;
-} charsetInfo[] =
+} const charsetInfo[] =
 {
   {   1, "adobe-standard-encoding",                           0,  no }, /* IANA */
   {   1, "csadobestandardencoding",                           0,  no }, /* IANA */
