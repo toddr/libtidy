@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/04 02:35:16 $ 
-    $Revision: 1.21 $ 
+    $Date: 2003/03/18 23:50:02 $ 
+    $Revision: 1.22 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -86,7 +86,7 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
     StyleProp *first, *prev, *prop;
     int cmp;
 
-    prev = null;
+    prev = NULL;
     first = props;
 
     while (props)
@@ -123,7 +123,7 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
     prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
     prop->name = tmbstrdup(name);
     prop->value = tmbstrdup(value);
-    prop->next = null;
+    prop->next = NULL;
 
     if (prev)
         prev->next = prop;
@@ -137,12 +137,12 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
  Create sorted linked list of properties from style string
  It temporarily places nulls in place of ':' and ';' to
  delimit the strings for the property name and value.
- Some systems don't allow you to null literal strings,
+ Some systems don't allow you to NULL literal strings,
  so to avoid this, a copy is made first.
 */
 static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
 {
-    tmbstr name, value = null, name_end, value_end, line;
+    tmbstr name, value = NULL, name_end, value_end, line;
     Bool more;
 
     line = tmbstrdup(style);
@@ -238,7 +238,7 @@ static tmbstr CreatePropString(StyleProp *props)
             s = prop->value;
             while((*p++ = *s++));
         }
-        if (prop->next == null)
+        if (prop->next == NULL)
             break;
 
         *--p = ';';
@@ -256,7 +256,7 @@ static tmbstr AddProperty( ctmbstr style, ctmbstr property )
     tmbstr line;
     StyleProp *prop;
 
-    prop = CreateProps(null, style);
+    prop = CreateProps(NULL, style);
     prop = CreateProps(prop, property);
     line = CreatePropString(prop);
     FreeStyleProps(prop);
@@ -285,7 +285,7 @@ static tmbstr GensymClass( TidyDocImpl* doc )
 {
     tmbchar buf[512];  /* CSSPrefix is limited to 256 characters */
     ctmbstr pfx = cfgStr(doc, TidyCSSPrefix);
-    if ( pfx == null || *pfx == 0 )
+    if ( pfx == NULL || *pfx == 0 )
       pfx = "c";
 
     sprintf( buf, "%s%d", pfx, ++doc->nClassId );
@@ -411,29 +411,29 @@ static void AddColorRule( Lexer* lexer, ctmbstr selector, ctmbstr color )
 static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
 {
     Lexer* lexer  = doc->lexer;
-    tmbstr bgurl   = null;
-    tmbstr bgcolor = null;
-    tmbstr color   = null;
+    tmbstr bgurl   = NULL;
+    tmbstr bgcolor = NULL;
+    tmbstr color   = NULL;
     AttVal* attr;
     
     if ( attr = GetAttrByName(body, "background") )
     {
         bgurl = attr->value;
-        attr->value = null;
+        attr->value = NULL;
         RemoveAttribute( body, attr );
     }
 
     if ( attr = GetAttrByName(body, "bgcolor") )
     {
         bgcolor = attr->value;
-        attr->value = null;
+        attr->value = NULL;
         RemoveAttribute( body, attr );
     }
 
     if ( attr = GetAttrByName(body, "text") )
     {
         color = attr->value;
-        attr->value = null;
+        attr->value = NULL;
         RemoveAttribute(body, attr);
     }
 
@@ -513,7 +513,7 @@ static void CreateStyleElement( TidyDocImpl* doc )
     Style *style;
     AttVal *av;
 
-    if ( lexer->styles == null && NiceBody(doc) )
+    if ( lexer->styles == NULL && NiceBody(doc) )
         return;
 
     node = NewNode( lexer );
@@ -593,7 +593,7 @@ static void StripOnlyChild(TidyDocImpl* doc, Node *node)
     child = node->content;
     node->content = child->content;
     node->last = child->last;
-    child->content = null;
+    child->content = NULL;
     FreeNode(doc, child);
 
     for (child = node->content; child; child = child->next)
@@ -645,7 +645,7 @@ static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
         *pnode = element->next;
     }
 
-    element->next = element->content = null;
+    element->next = element->content = NULL;
     FreeNode(doc, element);
 }
 
@@ -663,7 +663,7 @@ static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
     tmbstr s;
     StyleProp *prop;
 
-    prop = CreateProps(null, s1);
+    prop = CreateProps(NULL, s1);
     prop = CreateProps(prop, s2);
     s = CreatePropString(prop);
     FreeStyleProps(prop);
@@ -704,7 +704,7 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
     AttVal *av;
     tmbstr s1, s2, names;
 
-    for (s2 = null, av = child->attributes; av; av = av->next)
+    for (s2 = NULL, av = child->attributes; av; av = av->next)
     {
         if (tmbstrcmp(av->attribute, "class") == 0)
         {
@@ -713,7 +713,7 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
         }
     }
 
-    for (s1 = null, av = node->attributes; av; av = av->next)
+    for (s1 = NULL, av = node->attributes; av; av = av->next)
     {
         if (tmbstrcmp(av->attribute, "class") == 0)
         {
@@ -761,7 +761,7 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     */
     MergeClasses(doc, node, child);
 
-    for (s2 = null, av = child->attributes; av; av = av->next)
+    for (s2 = NULL, av = child->attributes; av; av = av->next)
     {
         if (tmbstrcmp(av->attribute, "style") == 0)
         {
@@ -770,7 +770,7 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
         }
     }
 
-    for (s1 = null, av = node->attributes; av; av = av->next)
+    for (s1 = NULL, av = node->attributes; av; av = av->next)
     {
         if (tmbstrcmp(av->attribute, "style") == 0)
         {
@@ -804,7 +804,7 @@ static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
 {
     static const ctmbstr sizes[7] =
     {
-        "60%", "70%", "80%", null,
+        "60%", "70%", "80%", NULL,
         "120%", "150%", "200%"
     };
 
@@ -857,7 +857,7 @@ static void AddFontFace( TidyDocImpl* doc, Node *node, ctmbstr face )
 static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 {
     tmbchar work[ 32 ] = {0};
-    ctmbstr value = null;
+    ctmbstr value = NULL;
 
     if ( nodeIsP(node) )
     {
@@ -928,7 +928,7 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
 {
     AttVal *av, *prev;
 
-    prev = null;
+    prev = NULL;
 
     for (av = node->attributes; av; av = av->next)
     {
@@ -973,7 +973,7 @@ static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
     {
         child = node->content;
 
-        if (child == null)
+        if (child == NULL)
             return no;
 
         /* check child has no peers */
@@ -1084,7 +1084,7 @@ static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
     if ( !nodeIsDIV(child) )
         return no;
 
-    if (child->next != null)
+    if (child->next != NULL)
         return no;
 
     MergeStyles( doc, node, child );
@@ -1105,7 +1105,7 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
     {
         child = node->content;
 
-        if (child == null)
+        if (child == NULL)
             return no;
 
         /* check child has no peers */
@@ -1131,11 +1131,11 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 
         /* get rid of outer ul and its li */
         /* XXX: Are we leaking the child node? -creitzel 7 Jun, 01 */
-        child->content = null;
-        node->content = null;
-        node->next = null;
+        child->content = NULL;
+        node->content = NULL;
+        node->next = NULL;
         FreeNode( doc, node );
-        node = null;
+        node = NULL;
 
         /*
           If prev node was a list the chances are this node
@@ -1157,7 +1157,7 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
                 child = list->last;  /* <li> */
 
                 node->parent = child;
-                node->next = null;
+                node->next = NULL;
                 node->prev = child->last;
                 FixNodeLinks(node);
                 CleanNode( doc, node );
@@ -1206,7 +1206,7 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
                 TextAlign( doc, node );
 
             child = node->content;
-            if (child == null)
+            if (child == NULL)
                 return no;
 
             /* check child has no peers */
@@ -1251,7 +1251,7 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **pnode )
     {
         child = node->content;
 
-        if (child == null)
+        if (child == NULL)
             return no;
 
         /* check child has no peers */
@@ -1305,14 +1305,14 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
         }
 
         /* if FONT is only child of parent element then leave alone */
-        if ( node->parent->content == node && node->next == null )
+        if ( node->parent->content == node && node->next == NULL )
             return no;
 
         AddFontStyles( doc, node, node->attributes );
 
         /* extract style attribute and free the rest */
         av = node->attributes;
-        style = null;
+        style = NULL;
 
         while (av)
         {
@@ -1320,7 +1320,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
 
             if ( tmbstrcmp(av->attribute, "style") == 0 )
             {
-                av->next = null;
+                av->next = NULL;
                 style = av;
             }
             else
@@ -1348,7 +1348,7 @@ static Bool IsElement(Node *node)
 */
 Node* CleanNode( TidyDocImpl* doc, Node *node )
 {
-    Node *next = null;
+    Node *next = NULL;
 
     for (next = node; node && IsElement(node); node = next)
     {
@@ -1395,7 +1395,7 @@ static Node* CleanTree( TidyDocImpl* doc, Node *node, Node** prepl)
     if (node->content)
     {
         Node *child, *repl = node;
-        for (child = node->content; child != null; child = child->next)
+        for (child = node->content; child != NULL; child = child->next)
         {
             child = CleanTree( doc, child, &repl );
             if ( repl != node ) 
@@ -1415,7 +1415,7 @@ static void DefineStyleRules( TidyDocImpl* doc, Node *node )
     if (node->content)
     {
         for (child = node->content;
-                child != null; child = child->next)
+                child != NULL; child = child->next)
         {
             DefineStyleRules( doc, child );
         }
@@ -1485,7 +1485,7 @@ void EmFromI( TidyDocImpl* doc, Node* node )
 
 static Bool HasOneChild(Node *node)
 {
-    return (node->content && node->content->next == null);
+    return (node->content && node->content->next == NULL);
 }
 
 /*
@@ -1581,7 +1581,7 @@ Node* FindEnclosingCell( TidyDocImpl* doc, Node *node)
       if ( nodeIsTD(check) )
         return check;
     }
-    return null;
+    return NULL;
 }
 
 /* node is <![if ...]> prune up to <![endif]> */
@@ -1608,8 +1608,8 @@ static Node* PruneSection( TidyDocImpl* doc, Node *node )
         /* discard node and returns next */
         node = DiscardElement( doc, node );
 
-        if (node == null)
-            return null;
+        if (node == NULL)
+            return NULL;
         
         if (node->type == SectionTag)
         {
@@ -1659,7 +1659,7 @@ void DropSections( TidyDocImpl* doc, Node* node )
 
 static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 {
-    AttVal *attr, *next, *prev = null;
+    AttVal *attr, *next, *prev = NULL;
 
     for ( attr = node->attributes; attr; attr = next )
     {
@@ -1702,7 +1702,7 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 /* Word2000 uses span excessively, so we strip span out */
 static Node* StripSpan( TidyDocImpl* doc, Node* span )
 {
-    Node *node, *prev = null, *content;
+    Node *node, *prev = NULL, *content;
 
     /*
      deal with span elements that have content
@@ -1733,11 +1733,11 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
         prev = node;
     }
 
-    if (span->next == null)
+    if (span->next == NULL)
         span->parent->last = prev;
 
     node = span->next;
-    span->content = null;
+    span->content = NULL;
     DiscardElement( doc, span );
     return node;
 }
@@ -1800,7 +1800,7 @@ Bool SingleSpace( Lexer* lexer, Node* node )
     {
         node = node->content;
 
-        if ( node->next != null )
+        if ( node->next != NULL )
             return no;
 
         if ( node->type != TextNode )
@@ -1833,7 +1833,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
 {
     /* used to a list from a sequence of bulletted p's */
     Lexer* lexer = doc->lexer;
-    Node* list = null;
+    Node* list = NULL;
 
     while ( node )
     {
@@ -1878,7 +1878,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                     node = next;
                 }
 
-                if (node == null)
+                if (node == NULL)
                     break;
             }
         }
@@ -1917,7 +1917,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
 
         /* discard empty paragraphs */
 
-        if ( node->content == null && nodeIsP(node) )
+        if ( node->content == NULL && nodeIsP(node) )
         {
             /*  Use the existing function to ensure consistency */
             node = TrimEmptyElement( doc, node );
@@ -1984,10 +1984,10 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 node = list->next;
             }
             else
-                list = null;
+                list = NULL;
         }
         else
-            list = null;
+            list = NULL;
 
         /* strip out style and class attributes */
         if (node->type == StartTag || node->type == StartEndTag)
@@ -2037,12 +2037,12 @@ Bool IsWord2000( TidyDocImpl* doc )
 /* where appropriate move object elements from head to body */
 void BumpObject( TidyDocImpl* doc, Node *html )
 {
-    Node *node, *next, *head = null, *body = null;
+    Node *node, *next, *head = NULL, *body = NULL;
 
     if (!html)
         return;
 
-    for ( node = html->content; node != null; node = node->next )
+    for ( node = html->content; node != NULL; node = node->next )
     {
         if ( nodeIsHEAD(node) )
             head = node;
@@ -2051,9 +2051,9 @@ void BumpObject( TidyDocImpl* doc, Node *html )
             body = node;
     }
 
-    if ( head != null && body != null )
+    if ( head != NULL && body != NULL )
     {
-        for (node = head->content; node != null; node = next)
+        for (node = head->content; node != NULL; node = next)
         {
             next = node->next;
 
@@ -2062,7 +2062,7 @@ void BumpObject( TidyDocImpl* doc, Node *html )
                 Node *child;
                 Bool bump = no;
 
-                for (child = node->content; child != null; child = child->next)
+                for (child = node->content; child != NULL; child = child->next)
                 {
                     /* bump to body unless content is param */
                     if ( (child->type == TextNode && !IsBlank(doc->lexer, node))
@@ -2140,7 +2140,7 @@ void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
                         continue;
                     if (NULL != (pAttVal = GetAttrByName( pNode, "content" )))
                     {
-                        StyleProp *pFirstProp = null, *pLastProp = null, *prop = null;
+                        StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
                         tmbstr s, pszBegin, pszEnd;
 
                         pszBegin = s = tmbstrdup( pAttVal->value );
@@ -2157,10 +2157,10 @@ void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
                             {
                                 prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
                                 prop->name = tmbstrdup( pszBegin );
-                                prop->value = null;
-                                prop->next = null;
+                                prop->value = NULL;
+                                prop->next = NULL;
 
-                                if (null != pLastProp)
+                                if (NULL != pLastProp)
                                     pLastProp->next = prop;
                                 else
                                     pFirstProp = prop;
@@ -2171,11 +2171,11 @@ void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
                         MemFree( s );
 
                         /*  find the charset property */
-                        for (prop = pFirstProp; null != prop; prop = prop->next)
+                        for (prop = pFirstProp; NULL != prop; prop = prop->next)
                         {
                             if (0 == tmbstrncasecmp( prop->name, "charset", 7 ))
                             {
-                                ctmbstr enc = null;
+                                ctmbstr enc = NULL;
 
                                 MemFree( prop->name );
                                 prop->name = MemAlloc( 32 );
@@ -2293,7 +2293,7 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
         }
         if ( compliant && VERS_HTML40_STRICT == versWanted )
         {
-            AttVal* attr = null;
+            AttVal* attr = NULL;
             switch ( TagId(node) )
             {
             case TidyTag_BR: /* no clear */
@@ -2335,6 +2335,16 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
                 attr = AttrGetById( node, TidyAttr_WIDTH );
                 if ( !attr )
                     attr = AttrGetById( node, TidyAttr_HEIGHT );
+                break;
+
+            case TidyTag_TABLE: /* want summary */
+                attr = AttrGetById( node, TidyAttr_SUMMARY );
+                if ( !attr )
+                {
+                    doc->badAccess |= MISSING_SUMMARY;
+                    ReportMissingAttr( doc, node, "summary" );
+                }
+                attr = NULL;
                 break;
 
             case TidyTag_UL: /* no type */
