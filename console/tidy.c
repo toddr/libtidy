@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/10 10:05:26 $ 
-    $Revision: 1.22 $ 
+    $Date: 2005/03/22 16:27:25 $ 
+    $Revision: 1.23 $ 
 */
 
 #include "tidy.h"
@@ -140,10 +140,10 @@ static const char *cutToWhiteSpace(const char *s, uint offset, char *sbuf)
         n = j+1;
         /* no white space */
         if (j==0)
-	{
+        {
             l = offset;
             n = offset;
-	}
+        }
         strncpy(sbuf,s,l);
         sbuf[l] = '\0';
         return s+n;
@@ -236,8 +236,8 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
 
         case TidyDoctype:
             type = "DocType";
-            vals = "auto, omit, strict, loose, transitional,";
-                   " user specified fpi (string)";
+            vals = "auto, omit, strict, loose, transitional"
+                   ", user specified fpi (string)";
             break;
 
         case TidyCSSPrefix:
@@ -266,7 +266,7 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
 #else
                    ", mac, win1252, ibm858"
 #endif
-	           ;
+                   ;
             break;
 
         case TidyNewline:
