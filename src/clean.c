@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:02 $ 
-    $Revision: 1.51 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/01/04 23:44:19 $ 
+    $Revision: 1.52 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -358,6 +358,13 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
 
     if (styleattr)
     {
+		/* fix for http://tidy.sf.net/bug/850215 */
+        if (!styleattr->value)
+        {
+            RemoveAttribute(doc, node, styleattr);
+            return;
+        }
+
         classname = FindStyle( doc, node->element, styleattr->value );
         classattr = AttrGetById(node, TidyAttr_CLASS);
 
