@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/25 02:18:34 $ 
-    $Revision: 1.10 $ 
+    $Date: 2001/06/30 20:03:05 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -2486,6 +2486,18 @@ static int ParseServerInstruction(Lexer *lexer)
             do
             {
                 c = ReadChar(lexer->in);
+                if (c == EndOfStream)	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                {
+                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
+                    UngetChar(c, lexer->in);
+                    return null;
+                }
+                if (c == '>')	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                {
+                    UngetChar(c, lexer->in);
+                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+                    return null;
+                }
                 AddCharToLexer(lexer, c);
             }
             while (c != '"');
@@ -2498,6 +2510,18 @@ static int ParseServerInstruction(Lexer *lexer)
             do
             {
                 c = ReadChar(lexer->in);
+                if (c == EndOfStream)	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                {
+                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
+                    UngetChar(c, lexer->in);
+                    return null;
+                }
+                if (c == '>')	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                {
+                    UngetChar(c, lexer->in);
+                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+                    return null;
+                }
                 AddCharToLexer(lexer, c);
             }
             while (c != '\'');
