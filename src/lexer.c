@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/17 14:33:35 $ 
-    $Revision: 1.165 $ 
+    $Date: 2005/02/21 14:28:41 $ 
+    $Revision: 1.166 $ 
 
 */
 
@@ -1387,13 +1387,13 @@ Bool AddGenerator( TidyDocImpl* doc )
 }
 
 /* examine <!DOCTYPE> to identify version */
-int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
+uint FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 {
     AttVal * fpi = GetAttrByName(doctype, "PUBLIC");
     uint vers;
 
     if (!fpi || !fpi->value)
-        return 0;
+        return VERS_UNKNOWN;
 
     vers = GetVersFromFPI(fpi->value);
 
@@ -1409,6 +1409,17 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
     fpi->value = tmbstrdup(GetFPIFromVers(vers));
 
     return vers;
+}
+
+/* return guessed version */
+uint ApparentVersion( TidyDocImpl* doc )
+{
+    if ((doc->lexer->doctype == XH11 ||
+         doc->lexer->doctype == XB10) &&
+        (doc->lexer->versions & doc->lexer->doctype))
+        return doc->lexer->doctype;
+    else
+        return HTMLVersion(doc);
 }
 
 ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )

@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2005/02/15 09:48:39 $ 
-    $Revision: 1.125 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/02/21 14:28:41 $ 
+    $Revision: 1.126 $ 
 
 */
 
@@ -1226,12 +1226,7 @@ void ReportMarkupVersion( TidyDocImpl* doc )
         uint apparentVers;
         ctmbstr vers;
 
-        if ((doc->lexer->doctype == XH11 || 
-             doc->lexer->doctype == XB10) &&
-            (doc->lexer->versions & doc->lexer->doctype))
-            apparentVers = doc->lexer->doctype;
-        else
-            apparentVers = HTMLVersion(doc);
+        apparentVers = ApparentVersion( doc );
 
         vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
 
