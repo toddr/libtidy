@@ -252,11 +252,11 @@ void HelpText(FILE *errout, char *prog)
 {
     fprintf(errout, "%s: file1 file2 ...\n", prog);
     fprintf(errout, "Utility to expand tabs and ensure consistent line ends\n");
-    fprintf(errout, "options for tab2space vers: 14th December 1998\n");
+    fprintf(errout, "options for tab2space vers: 3rd January 2002\n");
     fprintf(errout, "  -t8             set tabs to 8 (default is 4)\n");
-    fprintf(errout, "  -crlf           set line ends to CRLF (default)\n");
+    fprintf(errout, "  -crlf           set line ends to CRLF (PC-DOS/Windows - default)\n");
     fprintf(errout, "  -unix or -lf    set line ends to LF (Unix)\n");
-    fprintf(errout, "  -cr             set line ends to CR (Macs)\n");
+    fprintf(errout, "  -cr             set line ends to CR (classic Mac OS)\n");
     fprintf(errout, "  -tabs           preserve tabs, e.g. for Makefile\n");
     fprintf(errout, "  -help or -h     display this help message\n");
     fprintf(errout, "\nNote this utility doesn't map spaces to tabs!\n");
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
                 return 1;
             }
 
-            if (strcmp(argv[1], "-t") == 0)
+            if (strncmp(argv[1], "-t", 2) == 0)
             {
                 sscanf(argv[1]+2, "%d", &tabsize);
                 --argc;
@@ -305,7 +305,7 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            if (strcmp(argv[1], "-cf") == 0)
+            if (strcmp(argv[1], "-cr") == 0)
             {
                 endline = MAC;
                 --argc;
