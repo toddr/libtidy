@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:47 $ 
-    $Revision: 1.3 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/09 09:08:45 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -64,6 +64,7 @@ void FixId( TidyDocImpl* doc, Node *node );
 Bool PreContent( TidyDocImpl* doc, Node *node );
 
 Bool IsJavaScript(Node *node);
+Bool DescendantOf(Node *element, TidyTagId tid);
 
 /*
   HTML is the top level element

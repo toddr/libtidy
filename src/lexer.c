@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/09 07:04:20 $ 
-    $Revision: 1.84 $ 
+    $Date: 2003/04/09 09:08:43 $ 
+    $Revision: 1.85 $ 
 
 */
 
@@ -1945,6 +1945,8 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     int nested = 0;
     int state = CDATA_INTERMEDIATE;
     int i;
+    Bool isEmpty = yes;
+    Bool matches = no;
     uint c;
 
     lexer->lines = doc->docIn->curline;
@@ -1972,7 +1974,11 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
         if (state == CDATA_INTERMEDIATE)
         {
             if (c != '<')
+            {
+                if (isEmpty && !IsWhite(c))
+                    isEmpty = no;
                 continue;
+            }
 
             c = ReadChar(doc->docIn);
 
@@ -2009,12 +2015,11 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             if (IsLetter(c))
                 continue;
 
-            if (tmbstrncasecmp(container->element,
-                lexer->lexbuf + start,
-                tmbstrlen(container->element)) == 0)
-            {
+            matches = tmbstrncasecmp(container->element, lexer->lexbuf + start,
+                                     tmbstrlen(container->element)) == 0;
+            if (matches)
                 nested++;
-            }
+
             state = CDATA_INTERMEDIATE;
         }
         /* '<' + '/' + Letter found */
@@ -2023,8 +2028,17 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             if (IsLetter(c))
                 continue;
 
-            if (tmbstrncasecmp(container->element, lexer->lexbuf + start,
-                tmbstrlen(container->element)) == 0 && nested-- <= 0)
+            matches = tmbstrncasecmp(container->element, lexer->lexbuf + start,
+                                     tmbstrlen(container->element)) == 0;
+
+            if (isEmpty && !matches && container->parent->tag->model & CM_OMITST)
+            {
+                ReportWarning(doc, container, NULL, MISSING_ENDTAG_FOR);
+                lexer->lexsize -= (lexer->lexsize - start) + 2;
+                break;
+            }
+
+            if (matches && nested-- <= 0)
             {
                 /* skip trailing white space in end tag */
                 while (IsWhite(c))
