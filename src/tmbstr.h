@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 01:48:25 $ 
-    $Revision: 1.5 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -73,6 +73,9 @@ tmbstr tmbstrtolower( tmbstr s );
 tmbstr tmbstrtoupper(tmbstr s);
 
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 );
+
+int tmbvsnprintf(tmbstr buffer, size_t count, ctmbstr format, va_list args);
+int tmbsnprintf(tmbstr buffer, size_t count, ctmbstr format, ...);
 
 #ifdef __cplusplus
 }  /* extern "C" */

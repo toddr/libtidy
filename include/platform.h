@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/02/29 04:44:07 $ 
-    $Revision: 1.47 $ 
+    $Date: 2004/03/13 23:29:21 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -450,7 +450,7 @@ extern "C" {
 #define utimbuf _utimbuf /* Windows seems to want utimbuf */
 #define stat _stat
 #define utime _utime
-
+#define vsnprintf _vsnprintf
 #endif /* _WIN32 */
 
 #endif /* PRESERVE_FILE_TIMES */

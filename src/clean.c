@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 18:51:37 $ 
-    $Revision: 1.60 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.61 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -290,7 +290,7 @@ static tmbstr GensymClass( TidyDocImpl* doc )
     if ( pfx == NULL || *pfx == 0 )
       pfx = "c";
 
-    sprintf( buf, "%s%d", pfx, ++doc->nClassId );
+    tmbsnprintf(buf, sizeof(buf), "%s%d", pfx, ++doc->nClassId );
     return tmbstrdup(buf);
 }
 
@@ -811,7 +811,7 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     }
 }
 
-static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
+static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
 {
     static const ctmbstr sizes[7] =
     {
@@ -836,7 +836,7 @@ static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
                 x *= 0.8;
 
             x *= 100;
-            sprintf(buf, "%d%%", (int)(x));
+            tmbsnprintf(buf, count, "%d%%", (int)(x));
             return buf;
         }
         return "smaller"; /*"70%"; */
@@ -851,7 +851,7 @@ static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
             x *= 1.2;
 
         x *= 100;
-        sprintf(buf, "%d%%", (int)(x));
+        tmbsnprintf(buf, count, "%d%%", (int)(x));
         return buf;
     }
 
@@ -861,7 +861,7 @@ static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
 static void AddFontFace( TidyDocImpl* doc, Node *node, ctmbstr face )
 {
     tmbchar buf[256];
-    sprintf( buf, "font-family: %s", face );
+    tmbsnprintf(buf, sizeof(buf), "font-family: %s", face );
     AddStyleProperty( doc, node, buf );
 }
 
@@ -888,12 +888,12 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
         }
     }
 
-    value = FontSize2Name(size, work);
+    value = FontSize2Name(size, work, sizeof(work) - 1);
 
     if (value)
     {
         tmbchar buf[64];
-        sprintf(buf, "font-size: %s", value);
+        tmbsnprintf(buf, sizeof(buf), "font-size: %s", value);
         AddStyleProperty( doc, node, buf );
     }
 }
@@ -901,7 +901,7 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 static void AddFontColor( TidyDocImpl* doc, Node *node, ctmbstr color)
 {
     tmbchar buf[128];
-    sprintf(buf, "color: %s", color);
+    tmbsnprintf(buf, sizeof(buf), "color: %s", color);
     AddStyleProperty( doc, node, buf );
 }
 
@@ -1564,7 +1564,7 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
             if (node->content)
                 BQ2Div( doc, node->content );
 
-            len = sprintf(indent_buf, "margin-left: %dem", 2*indent);
+            len = tmbsnprintf(indent_buf, sizeof(indent_buf), "margin-left: %dem", 2*indent);
 
             RenameElem( node, TidyTag_DIV );
 
@@ -2212,7 +2212,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
 
             MemFree( prop->name );
             prop->name = (char*)MemAlloc( 32 );
-            sprintf( prop->name, "charset=%s", enc );
+            tmbsnprintf(prop->name, 32, "charset=%s", enc);
             s = CreatePropString( pFirstProp );
             MemFree( metaContent->value );
             metaContent->value = s;

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/08 14:42:25 $ 
-    $Revision: 1.150 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.151 $ 
 
 */
 
@@ -1335,10 +1335,10 @@ Bool AddGenerator( TidyDocImpl* doc )
     if (head)
     {
 #ifdef PLATFORM_NAME
-        sprintf( buf, "HTML Tidy for "PLATFORM_NAME" (vers %s), see www.w3.org",
-                 tidyReleaseDate() );
+        tmbsnprintf(buf, sizeof(buf), "HTML Tidy for "PLATFORM_NAME" (vers %s), see www.w3.org",
+                 tidyReleaseDate());
 #else
-        sprintf( buf, "HTML Tidy (vers %s), see www.w3.org", tidyReleaseDate() );
+        tmbsnprintf(buf, sizeof(buf), "HTML Tidy (vers %s), see www.w3.org", tidyReleaseDate());
 #endif
 
         for ( node = head->content; node; node = node->next )

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 23:49:14 $ 
-    $Revision: 1.91 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.92 $ 
 
 */
 
@@ -857,9 +857,9 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         {
             uint vers = HTMLVersion( doc );
             if ( !cfgBool(doc, TidyNumEntities) && (p = EntityName(c, vers)) )
-                sprintf(entity, "&%s;", p);
+                tmbsnprintf(entity, sizeof(entity), "&%s;", p);
             else
-                sprintf(entity, "&#%u;", c);
+                tmbsnprintf(entity, sizeof(entity), "&#%u;", c);
 
             AddString( pprint, entity );
             return;
@@ -867,7 +867,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 
         if (c > 126 && c < 160)
         {
-            sprintf(entity, "&#%d;", c);
+            tmbsnprintf(entity, sizeof(entity), "&#%d;", c);
             AddString( pprint, entity );
             return;
         }
@@ -898,7 +898,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         /* if ASCII use numeric entities for chars > 127 */
         if ( c > 127 && outenc == ASCII )
         {
-            sprintf(entity, "&#%u;", c);
+            tmbsnprintf(entity, sizeof(entity), "&#%u;", c);
             AddString( pprint, entity );
             return;
         }
@@ -913,9 +913,9 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     {
         uint vers = HTMLVersion( doc );
         if (!cfgBool(doc, TidyNumEntities) && (p = EntityName(c, vers)) )
-            sprintf(entity, "&%s;", p);
+            tmbsnprintf(entity, sizeof(entity), "&%s;", p);
         else
-            sprintf(entity, "&#%u;", c);
+            tmbsnprintf(entity, sizeof(entity), "&#%u;", c);
 
         AddString( pprint, entity );
         return;

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 10:06:08 $ 
-    $Revision: 1.70 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -1475,7 +1475,7 @@ static int  WriteOptionString( const TidyOptionImpl* option,
 static int  WriteOptionInt( const TidyOptionImpl* option, uint ival, StreamOut* out )
 {
   tmbchar sval[ 32 ] = {0};
-  sprintf( sval, "%d", ival );
+  tmbsnprintf(sval, sizeof(sval), "%d", ival );
   return WriteOptionString( option, sval, out );
 }
 

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 17:06:57 $ 
-    $Revision: 1.111 $ 
+    $Date: 2004/03/13 23:29:22 $ 
+    $Revision: 1.112 $ 
 
 */
 
@@ -234,16 +234,16 @@ static Bool UpdateCount( TidyDocImpl* doc, TidyReportLevel level )
   return go;
 }
 
-static char* ReportPosition( TidyDocImpl* doc, int line, int col, char* buf )
+static char* ReportPosition(TidyDocImpl* doc, int line, int col, char* buf, size_t count)
 {
     *buf = 0;
 
     /* Change formatting to be parsable by GNU Emacs */
     if ( cfgBool(doc, TidyEmacs) && cfgStr(doc, TidyEmacsFile) )
-        sprintf( buf, "%s:%d:%d: ", 
-                 cfgStr(doc, TidyEmacsFile), line, col );
+        tmbsnprintf(buf, count, "%s:%d:%d: ", 
+                 cfgStr(doc, TidyEmacsFile), line, col);
     else /* traditional format */
-        sprintf( buf, "line %d column %d - ", line, col );
+        tmbsnprintf(buf, count, "line %d column %d - ", line, col);
     return buf + tmbstrlen( buf );
 }
 
@@ -266,7 +266,7 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
 
     if ( go )
     {
-        vsprintf( messageBuf, msg, args );
+        tmbvsnprintf(messageBuf, sizeof(messageBuf), msg, args);
         if ( doc->mssgFilt )
         {
             TidyDoc tdoc = tidyImplToDoc( doc );
@@ -279,7 +279,7 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
         char buf[ 64 ], *cp;
         if ( line > 0 && col > 0 )
         {
-            ReportPosition( doc, line, col, buf );
+            ReportPosition(doc, line, col, buf, sizeof(buf));
             for ( cp = buf; *cp; ++cp )
                 WriteChar( *cp, doc->errout );
         }
@@ -337,7 +337,7 @@ void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
 
         va_list args;
         va_start( args, msg );
-        vsprintf( buf, msg, args );
+        tmbvsnprintf(buf, sizeof(buf), msg, args);
         va_end( args );
 
         for ( cp=buf; *cp; ++cp )
@@ -364,25 +364,25 @@ void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level )
     message( doc, level, "Can't open \"%s\"\n", file );
 }
 
-static char* TagToString( Node* tag, char* buf )
+static char* TagToString(Node* tag, char* buf, size_t count)
 {
     *buf = 0;
-    if ( tag )
+    if (tag)
     {
-      if ( tag->type == StartTag || tag->type == StartEndTag )
-          sprintf( buf, "<%s>", tag->element );
-      else if ( tag->type == EndTag )
-          sprintf( buf, "</%s>", tag->element );
-      else if ( tag->type == DocTypeTag )
-          strcpy( buf, "<!DOCTYPE>" );
-      else if ( tag->type == TextNode )
-          strcpy( buf, "plain text" );
-      else if (tag->type == XmlDecl)
-          strcpy(buf, "XML declaration");
-      else if ( tag->element )
-        strcpy( buf, tag->element );
+        if (tag->type == StartTag || tag->type == StartEndTag)
+            tmbsnprintf(buf, count, "<%s>", tag->element);
+        else if (tag->type == EndTag)
+            tmbsnprintf(buf, count, "</%s>", tag->element);
+        else if (tag->type == DocTypeTag)
+            tmbsnprintf(buf, count, "<!DOCTYPE>");
+        else if (tag->type == TextNode)
+            tmbsnprintf(buf, count, "plain text");
+        else if (tag->type == XmlDecl)
+            tmbsnprintf(buf, count, "XML declaration");
+        else if (tag->element)
+            tmbsnprintf(buf, count, "%s", tag->element);
     }
-    return buf + tmbstrlen( buf );
+    return buf + tmbstrlen(buf);
 }
 
 /* lexer is not defined when this is called */
@@ -460,13 +460,13 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
         break;
 
     case INVALID_UTF8:
-        sprintf( buf, "U+%04X", c );
+        tmbsnprintf(buf, sizeof(buf), "U+%04X", c);
         doc->badChars |= BC_INVALID_UTF8;
         break;
 
 #if SUPPORT_UTF16_ENCODINGS
     case INVALID_UTF16:
-        sprintf( buf, "U+%04X", c );
+        tmbsnprintf(buf, sizeof(buf), "U+%04X", c);
         doc->badChars |= BC_INVALID_UTF16;
         break;
 #endif
@@ -499,7 +499,7 @@ void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 
     assert( fmt != NULL );
 
-    TagToString(node, tagdesc);
+    TagToString(node, tagdesc, sizeof(tagdesc));
 
     if (av)
     {
@@ -570,7 +570,7 @@ void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
 {
     /* ReportAttrError( doc, node, NULL, MISSING_ATTRIBUTE ); */
     char tagdesc[ 64 ];
-    TagToString( node, tagdesc );
+    TagToString(node, tagdesc, sizeof(tagdesc));
     messageNode( doc, TidyWarning, node,
                  "%s lacks \"%s\" attribute", tagdesc, name );
 }
@@ -584,7 +584,7 @@ void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
 
     assert( fmt != NULL );
 
-    TagToString(node, nodedesc);
+    TagToString(node, nodedesc, sizeof(nodedesc));
 
     switch (code)
     {
@@ -593,7 +593,7 @@ void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
         break;
 
     case OBSOLETE_ELEMENT:
-        TagToString(element, elemdesc);
+        TagToString(element, elemdesc, sizeof(elemdesc));
         messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
         break;
 
@@ -615,17 +615,17 @@ void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code)
 
     assert( fmt != NULL );
 
-    TagToString(node, nodedesc);
+    TagToString(node, nodedesc, sizeof(nodedesc));
 
     switch (code)
     {
     case TRIM_EMPTY_ELEMENT:
-        TagToString(element, elemdesc);
+        TagToString(element, elemdesc, sizeof(nodedesc));
         messageNode(doc, TidyWarning, element, fmt, elemdesc);
         break;
 
     case REPLACING_ELEMENT:
-        TagToString(element, elemdesc);
+        TagToString(element, elemdesc, sizeof(elemdesc));
         messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
         break;
     }
@@ -640,7 +640,7 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
 
     assert( fmt != NULL );
 
-    TagToString( node, nodedesc );
+    TagToString(node, nodedesc, sizeof(nodedesc));
 
     switch ( code )
     {
@@ -693,7 +693,7 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
     case ILLEGAL_NESTING:
     case UNEXPECTED_END_OF_FILE:
     case ELEMENT_NOT_EMPTY:
-        TagToString(element, elemdesc);
+        TagToString(element, elemdesc, sizeof(elemdesc));
         messageNode(doc, TidyWarning, element, fmt, elemdesc);
         break;
 
@@ -716,7 +716,7 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
         break;
 
     case REPLACING_UNEX_ELEMENT:
-        TagToString(element, elemdesc);
+        TagToString(element, elemdesc, sizeof(elemdesc));
         messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
         break;
     }
@@ -736,7 +736,7 @@ void ReportFatal( TidyDocImpl* doc, Node *element, Node *node, uint code)
         break;
 
     case UNKNOWN_ELEMENT:
-        TagToString( node, nodedesc );
+        TagToString(node, nodedesc, sizeof(nodedesc));
         messageNode( doc, TidyError, node, fmt, nodedesc );
         break;
 
@@ -995,8 +995,8 @@ void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
                  "Parsing console input (stdin)\n";
     }
     
-    sprintf( buf, msgfmt, helper, platform, 
-             date, __DATE__, __TIME__, filename );
+    tmbsnprintf(buf, sizeof(buf), msgfmt, helper, platform, 
+             date, __DATE__, __TIME__, filename);
     tidy_out( doc, buf );
 }
 
