@@ -3,16 +3,16 @@
 #
 # testxml.sh - execute all XML testcases
 #
-# (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+# (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
 # See tidy.c for the copyright notice.
 #
 # <URL:http://tidy.sourceforge.net/>
 #
 # CVS Info:
 #
-#    $Author: creitzel $
-#    $Date: 2003/03/19 18:33:12 $
-#    $Revision: 1.4 $
+#    $Author: arnaud02 $
+#    $Date: 2005/03/08 12:08:00 $
+#    $Revision: 1.5 $
 #
 # set -x
 
@@ -24,7 +24,10 @@ BUGS="427837 431956 433604 433607 433670 434100\
 while read bugNo expected
 do
 #  echo Testing $bugNo | tee -a testxml.log
-  ./testone.sh $bugNo $expected "$@" | tee -a testxml.log
-  mv ./tmp/out_$bugNo.html ./tmp/out_$bugNo.xml
+  ./testone.sh "$bugNo" "$expected" "$@" | tee -a testxml.log
+  if test -f "./tmp/out_$bugNo.html"
+  then
+    mv "./tmp/out_$bugNo.html" "./tmp/out_$bugNo.xml"
+  fi
 done < xmlcases.txt
 
