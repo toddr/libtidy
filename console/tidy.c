@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 23:47:08 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/03/19 01:42:23 $ 
+    $Revision: 1.6 $ 
 */
 
 #include "tidy.h"
@@ -589,6 +589,14 @@ int main( int argc, char** argv )
             {
                 if ( tidyOptParseValue(tdoc, argv[1]+2, argv[2]) )
                 {
+                    /* Set new error output stream if setting changed */
+                    ctmbstr post = tidyOptGetValue( tdoc, TidyErrFile );
+                    if ( post && (!errfil || !samefile(errfil, post)) )
+                    {
+                        errfil = post;
+                        errout = tidySetErrorFile( tdoc, post );
+                    }
+
                     ++argv;
                     --argc;
                 }
