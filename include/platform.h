@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:35:34 $ 
-    $Revision: 1.13 $ 
+    $Date: 2001/09/04 02:39:23 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -26,9 +26,9 @@
   It enables tidy to find config files named ~/.tidyrc and
   ~your/.tidyrc etc if the HTML_TIDY environment
   variable is not set. Contributed by Todd Lewis.
-
-#define SUPPORT_GETPWNAM
 */
+
+/* #define SUPPORT_GETPWNAM */
 
 /* Convenience defines for Mac platform */
 
