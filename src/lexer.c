@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/14 14:39:20 $ 
-    $Revision: 1.162 $ 
+    $Date: 2005/02/17 12:56:21 $ 
+    $Revision: 1.163 $ 
 
 */
 
@@ -3426,6 +3426,11 @@ static void AddAttrToList( AttVal** list, AttVal* av )
       here = here->next;
     here->next = av;
   }
+}
+
+void InsertAttributeAtEnd( Node *node, AttVal *av)
+{
+    AddAttrToList(&node->attributes, av);
 }
 
 static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
