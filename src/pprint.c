@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/15 15:48:33 $ 
-    $Revision: 1.61 $ 
+    $Date: 2003/04/16 16:37:28 $ 
+    $Revision: 1.62 $ 
 
 */
 
@@ -2086,7 +2086,7 @@ void PPrintXMLTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     else if ( node->type == CommentTag )
     {
         PCondFlushLine( doc, indent );
-        PPrintComment( doc, 0, node);
+        PPrintComment( doc, indent, node);
         /* PCondFlushLine( doc, 0 ); */
     }
     else if ( node->type == RootNode )
