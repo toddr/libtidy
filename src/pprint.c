@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:54 $ 
-    $Revision: 1.70 $ 
+    $Date: 2003/05/06 02:00:13 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -1838,7 +1838,7 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     if ( xhtmlOut && node->content != NULL )
     {
         AttVal* type = attrGetTYPE( node );
-        if ( type != NULL )
+        if ( type != NULL && type->value != NULL )
         {
             if ( tmbstrcasecmp(type->value, "text/javascript") == 0 )
             {
