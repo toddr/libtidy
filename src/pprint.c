@@ -1,14 +1,14 @@
 /*
   pprint.c -- pretty print parse tree  
   
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/04/09 04:20:59 $ 
-    $Revision: 1.41 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/04/11 08:45:55 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -1265,7 +1265,7 @@ static void PPrintPI(Out *fout, uint indent,
     PPrintText(fout, CDATA, indent,
                     lexer, node->start, node->end);
 
-    if (lexer->lexbuf[node->end - 1] != '?')
+    if (node->end <= 0 || lexer->lexbuf[node->end - 1] != '?') /* #542029 - fix by Terry Teague 10 Apr 02 */
         AddC('?', linelen++);
 
     AddC('>', linelen++);
@@ -1287,7 +1287,7 @@ static void PPrintXmlDecl(Out *fout, uint indent,
 
     PPrintAttrs(fout, indent, lexer, node, node->attributes);
 
-    if (lexer->lexbuf[node->end - 1] != '?')
+    if (node->end <= 0 || lexer->lexbuf[node->end - 1] != '?') /* #542029 - fix by Terry Teague 10 Apr 02 */
         AddC('?', linelen++);
 
     AddC('>', linelen++);
