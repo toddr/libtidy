@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/07/02 07:50:22 $ 
-    $Revision: 1.101 $ 
+    $Author: lpassey $ 
+    $Date: 2003/07/16 14:35:09 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -442,7 +442,7 @@ void ReportEncodingWarning(TidyDocImpl* doc, uint code, uint encoding)
 void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 {
     Lexer* lexer = doc->lexer;
-    char buf[ 32 ];
+    char buf[ 32 ] = {'\0'};
 
     ctmbstr action = discarded ? "discarding" : "replacing";
     ctmbstr fmt = GetFormatFromCode(code);
@@ -472,12 +472,10 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
         break;
 #endif
 
-#if SUPPORT_ASIAN_ENCODINGS
     case INVALID_NCR:
         NtoS(c, buf);
         doc->badChars |= BC_INVALID_NCR;
         break;
-#endif
     }
 
     if (fmt)
