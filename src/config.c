@@ -364,6 +364,8 @@ const char *ExpandTilde(const char *filename)
     if (filename[1] == '/')
     {
         home_dir = getenv("HOME");
+        if ( ! home_dir )
+            return filename;
         filename++;
     }
     else
