@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/11 07:21:18 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 08:07:59 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -41,6 +41,7 @@ AttrCheck CheckAlign;
 AttrCheck CheckValign;
 AttrCheck CheckBool;
 AttrCheck CheckLength;
+AttrCheck CheckTarget;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -101,7 +102,7 @@ static Attribute *hashtab[HASHSIZE];
 #define SCOPE       null
 #define SHAPE       null
 #define SCROLL      null
-#define TARGET      null
+#define TARGET      CheckTarget
 #define VTYPE       null
 
 static struct _attrlist
@@ -264,6 +265,24 @@ static struct _attrlist
    
    /* this must be the final entry */
     {null,               0,                      0}
+};
+
+/* may be used for an upcoming CheckColor() function */
+static struct _colors
+{
+    char *name;
+    char *hex;
+} colors[] =
+{
+    {"black",   "#000000"}, {"green",  "#008000"},
+    {"silver",  "#C0C0C0"}, {"lime",   "#00FF00"},
+    {"gray",    "#808080"}, {"olive",  "#808000"},
+    {"white",   "#FFFFFF"}, {"yellow", "#FFFF00"},
+    {"maroon",  "#800000"}, {"navy",   "#000080"},
+    {"red",     "#FF0000"}, {"blue",   "#0000FF"},
+    {"purple",  "#800080"}, {"teal",   "#008080"},
+    {"fuchsia", "#FF00FF"}, {"aqua",   "#00FFFF"},
+    {null,      null}
 };
 
 static unsigned hash(char *s)
@@ -703,6 +722,26 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
     }
 }
 
+void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value = attval->value;
+    
+    if (value == null)
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+    
+    /*
+      target names must begin with A-Za-z or be one of
+      _blank, _self, _parent and _top
+    */
+    
+    if (IsLetter(value[0]))
+        return;
+    else if (! (wstrcasecmp(value, "_blank")  == 0 ||
+        wstrcasecmp(value, "_self")   == 0 ||
+        wstrcasecmp(value, "_parent") == 0 ||
+        wstrcasecmp(value, "_top")    == 0))
+        return; /* change to shout: illegal target name */
+}
 
 /* default method for checking an element's attributes */
 void CheckAttributes(Lexer *lexer, Node *node)
