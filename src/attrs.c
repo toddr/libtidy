@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/02/26 21:45:46 $ 
-    $Revision: 1.44 $ 
+    $Author: creitzel $ 
+    $Date: 2002/03/01 04:47:12 $ 
+    $Revision: 1.45 $ 
 
 */
 
@@ -445,30 +445,40 @@ Bool IsAnchorElement(Node *node)
   Any character except a hexadecimal digit can be escaped to remove its special meaning, by putting a backslash in front.
 
   #508936 - CSS class naming for -clean option
-
 */
-Bool IsCSS1Selector(char *buf) {
-    int pos1 = 1;
-    int valid = 1;
-    int escape = 0;
+Bool IsCSS1Selector(char *buf)
+{
+    Bool valid = yes;
+    int esclen = 0;
     unsigned char c;
+    int pos;
 
-    while(valid && (c = *buf++)) {
-        if (c == '\\')
+    for ( pos=0; valid && (c = *buf++); ++pos )
+    {
+        if ( c == '\\' )
         {
-            escape = 1;
+            esclen = 1;  /* ab\555\444 is 4 chars {'a', 'b', \555, \444} */
         }
-        else {
-            escape = 0;
+        else if ( isxdigit( c ) )
+        {
+            /* Digit not 1st, unless escaped (Max length "\112F") */
+            if ( esclen > 0 )
+                valid = ( ++esclen < 6 );
+            if ( valid )
+                valid = ( pos>0 || esclen>0 );
+        }
+        else
+        {
             valid = (
-                (!pos1 && (isdigit(c) | c == '-')) |
-                (int)strchr("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", c) |
-                c >= 161
-                );
+                esclen > 0                       /* Escaped? Anything goes. */
+                || ( pos>0 && c == '-' )         /* Dash cannot be 1st char */
+                || isalpha(c)                    /* a-z, A-Z anywhere */
+                || ( c >= 161 && c <= 255 )      /* Unicode 161-255 anywhere */
+            );
+            esclen = 0;
         }
-        pos1 = 0;
     }
-    return (Bool)(valid && !escape);
+    return valid;
 }
 
 

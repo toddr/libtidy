@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/02/26 21:45:46 $ 
-    $Revision: 1.40 $ 
+    $Author: creitzel $ 
+    $Date: 2002/03/01 04:47:12 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -844,11 +844,13 @@ void ParseCSS1Selector(Location location, char *option)
     }
 
     buf[i] = '\0';
-
     if ((i == 0) | !IsCSS1Selector(buf)) {
         ReportBadArgument(option);
     }
 
+    buf[i++] = '-';  /* Make sure any escaped Unicode is terminated */
+    buf[i] = '\0';   /* so valid class names are generated after */
+                     /* Tidy appends last digits. */
     *location.string = wstrdup(buf);
     NextProperty();
 }
