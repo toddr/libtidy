@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:34:08 $ 
-    $Revision: 1.34 $ 
+    $Date: 2001/09/09 19:47:55 $ 
+    $Revision: 1.35 $ 
 
   Contributing Author(s):
 
@@ -2203,14 +2203,16 @@ int main(int argc, char **argv)
                 if (XmlOut && XmlPi)
                     FixXmlDecl(lexer, document);
 
+                /*
                 totalwarnings += lexer->warnings;
                 totalerrors += lexer->errors;
-
+                */
+                
                 if (!Quiet && document->content)
                 {
                     doctype = FindDocType(document);
                     ReportVersion(errout, lexer, file, doctype);
-                    ReportNumWarnings(errout, lexer);
+                    /* ReportNumWarnings(errout, lexer); */
                 }
             }
 
@@ -2221,6 +2223,14 @@ int main(int argc, char **argv)
 
             MemFree(lexer->in);
 
+            if (!Quiet)
+            {
+                totalwarnings += lexer->warnings;
+                totalerrors += lexer->errors;
+
+                ReportNumWarnings(errout, lexer);
+            }
+            
             if (lexer->errors > 0 && !ForceOutput)
                 NeedsAuthorIntervention(errout);
 
