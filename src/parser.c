@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 16:47:23 $ 
-    $Revision: 1.69 $ 
+    $Date: 2003/04/07 16:55:15 $ 
+    $Revision: 1.70 $ 
 
 */
 
@@ -2851,7 +2851,8 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         }
 
         /* find and discard multiple <head> elements */
-        if (node->tag == head->tag && node->type == StartTag)
+        /* find and discard <html> in <head> elements */
+        if ((node->tag == head->tag || nodeIsHTML(node)) && node->type == StartTag)
         {
             ReportWarning(doc, head, node, DISCARDING_UNEXPECTED);
             FreeNode(doc, node);
