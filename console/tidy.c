@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/06 11:20:38 $ 
-    $Revision: 1.28 $ 
+    $Date: 2005/04/06 13:28:40 $ 
+    $Revision: 1.29 $ 
 */
 
 #include "tidy.h"
@@ -229,7 +229,7 @@ typedef struct {
     Bool haveVals; /**< if yes, vals is valid */
 } OptionDesc;
 
-typedef void (*OptionFunc)( TidyDoc, TidyOption, const OptionDesc * );
+typedef void (*OptionFunc)( TidyDoc, TidyOption, OptionDesc * );
 
 
 /* Create description "d" related to "opt" */
@@ -244,9 +244,6 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     d->vals = NULL;
     d->def = NULL;
     d->haveVals = yes;
-
-    if ( tidyOptIsReadOnly(topt) )
-        return;
 
     /* Handle special cases first.
      */
@@ -268,7 +265,7 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
         d->vals = NULL;
         {
             ctmbstr sdef = NULL;
-            sdef = (tmbstr) tidyOptGetCurrPick( tdoc, TidyDoctypeMode );
+            sdef = tidyOptGetCurrPick( tdoc, TidyDoctypeMode );
             if ( !sdef || *sdef == '*' )
                 sdef = tidyOptGetValue( tdoc, TidyDoctype );
             d->def = sdef;
@@ -345,8 +342,6 @@ static void ForEachOption( TidyDoc tdoc, OptionFunc OptionPrint )
         TidyOption topt = tidyGetNextOption( tdoc, &pos );
         OptionDesc d;
 
-        if ( tidyOptIsReadOnly(topt) )
-            continue;
         GetOption( tdoc, topt, &d );
         (*OptionPrint)( tdoc, topt, &d );
     }
@@ -406,8 +401,11 @@ void printXMLCrossRef( TidyDoc tdoc, TidyOption topt )
 }
 
 static
-void printXMLOption( TidyDoc tdoc, TidyOption topt, const OptionDesc *d )
+void printXMLOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
 {
+    if ( tidyOptIsReadOnly(topt) )
+        return;
+
     printf( " <option class=\"%s\">\n", d->cat );
     printf  ("  <name>%s</name>\n",d->name);
     printf  ("  <type>%s</type>\n",d->type);
@@ -489,8 +487,11 @@ tmbstr GetAllowedValues( TidyOption topt, const OptionDesc *d )
 
 static
 void printOption( TidyDoc ARG_UNUSED(tdoc), TidyOption topt,
-                  const OptionDesc *d )
+                  OptionDesc *d )
 {
+    if ( tidyOptIsReadOnly(topt) )
+        return;
+
     if ( *d->name || *d->type )
     {
         ctmbstr pval = d->vals;
@@ -525,129 +526,60 @@ static void optionhelp( TidyDoc tdoc )
     ForEachOption( tdoc, printOption );
 }
 
+static
+void printOptionValues( TidyDoc ARG_UNUSED(tdoc), TidyOption topt,
+                        OptionDesc *d )
+{
+    TidyOptionId optId = tidyOptGetId( topt );
+    ctmbstr ro = tidyOptIsReadOnly( topt ) ? "*" : "" ;
+
+    switch ( optId )
+    {
+    case TidyInlineTags:
+    case TidyBlockTags:
+    case TidyEmptyTags:
+    case TidyPreTags:
+        {
+            TidyIterator pos = tidyOptGetDeclTagList( tdoc );
+            while ( pos )
+            {
+                d->def = tidyOptGetNextDeclTag(tdoc, optId, &pos);
+                if ( pos )
+                {
+                    if ( *d->name )
+                        printf( valfmt, d->name, d->type, ro, d->def );
+                    else
+                        printf( fmt, d->name, d->type, d->def );
+                    d->name = "";
+                    d->type = "";
+                }
+            }
+        }
+        break;
+    case TidyNewline:
+        d->def = tidyOptGetCurrPick( tdoc, optId );
+        break;
+    }
+
+    /* fix for http://tidy.sf.net/bug/873921 */
+    if ( *d->name || *d->type || (d->def && *d->def) )
+    {
+        if ( ! d->def )
+            d->def = "";
+        if ( *d->name )
+            printf( valfmt, d->name, d->type, ro, d->def );
+        else
+            printf( fmt, d->name, d->type, d->def );
+    }
+}
+
 static void optionvalues( TidyDoc tdoc )
 {
-    TidyIterator pos = tidyGetOptionList( tdoc );
-
     printf( "\nConfiguration File Settings:\n\n" );
     printf( fmt, "Name", "Type", "Current Value" );
     printf( fmt, ul, ul, ul );
 
-    while ( pos )
-    {
-        TidyOption topt = tidyGetNextOption( tdoc, &pos );
-        TidyOptionId optId = tidyOptGetId( topt );
-        TidyOptionType optTyp = tidyOptGetType( topt );
-        Bool isReadOnly = tidyOptIsReadOnly( topt );
-
-        ctmbstr sval = NULL;
-        uint ival = 0;
-
-        ctmbstr name = (tmbstr) tidyOptGetName( topt );
-        ctmbstr type = "String";
-        tmbchar tempvals[80] = {0};
-        ctmbstr vals = &tempvals[0];
-        ctmbstr ro   = ( isReadOnly ? "*" : "" );
-
-        /* Handle special cases first.
-        */
-        switch ( optId )
-        {
-        case TidyDuplicateAttrs:
-            type = "enum";
-            vals = (tmbstr) tidyOptGetCurrPick( tdoc, optId );
-            break;
-
-        case TidyDoctype:
-            sval = (tmbstr) tidyOptGetCurrPick( tdoc, TidyDoctypeMode );
-            type = "DocType";
-            if ( !sval || *sval == '*' )
-                sval = (tmbstr) tidyOptGetValue( tdoc, TidyDoctype );
-            vals = (tmbstr) sval;
-            break;
-
-        case TidyCSSPrefix:
-            type = "Name";
-            vals = (tmbstr) tidyOptGetValue( tdoc, TidyCSSPrefix );
-            break;
-
-        case TidyInlineTags:
-        case TidyBlockTags:
-        case TidyEmptyTags:
-        case TidyPreTags:
-            {
-                TidyIterator pos = tidyOptGetDeclTagList( tdoc );
-                type = "Tag names";
-                while ( pos )
-                {
-                    vals = (tmbstr) tidyOptGetNextDeclTag(tdoc, optId, &pos);
-                    if ( pos )
-                    {
-                        if ( *name )
-                            printf( valfmt, name, type, ro, vals );
-                        else
-                            printf( fmt, name, type, vals );
-                        name = "";
-                        type = "";
-                    }
-                }
-            }
-            break;
-
-        case TidyCharEncoding:
-        case TidyInCharEncoding:
-        case TidyOutCharEncoding:
-            type = "Encoding";
-            sval = tidyOptGetEncName( tdoc, optId );
-            vals = (tmbstr) sval;
-            break;
-
-        case TidyNewline:
-            type = "enum";
-            vals = (tmbstr) tidyOptGetCurrPick( tdoc, optId );
-            break;
-
-        /* General case will handle remaining */
-        default:
-            switch ( optTyp )
-            {
-            case TidyBoolean:
-                type = "Boolean";   /* curr pick handles inverse */
-                vals = (tmbstr) tidyOptGetCurrPick( tdoc, optId );
-                break;
-
-            case TidyInteger:
-                if (isAutoBool(topt))
-                {
-                    type = "AutoBool";
-                    vals = tidyOptGetCurrPick( tdoc, optId );
-                }
-                else
-                {
-                    type = "Integer";
-                    ival = tidyOptGetInt( tdoc, optId );
-                    sprintf( tempvals, "%u", ival );
-                }
-                break;
-
-            case TidyString:
-                type = "String";
-                vals = (tmbstr) tidyOptGetValue( tdoc, optId );
-                break;
-            }
-        }
-
-        /* fix for http://tidy.sf.net/bug/873921 */
-        if ( *name || *type || (vals && *vals) )
-        {
-            if ( ! vals )
-                vals = "";
-            if ( *name )
-                printf( valfmt, name, type, ro, vals );
-            else
-                printf( fmt, name, type, vals );
-        }
-    }
+    ForEachOption( tdoc, printOptionValues );
 
     printf( "\n\nValues marked with an *asterisk are calculated \n"
             "internally by HTML Tidy\n\n" );
