@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/19 19:27:59 $ 
-    $Revision: 1.21 $ 
+    $Date: 2001/08/19 20:35:48 $ 
+    $Revision: 1.22 $ 
 
   Contributing Author(s):
 
@@ -698,11 +698,6 @@ static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count,
                 rawBufpos--;
             }
             rawBytebuf[rawBufpos++] = buf[i];
-
-            if (buf[i] == '\n')
-                --(in->curline);
-
-            in->curcol = in->lastcol;
         }
         else
         {
@@ -711,14 +706,6 @@ static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count,
                 buf[i] = rawBytebuf[--rawBufpos];
                 if (rawBufpos == 0)
                     rawPushed = no;
-
-                if (buf[i] == '\n')
-                {
-                    in->curcol = 1;
-                    in->curline++;
-                }
-                else
-                    in->curcol++;
             }
             else
             {
@@ -739,7 +726,6 @@ static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count,
                 else
                 {
                     buf[i] = c;
-                    in->curcol++;
                 }
             }
         }
@@ -994,6 +980,10 @@ static int ReadCharFromStream(StreamIn *in)
             return EndOfStream;
         else if (err)
         {
+            /* set error position just before offending character */
+            in->lexer->lines = in->curline;
+            in->lexer->columns = in->curcol;
+
             ReportEncodingError(in->lexer, ILLEGAL_UTF8, n);
             n = 0xFFFD; /* replacement char */
         }
