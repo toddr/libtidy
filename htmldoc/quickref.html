@@ -4,7 +4,7 @@
 <head>
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy Configuration Options Quick Reference</title>
-<meta name="version" content="$Id: quickref.html,v 1.8 2004/08/10 09:00:21 terry_teague Exp $" />
+<meta name="version" content="$Id: quickref.html,v 1.9 2004/11/29 02:35:18 terry_teague Exp $" />
 </head>
 <body>
 <h1 id="top">Quick Reference</h1>
@@ -2072,17 +2072,17 @@ errors and warnings to a format that is more easily parsed by GNU Emacs.
 <tr>
 <td valign="top">
   Type: <b>Boolean</b><br />
-  Default: <b>yes</b><br />
+  Default: <b>no</b><br />
   Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
 <td align="right" valign="top">
 </td>
 </tr>
 <tr>
-<td colspan="2">This option specifies if Tidy
-should alter the last modified time for files it writes back to. The
-default is no, which allows you to tidy files without affecting which ones
-will be uploaded to a Web server when using a tool such as 'SiteCopy'. Note
-that this feature may not work on some platforms. </td>
+<td colspan="2">This option specifies if Tidy should keep the original modification time of 
+files that Tidy modifies in place. The default is no. Setting the option to yes allows you to 
+tidy files without causing these files to be uploaded to a web server when using a tool such as 
+SiteCopy. Note this feature is not supported on some platforms.
+</td>
 </tr>
 <tr>
 <td><br /></td>
