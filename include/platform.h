@@ -1,13 +1,13 @@
 /* platform.h
 
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/01/17 09:32:11 $ 
-    $Revision: 1.19 $ 
+    $Date: 2002/02/02 10:23:28 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -172,6 +172,14 @@
 #endif
 #endif
 
+/* Convenience defines for OS/2 + gcc platforms */
+#if defined(__EMX__)
+#define OS2_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "OS/2"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -227,7 +235,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
