@@ -2,13 +2,13 @@
   clean.c -- clean up misuse of presentation markup
 
   (c) 1998-2002 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+  See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/07/08 03:24:14 $ 
-    $Revision: 1.19 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:10 $ 
+    $Revision: 1.20 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -43,15 +43,29 @@
   A naive approach is to rely on string matching to test
   when two property lists are the same. A better approach
   would be to first sort the properties before matching.
+
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "platform.h"
-#include "html.h"
 
-Node *CleanNode(Lexer *lexer, Node *node);
+#include "tidy-int.h"
+#include "clean.h"
+#include "lexer.h"
+#include "parser.h"
+#include "attrs.h"
+#include "message.h"
+#include "tmbstr.h"
+#include "utf8.h"
+
+void RenameElem( Node* node, TidyTagId tid )
+{
+    const Dict* dict = LookupTagDef( tid );
+    MemFree( node->element );
+    node->element = tmbstrdup( dict->name );
+    node->tag = dict;
+}
 
 static void FreeStyleProps(StyleProp *props)
 {
@@ -67,7 +81,7 @@ static void FreeStyleProps(StyleProp *props)
     }
 }
 
-static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
+static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value )
 {
     StyleProp *first, *prev, *prop;
     int cmp;
@@ -77,7 +91,7 @@ static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
 
     while (props)
     {
-        cmp = wstrcmp(props->name, name);
+        cmp = tmbstrcmp(props->name, name);
 
         if (cmp == 0)
         {
@@ -90,8 +104,8 @@ static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
             /* insert before this */
 
             prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-            prop->name = wstrdup(name);
-            prop->value = wstrdup(value);
+            prop->name = tmbstrdup(name);
+            prop->value = tmbstrdup(value);
             prop->next = props;
 
             if (prev)
@@ -107,8 +121,8 @@ static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
     }
 
     prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-    prop->name = wstrdup(name);
-    prop->value = wstrdup(value);
+    prop->name = tmbstrdup(name);
+    prop->value = tmbstrdup(value);
     prop->next = null;
 
     if (prev)
@@ -126,13 +140,13 @@ static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
  Some systems don't allow you to null literal strings,
  so to avoid this, a copy is made first.
 */
-static StyleProp *CreateProps(StyleProp *prop, char *style)
+static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
 {
-    char *name, *value = NULL, *name_end, *value_end; /* #578005 - fix by Anonymous 05 Jul 02 */
+    tmbstr name, value = null, name_end, value_end, line;
     Bool more;
 
-    style = wstrdup(style);
-    name = style;
+    line = tmbstrdup(style);
+    name = line;
 
     while (*name)
     {
@@ -155,7 +169,7 @@ static StyleProp *CreateProps(StyleProp *prop, char *style)
         if (*name_end != ':')
             break;
 
-        while (*value == ' ')
+        while ( value && *value == ' ')
             ++value;
 
         value_end = value;
@@ -188,13 +202,13 @@ static StyleProp *CreateProps(StyleProp *prop, char *style)
         break;
     }
 
-    MemFree(style);  /* free temporary copy */
+    MemFree(line);  /* free temporary copy */
     return prop;
 }
 
-static char *CreatePropString(StyleProp *props)
+static tmbstr CreatePropString(StyleProp *props)
 {
-    char *style, *p, *s;
+    tmbstr style, p, s;
     int len;
     StyleProp *prop;
 
@@ -202,11 +216,12 @@ static char *CreatePropString(StyleProp *props)
 
     for (len = 0, prop = props; prop; prop = prop->next)
     {
-        len += wstrlen(prop->name) + 2;
-        len += wstrlen(prop->value) + 2;
+        len += tmbstrlen(prop->name) + 2;
+        if (prop->value)
+            len += tmbstrlen(prop->value) + 2;
     }
 
-    style = (char *)MemAlloc(len+1);
+    style = (tmbstr) MemAlloc(len+1);
 
     for (p = style, prop = props; prop; prop = prop->next)
     {
@@ -214,13 +229,15 @@ static char *CreatePropString(StyleProp *props)
 
         while((*p++ = *s++));
 
-        *--p = ':';
-        *++p = ' ';
-        ++p;
+        if (prop->value)
+        {
+            *--p = ':';
+            *++p = ' ';
+            ++p;
 
-        s = prop->value;
-        while((*p++ = *s++));
-
+            s = prop->value;
+            while((*p++ = *s++));
+        }
         if (prop->next == null)
             break;
 
@@ -234,57 +251,63 @@ static char *CreatePropString(StyleProp *props)
 
 /*
   create string with merged properties
-*/
-static char *AddProperty(char *style, char *property)
+static tmbstr AddProperty( ctmbstr style, ctmbstr property )
 {
+    tmbstr line;
     StyleProp *prop;
 
     prop = CreateProps(null, style);
     prop = CreateProps(prop, property);
-    style = CreatePropString(prop);
+    line = CreatePropString(prop);
     FreeStyleProps(prop);
-    return style;
+    return line;
 }
+*/
 
-void FreeStyles(Lexer *lexer)
+void FreeStyles( TidyDocImpl* doc )
 {
-    Style *style, *next;
-
-    for (style = lexer->styles; style; style = next)
+    Lexer* lexer = doc->lexer;
+    if ( lexer )
     {
-        next = style->next;
-        
-        MemFree(style->tag);
-        MemFree(style->tag_class);
-        MemFree(style->properties);
-        MemFree(style);
+        Style *style, *next;
+        for ( style = lexer->styles; style; style = next )
+        {
+            next = style->next;
+            MemFree( style->tag );
+            MemFree( style->tag_class );
+            MemFree( style->properties );
+            MemFree( style );
+        }
     }
 }
 
-static char *GensymClass(char *tag)
+static tmbstr GensymClass( TidyDocImpl* doc )
 {
-    static int n = 1;
-    char buf[512];                                             /* CSSPrefix is limited to 256 characters */
+    tmbchar buf[512];  /* CSSPrefix is limited to 256 characters */
+    ctmbstr pfx = cfgStr(doc, TidyCSSPrefix);
+    if ( pfx == null || *pfx == 0 )
+      pfx = "c";
 
-    sprintf(buf, "%s%d", (CSSPrefix ? CSSPrefix : "c"), n++); /* #508936 - CSS class naming for -clean option */
-    return wstrdup(buf);
+    sprintf( buf, "%s%d", pfx, ++doc->nClassId );
+    return tmbstrdup(buf);
 }
 
-static char *FindStyle(Lexer *lexer, char *tag, char *properties)
+static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
 {
-    Style *style;
+    Lexer* lexer = doc->lexer;
+    Style* style;
 
     for (style = lexer->styles; style; style=style->next)
     {
-        if (wstrcmp(style->tag, tag) == 0 &&
-            wstrcmp(style->properties, properties) == 0)
+        if (tmbstrcmp(style->tag, tag) == 0 &&
+            tmbstrcmp(style->properties, properties) == 0)
             return style->tag_class;
     }
 
-    style = (Style *)MemAlloc(sizeof(Style));
-    style->tag = wstrdup(tag);
-    style->tag_class = GensymClass(tag);
-    style->properties = wstrdup(properties);
+    style = (Style *)MemAlloc( sizeof(Style) );
+    style->tag = tmbstrdup(tag);
+    style->tag_class = GensymClass( doc );
+    style->properties = tmbstrdup( properties );
     style->next = lexer->styles;
     lexer->styles = style;
     return style->tag_class;
@@ -293,27 +316,27 @@ static char *FindStyle(Lexer *lexer, char *tag, char *properties)
 /*
  Add class="foo" to node
 */
-void AddClass(Node *node, char *classname)
+void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
 {
     AttVal *classattr = GetAttrByName(node, "class");
 
     /*
      if there already is a class attribute
-     then append class name after a space
+     then append class name after an underscore.
     */
     if (classattr)
     {
-        int len = wstrlen(classattr->value) +
-                            wstrlen(classname) + 2;
-        char *s = (char *)MemAlloc(len *sizeof(char)); /* #427668 - was malloc() - fix by Arnaud BERCEGEAY 05 Aug 00 */
-        wstrcpy(s, classattr->value);
-        wstrcat(s, " ");
-        wstrcat(s, classname);
-        MemFree(classattr->value);
+        int len = tmbstrlen(classattr->value) +
+                  tmbstrlen(classname) + 2;
+        tmbstr s = (tmbstr) MemAlloc( len );
+        tmbstrcpy( s, classattr->value );
+        tmbstrcat( s, "_" );
+        tmbstrcat( s, classname );
+        MemFree( classattr->value );
         classattr->value = s;
     }
     else /* create new class attribute */
-        AddAttribute(node, "class", classname);
+        AddAttribute( doc, node, "class", classname );
 }
 
 
@@ -325,47 +348,48 @@ void AddClass(Node *node, char *classname)
 
  Assumes that node doesn't have a class attribute
 */
-static void Style2Rule(Lexer *lexer, Node *node)
+static void Style2Rule( TidyDocImpl* doc, Node *node)
 {
+    Lexer *lexer = doc->lexer;
     AttVal *styleattr, *classattr;
-    char *classname;
+    ctmbstr classname;
 
     styleattr = GetAttrByName(node, "style");
 
     if (styleattr)
     {
-        classname = FindStyle(lexer, node->element, styleattr->value);
+        classname = FindStyle( doc, node->element, styleattr->value );
         classattr = GetAttrByName(node, "class");
 
         /*
          if there already is a class attribute
-         then append class name after a space
+         then append class name after an underscore
         */
         if (classattr)
         {
-            int len = wstrlen(classattr->value) +
-                                wstrlen(classname) + 2;
-            char *s = (char *)MemAlloc(len *sizeof(char)); /* #427668 - was malloc() - fix by Arnaud BERCEGEAY 05 Aug 00 */
-            wstrcpy(s, classattr->value);
-            wstrcat(s, " ");
-            wstrcat(s, classname);
+            int len = tmbstrlen(classattr->value) +
+                      tmbstrlen(classname) + 2;
+            tmbstr s = (tmbstr) MemAlloc( len );
+            tmbstrcpy(s, classattr->value);
+            tmbstrcat(s, "_");
+            tmbstrcat(s, classname);
             MemFree(classattr->value);
             classattr->value = s;
-            RemoveAttribute(node, styleattr);
+            RemoveAttribute( node, styleattr);
         }
         else /* reuse style attribute for class attribute */
         {
             MemFree(styleattr->attribute);
             MemFree(styleattr->value);
-            styleattr->attribute = wstrdup("class");
-            styleattr->value = wstrdup(classname);
+            styleattr->attribute = tmbstrdup("class");
+            styleattr->value = tmbstrdup(classname);
         }
     }
 }
 
-static void AddColorRule(Lexer *lexer, char *selector, char *color)
+static void AddColorRule( Lexer* lexer, ctmbstr selector, ctmbstr color )
 {
-    if (color)
+    if ( selector && color )
     {
         AddStringLiteral(lexer, selector);
         AddStringLiteral(lexer, " { color: ");
@@ -384,44 +408,38 @@ static void AddColorRule(Lexer *lexer, char *selector, char *color)
  vlink="foo"      ->  :visited { color: foo }
  alink="foo"      ->  :active { color: foo }
 */
-static void CleanBodyAttrs(Lexer *lexer, Node *body)
+static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
 {
-    AttVal *attr;
-    char *bgurl = null;
-    char *bgcolor = null;
-    char *color = null;
+    Lexer* lexer  = doc->lexer;
+    tmbstr bgurl   = null;
+    tmbstr bgcolor = null;
+    tmbstr color   = null;
+    AttVal* attr;
     
-    attr = GetAttrByName(body, "background");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "background") )
     {
         bgurl = attr->value;
         attr->value = null;
-        RemoveAttribute(body, attr);
+        RemoveAttribute( body, attr );
     }
 
-    attr = GetAttrByName(body, "bgcolor");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "bgcolor") )
     {
         bgcolor = attr->value;
         attr->value = null;
-        RemoveAttribute(body, attr);
+        RemoveAttribute( body, attr );
     }
 
-    attr = GetAttrByName(body, "text");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "text") )
     {
         color = attr->value;
         attr->value = null;
         RemoveAttribute(body, attr);
     }
 
-    if (bgurl || bgcolor || color)
+    if ( bgurl || bgcolor || color )
     {
         AddStringLiteral(lexer, " body {\n");
-
         if (bgurl)
         {
             AddStringLiteral(lexer, "  background-image: url(");
@@ -429,7 +447,6 @@ static void CleanBodyAttrs(Lexer *lexer, Node *body)
             AddStringLiteral(lexer, ");\n");
             MemFree(bgurl);
         }
-
         if (bgcolor)
         {
             AddStringLiteral(lexer, "  background-color: ");
@@ -437,7 +454,6 @@ static void CleanBodyAttrs(Lexer *lexer, Node *body)
             AddStringLiteral(lexer, ";\n");
             MemFree(bgcolor);
         }
-
         if (color)
         {
             AddStringLiteral(lexer, "  color: ");
@@ -449,47 +465,39 @@ static void CleanBodyAttrs(Lexer *lexer, Node *body)
         AddStringLiteral(lexer, " }\n");
     }
 
-    attr = GetAttrByName(body, "link");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "link") )
     {
         AddColorRule(lexer, " :link", attr->value);
         RemoveAttribute(body, attr);
     }
 
-    attr = GetAttrByName(body, "vlink");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "vlink") )
     {
         AddColorRule(lexer, " :visited", attr->value);
         RemoveAttribute(body, attr);
     }
 
-    attr = GetAttrByName(body, "alink");
-
-    if (attr)
+    if ( attr = GetAttrByName(body, "alink") )
     {
         AddColorRule(lexer, " :active", attr->value);
         RemoveAttribute(body, attr);
     }
 }
 
-static Bool NiceBody(Lexer *lexer, Node *doc)
+static Bool NiceBody( TidyDocImpl* doc )
 {
-    Node *body = FindBody(doc);
-
-    if (body)
+    Node* body = FindBody( doc );
+    if ( body )
     {
-        if (
-            GetAttrByName(body, "background") ||
-            GetAttrByName(body, "bgcolor") ||
-            GetAttrByName(body, "text") ||
-            GetAttrByName(body, "link") ||
-            GetAttrByName(body, "vlink") ||
-            GetAttrByName(body, "alink")
+        if ( GetAttrByName(body, "background") ||
+             GetAttrByName(body, "bgcolor") ||
+             GetAttrByName(body, "text") ||
+             GetAttrByName(body, "link") ||
+             GetAttrByName(body, "vlink") ||
+             GetAttrByName(body, "alink")
            )
         {
-            lexer->badLayout |= USING_BODY;
+            doc->badLayout |= USING_BODY;
             return no;
         }
     }
@@ -498,40 +506,34 @@ static Bool NiceBody(Lexer *lexer, Node *doc)
 }
 
 /* create style element using rules from dictionary */
-static void CreateStyleElement(Lexer *lexer, Node *doc)
+static void CreateStyleElement( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     Node *node, *head, *body;
     Style *style;
     AttVal *av;
 
-    if (lexer->styles == null && NiceBody(lexer, doc))
+    if ( lexer->styles == null && NiceBody(doc) )
         return;
 
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    node = NewNode( lexer );
     node->type = StartTag;
     node->implicit = yes;
-    node->element = wstrdup("style");
-    FindTag(node);
+    node->element = tmbstrdup("style");
+    FindTag( doc, node );
 
     /* insert type attribute */
     av = NewAttribute();
-    av->attribute = wstrdup("type");
-    av->value = wstrdup("text/css");
+    av->attribute = tmbstrdup("type");
+    av->value = tmbstrdup("text/css");
     av->delim = '"';
-    av->dict = FindAttribute(av);
+    av->dict = FindAttribute( doc, av );
     node->attributes = av;
 
-    body = FindBody(doc);
-
+    body = FindBody( doc );
     lexer->txtstart = lexer->lexsize;
-
-    if (body)
-        CleanBodyAttrs(lexer, body);
+    if ( body )
+        CleanBodyAttrs( doc, body );
 
     for (style = lexer->styles; style; style = style->next)
     {
@@ -548,7 +550,7 @@ static void CreateStyleElement(Lexer *lexer, Node *doc)
 
     lexer->txtend = lexer->lexsize;
 
-    InsertNodeAtEnd(node, TextToken(lexer));
+    InsertNodeAtEnd( node, TextToken(lexer) );
 
     /*
      now insert style element into document head
@@ -556,11 +558,8 @@ static void CreateStyleElement(Lexer *lexer, Node *doc)
      doc is root node. search its children for html node
      the head node should be first child of html node
     */
-
-    head = FindHEAD(doc);
-    
-    if (head)
-        InsertNodeAtEnd(head, node);
+    if ( head = FindHEAD( doc ) )
+        InsertNodeAtEnd( head, node );
 }
 
 
@@ -587,7 +586,7 @@ static void FixNodeLinks(Node *node)
  used to strip child of node when
  the node has one and only one child
 */
-static void StripOnlyChild(Node *node)
+static void StripOnlyChild(TidyDocImpl* doc, Node *node)
 {
     Node *child;
 
@@ -595,14 +594,14 @@ static void StripOnlyChild(Node *node)
     node->content = child->content;
     node->last = child->last;
     child->content = null;
-    FreeNode(child);
+    FreeNode(doc, child);
 
     for (child = node->content; child; child = child->next)
         child->parent = node;
 }
 
 /* used to strip font start and end tags */
-static void DiscardContainer(Node *element, Node **pnode)
+static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
 {
     Node *node, *parent = element->parent;
 
@@ -647,43 +646,7 @@ static void DiscardContainer(Node *element, Node **pnode)
     }
 
     element->next = element->content = null;
-    FreeNode(element);
-}
-
-/*
- Add style property to element, creating style
- attribute as needed and adding ; delimiter
-*/
-static void AddStyleProperty(Node *node, char *property)
-{
-    AttVal *av;
-
-    for (av = node->attributes; av; av = av->next)
-    {
-        if (wstrcmp(av->attribute, "style") == 0)
-            break;
-    }
-
-    /* if style attribute already exists then insert property */
-
-    if (av)
-    {
-        char *s;
-
-        s = AddProperty(av->value, property);
-        MemFree(av->value);
-        av->value = s;
-    }
-    else /* else create new style attribute */
-    {
-        av = NewAttribute();
-        av->attribute = wstrdup("style");
-        av->value = wstrdup(property);
-        av->delim = '"';
-        av->dict = FindAttribute(av);
-        av->next = node->attributes;
-        node->attributes = av;
-    }
+    FreeNode(doc, element);
 }
 
 /*
@@ -695,9 +658,9 @@ static void AddStyleProperty(Node *node, char *property)
   into the list in order, merging values for
   the same property name.
 */
-static char *MergeProperties(char *s1, char *s2)
+static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
 {
-    char *s;
+    tmbstr s;
     StyleProp *prop;
 
     prop = CreateProps(null, s1);
@@ -707,14 +670,43 @@ static char *MergeProperties(char *s1, char *s2)
     return s;
 }
 
-static void MergeClasses(Node *node, Node *child)
+/*
+ Add style property to element, creating style
+ attribute as needed and adding ; delimiter
+*/
+static void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
+{
+    AttVal *av = GetAttrByName( node, "style" );
+
+
+    /* if style attribute already exists then insert property */
+
+    if ( av )
+    {
+        tmbstr s = MergeProperties( av->value, property );
+        MemFree( av->value );
+        av->value = s;
+    }
+    else /* else create new style attribute */
+    {
+        av = NewAttribute();
+        av->attribute = tmbstrdup("style");
+        av->value = tmbstrdup(property);
+        av->delim = '"';
+        av->dict = FindAttribute( doc, av );
+        av->next = node->attributes;
+        node->attributes = av;
+    }
+}
+
+static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
 {
     AttVal *av;
-    char *s1, *s2, *names;
+    tmbstr s1, s2, names;
 
     for (s2 = null, av = child->attributes; av; av = av->next)
     {
-        if (wstrcmp(av->attribute, "class") == 0)
+        if (tmbstrcmp(av->attribute, "class") == 0)
         {
             s2 = av->value;
             break;
@@ -723,7 +715,7 @@ static void MergeClasses(Node *node, Node *child)
 
     for (s1 = null, av = node->attributes; av; av = av->next)
     {
-        if (wstrcmp(av->attribute, "class") == 0)
+        if (tmbstrcmp(av->attribute, "class") == 0)
         {
             s1 = av->value;
             break;
@@ -735,12 +727,12 @@ static void MergeClasses(Node *node, Node *child)
         if (s2)  /* merge class names from both */
         {
             int l1, l2;
-            l1 = wstrlen(s1);
-            l2 = wstrlen(s2);
-            names = (char *)MemAlloc(l1 + l2 + 2);
-            wstrcpy(names, s1);
+            l1 = tmbstrlen(s1);
+            l2 = tmbstrlen(s2);
+            names = (tmbstr) MemAlloc(l1 + l2 + 2);
+            tmbstrcpy(names, s1);
             names[l1] = ' ';
-            wstrcpy(names+l1+1, s2);
+            tmbstrcpy(names+l1+1, s2);
             MemFree(av->value);
             av->value = names;
         }
@@ -748,30 +740,30 @@ static void MergeClasses(Node *node, Node *child)
     else if (s2)  /* copy class names from child */
     {
         av = NewAttribute();
-        av->attribute = wstrdup("class");
-        av->value = wstrdup(s2);
+        av->attribute = tmbstrdup("class");
+        av->value = tmbstrdup(s2);
         av->delim = '"';
-        av->dict = FindAttribute(av);
+        av->dict = FindAttribute(doc, av);
         av->next = node->attributes;
         node->attributes = av;
     }
 }
 
-static void MergeStyles(Node *node, Node *child)
+static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
 {
     AttVal *av;
-    char *s1, *s2, *style;
+    tmbstr s1, s2, style;
 
     /*
        the child may have a class attribute used
        for attaching styles, if so the class name
        needs to be copied to node's class
     */
-    MergeClasses(node, child);
+    MergeClasses(doc, node, child);
 
     for (s2 = null, av = child->attributes; av; av = av->next)
     {
-        if (wstrcmp(av->attribute, "style") == 0)
+        if (tmbstrcmp(av->attribute, "style") == 0)
         {
             s2 = av->value;
             break;
@@ -780,7 +772,7 @@ static void MergeStyles(Node *node, Node *child)
 
     for (s1 = null, av = node->attributes; av; av = av->next)
     {
-        if (wstrcmp(av->attribute, "style") == 0)
+        if (tmbstrcmp(av->attribute, "style") == 0)
         {
             s1 = av->value;
             break;
@@ -799,31 +791,22 @@ static void MergeStyles(Node *node, Node *child)
     else if (s2)  /* copy style of child */
     {
         av = NewAttribute();
-        av->attribute = wstrdup("style");
-        av->value = wstrdup(s2);
+        av->attribute = tmbstrdup("style");
+        av->value = tmbstrdup(s2);
         av->delim = '"';
-        av->dict = FindAttribute(av);
+        av->dict = FindAttribute(doc, av);
         av->next = node->attributes;
         node->attributes = av;
     }
 }
 
-static char *FontSize2Name(char *size)
+static ctmbstr FontSize2Name( ctmbstr size, tmbstr buf )
 {
-#if 0
-    static char *sizes[7] =
-      {
-        "50%", "60%", "80%", null,
-        "120%", "150%", "200%"
-      };
-#else
-    static char *sizes[7] =
-      {
+    static const ctmbstr sizes[7] =
+    {
         "60%", "70%", "80%", null,
         "120%", "150%", "200%"
-      };
-#endif
-    static char buf[16];
+    };
 
     if ('0' <= size[0] && size[0] <= '6')
     {
@@ -843,10 +826,8 @@ static char *FontSize2Name(char *size)
 
             x *= 100;
             sprintf(buf, "%d%%", (int)(x));
-
             return buf;
         }
-
         return "smaller"; /*"70%"; */
     }
 
@@ -860,90 +841,80 @@ static char *FontSize2Name(char *size)
 
         x *= 100;
         sprintf(buf, "%d%%", (int)(x));
-
         return buf;
     }
 
     return "larger"; /* "140%" */
 }
 
-static void AddFontFace(Node *node, char *face)
+static void AddFontFace( TidyDocImpl* doc, Node *node, ctmbstr face )
 {
-    char buf[1024];
-
-    sprintf(buf, "font-family: %s", face);
-    AddStyleProperty(node, buf);
+    tmbchar buf[256];
+    sprintf( buf, "font-family: %s", face );
+    AddStyleProperty( doc, node, buf );
 }
 
-static void AddFontSize(Node *node, char *size)
+static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 {
-    char *value, buf[1024];
+    tmbchar work[ 32 ] = {0};
+    ctmbstr value = null;
 
-    if (wstrcmp(size, "6") == 0 && node->tag == tag_p)
+    if ( nodeIsP(node) )
     {
-        MemFree(node->element);
-        node->element = wstrdup("h1");
-        FindTag(node);
-        return;
+        if ( tmbstrcmp(size, "6") == 0 )
+            value = "h1";
+        else if (tmbstrcmp(size, "5") == 0 )
+            value = "h2";
+        else if (tmbstrcmp(size, "4") == 0 )
+            value = "h3";
+
+        if ( value )
+        {
+            MemFree( node->element );
+            node->element = tmbstrdup( value );
+            FindTag( doc, node );
+        }
     }
-
-    if (wstrcmp(size, "5") == 0 && node->tag == tag_p)
+    else if ( value = FontSize2Name(size, work) )
     {
-        MemFree(node->element);
-        node->element = wstrdup("h2");
-        FindTag(node);
-        return;
-    }
-
-    if (wstrcmp(size, "4") == 0 && node->tag == tag_p)
-    {
-        MemFree(node->element);
-        node->element = wstrdup("h3");
-        FindTag(node);
-        return;
-    }
-
-    value = FontSize2Name(size);
-
-    if (value)
-    {
+        tmbchar buf[64];
         sprintf(buf, "font-size: %s", value);
-        AddStyleProperty(node, buf);
+        AddStyleProperty( doc, node, buf );
     }
 }
 
-static void AddFontColor(Node *node, char *color)
+static void AddFontColor( TidyDocImpl* doc, Node *node, ctmbstr color)
 {
-    char buf[1024];
-
+    tmbchar buf[128];
     sprintf(buf, "color: %s", color);
-    AddStyleProperty(node, buf);
+    AddStyleProperty( doc, node, buf );
 }
 
-static void AddAlign(Node *node, char *align)
+/* force alignment value to lower case */
+static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
 {
-    char buf[1024], *p, *q;
+    tmbchar buf[128], *p;
 
-    /* force alignment value to lower case */
-    for (p = buf, q = "text-align: "; (*p++ = *q++););
-    for (p = p-1; (*p++ = ToLower(*align++)););
-    AddStyleProperty(node, buf);
+    tmbstrcpy( buf, "text-align: " );
+    for ( p = buf + 12; *p++ = (tmbchar)ToLower(*align++); /**/ )
+      /**/;
+    AddStyleProperty( doc, node, buf );
 }
 
 /*
  add style properties to node corresponding to
  the font face, size and color attributes
 */
-static void AddFontStyles(Node *node, AttVal *av)
+static void AddFontStyles( TidyDocImpl* doc, Node *node, AttVal *av)
 {
     while (av)
     {
-        if (wstrcmp(av->attribute, "face") == 0)
-            AddFontFace(node, av->value);
-        else if (wstrcmp(av->attribute, "size") == 0)
-            AddFontSize(node, av->value);
-        else if (wstrcmp(av->attribute, "color") == 0)
-            AddFontColor(node, av->value);
+        if (tmbstrcmp(av->attribute, "face") == 0)
+            AddFontFace( doc, node, av->value );
+        else if (tmbstrcmp(av->attribute, "size") == 0)
+            AddFontSize( doc, node, av->value );
+        else if (tmbstrcmp(av->attribute, "color") == 0)
+            AddFontColor( doc, node, av->value );
 
         av = av->next;
     }
@@ -953,7 +924,7 @@ static void AddFontStyles(Node *node, AttVal *av)
     Symptom: <p align=center>
     Action: <p style="text-align: center">
 */
-static void TextAlign(Lexer *lexer, Node *node)
+static void TextAlign( TidyDocImpl* doc, Node* node )
 {
     AttVal *av, *prev;
 
@@ -961,7 +932,7 @@ static void TextAlign(Lexer *lexer, Node *node)
 
     for (av = node->attributes; av; av = av->next)
     {
-        if (wstrcmp(av->attribute, "align") == 0)
+        if (tmbstrcmp(av->attribute, "align") == 0)
         {
             if (prev)
                 prev->next = av->next;
@@ -972,7 +943,7 @@ static void TextAlign(Lexer *lexer, Node *node)
 
             if (av->value)
             {
-                AddAlign(node, av->value);
+                AddAlign( doc, node, av->value );
                 MemFree(av->value);
             }
 
@@ -994,11 +965,11 @@ static void TextAlign(Lexer *lexer, Node *node)
     Action: coerce <dir> <li> to <div> with indent.
 */
 
-static Bool Dir2Div(Lexer *lexer, Node *node, Node **pnode)
+static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 {
     Node *child;
 
-    if (node->tag == tag_dir || node->tag == tag_ul || node->tag == tag_ol)
+    if ( nodeIsDIR(node) || nodeIsUL(node) || nodeIsOL(node) )
     {
         child = node->content;
 
@@ -1010,51 +981,19 @@ static Bool Dir2Div(Lexer *lexer, Node *node, Node **pnode)
         if (child->next)
             return no;
 
-        if (child->tag != tag_li)
+        if ( !nodeIsLI(child) )
             return no;
 
-        if (!child->implicit)
+        if ( !child->implicit )
             return no;
 
         /* coerce dir to div */
-
-        node->tag = tag_div;
-        MemFree(node->element);
-        node->element = wstrdup("div");
-        AddStyleProperty(node, "margin-left: 2em");
-        StripOnlyChild(node);
+        node->tag = LookupTagDef( TidyTag_DIV );
+        MemFree( node->element );
+        node->element = tmbstrdup("div");
+        AddStyleProperty( doc, node, "margin-left: 2em" );
+        StripOnlyChild( doc, node );
         return yes;
-
-#if 0
-        content = child->content;
-        last = child->last;
-        child->content = null;
-
-        /* adjust parent and set margin on contents of <li> */
-
-        for (child = content; child; child = child->next)
-        {
-            child->parent = node->parent;
-            AddStyleProperty(child, "margin-left: 1em");
-        }
-
-        /* hook first/last into sequence */
-
-        if (content)
-        {
-            content->prev = node->prev;
-            last->next = node->next;
-            FixNodeLinks(content);
-            FixNodeLinks(last);
-        }
-
-        node->next = null;
-        FreeNode(node);
-
-        /* ensure that new node is cleaned */
-        *pnode = CleanNode(lexer, content);
-        return yes;
-#endif
     }
 
     return no;
@@ -1065,19 +1004,19 @@ static Bool Dir2Div(Lexer *lexer, Node *node, Node **pnode)
     Action: replace <center> by <div style="text-align: center">
 */
 
-static Bool Center2Div(Lexer *lexer, Node *node, Node **pnode)
+static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 {
-    if (node->tag == tag_center)
+    Lexer *lexer = doc->lexer;
+
+    if ( nodeIsCENTER(node) )
     {
-        if (DropFontTags)
+        if ( cfgBool(doc, TidyDropFontTags) )
         {
             if (node->content)
             {
                 Node *last = node->last, *parent = node->parent;
-
-                DiscardContainer(node, pnode);
-
-                node = InferredTag(lexer, "br");
+                DiscardContainer( doc, node, pnode );
+                node = InferredTag( doc, "br" );
 
                 if (last->next)
                     last->next->prev = node;
@@ -1094,9 +1033,9 @@ static Bool Center2Div(Lexer *lexer, Node *node, Node **pnode)
             else
             {
                 Node *prev = node->prev, *next = node->next, *parent = node->parent;
-                DiscardContainer(node, pnode);
+                DiscardContainer( doc, node, pnode );
 
-                node = InferredTag(lexer, "br");
+                node = InferredTag( doc, "br" );
                 node->next = next;
                 node->prev = prev;
                 node->parent = parent;
@@ -1115,10 +1054,8 @@ static Bool Center2Div(Lexer *lexer, Node *node, Node **pnode)
             return yes;
         }
 
-        node->tag = tag_div;
-        MemFree(node->element);
-        node->element = wstrdup("div");
-        AddStyleProperty(node, "text-align: center");
+        RenameElem( node, TidyTag_DIV );
+        AddStyleProperty( doc, node, "text-align: center" );
         return yes;
     }
 
@@ -1132,11 +1069,11 @@ static Bool Center2Div(Lexer *lexer, Node *node, Node **pnode)
   This is useful after nested <dir>s used by Word
   for indenting have been converted to <div>s
 */
-static Bool MergeDivs(Lexer *lexer, Node *node, Node **pnode)
+static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
 {
     Node *child;
 
-    if (node->tag != tag_div)
+    if ( !nodeIsDIV(node) )
         return no;
 
     child = node->content;
@@ -1144,14 +1081,14 @@ static Bool MergeDivs(Lexer *lexer, Node *node, Node **pnode)
     if (!child)
         return no;
 
-    if (child->tag != tag_div)
+    if ( !nodeIsDIV(child) )
         return no;
 
     if (child->next != null)
         return no;
 
-    MergeStyles(node, child);
-    StripOnlyChild(node);
+    MergeStyles( doc, node, child );
+    StripOnlyChild( doc, node );
     return yes;
 }
 
@@ -1160,11 +1097,11 @@ static Bool MergeDivs(Lexer *lexer, Node *node, Node **pnode)
     Action: discard outer list
 */
 
-static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
+static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 {
     Node *child, *list;
 
-    if (node->tag == tag_ul || node->tag == tag_ol)
+    if ( nodeIsUL(node) || nodeIsOL(node) )
     {
         child = node->content;
 
@@ -1197,7 +1134,7 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
         child->content = null;
         node->content = null;
         node->next = null;
-        FreeNode(node);
+        FreeNode( doc, node );
         node = null;
 
         /*
@@ -1208,7 +1145,7 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
 
         if (list->prev)
         {
-            if (list->prev->tag == tag_ul || list->prev->tag == tag_ol)
+            if ( nodeIsUL(list->prev) || nodeIsOL(list->prev) )
             {
                 node = list;
                 list = node->prev;
@@ -1223,7 +1160,7 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
                 node->next = null;
                 node->prev = child->last;
                 FixNodeLinks(node);
-                CleanNode(lexer, node);
+                CleanNode( doc, node );
             }
         }
 
@@ -1256,51 +1193,47 @@ static Bool NestedList(Lexer *lexer, Node *node, Node **pnode)
   However, to avoid CSS problems with Navigator 4, this isn't done
   for the elements: caption, tr and table
 */
-static Bool BlockStyle(Lexer *lexer, Node *node, Node **pnode)
+static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 {
     Node *child;
 
     if (node->tag->model & (CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE))
     {
-        if (node->tag != tag_table
-                && node->tag != tag_tr
-                && node->tag != tag_li)
+        if ( !nodeIsTABLE(node) && !nodeIsTR(node) && !nodeIsLI(node) )
         {
             /* check for align attribute */
-            if (node->tag != tag_caption)
-                TextAlign(lexer, node);
+            if ( !nodeIsCAPTION(node) )
+                TextAlign( doc, node );
 
             child = node->content;
-
             if (child == null)
                 return no;
 
             /* check child has no peers */
-
             if (child->next)
                 return no;
 
-            if (child->tag == tag_b)
+            if ( nodeIsB(child) )
             {
-                MergeStyles(node, child);
-                AddStyleProperty(node, "font-weight: bold");
-                StripOnlyChild(node);
+                MergeStyles( doc, node, child );
+                AddStyleProperty( doc, node, "font-weight: bold" );
+                StripOnlyChild( doc, node );
                 return yes;
             }
 
-            if (child->tag == tag_i)
+            if ( nodeIsI(child) )
             {
-                MergeStyles(node, child);
-                AddStyleProperty(node, "font-style: italic");
-                StripOnlyChild(node);
+                MergeStyles( doc, node, child );
+                AddStyleProperty( doc, node, "font-style: italic" );
+                StripOnlyChild( doc, node );
                 return yes;
             }
 
-            if (child->tag == tag_font)
+            if ( nodeIsFONT(child) )
             {
-                MergeStyles(node, child);
-                AddFontStyles(node, child->attributes);
-                StripOnlyChild(node);
+                MergeStyles( doc, node, child );
+                AddFontStyles( doc, node, child->attributes );
+                StripOnlyChild( doc, node );
                 return yes;
             }
         }
@@ -1310,11 +1243,11 @@ static Bool BlockStyle(Lexer *lexer, Node *node, Node **pnode)
 }
 
 /* the only child of table cell or an inline element such as em */
-static Bool InlineStyle(Lexer *lexer, Node *node, Node **pnode)
+static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 {
     Node *child;
 
-    if (node->tag != tag_font && (node->tag->model & (CM_INLINE|CM_ROW)))
+    if ( !nodeIsFONT(node) && nodeHasCM(node, CM_INLINE|CM_ROW) )
     {
         child = node->content;
 
@@ -1326,27 +1259,27 @@ static Bool InlineStyle(Lexer *lexer, Node *node, Node **pnode)
         if (child->next)
             return no;
 
-        if (child->tag == tag_b && LogicalEmphasis)
+        if ( nodeIsB(child) && cfgBool(doc, TidyLogicalEmphasis) )
         {
-            MergeStyles(node, child);
-            AddStyleProperty(node, "font-weight: bold");
-            StripOnlyChild(node);
+            MergeStyles( doc, node, child );
+            AddStyleProperty( doc, node, "font-weight: bold" );
+            StripOnlyChild( doc, node );
             return yes;
         }
 
-        if (child->tag == tag_i && LogicalEmphasis)
+        if ( nodeIsI(child) && cfgBool(doc, TidyLogicalEmphasis) )
         {
-            MergeStyles(node, child);
-            AddStyleProperty(node, "font-style: italic");
-            StripOnlyChild(node);
+            MergeStyles( doc, node, child );
+            AddStyleProperty( doc, node, "font-style: italic" );
+            StripOnlyChild( doc, node );
             return yes;
         }
 
-        if (child->tag == tag_font)
+        if ( nodeIsFONT(child) )
         {
-            MergeStyles(node, child);
-            AddFontStyles(node, child->attributes);
-            StripOnlyChild(node);
+            MergeStyles( doc, node, child );
+            AddFontStyles( doc, node, child->attributes );
+            StripOnlyChild( doc, node );
             return yes;
         }
     }
@@ -1359,24 +1292,23 @@ static Bool InlineStyle(Lexer *lexer, Node *node, Node **pnode)
   the font element's attributes and replacing them
   by a single style attribute.
 */
-static Bool Font2Span(Lexer *lexer, Node *node, Node **pnode)
+static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
 {
     AttVal *av, *style, *next;
 
-    if (node->tag == tag_font)
+    if ( nodeIsFONT(node) )
     {
-        if (DropFontTags)
+        if ( cfgBool(doc, TidyDropFontTags) )
         {
-            DiscardContainer(node, pnode);
+            DiscardContainer( doc, node, pnode );
             return no;
         }
 
         /* if FONT is only child of parent element then leave alone */
-        if (node->parent->content == node
-            && node->next == null)
+        if ( node->parent->content == node && node->next == null )
             return no;
 
-        AddFontStyles(node, node->attributes);
+        AddFontStyles( doc, node, node->attributes );
 
         /* extract style attribute and free the rest */
         av = node->attributes;
@@ -1386,30 +1318,20 @@ static Bool Font2Span(Lexer *lexer, Node *node, Node **pnode)
         {
             next = av->next;
 
-            if (wstrcmp(av->attribute, "style") == 0)
+            if ( tmbstrcmp(av->attribute, "style") == 0 )
             {
                 av->next = null;
                 style = av;
             }
             else
             {
-                if (av->attribute)
-                    MemFree(av->attribute);
-                if (av->value)
-                    MemFree(av->value);
-
-                MemFree(av);
+                FreeAttribute( av );
             }
-
             av = next;
         }
 
         node->attributes = style;
-
-        node->tag = tag_span;
-        MemFree(node->element);
-        node->element = wstrdup("span");
-
+        RenameElem( node, TidyTag_SPAN );
         return yes;
     }
 
@@ -1424,13 +1346,13 @@ static Bool IsElement(Node *node)
 /*
   Applies all matching rules to a node.
 */
-Node *CleanNode(Lexer *lexer, Node *node)
+Node* CleanNode( TidyDocImpl* doc, Node *node )
 {
     Node *next = null;
 
     for (next = node; node && IsElement(node); node = next)
     {
-        if (Dir2Div(lexer, node, &next))
+        if ( Dir2Div(doc, node, &next) )
             continue;
 
         /* Special case: true result means
@@ -1438,22 +1360,22 @@ Node *CleanNode(Lexer *lexer, Node *node)
         ** So we must jump back up the CreateStyleProperties()
         ** call stack until we have a valid node reference.
         */
-        if (NestedList(lexer, node, &next))
+        if ( NestedList(doc, node, &next) )
             return next;
 
-        if (Center2Div(lexer, node, &next))
+        if ( Center2Div(doc, node, &next) )
             continue;
 
-        if (MergeDivs(lexer, node, &next))
+        if ( MergeDivs(doc, node, &next) )
             continue;
 
-        if (BlockStyle(lexer, node, &next))
+        if ( BlockStyle(doc, node, &next) )
             continue;
 
-        if (InlineStyle(lexer, node, &next))
+        if ( InlineStyle(doc, node, &next) )
             continue;
 
-        if (Font2Span(lexer, node, &next))
+        if ( Font2Span(doc, node, &next) )
             continue;
 
         break;
@@ -1463,31 +1385,30 @@ Node *CleanNode(Lexer *lexer, Node *node)
 }
 
 /* Special case: if the current node is destroyed by
-** CleanNode() lower in the tree, this node and its 
-** parent no longer exist.  So we must jump back up 
-** the CreateStyleProperties() call stack until we 
-** have a valid node reference.
+** CleanNode() lower in the tree, this node and its parent
+** no longer exist.  So we must jump back up the CleanTree()
+** call stack until we have a valid node reference.
 */
 
-static Node *CreateStyleProperties(Lexer *lexer, Node *node, Node** prepl)
+static Node* CleanTree( TidyDocImpl* doc, Node *node, Node** prepl)
 {
-    Node *child;
-
     if (node->content)
     {
-        Node* repl = node;
+        Node *child, *repl = node;
         for (child = node->content; child != null; child = child->next)
         {
-            child = CreateStyleProperties(lexer, child, &repl);
+            child = CleanTree( doc, child, &repl );
             if ( repl != node ) 
                 return repl;
+            if ( !child )
+                break;
         }
     }
 
-    return CleanNode(lexer, node);
+    return CleanNode( doc, node );
 }
 
-static void DefineStyleRules(Lexer *lexer, Node *node)
+static void DefineStyleRules( TidyDocImpl* doc, Node *node )
 {
     Node *child;
 
@@ -1496,27 +1417,30 @@ static void DefineStyleRules(Lexer *lexer, Node *node)
         for (child = node->content;
                 child != null; child = child->next)
         {
-            DefineStyleRules(lexer, child);
+            DefineStyleRules( doc, child );
         }
     }
 
-    Style2Rule(lexer, node);
+    Style2Rule( doc, node );
 }
 
-void CleanTree(Lexer *lexer, Node *doc)
+void CleanDocument( TidyDocImpl* doc )
 {
-    Node* repl = doc;
-    doc = CreateStyleProperties(lexer, doc, &repl);
+    /* placeholder.  CleanTree()/CleanNode() will not
+    ** zap root element 
+    */
+    Node* repl = doc->root;  
+    CleanTree( doc, doc->root, &repl );
 
-    if (MakeClean)
+    if ( cfgBool(doc, TidyMakeClean) )
     {
-        DefineStyleRules(lexer, doc);
-        CreateStyleElement(lexer, doc);
+        DefineStyleRules( doc, doc->root );
+        CreateStyleElement( doc );
     }
 }
 
 /* simplifies <b><b> ... </b> ...</b> etc. */
-void NestedEmphasis(Node *node)
+void NestedEmphasis( TidyDocImpl* doc, Node* node )
 {
     Node *next;
 
@@ -1524,42 +1448,36 @@ void NestedEmphasis(Node *node)
     {
         next = node->next;
 
-        if ((node->tag == tag_b || node->tag == tag_i)
-            && node->parent && node->parent->tag == node->tag)
+        if ( (nodeIsB(node) || nodeIsI(node))
+             && node->parent && node->parent->tag == node->tag)
         {
             /* strip redundant inner element */
-            DiscardContainer(node, &next);
+            DiscardContainer( doc, node, &next );
             node = next;
             continue;
         }
 
-        if (node->content)
-            NestedEmphasis(node->content);
+        if ( node->content )
+            NestedEmphasis( doc, node->content );
 
         node = next;
     }
 }
 
+
+
 /* replace i by em and b by strong */
-void EmFromI(Node *node)
+void EmFromI( TidyDocImpl* doc, Node* node )
 {
     while (node)
     {
-        if (node->tag == tag_i)
-        {
-            MemFree(node->element);
-            node->element = wstrdup(tag_em->name);
-            node->tag = tag_em;
-        }
-        else if (node->tag == tag_b)
-        {
-            MemFree(node->element);
-            node->element = wstrdup(tag_strong->name);
-            node->tag = tag_strong;
-        }
+        if ( nodeIsI(node) )
+            RenameElem( node, TidyTag_EM );
+        else if ( nodeIsB(node) )
+            RenameElem( node, TidyTag_STRONG );
 
-        if (node->content)
-            EmFromI(node->content);
+        if ( node->content )
+            EmFromI( doc, node->content );
 
         node = node->next;
     }
@@ -1577,20 +1495,18 @@ static Bool HasOneChild(Node *node)
  li. This is recursively replaced by an
  implicit blockquote.
 */
-void List2BQ(Node *node)
+void List2BQ( TidyDocImpl* doc, Node* node )
 {
     while (node)
     {
         if (node->content)
-            List2BQ(node->content);
+            List2BQ( doc, node->content );
 
-        if (node->tag && node->tag->parser == ParseList &&
-            HasOneChild(node) && node->content->implicit)
+        if ( node->tag && node->tag->parser == ParseList &&
+             HasOneChild(node) && node->content->implicit )
         {
-            StripOnlyChild(node);
-            MemFree(node->element);
-            node->element = wstrdup(tag_blockquote->name);
-            node->tag = tag_blockquote;
+            StripOnlyChild( doc, node );
+            RenameElem( node, TidyTag_BLOCKQUOTE );
             node->implicit = yes;
         }
 
@@ -1598,118 +1514,114 @@ void List2BQ(Node *node)
     }
 }
 
-static char indent_buf[32];
 
 /*
  Replace implicit blockquote by div with an indent
  taking care to reduce nested blockquotes to a single
  div with the indent set to match the nesting depth
 */
-void BQ2Div(Node *node)
+void BQ2Div( TidyDocImpl* doc, Node *node )
 {
+    tmbchar indent_buf[ 32 ];
     int indent;
     size_t len;
     AttVal *attval;
 
     while (node)
     {
-        if (node->tag == tag_blockquote && node->implicit)
+        if ( nodeIsBLOCKQUOTE(node) && node->implicit )
         {
             indent = 1;
 
-            while(HasOneChild(node) &&
-                  node->content->tag == tag_blockquote &&
-                  node->implicit)
+            while( HasOneChild(node) &&
+                   nodeIsBLOCKQUOTE(node->content) &&
+                   node->implicit)
             {
                 ++indent;
-                StripOnlyChild(node);
+                StripOnlyChild( doc, node );
             }
 
             if (node->content)
-                BQ2Div(node->content);
+                BQ2Div( doc, node->content );
 
             len = sprintf(indent_buf, "margin-left: %dem", 2*indent);
 
-            MemFree(node->element);
-            node->element = wstrdup(tag_div->name);
-            node->tag = tag_div;
+            RenameElem( node, TidyTag_DIV );
 
-            attval = GetAttrByName(node, "style");
-
+            attval = GetAttrByName( node, "style" );
             if (attval)
             {
-                char *s;
-
-                s = (char *)MemAlloc(len + 3 + wstrlen(attval->value));
-
-                wstrcpy(s, indent_buf);
-                wstrcat(s, "; ");
-                wstrcat(s, attval->value);
+                tmbstr s = (tmbstr) MemAlloc(len + 3 + tmbstrlen(attval->value));
+                tmbstrcpy(s, indent_buf);
+                tmbstrcat(s, "; ");
+                tmbstrcat(s, attval->value);
 
                 MemFree(attval->value);
-
                 attval->value = s;
             }
             else
             {
-                AddAttribute(node, "style", indent_buf);
+                AddAttribute( doc, node, "style", indent_buf );
             }
         }
         else if (node->content)
-            BQ2Div(node->content);
-
+            BQ2Div( doc, node->content );
 
         node = node->next;
     }
 }
 
 
-Node *FindEnclosingCell(Node *node)
+Node* FindEnclosingCell( TidyDocImpl* doc, Node *node)
 {
     Node *check;
 
     for ( check=node; check; check = check->parent )
     {
-      if ( check->tag == tag_td )
+      if ( nodeIsTD(check) )
         return check;
     }
     return null;
 }
 
 /* node is <![if ...]> prune up to <![endif]> */
-static Node *PruneSection(Lexer *lexer, Node *node)
+static Node* PruneSection( TidyDocImpl* doc, Node *node )
 {
+    Lexer* lexer = doc->lexer;
+
     for (;;)
     {
-        if (wstrncmp(lexer->lexbuf + node->start, "if !supportEmptyParas", 21) == 0)
+        ctmbstr lexbuf = lexer->lexbuf + node->start;
+        if ( tmbstrncmp(lexbuf, "if !supportEmptyParas", 21) == 0 )
         {
-          Node* cell = FindEnclosingCell( node );
+          Node* cell = FindEnclosingCell( doc, node );
           if ( cell )
           {
-            /* Need to put &nbsp; into cell so it doesn't look weird */
-            char onesixty[2] = { (char) 160, (char)0 };
-            Node* nbsp = NewLiteralTextNode( lexer, onesixty );
+            /* Need to put &nbsp; into cell so it doesn't look weird
+            */
+            Node* nbsp = NewLiteralTextNode( lexer, "\240" );
+            assert( (byte)'\240' == (byte)160 );
             InsertNodeBeforeElement( node, nbsp );
           }
         }
 
         /* discard node and returns next */
-        node = DiscardElement(node);
+        node = DiscardElement( doc, node );
 
         if (node == null)
             return null;
         
         if (node->type == SectionTag)
         {
-            if (wstrncmp(lexer->lexbuf + node->start, "if", 2) == 0)
+            if (tmbstrncmp(lexer->lexbuf + node->start, "if", 2) == 0)
             {
-                node = PruneSection(lexer, node);
+                node = PruneSection( doc, node );
                 continue;
             }
 
-            if (wstrncmp(lexer->lexbuf + node->start, "endif", 5) == 0)
+            if (tmbstrncmp(lexer->lexbuf + node->start, "endif", 5) == 0)
             {
-                node = DiscardElement(node);
+                node = DiscardElement( doc, node );
                 break;
             }
         }
@@ -1718,33 +1630,34 @@ static Node *PruneSection(Lexer *lexer, Node *node)
     return node;
 }
 
-void DropSections(Lexer *lexer, Node *node)
+void DropSections( TidyDocImpl* doc, Node* node )
 {
+    Lexer* lexer = doc->lexer;
     while (node)
     {
         if (node->type == SectionTag)
         {
             /* prune up to matching endif */
-            if ((wstrncmp(lexer->lexbuf + node->start, "if", 2) == 0) &&
-                (wstrncmp(lexer->lexbuf + node->start, "if !vml", 7) != 0)) /* #444394 - fix 13 Sep 01 */
+            if ((tmbstrncmp(lexer->lexbuf + node->start, "if", 2) == 0) &&
+                (tmbstrncmp(lexer->lexbuf + node->start, "if !vml", 7) != 0)) /* #444394 - fix 13 Sep 01 */
             {
-                node = PruneSection(lexer, node);
+                node = PruneSection( doc, node );
                 continue;
             }
 
             /* discard others as well */
-            node = DiscardElement(node);
+            node = DiscardElement( doc, node );
             continue;
         }
 
         if (node->content)
-            DropSections(lexer, node->content);
+            DropSections( doc, node->content );
 
         node = node->next;
     }
 }
 
-static void PurgeWord2000Attributes(Node *node)
+static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 {
     AttVal *attr, *next, *prev = null;
 
@@ -1754,25 +1667,24 @@ static void PurgeWord2000Attributes(Node *node)
 
         /* special check for class="Code" denoting pre text */
         /* Pass thru user defined styles as HTML class names */
-        if (wstrcmp(attr->attribute, "class") == 0)
+        if (tmbstrcmp(attr->attribute, "class") == 0)
         {
-            if ( wstrcmp(attr->value, "Code") == 0 ||
-                 wstrncmp(attr->value, "Mso", 3) != 0 )
+            if ( tmbstrcmp(attr->value, "Code") == 0 ||
+                 tmbstrncmp(attr->value, "Mso", 3) != 0 )
             {
                 prev = attr;
                 continue;
             }
         }
 
-        if ( wstrcmp(attr->attribute, "class") == 0 ||
-             wstrcmp(attr->attribute, "style") == 0 ||
-             wstrcmp(attr->attribute, "lang") == 0 ||
-             wstrncmp(attr->attribute, "x:", 2) == 0 ||
-             ( ( wstrcmp(attr->attribute, "height") == 0 ||
-                 wstrcmp(attr->attribute, "width") == 0 ) &&
-               ( node->tag == tag_td || 
-                 node->tag == tag_tr || 
-                 node->tag == tag_th ) )
+        if ( tmbstrcmp(attr->attribute, "class") == 0 ||
+             tmbstrcmp(attr->attribute, "style") == 0 ||
+             tmbstrcmp(attr->attribute, "lang") == 0 ||
+             tmbstrncmp(attr->attribute, "x:", 2) == 0 ||
+             ( ( tmbstrcmp(attr->attribute, "height") == 0 ||
+                 tmbstrcmp(attr->attribute, "width") == 0 ) &&
+               ( nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node) )
+             )
            )
         {
             if (prev)
@@ -1780,7 +1692,7 @@ static void PurgeWord2000Attributes(Node *node)
             else
                 node->attributes = next;
 
-            FreeAttribute(attr);
+            FreeAttribute( attr );
         }
         else
             prev = attr;
@@ -1788,7 +1700,7 @@ static void PurgeWord2000Attributes(Node *node)
 }
 
 /* Word2000 uses span excessively, so we strip span out */
-static Node *StripSpan(Lexer *lexer, Node *span)
+static Node* StripSpan( TidyDocImpl* doc, Node* span )
 {
     Node *node, *prev = null, *content;
 
@@ -1798,7 +1710,7 @@ static Node *StripSpan(Lexer *lexer, Node *span)
      after having processed it
     */
 
-    CleanWord2000(lexer, span->content);
+    CleanWord2000( doc, span->content );
     content = span->content;
 
     if (span->prev)
@@ -1826,32 +1738,32 @@ static Node *StripSpan(Lexer *lexer, Node *span)
 
     node = span->next;
     span->content = null;
-    DiscardElement(span);
+    DiscardElement( doc, span );
     return node;
 }
 
 /* map non-breaking spaces to regular spaces */
-static void NormalizeSpaces(Lexer *lexer, Node *node)
+static void NormalizeSpaces( Lexer *lexer, Node *node )
 {
-    while (node)
+    while ( node )
     {
-        if (node->content)
-            NormalizeSpaces(lexer, node->content);
+        if ( node->content )
+            NormalizeSpaces( lexer, node->content );
 
         if (node->type == TextNode)
         {
             uint i, c;
-            char *p = lexer->lexbuf + node->start;
+            tmbstr p = lexer->lexbuf + node->start;
 
             for (i = node->start; i < node->end; ++i)
             {
-                c = (unsigned char)lexer->lexbuf[i];
+                c = (byte) lexer->lexbuf[i];
 
                 /* look for UTF-8 multibyte character */
-                if (c > 0x7F)
-                    i += GetUTF8((unsigned char *)(lexer->lexbuf + i), &c);
+                if ( c > 0x7F )
+                    i += GetUTF8( lexer->lexbuf + i, &c );
 
-                if (c == 160)
+                if ( c == 160 )
                     c = ' ';
 
                 p = PutUTF8(p, c);
@@ -1867,45 +1779,42 @@ Bool NoMargins(Node *node)
 {
     AttVal *attval = GetAttrByName(node, "style");
 
-    if (attval == null)
+    if ( !AttrHasValue(attval) )
         return no;
 
     /* search for substring "margin-top: 0" */
-
-    if (!wsubstr(attval->value, "margin-top: 0"))
+    if (!tmbsubstr(attval->value, "margin-top: 0"))
         return no;
-    /* search for substring "margin-top: 0" */
 
-    if (!wsubstr(attval->value, "margin-bottom: 0"))
+    /* search for substring "margin-bottom: 0" */
+    if (!tmbsubstr(attval->value, "margin-bottom: 0"))
         return no;
 
     return yes;
 }
 
 /* does element have a single space as its content? */
-Bool SingleSpace(Lexer *lexer, Node *node)
+Bool SingleSpace( Lexer* lexer, Node* node )
 {
-    if (node->content)
+    if ( node->content )
     {
         node = node->content;
 
-        if (node->next != null)
+        if ( node->next != null )
             return no;
 
-        if (node->type != TextNode)
+        if ( node->type != TextNode )
             return no;
 
-        if (((node->end - node->start) == 1) &&
-                lexer->lexbuf[node->start] == ' ')
+        if ( (node->end - node->start) == 1 &&
+             lexer->lexbuf[node->start] == ' ' )
             return yes;
 
-        if ((node->end - node->start) == 2)
+        if ( (node->end - node->start) == 2 )
         {
-            uint c;
-
-            GetUTF8((unsigned char *)lexer->lexbuf + node->start, &c);
-
-            if (c == 160)
+            uint c = 0;
+            GetUTF8( lexer->lexbuf + node->start, &c );
+            if ( c == 160 )
                 return yes;
         }
     }
@@ -1920,50 +1829,52 @@ Bool SingleSpace(Lexer *lexer, Node *node)
  declare them as new tags, such as o:p which needs to be declared
  as inline.
 */
-void CleanWord2000(Lexer *lexer, Node *node)
+void CleanWord2000( TidyDocImpl* doc, Node *node)
 {
     /* used to a list from a sequence of bulletted p's */
-    Node *list = null;
+    Lexer* lexer = doc->lexer;
+    Node* list = null;
 
-    while (node)
+    while ( node )
     {
         /* get rid of Word's xmlns attributes */
-        if (node->tag == tag_html)
+        if ( nodeIsHTML(node) )
         {
             /* check that it's a Word 2000 document */
-            if (!GetAttrByName(node, "xmlns:o") && !MakeBare)
+            if ( !GetAttrByName(node, "xmlns:o") &&
+                 !cfgBool(doc, TidyMakeBare) )
                 return;
 
-            FreeAttrs(node);
+            FreeAttrs( doc, node );
         }
 
         /* fix up preformatted sections by looking for a
         ** sequence of paragraphs with zero top/bottom margin
         */
-        if (node->tag == tag_p)
+        if ( nodeIsP(node) )
         {
             if (NoMargins(node))
             {
                 Node *pre, *next;
-                CoerceNode(lexer, node, tag_pre);
+                CoerceNode( doc, node, TidyTag_PRE );
 
-                PurgeWord2000Attributes(node);
+                PurgeWord2000Attributes( doc, node );
 
                 if (node->content)
-                    CleanWord2000(lexer, node->content);
+                    CleanWord2000( doc, node->content );
 
                 pre = node;
                 node = node->next;
 
                 /* continue to strip p's */
 
-                while (node->tag == tag_p && NoMargins(node))
+                while ( nodeIsP(node) && NoMargins(node) )
                 {
                     next = node->next;
                     RemoveNode(node);
                     InsertNodeAtEnd(pre, NewLineNode(lexer));
                     InsertNodeAtEnd(pre, node);
-                    StripSpan(lexer, node);
+                    StripSpan( doc, node );
                     node = next;
                 }
 
@@ -1975,42 +1886,45 @@ void CleanWord2000(Lexer *lexer, Node *node)
         if (node->tag && (node->tag->model & CM_BLOCK)
             && SingleSpace(lexer, node))
         {
-            node = StripSpan(lexer, node);
+            node = StripSpan( doc, node );
             continue;
         }
         /* discard Word's style verbiage */
-        if (node->tag == tag_style || node->tag == tag_meta || node->type == CommentTag)
+        if ( nodeIsSTYLE(node) || nodeIsMETA(node) ||
+             node->type == CommentTag )
         {
-            node = DiscardElement(node);
+            node = DiscardElement( doc, node );
             continue;
         }
 
         /* strip out all span and font tags Word scatters so liberally! */
-        if (node->tag == tag_span || node->tag == tag_font)
+        if ( nodeIsSPAN(node) || nodeIsFONT(node) )
         {
-            node = StripSpan(lexer, node);
+            node = StripSpan( doc, node );
             continue;
         }
 
-        if (node->tag == tag_link)
+        if ( nodeIsLINK(node) )
         {
             AttVal *attr = GetAttrByName(node, "rel");
 
-            if (attr && wstrcmp(attr->value, "File-List") == 0)
+            if (attr && tmbstrcmp(attr->value, "File-List") == 0)
             {
-                node = DiscardElement(node);
+                node = DiscardElement( doc, node );
                 continue;
             }
         }
 
         /* discard empty paragraphs */
-        if (node->content == null && node->tag == tag_p)
+
+        if ( node->content == null && nodeIsP(node) )
         {
-            node = DiscardElement(node);
+            /*  Use the existing function to ensure consistency */
+            node = TrimEmptyElement( doc, node );
             continue;
         }
 
-        if (node->tag == tag_p)
+        if ( nodeIsP(node) )
         {
             AttVal *attr, *atrStyle;
             
@@ -2023,27 +1937,27 @@ void CleanWord2000(Lexer *lexer, Node *node)
             */
             /* map sequence of <p class="MsoListBullet"> to <ul>...</ul> */
             /* map <p class="MsoListNumber"> to <ol>...</ol> */
-            if ((attr && 
-                (wstrcmp(attr->value, "MsoListBullet") == 0 ||
-                 wstrcmp(attr->value, "MsoListNumber") == 0 )) ||
-                (atrStyle && (strstr(atrStyle->value,"mso-list:") != null))) /* 463066 - fix by Joel Shafer 19 Sep 01 */
+            if ( AttrMatches(attr, "MsoListBullet") ||
+                 AttrMatches(attr, "MsoListNumber") ||
+                 AttrContains(atrStyle, "mso-list:") )
             {
-                Dict* listType = tag_ul;
-                if ( attr && wstrcmp(attr->value, "MsoListNumber") == 0 ) /* 570027 - fix by Anonymous 17 Jun 02 */
-                    listType = tag_ol;
+                TidyTagId listType = TidyTag_UL;
+                if ( attr && tmbstrcmp(attr->value, "MsoListNumber") == 0 )
+                    listType = TidyTag_OL;
 
-                CoerceNode(lexer, node, tag_li);
+                CoerceNode( doc, node, TidyTag_LI );
 
-                if (!list || list->tag != listType)
+                if ( !list || TagId(list) != listType )
                 {
-                    list = InferredTag(lexer, listType->name);
+                    const Dict* tag = LookupTagDef( listType );
+                    list = InferredTag( doc, tag->name );
                     InsertNodeBeforeElement(node, list);
                 }
 
-                PurgeWord2000Attributes(node);
+                PurgeWord2000Attributes( doc, node );
 
-                if (node->content)
-                    CleanWord2000(lexer, node->content);
+                if ( node->content )
+                    CleanWord2000( doc, node->content );
 
                 /* remove node and append to contents of list */
                 RemoveNode(node);
@@ -2051,21 +1965,21 @@ void CleanWord2000(Lexer *lexer, Node *node)
                 node = list;
             }
             /* map sequence of <p class="Code"> to <pre>...</pre> */
-            else if (attr && wstrcmp(attr->value, "Code") == 0)
+            else if (attr && tmbstrcmp(attr->value, "Code") == 0)
             {
                 Node *br = NewLineNode(lexer);
                 NormalizeSpaces(lexer, node);
 
-                if (!list || list->tag != tag_pre)
+                if ( !list || TagId(list) != TidyTag_PRE )
                 {
-                    list = InferredTag(lexer, "pre");
+                    list = InferredTag( doc, "pre" );
                     InsertNodeBeforeElement(node, list);
                 }
 
                 /* remove node and append to contents of list */
                 RemoveNode(node);
                 InsertNodeAtEnd(list, node);
-                StripSpan(lexer, node);
+                StripSpan( doc, node );
                 InsertNodeAtEnd(list, br);
                 node = list->next;
             }
@@ -2077,48 +1991,42 @@ void CleanWord2000(Lexer *lexer, Node *node)
 
         /* strip out style and class attributes */
         if (node->type == StartTag || node->type == StartEndTag)
-            PurgeWord2000Attributes(node);
+            PurgeWord2000Attributes( doc, node );
 
         if (node->content)
-            CleanWord2000(lexer, node->content);
+            CleanWord2000( doc, node->content );
 
         node = node->next;
     }
 }
 
-Bool IsWord2000(Node *root)
+Bool IsWord2000( TidyDocImpl* doc )
 {
     AttVal *attval;
     Node *node, *head;
-    Node *html = FindHTML(root);
+    Node *html = FindHTML( doc );
 
     if (html && GetAttrByName(html, "xmlns:o"))
         return yes;
     
     /* search for <meta name="GENERATOR" content="Microsoft ..."> */
-    head = FindHEAD(root);
+    head = FindHEAD( doc );
 
     if (head)
     {
         for (node = head->content; node; node = node->next)
         {
-            if (node->tag != tag_meta)
+            if ( !nodeIsMETA(node) )
                 continue;
 
-            attval = GetAttrByName(node, "name");
+            attval = AttrGetById( node, TidyAttr_NAME );
 
-            if (attval == null || attval->value == null)
+            if ( !AttrMatches(attval, "generator") )
                 continue;
 
-            if (wstrcasecmp(attval->value, "generator") != 0)
-                continue;
+            attval =  AttrGetById( node, TidyAttr_CONTENT );
 
-            attval =  GetAttrByName(node, "content");
-
-            if (attval == null || attval->value == null)
-                continue;
-
-            if (wsubstr(attval->value, "Microsoft"))
+            if ( AttrContains(attval, "Microsoft") )
                 return yes;
         }
     }
@@ -2127,29 +2035,29 @@ Bool IsWord2000(Node *root)
 }
 
 /* where appropriate move object elements from head to body */
-void BumpObject(Lexer *lexer, Node *html)
+void BumpObject( TidyDocImpl* doc, Node *html )
 {
     Node *node, *next, *head = null, *body = null;
 
     if (!html)
         return;
 
-    for (node = html->content; node != null; node = node->next)
+    for ( node = html->content; node != null; node = node->next )
     {
-        if (node->tag == tag_head)
+        if ( nodeIsHEAD(node) )
             head = node;
 
-        if (node->tag == tag_body)
+        if ( nodeIsBODY(node) )
             body = node;
     }
 
-    if (head != null && body != null)
+    if ( head != null && body != null )
     {
         for (node = head->content; node != null; node = next)
         {
             next = node->next;
 
-            if (node->tag == tag_object)
+            if ( nodeIsOBJECT(node) )
             {
                 Node *child;
                 Bool bump = no;
@@ -2157,20 +2065,346 @@ void BumpObject(Lexer *lexer, Node *html)
                 for (child = node->content; child != null; child = child->next)
                 {
                     /* bump to body unless content is param */
-                    if ((child->type == TextNode && !IsBlank(lexer, node))
-                        || child->tag != tag_param)
+                    if ( (child->type == TextNode && !IsBlank(doc->lexer, node))
+                         || !nodeIsPARAM(child) )
                     {
                             bump = yes;
                             break;
                     }
                 }
 
-                if (bump)
+                if ( bump )
                 {
-                    RemoveNode(node);
-                    InsertNodeAtStart(body, node);
+                    RemoveNode( node );
+                    InsertNodeAtStart( body, node );
                 }
             }
         }
     }
 }
+
+void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
+{
+    Node *pNode;
+    Bool bBRDeleted = no;
+
+    if (NULL == pParent)
+        return;
+
+    /*  First, check the status of All My Children  */
+    for ( pNode = pParent->content; NULL != pNode; pNode = pNode->next )
+    {
+        FixBrakes( pDoc, pNode );
+    }
+
+    /*  As long as my last child is a <br />, move it to my last peer  */
+    if ( nodeCMIsBlock( pParent ))
+    { 
+        for ( pNode = pParent->last; 
+              NULL != pNode && nodeIsBR( pNode ); 
+              pNode = pParent->last ) 
+        {
+            if ( NULL == pNode->attributes && no == bBRDeleted )
+            {
+                DiscardElement( pDoc, pNode );
+                bBRDeleted = yes;
+            }
+            else
+            {
+                RemoveNode( pNode );
+                InsertNodeAfterElement( pParent, pNode );
+            }
+        }
+        TrimEmptyElement( pDoc, pParent );
+    }
+}
+
+void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
+{
+    if (!nodeIsHEAD( pHead ))
+        pHead = FindHEAD( pDoc );
+    if (NULL != pHead)
+    {
+        /*  Find any meta tag which has an http-equiv tag 
+            where value is content-type  */
+        Node *pNode;
+
+        for (pNode = pHead->content; NULL != pNode; pNode = pNode->next)
+        {
+            if (nodeIsMETA( pNode ))
+            {
+                AttVal *pAttVal;
+                if (NULL != (pAttVal = GetAttrByName( pNode, "http-equiv" )))
+                {
+                    if (0 != tmbstrcasecmp( pAttVal->value, "CONTENT-TYPE" ))
+                        continue;
+                    if (NULL != (pAttVal = GetAttrByName( pNode, "content" )))
+                    {
+                        StyleProp *pFirstProp = null, *pLastProp = null, *prop = null;
+                        tmbstr s, pszBegin, pszEnd;
+
+                        pszBegin = s = tmbstrdup( pAttVal->value );
+                        while ('\0' != *pszBegin)
+                        {
+                            while (isspace( *pszBegin ))
+                                pszBegin++;
+                            pszEnd = pszBegin;
+                            while ('\0' != *pszEnd && ';' != *pszEnd)
+                                pszEnd++;
+                            if (';' == *pszEnd )
+                                *(pszEnd++) = '\0';
+                            if (pszEnd > pszBegin)
+                            {
+                                prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
+                                prop->name = tmbstrdup( pszBegin );
+                                prop->value = null;
+                                prop->next = null;
+
+                                if (null != pLastProp)
+                                    pLastProp->next = prop;
+                                else
+                                    pFirstProp = prop;
+                                pLastProp = prop;
+                                pszBegin = pszEnd;
+                            }
+                        }
+                        MemFree( s );
+
+                        /*  find the charset property */
+                        for (prop = pFirstProp; null != prop; prop = prop->next)
+                        {
+                            if (0 == tmbstrncasecmp( prop->name, "charset", 7 ))
+                            {
+                                ctmbstr enc = null;
+
+                                MemFree( prop->name );
+                                prop->name = MemAlloc( 32 );
+                                switch ( cfg( pDoc, TidyOutCharEncoding) )
+                                {
+                                    case RAW:       enc = "raw";          break;
+                                    case ASCII:     enc = "us-ascii";     break;
+                                    case LATIN1:    enc = "iso-8859-1";   break;
+                                    case UTF8:      enc = "UTF8";         break;
+                                    case ISO2022:   enc = "iso-2022";     break;
+                                    case MACROMAN:  enc = "mac";          break;
+                                    case WIN1252:   enc = "windows-1252"; break;
+#if SUPPORT_UTF16_ENCODINGS
+                                    case UTF16LE:   enc = "UTF-16LE";     break;
+                                    case UTF16BE:   enc = "UTF-16BE";     break;
+                                    case UTF16:     enc = "UTF-16";       break;
+#endif
+#if SUPPORT_ASIAN_ENCODINGS
+                                    case BIG5:      enc = "big5";         break;
+                                    case SHIFTJIS:  enc = "shiftjis";     break;
+#endif
+                                }
+                                sprintf( prop->name, "charset=%s", enc );
+                                s = CreatePropString( pFirstProp );
+                                MemFree( pAttVal->value );
+                                pAttVal->value = s;
+                                FreeStyleProps(prop);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#define MissingVersion(ver, verWanted)  (!(ver & verWanted) && !(ver & VERS_PROPRIETARY))
+
+static Bool AttrCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
+{
+    Bool compliant = yes;
+    AttVal* attr = node->attributes;
+    for ( /**/; attr; attr = attr->next )
+    {
+        uint attrVer = AttrVersions( attr );
+        if ( MissingVersion(attrVer, versWanted) )
+        {
+            ReportNonCompliantAttr( doc, node, attr, versWanted );
+            compliant = no;
+        }
+
+        /* No align, except on: <col>, <colgroup>, <tbody>, <td>,
+        ** <tfoot>, <th>, <thead>, <tr>
+        */
+        if ( attrIsALIGN(attr) && VERS_HTML40_STRICT==versWanted )
+        {
+            switch ( TagId(node) )
+            {
+            case TidyTag_COL:
+            case TidyTag_COLGROUP:
+            case TidyTag_TBODY:
+            case TidyTag_TD:
+            case TidyTag_TFOOT:
+            case TidyTag_TH:
+            case TidyTag_THEAD:
+            case TidyTag_TR:
+                break;
+
+            default:
+                ReportNonCompliantAttr( doc, node, attr, versWanted );
+                compliant = no;
+                break;
+            }
+        }
+    }
+    return compliant;
+}
+
+static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
+{
+    Bool compliant = yes;
+    Bool checkCM = no;
+
+    if ( !node )
+      return no;
+
+    switch ( node->type )
+    {
+#if 0
+    case TidyNode_Root:        /* Root */
+    case TidyNode_DocType:     /* DOCTYPE */
+    case TidyNode_Comment:     /* Comment */
+    case TidyNode_ProcIns:     /* Processing Instruction */
+        break;
+#endif
+
+    case TidyNode_Text:        /* Text */
+        checkCM = yes;
+        break;
+
+    case TidyNode_Start:       /* Start Tag */
+    case TidyNode_StartEnd:    /* Start/End (empty) Tag */
+        checkCM = !nodeCMIsBlock( node );
+        compliant = AttrCompliance( doc, node, versWanted );
+        if ( compliant )
+        {
+            uint nodeVer = node->tag->versions;
+            if ( MissingVersion(nodeVer, versWanted) )
+            {
+                ReportNonCompliantNode( doc, node,
+                                        OBSOLETE_ELEMENT, versWanted );
+                compliant = no;
+            }
+        }
+        if ( compliant && VERS_HTML40_STRICT == versWanted )
+        {
+            AttVal* attr = null;
+            switch ( TagId(node) )
+            {
+            case TidyTag_BR: /* no clear */
+                attr = AttrGetById( node, TidyAttr_CLEAR );
+                break;
+
+            case TidyTag_HR: /* no size, shade */
+                attr = AttrGetById( node, TidyAttr_SIZE );
+                if ( !attr )
+                    attr = AttrGetById( node, TidyAttr_NOSHADE );
+                break;
+
+            case TidyTag_IMG: /* no border */
+                attr = AttrGetById( node, TidyAttr_BORDER );
+                break;
+
+            case TidyTag_LI: /* no value, type */
+                attr = AttrGetById( node, TidyAttr_TYPE );
+                if ( !attr )
+                    attr = AttrGetById( node, TidyAttr_VALUE );
+                break;
+
+            case TidyTag_OL: /* no start, type */
+                attr = AttrGetById( node, TidyAttr_TYPE );
+                if ( !attr )
+                    attr = AttrGetById( node, TidyAttr_START );
+                break;
+
+            case TidyTag_PRE: /* no width */
+                attr = AttrGetById( node, TidyAttr_WIDTH );
+                break;
+
+            case TidyTag_SCRIPT: /* no language */
+                attr = AttrGetById( node, TidyAttr_LANGUAGE );
+                break;
+
+            case TidyTag_TD: /* no width, height */
+            case TidyTag_TH:
+                attr = AttrGetById( node, TidyAttr_WIDTH );
+                if ( !attr )
+                    attr = AttrGetById( node, TidyAttr_HEIGHT );
+                break;
+
+            case TidyTag_UL: /* no type */
+                attr = AttrGetById( node, TidyAttr_TYPE );
+                break;
+            }
+            if ( attr )
+            {
+              ReportNonCompliantAttr( doc, node, attr, versWanted );
+              compliant = no;
+            }
+        }
+        break;
+
+#if 0
+    case TidyNode_End:         /* End Tag */
+    case TidyNode_CDATA:       /* Unparsed Text */
+    case TidyNode_Section:     /* XML Section */
+    case TidyNode_Asp:         /* ASP Source */
+    case TidyNode_Jste:        /* JSTE Source */
+    case TidyNode_Php:         /* PHP Source */
+    case TidyNode_XmlDecl:     /* XML Declaration */
+        break;
+#endif
+    }
+
+    /* Check inline elements and text nodes
+    ** not a child of %block content model.
+    */
+    if ( compliant && checkCM )
+    {
+        Node* parent = node->parent;
+        if ( nodeIsBODY(parent)       ||
+             nodeIsMAP(parent)        ||
+             nodeIsBLOCKQUOTE(parent) ||
+             nodeIsFORM(parent)       ||
+             nodeIsNOSCRIPT(parent) )
+        {
+            ReportNonCompliantNode( doc, parent,
+                                    MIXED_CONTENT_IN_BLOCK, versWanted );
+        }
+    }
+
+    /* Scan all child nodes */
+    for ( node=node->content; node; node = node->next )
+    {
+        Bool comply = NodeCompliance( doc, node, versWanted );
+        if ( compliant && !comply )
+            compliant = no;
+    }
+
+    return compliant;
+}
+
+Bool  HTMLVersionCompliance( TidyDocImpl* doc )
+{
+    Bool compliant = no;
+    uint versWanted = VERS_HTML32;
+    uint dtmode = cfg( doc, TidyDoctypeMode );
+    uint  contver = (uint) doc->lexer->versions;
+    uint  dtver = (uint) doc->lexer->doctype;
+
+    if ( TidyDoctypeStrict == dtmode || VERS_HTML40_STRICT == dtver )
+        versWanted = VERS_HTML40_STRICT;
+    else if ( TidyDoctypeLoose == dtmode || VERS_HTML40_LOOSE == dtver )
+        versWanted = VERS_HTML40_LOOSE;
+
+    compliant = ( (versWanted & contver) != 0 );
+    if ( !compliant )
+        NodeCompliance( doc, doc->root, versWanted );
+    return compliant;
+}
+

@@ -2,7 +2,7 @@
 <head>
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy Configuration Options Quick Reference</title>
-<meta name="version" content="$Id: quickref.html,v 1.3 2002/12/04 14:56:06 creitzel Exp $" />
+<meta name="version" content="$Id: quickref.html,v 1.4 2003/02/16 19:33:05 creitzel Exp $" />
 </head>
 <body>
 <a name="top"></a><h1>Quick Reference</h1>
@@ -258,37 +258,12 @@ names</td>
 <td class="tabletitle">Default</td>
 </tr>
 <tr>
-<td><a href="#error-file">error-file</a></td>
-<td>String</td>
-<td></td>
-</tr>
-<tr>
-<td><a href="#force-output">force-output</a></td>
-<td>Boolean</td>
-<td>no</td>
-</tr>
-<tr>
-<td><a href="#gnu-emacs">gnu-emacs</a></td>
-<td>Boolean</td>
-<td>no</td>
-</tr>
-<tr>
-<td><a href="#quiet">quiet</a></td>
-<td>Boolean</td>
-<td>no</td>
-</tr>
-<tr>
 <td><a href="#show-errors">show-errors</a></td>
 <td>Integer</td>
 <td>6</td>
 </tr>
 <tr>
 <td><a href="#show-warnings">show-warnings</a></td>
-<td>Boolean</td>
-<td>yes</td>
-</tr>
-<tr>
-<td><a href="#tidy-mark">tidy-mark</a></td>
 <td>Boolean</td>
 <td>yes</td>
 </tr>
@@ -414,9 +389,9 @@ names</td>
 <td>ascii</td>
 </tr>
 <tr>
-<td><a href="#raw">raw</a></td>
-<td>Boolean</td>
-<td>no</td>
+<td><a href="#newline">newline</a></td>
+<td>enum</td>
+<td><em>Platform Dependent</em></td>
 </tr>
 <tr valign="bottom">
 <td colspan="3"><br /></td>
@@ -437,6 +412,31 @@ names</td>
 <td>yes</td>
 </tr>
 <tr>
+<td><a href="#output-file">output-file</a></td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#error-file">error-file</a></td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#force-output">force-output</a></td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="#gnu-emacs">gnu-emacs</a></td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="#quiet">quiet</a></td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
 <td><a href="#keep-time">keep-time</a></td>
 <td>Boolean</td>
 <td>yes</td>
@@ -445,6 +445,11 @@ names</td>
 <td><a href="#write-back">write-back</a></td>
 <td>Boolean</td>
 <td>no</td>
+</tr>
+<tr>
+<td><a href="#tidy-mark">tidy-mark</a></td>
+<td>Boolean</td>
+<td>yes</td>
 </tr>
 <tr valign="bottom">
 <td colspan="3"><br /></td>
@@ -1396,47 +1401,6 @@ VML.</td>
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="error-file"></a>error-file</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>String</b><br />
-  Default: <b>-none-</b><br /></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies the error file
-Tidy uses for errors and warnings. Normally errors and warnings are output
-to "stderr".</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="force-output"></a>force-output</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies if Tidy
-should produce output even if errors are encountered. Use this option with
-care - if Tidy reports an error, this means Tidy was not able to, or is not
-sure how to, fix the error, so the resulting output may not reflect your
-intention. </td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
 <td class="tabletitle" valign="top"><a name="gnu-emacs"></a>gnu-emacs</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -1513,27 +1477,6 @@ shown. If set to 0, then no errors are shown.</td>
 <td colspan="2">This option specifies if Tidy
 should suppress warnings. This can be useful when a few errors are hidden
 in a flurry of warnings. </td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="tidy-mark"></a>tidy-mark</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>yes</b><br />
-  Example: <b>y/n, yes/no,
-t/f, true/false, 1/0</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies if Tidy should add a meta
-element to the document head to indicate that the document has been tidied.
-Tidy won't add a meta element if one is already present.</td>
 </tr>
 <tr>
 <td><br /><br /></td>
@@ -1654,7 +1597,7 @@ finds significant errors (see force-output).</td>
 <tr>
 <td valign="top">
   Type: <b>Integer</b><br />
-  Default: <b>4</b><br />
+  Default: <b>8</b><br />
   Example: <b>0, 1, 2, ...</b></td>
 <td align="right" valign="top">
 </td>
@@ -1841,7 +1784,7 @@ break.</td>
 <td valign="top">
   Type: <b>Encoding</b><br />
   Default: <b>ascii</b><br />
-  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252</b></td>
+  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252, utf16, utf16le, utf16be, big5, shiftjis</b></td>
 <td align="right" valign="top"><a href="#input-encoding">input-encoding</a><br /><a href="#output-encoding">output-encoding</a></td>
 </tr>
 <tr>
@@ -1867,7 +1810,7 @@ entities for all characters whose value &gt; 127. </td>
 <td valign="top">
   Type: <b>Encoding</b><br />
   Default: <b>latin1</b><br />
-  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252</b></td>
+  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252, utf16, utf16le, utf16be, big5, shiftjis</b></td>
 <td align="right" valign="top"><a href="#char-encoding">char-encoding</a></td>
 </tr>
 <tr>
@@ -1929,7 +1872,7 @@ encodings.</td>
 <td valign="top">
   Type: <b>Encoding</b><br />
   Default: <b>ascii</b><br />
-  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252</b></td>
+  Example: <b>ascii, latin1, raw, utf8, iso2022, mac, win1252, utf16, utf16le, utf16be, big5, shiftjis</b></td>
 <td align="right" valign="top"><a href="#char-encoding">char-encoding</a></td>
 </tr>
 <tr>
@@ -1942,20 +1885,19 @@ win1252).</td>
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="raw"></a>raw</td>
+<td class="tabletitle" valign="top"><a name="newline"></a>newline</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
 <tr>
 <td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f,
-true/false, 1/0</b></td>
-<td align="right" valign="top"><a href="#char-encoding">char-encoding</a></td>
+  Type: <b>Enum</b><br />
+  Default: <em>Platform Dependent</em><br />
+  Example: <b>LF, CRLF, CR</b></td>
+<td align="right" valign="top">
+</td>
 </tr>
 <tr>
-<td colspan="2">Currently not used, but this
-option would be the same as the char-encoding: raw option.</td>
+<td colspan="2">The default is appropriate to the current platform: CRLF on Windows and OS/2, CR on the Mac and LF everywhere else (Unix and Linux).</td>
 </tr>
 <tr>
 <td><br /><br /></td>
@@ -1983,6 +1925,63 @@ option would be the same as the char-encoding: raw option.</td>
 <td colspan="2">This option
 specifies if Tidy should replace backslash characters "\" in URLs by
 forward slashes "/". </td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="output-file"></a>output-file</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>String</b><br />
+  Default: <b>-none-</b><br /></td>
+<td align="right" valign="top"><a href="#error-file">error-file</a></td>
+</tr>
+<tr>
+<td colspan="2">This option specifies the output file
+Tidy uses for markup. Normally markup is written to "stdout".</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="error-file"></a>error-file</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>String</b><br />
+  Default: <b>-none-</b><br /></td>
+<td align="right" valign="top"><a href="#output-file">output-file</a></td>
+</tr>
+<tr>
+<td colspan="2">This option specifies the error file
+Tidy uses for errors and warnings. Normally errors and warnings are output
+to "stderr".</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="force-output"></a>force-output</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy
+should produce output even if errors are encountered. Use this option with
+care - if Tidy reports an error, this means Tidy was not able to, or is not
+sure how to, fix the error, so the resulting output may not reflect your
+intention. </td>
 </tr>
 <tr>
 <td><br /></td>
@@ -2026,6 +2025,27 @@ that this feature may not work on some platforms. </td>
 should write back the tidied markup to the same file it read from. You are
 advised to keep copies of important files before tidying them, as on rare
 occasions the result may not be what you expect. </td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="tidy-mark"></a>tidy-mark</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>yes</b><br />
+  Example: <b>y/n, yes/no,
+t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should add a meta
+element to the document head to indicate that the document has been tidied.
+Tidy won't add a meta element if one is already present.</td>
 </tr>
 </table>
 </body>

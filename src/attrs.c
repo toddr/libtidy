@@ -1,117 +1,20 @@
 /* attrs.c -- recognize HTML attributes
 
   (c) 1998-2002 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+  See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/05/31 21:55:57 $ 
-    $Revision: 1.53 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:10 $ 
+    $Revision: 1.54 $ 
 
 */
 
-#include "platform.h"   /* platform independent stuff */
-#include "html.h"       /* to pull in definition of nodes */
-
-Attribute *attr_href;
-Attribute *attr_src;
-Attribute *attr_id;
-Attribute *attr_name;
-Attribute *attr_summary;
-Attribute *attr_alt;
-Attribute *attr_longdesc;
-Attribute *attr_usemap;
-Attribute *attr_ismap;
-Attribute *attr_language;
-Attribute *attr_type;
-Attribute *attr_value;
-Attribute *attr_content;
-Attribute *attr_title;
-Attribute *attr_xmlns;
-Attribute *attr_datafld;
-Attribute *attr_width;
-Attribute *attr_height;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-/* Additions by Mike Lam */
-Attribute* attr_for;
-Attribute* attr_selected;
-Attribute* attr_checked;
-Attribute* attr_lang;
-Attribute* attr_target;
-Attribute* attr_httpEquiv;
-Attribute* attr_rel;
-Attribute* attr_onMouseMove;
-Attribute* attr_onMouseDown;
-Attribute* attr_onMouseUp;
-Attribute* attr_onClick;
-Attribute* attr_onMouseOver;
-Attribute* attr_onMouseOut;
-Attribute* attr_onKeyDown;
-Attribute* attr_onKeyUp;
-Attribute* attr_onKeyPress;
-Attribute* attr_onFocus;
-Attribute* attr_onBlur;
-Attribute* attr_bgcolor;
-Attribute* attr_text;
-Attribute* attr_link;
-Attribute* attr_alink;
-Attribute* attr_vlink;
-Attribute* attr_style;
-Attribute* attr_abbr;
-Attribute* attr_colspan;
-Attribute* attr_font;
-Attribute* attr_basefont;
-Attribute* attr_rowspan;
-#endif
-
-AttrCheck CheckUrl;
-AttrCheck CheckScript;
-AttrCheck CheckName;
-AttrCheck CheckId;
-AttrCheck CheckAlign;
-AttrCheck CheckValign;
-AttrCheck CheckBool;
-AttrCheck CheckLength;
-AttrCheck CheckTarget;
-AttrCheck CheckFsubmit;
-AttrCheck CheckClear;
-AttrCheck CheckShape;
-AttrCheck CheckNumber;
-AttrCheck CheckScope;
-AttrCheck CheckColor;
-AttrCheck CheckVType;
-AttrCheck CheckScroll;
-AttrCheck CheckTextDir;
-AttrCheck CheckLang;
-
-extern Bool XmlTags;
-extern Bool XmlOut;
-extern char *alt_text;
-
-#define XHTML_NAMESPACE "http://www.w3.org/1999/xhtml"
-
-#define HASHSIZE 357
-
-static Attribute *hashtab[HASHSIZE];
-
-/*
- Bind attribute types to procedures to check values.
- You can add new procedures for better validation
- and each procedure has access to the node in which
- the attribute occurred as well as the attribute name
- and its value.
-
- By default, attributes are checked without regard
- to the element they are found on. You have the choice
- of making the procedure test which element is involved
- or in writing methods for each element which controls
- exactly how the attributes of that element are checked.
- This latter approach is best for detecting the absence
- of required attributes.
-*/
+#include "tidy-int.h"
+#include "attrs.h"
+#include "message.h"
+#include "tmbstr.h"
 
 #define TEXT        null
 #define CHARSET     null
@@ -149,321 +52,452 @@ static Attribute *hashtab[HASHSIZE];
 #define TARGET      CheckTarget
 #define VTYPE       CheckVType
 
-static struct _attrlist
+/*
+*/
+
+static const Attribute attribute_defs [] =
 {
-    char *name;
-    unsigned versions;
-    AttrCheck *attrchk;
-} attrlist[] =
-{
-    {"abbr",             VERS_HTML40,            TEXT},
-    {"accept-charset",   VERS_HTML40,            CHARSET},
-    {"accept",           VERS_ALL,               TYPE},
-    {"accesskey",        VERS_HTML40,            CHARACTER},
-    {"action",           VERS_ALL,               URL},
-    {"add_date",         VERS_NETSCAPE,          TEXT},     /* A */
-    {"align",            VERS_ALL,               ALIGN},    /* set varies with element */
-    {"alink",            VERS_LOOSE,             COLOR},
-    {"alt",              VERS_ALL,               TEXT},
-    {"archive",          VERS_HTML40,            URLS},     /* space or comma separated list */
-    {"axis",             VERS_HTML40,            TEXT},
-    {"background",       VERS_LOOSE,             URL},
-    {"bgcolor",          VERS_LOOSE,             COLOR},
-    {"bgproperties",     VERS_PROPRIETARY,       TEXT},     /* BODY "fixed" fixes background */
-    {"border",           VERS_ALL,               BORDER},   /* like LENGTH + "border" */
-    {"bordercolor",      VERS_MICROSOFT,         COLOR},    /* used on TABLE */
-    {"bottommargin",     VERS_MICROSOFT,         NUMBER},   /* used on BODY */
-    {"cellpadding",      VERS_FROM32,            LENGTH},   /* % or pixel values */
-    {"cellspacing",      VERS_FROM32,            LENGTH},
-    {"char",             VERS_HTML40,            CHARACTER},
-    {"charoff",          VERS_HTML40,            LENGTH},
-    {"charset",          VERS_HTML40,            CHARSET},
-    {"checked",          VERS_ALL,               BOOL},     /* i.e. "checked" or absent */
-    {"cite",             VERS_HTML40,            URL},
-    {"class",            VERS_HTML40,            TEXT},
-    {"classid",          VERS_HTML40,            URL},
-    {"clear",            VERS_LOOSE,             CLEAR},    /* BR: left, right, all */
-    {"code",             VERS_LOOSE,             TEXT},     /* APPLET */
-    {"codebase",         VERS_HTML40,            URL},      /* OBJECT */
-    {"codetype",         VERS_HTML40,            TYPE},     /* OBJECT */
-    {"color",            VERS_LOOSE,             COLOR},    /* BASEFONT, FONT */
-    {"cols",             VERS_IFRAME,            COLS},     /* TABLE & FRAMESET */
-    {"colspan",          VERS_FROM32,            NUMBER},
-    {"compact",          VERS_ALL,               BOOL},     /* lists */
-    {"content",          VERS_ALL,               TEXT},     /* META */
-    {"coords",           VERS_FROM32,            COORDS},   /* AREA, A */    
-    {"data",             VERS_HTML40,            URL},      /* OBJECT */
-    {"datafld",          VERS_MICROSOFT,         TEXT},     /* used on DIV, IMG */
-    {"dataformatas",     VERS_MICROSOFT,         TEXT},     /* used on DIV, IMG */
-    {"datapagesize",     VERS_MICROSOFT,         NUMBER},   /* used on DIV, IMG */
-    {"datasrc",          VERS_MICROSOFT,         URL},      /* used on TABLE */
-    {"datetime",         VERS_HTML40,            DATE},     /* INS, DEL */
-    {"declare",          VERS_HTML40,            BOOL},     /* OBJECT */
-    {"defer",            VERS_HTML40,            BOOL},     /* SCRIPT */
-    {"dir",              VERS_HTML40,            TEXTDIR},  /* ltr or rtl */
-    {"disabled",         VERS_HTML40,            BOOL},     /* form fields */
-    {"enctype",          VERS_ALL,               TYPE},     /* FORM */
-    {"face",             VERS_LOOSE,             TEXT},     /* BASEFONT, FONT */
-    {"for",              VERS_HTML40,            IDREF},    /* LABEL */
-    {"frame",            VERS_HTML40,            TFRAME},   /* TABLE */
-    {"frameborder",      VERS_FRAMESET,          FBORDER},  /* 0 or 1 */
-    {"framespacing",     VERS_PROPRIETARY,       NUMBER},   /* pixel value */
-    {"gridx",            VERS_PROPRIETARY,       NUMBER},   /* TABLE Adobe golive*/
-    {"gridy",            VERS_PROPRIETARY,       NUMBER},   /* TABLE Adobe golive */
-    {"headers",          VERS_HTML40,            IDREFS},   /* table cells */
-    {"height",           VERS_ALL,               LENGTH},   /* pixels only for TH/TD */
-    {"href",             VERS_ALL,               URL},      /* A, AREA, LINK and BASE */
-    {"hreflang",         VERS_HTML40,            LANG},     /* A, LINK */
-    {"hspace",           VERS_ALL,               NUMBER},   /* APPLET, IMG, OBJECT */
-    {"http-equiv",       VERS_ALL,               TEXT},     /* META */
-    {"id",               VERS_HTML40,            IDDEF},
-    {"ismap",            VERS_ALL,               BOOL},     /* IMG */
-    {"label",            VERS_HTML40,            TEXT},     /* OPT, OPTGROUP */
-    {"lang",             VERS_HTML40,            LANG},
-    {"language",         VERS_LOOSE,             TEXT},     /* SCRIPT */
-    {"last_modified",    VERS_NETSCAPE,          TEXT},     /* A */
-    {"last_visit",       VERS_NETSCAPE,          TEXT},     /* A */
-    {"leftmargin",       VERS_MICROSOFT,         NUMBER},   /* used on BODY */
-    {"link",             VERS_LOOSE,             COLOR},    /* BODY */
-    {"longdesc",         VERS_HTML40,            URL},      /* IMG */
-    {"lowsrc",           VERS_PROPRIETARY,       URL},      /* IMG */
-    {"marginheight",     VERS_IFRAME,            NUMBER},   /* FRAME, IFRAME, BODY */
-    {"marginwidth",      VERS_IFRAME,            NUMBER},   /* ditto */
-    {"maxlength",        VERS_ALL,               NUMBER},   /* INPUT */
-    {"media",            VERS_HTML40,            MEDIA},    /* STYLE, LINK */
-    {"method",           VERS_ALL,               FSUBMIT},  /* FORM: get or post */
-    {"multiple",         VERS_ALL,               BOOL},     /* SELECT */
-    {"name",             VERS_ALL,               NAME},
-    {"nohref",           VERS_FROM32,            BOOL},     /* AREA */
-    {"noresize",         VERS_FRAMESET,          BOOL},     /* FRAME */
-    {"noshade",          VERS_LOOSE,             BOOL},     /* HR */
-    {"nowrap",           VERS_LOOSE,             BOOL},     /* table cells */
-    {"object",           VERS_HTML40_LOOSE,      TEXT},     /* APPLET */
-    {"onblur",           VERS_EVENTS,            SCRIPT},   /* event */
-    {"onchange",         VERS_EVENTS,            SCRIPT},   /* event */
-    {"onclick",          VERS_EVENTS,            SCRIPT},   /* event */
-    {"ondblclick",       VERS_EVENTS,            SCRIPT},   /* event */
-    {"onkeydown",        VERS_EVENTS,            SCRIPT},   /* event */
-    {"onkeypress",       VERS_EVENTS,            SCRIPT},   /* event */
-    {"onkeyup",          VERS_EVENTS,            SCRIPT},   /* event */
-    {"onload",           VERS_EVENTS,            SCRIPT},   /* event */
-    {"onmousedown",      VERS_EVENTS,            SCRIPT},   /* event */
-    {"onmousemove",      VERS_EVENTS,            SCRIPT},   /* event */
-    {"onmouseout",       VERS_EVENTS,            SCRIPT},   /* event */
-    {"onmouseover",      VERS_EVENTS,            SCRIPT},   /* event */
-    {"onmouseup",        VERS_EVENTS,            SCRIPT},   /* event */
-    {"onsubmit",         VERS_EVENTS,            SCRIPT},   /* event */
-    {"onreset",          VERS_EVENTS,            SCRIPT},   /* event */
-    {"onselect",         VERS_EVENTS,            SCRIPT},   /* event */
-    {"onunload",         VERS_EVENTS,            SCRIPT},   /* event */
-    {"onfocus",          VERS_EVENTS,            SCRIPT},   /* event */
-    {"onafterupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"onbeforeupdate",   VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"onerrorupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"onrowenter",       VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"onrowexit",        VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"onbeforeunload",   VERS_MICROSOFT,         SCRIPT},   /* form fields */
-    {"ondatasetchanged", VERS_MICROSOFT,         SCRIPT},   /* object, applet */
-    {"ondataavailable",  VERS_MICROSOFT,         SCRIPT},   /* object, applet */
-    {"ondatasetcomplete",VERS_MICROSOFT,         SCRIPT},   /* object, applet */
-    {"profile",          VERS_HTML40,            URL},      /* HEAD */
-    {"prompt",           VERS_LOOSE,             TEXT},     /* ISINDEX */
-    {"readonly",         VERS_HTML40,            BOOL},     /* form fields */
-    {"rel",              VERS_ALL,               LINKTYPES}, /* A, LINK */
-    {"rev",              VERS_ALL,               LINKTYPES}, /* A, LINK */
-    {"rightmargin",      VERS_MICROSOFT,         NUMBER},   /* used on BODY */
-    {"rows",             VERS_ALL,               NUMBER},   /* TEXTAREA */
-    {"rowspan",          VERS_ALL,               NUMBER},   /* table cells */
-    {"rules",            VERS_HTML40,            TRULES},   /* TABLE */
-    {"scheme",           VERS_HTML40,            TEXT},     /* META */
-    {"scope",            VERS_HTML40,            SCOPE},    /* table cells */
-    {"scrolling",        VERS_IFRAME,            SCROLL},   /* yes, no or auto */
-    {"selected",         VERS_ALL,               BOOL},     /* OPTION */
-    {"shape",            VERS_FROM32,            SHAPE},    /* AREA, A */
-    {"showgrid",         VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive */
-    {"showgridx",        VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive*/
-    {"showgridy",        VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive*/
-    {"size",             VERS_LOOSE,             NUMBER},   /* HR, FONT, BASEFONT, SELECT */
-    {"span",             VERS_HTML40,            NUMBER},   /* COL, COLGROUP */
-    {"src",              VERS_ALL,               URL},      /* IMG, FRAME, IFRAME */
-    {"standby",          VERS_HTML40,            TEXT},     /* OBJECT */
-    {"start",            VERS_ALL,               NUMBER},   /* OL */
-    {"style",            VERS_HTML40,            TEXT},
-    {"summary",          VERS_HTML40,            TEXT},     /* TABLE */
-    {"tabindex",         VERS_HTML40,            NUMBER},   /* fields, OBJECT  and A */
-    {"target",           VERS_HTML40,            TARGET},   /* names a frame/window */
-    {"text",             VERS_LOOSE,             COLOR},    /* BODY */
-    {"title",            VERS_HTML40,            TEXT},     /* text tool tip */
-    {"topmargin",        VERS_MICROSOFT,         NUMBER},   /* used on BODY */
-    {"type",             VERS_FROM32,            TYPE},     /* also used by SPACER */
-    {"usemap",           VERS_ALL,               BOOL},     /* things with images */
-    {"valign",           VERS_FROM32,            VALIGN},
-    {"value",            VERS_ALL,               TEXT},     /* OPTION, PARAM */
-    {"valuetype",        VERS_HTML40,            VTYPE},    /* PARAM: data, ref, object */
-    {"version",          VERS_ALL,               TEXT},     /* HTML */
-    {"vlink",            VERS_LOOSE,             COLOR},    /* BODY */
-    {"vspace",           VERS_LOOSE,             NUMBER},   /* IMG, OBJECT, APPLET */
-    {"width",            VERS_ALL,               LENGTH},   /* pixels only for TD/TH */
-    {"wrap",             VERS_NETSCAPE,          TEXT},     /* textarea */
-    {"xml:lang",         VERS_XML,               TEXT},     /* XML language */
-    {"xml:space",        VERS_XML,               TEXT},     /* XML language */
-    {"xmlns",            VERS_ALL,               TEXT},     /* name space */
-    {"rbspan",           VERS_XHTML11,           NUMBER},   /* ruby markup */
+  {TidyAttr_UNKNOWN,  "unknown!",     VERS_PROPRIETARY,  null},
+  {TidyAttr_ABBR,     "abbr",         VERS_HTML40,       TEXT},
+  {TidyAttr_ACCEPT,   "accept",       VERS_ALL,          TYPE},
+  {TidyAttr_ACCEPT_CHARSET, "accept-charset", VERS_HTML40, CHARSET},
+  {TidyAttr_ACCESSKEY, "accesskey",   VERS_HTML40,       CHARACTER},
+  {TidyAttr_ACTION,   "action",       VERS_ALL,          URL},
+  {TidyAttr_ADD_DATE, "add_date",     VERS_NETSCAPE,     TEXT},     /* A */
+  {TidyAttr_ALIGN,    "align",        VERS_ALL,          ALIGN},    /* varies by element */
+  {TidyAttr_ALINK,    "alink",        VERS_LOOSE,        COLOR},
+  {TidyAttr_ALT,      "alt",          VERS_ALL,          TEXT,  yes }, /* nowrap */
+  {TidyAttr_ARCHIVE,  "archive",      VERS_HTML40,       URLS},     /* space or comma separated list */
+  {TidyAttr_AXIS,     "axis",         VERS_HTML40,       TEXT},
+  {TidyAttr_BACKGROUND, "background", VERS_LOOSE,        URL},
+  {TidyAttr_BGCOLOR,  "bgcolor",      VERS_LOOSE,        COLOR},
+  {TidyAttr_BGPROPERTIES, "bgproperties", VERS_PROPRIETARY, TEXT},  /* BODY "fixed" fixes background */
+  {TidyAttr_BORDER,   "border",       VERS_ALL,          BORDER},   /* like LENGTH + "border" */
+  {TidyAttr_BORDERCOLOR, "bordercolor",  VERS_MICROSOFT, COLOR},    /* used on TABLE */
+  {TidyAttr_BOTTOMMARGIN, "bottommargin",VERS_MICROSOFT, NUMBER},   /* used on BODY */
+  {TidyAttr_CELLPADDING, "cellpadding", VERS_FROM32,     LENGTH},   /* % or pixel values */
+  {TidyAttr_CELLSPACING, "cellspacing", VERS_FROM32,     LENGTH},
+  {TidyAttr_CHAR,     "char",         VERS_HTML40,       CHARACTER},
+  {TidyAttr_CHAROFF,  "charoff",      VERS_HTML40,       LENGTH},
+  {TidyAttr_CHARSET,  "charset",      VERS_HTML40,       CHARSET},
+  {TidyAttr_CHECKED,  "checked",      VERS_ALL,          BOOL},     /* i.e. "checked" or absent */
+  {TidyAttr_CITE,     "cite",         VERS_HTML40,       URL},
+  {TidyAttr_CLASS,    "class",        VERS_HTML40,       TEXT},
+  {TidyAttr_CLASSID,  "classid",      VERS_HTML40,       URL},
+  {TidyAttr_CLEAR,    "clear",        VERS_LOOSE,        CLEAR},    /* BR: left, right, all */
+  {TidyAttr_CODE,     "code",         VERS_LOOSE,        TEXT},     /* APPLET */
+  {TidyAttr_CODEBASE, "codebase",     VERS_HTML40,       URL},      /* OBJECT */
+  {TidyAttr_CODETYPE, "codetype",     VERS_HTML40,       TYPE},     /* OBJECT */
+  {TidyAttr_COLOR,    "color",        VERS_LOOSE,        COLOR},    /* BASEFONT, FONT */
+  {TidyAttr_COLS,     "cols",         VERS_IFRAME,       COLS},     /* TABLE & FRAMESET */
+  {TidyAttr_COLSPAN,  "colspan",      VERS_FROM32,       NUMBER},
+  {TidyAttr_COMPACT,  "compact",      VERS_ALL,          BOOL},     /* lists */
+  {TidyAttr_CONTENT,  "content",      VERS_ALL,          TEXT, yes},/* META, nowrap */
+  {TidyAttr_COORDS,   "coords",       VERS_FROM32,       COORDS},   /* AREA, A */    
+  {TidyAttr_DATA,     "data",         VERS_HTML40,       URL},      /* OBJECT */
+  {TidyAttr_DATAFLD,  "datafld",      VERS_MICROSOFT,    TEXT},     /* used on DIV, IMG */
+  {TidyAttr_DATAFORMATAS, "dataformatas", VERS_MICROSOFT,TEXT},     /* used on DIV, IMG */
+  {TidyAttr_DATAPAGESIZE, "datapagesize", VERS_MICROSOFT,NUMBER},   /* used on DIV, IMG */
+  {TidyAttr_DATASRC,  "datasrc",      VERS_MICROSOFT,    URL},      /* used on TABLE */
+  {TidyAttr_DATETIME, "datetime",     VERS_HTML40,       DATE},     /* INS, DEL */
+  {TidyAttr_DECLARE,  "declare",      VERS_HTML40,       BOOL},     /* OBJECT */
+  {TidyAttr_DEFER,    "defer",        VERS_HTML40,       BOOL},     /* SCRIPT */
+  {TidyAttr_DIR,      "dir",          VERS_HTML40,       TEXTDIR},  /* ltr or rtl */
+  {TidyAttr_DISABLED, "disabled",     VERS_HTML40,       BOOL},     /* form fields */
+  {TidyAttr_ENCODING, "encoding",     VERS_XML,          TEXT},     /* <?xml?> */
+  {TidyAttr_ENCTYPE,  "enctype",      VERS_ALL,          TYPE},     /* FORM */
+  {TidyAttr_FACE,     "face",         VERS_LOOSE,        TEXT},     /* BASEFONT, FONT */
+  {TidyAttr_FOR,      "for",          VERS_HTML40,       IDREF},    /* LABEL */
+  {TidyAttr_FRAME,    "frame",        VERS_HTML40,       TFRAME},   /* TABLE */
+  {TidyAttr_FRAMEBORDER, "frameborder", VERS_FRAMESET,   FBORDER},  /* 0 or 1 */
+  {TidyAttr_FRAMESPACING, "framespacing", VERS_PROPRIETARY, NUMBER},/* pixel value */
+  {TidyAttr_GRIDX,    "gridx",        VERS_PROPRIETARY,  NUMBER},   /* TABLE Adobe golive*/
+  {TidyAttr_GRIDY,    "gridy",        VERS_PROPRIETARY,  NUMBER},   /* TABLE Adobe golive */
+  {TidyAttr_HEADERS,  "headers",      VERS_HTML40,       IDREFS},   /* table cells */
+  {TidyAttr_HEIGHT,   "height",       VERS_ALL,          LENGTH},   /* pixels only for TH/TD */
+  {TidyAttr_HREF,     "href",         VERS_ALL,          URL},      /* A, AREA, LINK and BASE */
+  {TidyAttr_HREFLANG, "hreflang",     VERS_HTML40,       LANG},     /* A, LINK */
+  {TidyAttr_HSPACE,   "hspace",       VERS_ALL,          NUMBER},   /* APPLET, IMG, OBJECT */
+  {TidyAttr_HTTP_EQUIV, "http-equiv", VERS_ALL,          TEXT},     /* META */
+  {TidyAttr_ID,       "id",           VERS_HTML40,       IDDEF},
+  {TidyAttr_ISMAP,    "ismap",        VERS_ALL,          BOOL},     /* IMG */
+  {TidyAttr_LABEL,    "label",        VERS_HTML40,       TEXT},     /* OPT, OPTGROUP */
+  {TidyAttr_LANG,     "lang",         VERS_HTML40,       LANG},
+  {TidyAttr_LANGUAGE, "language",     VERS_LOOSE,        TEXT},     /* SCRIPT */
+  {TidyAttr_LAST_MODIFIED, "last_modified", VERS_NETSCAPE, TEXT},   /* A */
+  {TidyAttr_LAST_VISIT, "last_visit", VERS_NETSCAPE,     TEXT},     /* A */
+  {TidyAttr_LEFTMARGIN, "leftmargin", VERS_MICROSOFT,    NUMBER},   /* used on BODY */
+  {TidyAttr_LINK,     "link",         VERS_LOOSE,        COLOR},    /* BODY */
+  {TidyAttr_LONGDESC, "longdesc",     VERS_HTML40,       URL},      /* IMG */
+  {TidyAttr_LOWSRC,   "lowsrc",       VERS_PROPRIETARY,  URL},      /* IMG */
+  {TidyAttr_MARGINHEIGHT, "marginheight", VERS_IFRAME,   NUMBER},   /* FRAME, IFRAME, BODY */
+  {TidyAttr_MARGINWIDTH, "marginwidth", VERS_IFRAME,     NUMBER},   /* ditto */
+  {TidyAttr_MAXLENGTH, "maxlength",   VERS_ALL,          NUMBER},   /* INPUT */
+  {TidyAttr_MEDIA,    "media",        VERS_HTML40,       MEDIA},    /* STYLE, LINK */
+  {TidyAttr_METHOD,   "method",       VERS_ALL,          FSUBMIT},  /* FORM: get or post */
+  {TidyAttr_MULTIPLE, "multiple",     VERS_ALL,          BOOL},     /* SELECT */
+  {TidyAttr_NAME,     "name",         VERS_ALL,          NAME},
+  {TidyAttr_NOHREF,   "nohref",       VERS_FROM32,       BOOL},     /* AREA */
+  {TidyAttr_NORESIZE, "noresize",     VERS_FRAMESET,     BOOL},     /* FRAME */
+  {TidyAttr_NOSHADE,  "noshade",      VERS_LOOSE,        BOOL},     /* HR */
+  {TidyAttr_NOWRAP,   "nowrap",       VERS_LOOSE,        BOOL},     /* table cells */
+  {TidyAttr_OBJECT,   "object",       VERS_HTML40_LOOSE, TEXT},     /* APPLET */
+  {TidyAttr_OnAFTERUPDATE, "onafterupdate", VERS_MICROSOFT, SCRIPT},/* form fields */
+  {TidyAttr_OnBEFOREUNLOAD, "onbeforeunload", VERS_MICROSOFT, SCRIPT},/* form fields */
+  {TidyAttr_OnBEFOREUPDATE, "onbeforeupdate", VERS_MICROSOFT, SCRIPT},/* form fields */
+  {TidyAttr_OnBLUR,   "onblur",       VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnCHANGE, "onchange",     VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnCLICK,  "onclick",      VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnDATAAVAILABLE, "ondataavailable", VERS_MICROSOFT, SCRIPT}, /* object, applet */
+  {TidyAttr_OnDATASETCHANGED, "ondatasetchanged", VERS_MICROSOFT, SCRIPT}, /* object, applet */
+  {TidyAttr_OnDATASETCOMPLETE, "ondatasetcomplete", VERS_MICROSOFT, SCRIPT},/* object, applet */
+  {TidyAttr_OnDBLCLICK, "ondblclick", VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnERRORUPDATE, "onerrorupdate", VERS_MICROSOFT, SCRIPT},   /* form fields */
+  {TidyAttr_OnFOCUS,  "onfocus",      VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnKEYDOWN,"onkeydown",    VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnKEYPRESS, "onkeypress", VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnKEYUP,  "onkeyup",      VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnLOAD,   "onload",       VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnMOUSEDOWN, "onmousedown", VERS_EVENTS,     SCRIPT},   /* event */
+  {TidyAttr_OnMOUSEMOVE, "onmousemove", VERS_EVENTS,     SCRIPT},   /* event */
+  {TidyAttr_OnMOUSEOUT, "onmouseout", VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnMOUSEOVER, "onmouseover", VERS_EVENTS,     SCRIPT},   /* event */
+  {TidyAttr_OnMOUSEUP, "onmouseup",   VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnRESET,  "onreset",      VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnROWENTER, "onrowenter", VERS_MICROSOFT,    SCRIPT},   /* form fields */
+  {TidyAttr_OnROWEXIT, "onrowexit",   VERS_MICROSOFT,    SCRIPT},   /* form fields */
+  {TidyAttr_OnSELECT, "onselect",     VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnSUBMIT, "onsubmit",     VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_OnUNLOAD, "onunload",     VERS_EVENTS,       SCRIPT},   /* event */
+  {TidyAttr_PROFILE,  "profile",      VERS_HTML40,       URL},      /* HEAD */
+  {TidyAttr_PROMPT,   "prompt",       VERS_LOOSE,        TEXT},     /* ISINDEX */
+  {TidyAttr_RBSPAN,   "rbspan",       VERS_XHTML11,      NUMBER},   /* ruby markup */
+  {TidyAttr_READONLY, "readonly",     VERS_HTML40,       BOOL},     /* form fields */
+  {TidyAttr_REL,      "rel",          VERS_ALL,          LINKTYPES},/* A, LINK */
+  {TidyAttr_REV,      "rev",          VERS_ALL,          LINKTYPES},/* A, LINK */
+  {TidyAttr_RIGHTMARGIN, "rightmargin", VERS_MICROSOFT,  NUMBER},   /* used on BODY */
+  {TidyAttr_ROWS,     "rows",         VERS_ALL,          NUMBER},   /* TEXTAREA */
+  {TidyAttr_ROWSPAN,  "rowspan",      VERS_ALL,          NUMBER},   /* table cells */
+  {TidyAttr_RULES,    "rules",        VERS_HTML40,       TRULES},   /* TABLE */
+  {TidyAttr_SCHEME,   "scheme",       VERS_HTML40,       TEXT},     /* META */
+  {TidyAttr_SCOPE,    "scope",        VERS_HTML40,       SCOPE},    /* table cells */
+  {TidyAttr_SCROLLING, "scrolling",   VERS_IFRAME,       SCROLL},   /* yes, no or auto */
+  {TidyAttr_SELECTED, "selected",     VERS_ALL,          BOOL},     /* OPTION */
+  {TidyAttr_SHAPE,    "shape",        VERS_FROM32,       SHAPE},    /* AREA, A */
+  {TidyAttr_SHOWGRID, "showgrid",     VERS_PROPRIETARY,  BOOL},     /* TABLE Adobe golive */
+  {TidyAttr_SHOWGRIDX,"showgridx",    VERS_PROPRIETARY,  BOOL},     /* TABLE Adobe golive*/
+  {TidyAttr_SHOWGRIDY,"showgridy",    VERS_PROPRIETARY,  BOOL},     /* TABLE Adobe golive*/
+  {TidyAttr_SIZE,     "size",         VERS_LOOSE,        NUMBER},   /* HR, FONT, BASEFONT, SELECT */
+  {TidyAttr_SPAN,     "span",         VERS_HTML40,       NUMBER},   /* COL, COLGROUP */
+  {TidyAttr_SRC,      "src",          VERS_ALL,          URL},      /* IMG, FRAME, IFRAME */
+  {TidyAttr_STANDBY,  "standby",      VERS_HTML40,       TEXT},     /* OBJECT */
+  {TidyAttr_START,    "start",        VERS_ALL,          NUMBER},   /* OL */
+  {TidyAttr_STYLE,    "style",        VERS_HTML40,       TEXT},
+  {TidyAttr_SUMMARY,  "summary",      VERS_HTML40,       TEXT},     /* TABLE */
+  {TidyAttr_TABINDEX, "tabindex",     VERS_HTML40,       NUMBER},   /* fields, OBJECT  and A */
+  {TidyAttr_TARGET,   "target",       VERS_HTML40,       TARGET},   /* names a frame/window */
+  {TidyAttr_TEXT,     "text",         VERS_LOOSE,        COLOR},    /* BODY */
+  {TidyAttr_TITLE,    "title",        VERS_HTML40,       TEXT},     /* text tool tip */
+  {TidyAttr_TOPMARGIN,"topmargin",    VERS_MICROSOFT,    NUMBER},   /* used on BODY */
+  {TidyAttr_TYPE,     "type",         VERS_FROM32,       TYPE},     /* also used by SPACER */
+  {TidyAttr_USEMAP,   "usemap",       VERS_ALL,          BOOL},     /* things with images */
+  {TidyAttr_VALIGN,   "valign",       VERS_FROM32,       VALIGN},
+  {TidyAttr_VALUE,    "value",        VERS_ALL,          TEXT, yes},/* nowrap, OPTION, PARAM */
+  {TidyAttr_VALUETYPE,"valuetype",    VERS_HTML40,       VTYPE},    /* PARAM: data, ref, object */
+  {TidyAttr_VERSION,  "version",      VERS_ALL|VERS_XML, TEXT},     /* HTML <?xml?> */
+  {TidyAttr_VLINK,    "vlink",        VERS_LOOSE,        COLOR},    /* BODY */
+  {TidyAttr_VSPACE,   "vspace",       VERS_LOOSE,        NUMBER},   /* IMG, OBJECT, APPLET */
+  {TidyAttr_WIDTH,    "width",        VERS_ALL,          LENGTH},   /* pixels only for TD/TH */
+  {TidyAttr_WRAP,     "wrap",         VERS_NETSCAPE,     TEXT},     /* textarea */
+  {TidyAttr_XML_LANG, "xml:lang",     VERS_XML,          TEXT},     /* XML language */
+  {TidyAttr_XML_SPACE,"xml:space",    VERS_XML,          TEXT},     /* XML language */
+  {TidyAttr_XMLNS,    "xmlns",        VERS_ALL,          TEXT},     /* name space */
    
-   /* this must be the final entry */
-    {null,               0,                      0}
+  /* this must be the final entry */
+  {N_TIDY_ATTRIBS,    null}
 };
 
 /* used by CheckColor() */
-static struct _colors
+struct _colors
 {
-    char *name;
-    char *hex;
-} colors[] =
+    ctmbstr name;
+    ctmbstr hex;
+};
+
+static const struct _colors colors[] =
 {
-    {"black",   "#000000"}, {"green",  "#008000"},
-    {"silver",  "#C0C0C0"}, {"lime",   "#00FF00"},
-    {"gray",    "#808080"}, {"olive",  "#808000"},
-    {"white",   "#FFFFFF"}, {"yellow", "#FFFF00"},
-    {"maroon",  "#800000"}, {"navy",   "#000080"},
-    {"red",     "#FF0000"}, {"blue",   "#0000FF"},
-    {"purple",  "#800080"}, {"teal",   "#008080"},
-    {"fuchsia", "#FF00FF"}, {"aqua",   "#00FFFF"},
+    {"black",   "#000000"},
+    {"green",   "#008000"},
+    {"silver",  "#C0C0C0"},
+    {"lime",    "#00FF00"},
+    {"gray",    "#808080"},
+    {"olive",   "#808000"},
+    {"white",   "#FFFFFF"},
+    {"yellow",  "#FFFF00"},
+    {"maroon",  "#800000"},
+    {"navy",    "#000080"},
+    {"red",     "#FF0000"},
+    {"blue",    "#0000FF"},
+    {"purple",  "#800080"},
+    {"teal",    "#008080"},
+    {"fuchsia", "#FF00FF"},
+    {"aqua",    "#00FFFF"},
     {null,      null}
 };
 
-static unsigned hash(char *s)
+static const struct _colors fancy_colors[] =
 {
-    unsigned hashval;
+    { "darkgreen",            "#006400" },
+    { "antiquewhite",         "#FAEBD7" },
+    { "aqua",                 "#00FFFF" },
+    { "aquamarine",           "#7FFFD4" },
+    { "azure",                "#F0FFFF" },
+    { "beige",                "#F5F5DC" },
+    { "bisque",               "#FFE4C4" },
+    { "black",                "#000000" },
+    { "blanchedalmond",       "#FFEBCD" },
+    { "blue",                 "#0000FF" },
+    { "blueviolet",           "#8A2BE2" },
+    { "brown",                "#A52A2A" },
+    { "burlywood",            "#DEB887" },
+    { "cadetblue",            "#5F9EA0" },
+    { "chartreuse",           "#7FFF00" },
+    { "chocolate",            "#D2691E" },
+    { "coral",                "#FF7F50" },
+    { "cornflowerblue",       "#6495ED" },
+    { "cornsilk",             "#FFF8DC" },
+    { "crimson",              "#DC143C" },
+    { "cyan",                 "#00FFFF" },
+    { "darkblue",             "#00008B" },
+    { "darkcyan",             "#008B8B" },
+    { "darkgoldenrod",        "#B8860B" },
+    { "darkgray",             "#A9A9A9" },
+    { "darkgreen",            "#006400" },
+    { "darkkhaki",            "#BDB76B" },
+    { "darkmagenta",          "#8B008B" },
+    { "darkolivegreen",       "#556B2F" },
+    { "darkorange",           "#FF8C00" },
+    { "darkorchid",           "#9932CC" },
+    { "darkred",              "#8B0000" },
+    { "darksalmon",           "#E9967A" },
+    { "darkseagreen",         "#8FBC8F" },
+    { "darkslateblue",        "#483D8B" },
+    { "darkslategray",        "#2F4F4F" },
+    { "darkturquoise",        "#00CED1" },
+    { "darkviolet",           "#9400D3" },
+    { "deeppink",             "#FF1493" },
+    { "deepskyblue",          "#00BFFF" },
+    { "dimgray",              "#696969" },
+    { "dodgerblue",           "#1E90FF" },
+    { "firebrick",            "#B22222" },
+    { "floralwhite",          "#FFFAF0" },
+    { "forestgreen",          "#228B22" },
+    { "fuchsia",              "#FF00FF" },
+    { "gainsboro",            "#DCDCDC" },
+    { "ghostwhite",           "#F8F8FF" },
+    { "gold",                 "#FFD700" },
+    { "goldenrod",            "#DAA520" },
+    { "gray",                 "#808080" },
+    { "green",                "#008000" },
+    { "greenyellow",          "#ADFF2F" },
+    { "honeydew",             "#F0FFF0" },
+    { "hotpink",              "#FF69B4" },
+    { "indianred",            "#CD5C5C" },
+    { "indigo",               "#4B0082" },
+    { "ivory",                "#FFFFF0" },
+    { "khaki",                "#F0E68C" },
+    { "lavender",             "#E6E6FA" },
+    { "lavenderblush",        "#FFF0F5" },
+    { "lawngreen",            "#7CFC00" },
+    { "lemonchiffon",         "#FFFACD" },
+    { "lightblue",            "#ADD8E6" },
+    { "lightcoral",           "#F08080" },
+    { "lightcyan",            "#E0FFFF" },
+    { "lightgoldenrodyellow", "#FAFAD2" },
+    { "lightgreen",           "#90EE90" },
+    { "lightgrey",            "#D3D3D3" },
+    { "lightpink",            "#FFB6C1" },
+    { "lightsalmon",          "#FFA07A" },
+    { "lightseagreen",        "#20B2AA" },
+    { "lightskyblue",         "#87CEFA" },
+    { "lightslategray",       "#778899" },
+    { "lightsteelblue",       "#B0C4DE" },
+    { "lightyellow",          "#FFFFE0" },
+    { "lime",                 "#00FF00" },
+    { "limegreen",            "#32CD32" },
+    { "linen",                "#FAF0E6" },
+    { "magenta",              "#FF00FF" },
+    { "maroon",               "#800000" },
+    { "mediumaquamarine",     "#66CDAA" },
+    { "mediumblue",           "#0000CD" },
+    { "mediumorchid",         "#BA55D3" },
+    { "mediumpurple",         "#9370DB" },
+    { "mediumseagreen",       "#3CB371" },
+    { "mediumslateblue",      "#7B68EE" },
+    { "mediumspringgreen",    "#00FA9A" },
+    { "mediumturquoise",      "#48D1CC" },
+    { "mediumvioletred",      "#C71585" },
+    { "midnightblue",         "#191970" },
+    { "mintcream",            "#F5FFFA" },
+    { "mistyrose",            "#FFE4E1" },
+    { "moccasin",             "#FFE4B5" },
+    { "navajowhite",          "#FFDEAD" },
+    { "navy",                 "#000080" },
+    { "oldlace",              "#FDF5E6" },
+    { "olive",                "#808000" },
+    { "olivedrab",            "#6B8E23" },
+    { "orange",               "#FFA500" },
+    { "orangered",            "#FF4500" },
+    { "orchid",               "#DA70D6" },
+    { "palegoldenrod",        "#EEE8AA" },
+    { "palegreen",            "#98FB98" },
+    { "paleturquoise",        "#AFEEEE" },
+    { "palevioletred",        "#DB7093" },
+    { "papayawhip",           "#FFEFD5" },
+    { "peachpuff",            "#FFDAB9" },
+    { "peru",                 "#CD853F" },
+    { "pink",                 "#FFC0CB" },
+    { "plum",                 "#DDA0DD" },
+    { "powderblue",           "#B0E0E6" },
+    { "purple",               "#800080" },
+    { "red",                  "#FF0000" },
+    { "rosybrown",            "#BC8F8F" },
+    { "royalblue",            "#4169E1" },
+    { "saddlebrown",          "#8B4513" },
+    { "salmon",               "#FA8072" },
+    { "sandybrown",           "#F4A460" },
+    { "seagreen",             "#2E8B57" },
+    { "seashell",             "#FFF5EE" },
+    { "sienna",               "#A0522D" },
+    { "silver",               "#C0C0C0" },
+    { "skyblue",              "#87CEEB" },
+    { "slateblue",            "#6A5ACD" },
+    { "slategray",            "#708090" },
+    { "snow",                 "#FFFAFA" },
+    { "springgreen",          "#00FF7F" },
+    { "steelblue",            "#4682B4" },
+    { "tan",                  "#D2B48C" },
+    { "teal",                 "#008080" },
+    { "thistle",              "#D8BFD8" },
+    { "tomato",               "#FF6347" },
+    { "turquoise",            "#40E0D0" },
+    { "violet",               "#EE82EE" },
+    { "wheat",                "#F5DEB3" },
+    { "white",                "#FFFFFF" },
+    { "whitesmoke",           "#F5F5F5" },
+    { "yellow",               "#FFFF00" },
+    { "yellowgreen",          "#9ACD32" },
+    { null,      null }
+};
 
-    for (hashval = 0; *s != '\0'; s++)
-        hashval = *s + 31*hashval;
 
-    return hashval % HASHSIZE;
-}
-
-static Attribute *lookup(char *s)
+static const Attribute* lookup( ctmbstr atnam )
 {
-    Attribute *np;
-
-    for (np = hashtab[hash(s)]; np != null; np = np->next)
-        if (wstrcmp(s, np->name) == 0)
-            return np;
+    if ( atnam )
+    {
+        const Attribute *np = attribute_defs;
+        for ( /**/; np && np->name; ++np )
+            if ( tmbstrcmp(atnam, np->name) == 0 )
+                return np;
+    }
     return null;
 }
 
-static Attribute *install(char *name, uint versions, AttrCheck *attrchk)
+
+/* Locate attributes by type
+*/
+
+AttVal* AttrGetById( Node* node, TidyAttrId id )
 {
-    Attribute *np;
-    unsigned hashval;
-
-    if ((np = lookup(name)) == null)
-    {
-        np = (Attribute *)MemAlloc(sizeof(*np));
-
-        if (np == null || (np->name = wstrdup(name)) == null)
-            return null;
-
-        hashval = hash(name);
-        np->next = hashtab[hashval];
-        hashtab[hashval] = np;
-    }
-
-    np->versions = versions;
-    np->attrchk = attrchk;
-    np->nowrap = no;
-    np->literal = no;
-    return np;
-}
-
-static void SetNoWrap(Attribute *attr)
-{
-    attr->nowrap = yes;  /* defaults to no */
+   AttVal* av;
+   for ( av = node->attributes; av; av = av->next )
+   {
+     if ( AttrIsId(av, id) )
+         return av;
+   }
+   return null;
 }
 
 /* public method for finding attribute definition by name */
-Attribute *FindAttribute(AttVal *attval)
+const Attribute* FindAttribute( TidyDocImpl* doc, AttVal *attval )
 {
-    Attribute *np;
-
-    if (attval->attribute && (np = lookup(attval->attribute)))
-        return np;
-
+    if ( attval )
+       return lookup( attval->attribute );
     return null;
 }
 
-AttVal *GetAttrByName(Node *node, char *name)
+AttVal* GetAttrByName( Node *node, ctmbstr name )
 {
     AttVal *attr;
-
     for (attr = node->attributes; attr != null; attr = attr->next)
     {
-        if (attr->attribute && wstrcmp(attr->attribute, name) == 0)
+        if (attr->attribute && tmbstrcmp(attr->attribute, name) == 0)
             break;
     }
-
     return attr;
 }
 
-void AddAttribute(Node *node, char *name, char *value)
+AttVal* AddAttribute( TidyDocImpl* doc,
+                      Node *node, ctmbstr name, ctmbstr value )
 {
     AttVal *av = NewAttribute();
     av->delim = '"';
-    av->attribute = wstrdup(name);
-    av->value = wstrdup(value);
-    av->dict = FindAttribute(av);
+    av->attribute = tmbstrdup( name );
+    av->value = tmbstrdup( value );
+    av->dict = lookup( name );
 
-    if (node->attributes == null)
+    if ( node->attributes == null )
         node->attributes = av;
     else /* append to end of attributes */
     {
         AttVal *here = node->attributes;
-
         while (here->next)
             here = here->next;
-
         here->next = av;
     }
+    return av;
 }
 
-Bool IsUrl(char *attrname)
+static Bool CheckAttrType( TidyDocImpl* doc,
+                           ctmbstr attrname, AttrCheck type )
 {
-    Attribute *np;
-
-    return (Bool)((np = lookup(attrname)) && np->attrchk == URL);
+    const Attribute* np = lookup( attrname );
+    return (Bool)( np && np->attrchk == type );
 }
 
-Bool IsBool(char *attrname)
+Bool IsUrl( TidyDocImpl* doc, ctmbstr attrname )
 {
-    Attribute *np;
-
-    return (Bool)((np = lookup(attrname)) && np->attrchk == BOOL);
+    return CheckAttrType( doc, attrname, URL );
 }
 
-Bool IsScript(char *attrname)
+Bool IsBool( TidyDocImpl* doc, ctmbstr attrname )
 {
-    Attribute *np;
-
-    return (Bool)((np = lookup(attrname)) && np->attrchk == SCRIPT);
+    return CheckAttrType( doc, attrname, BOOL );
 }
 
-Bool IsLiteralAttribute(char *attrname)
+Bool IsScript( TidyDocImpl* doc, ctmbstr attrname )
 {
-    Attribute *np;
+    return CheckAttrType( doc, attrname, SCRIPT );
+}
 
-    return (Bool)((np = lookup(attrname)) && np->literal);
+Bool IsLiteralAttribute( TidyDocImpl* doc, ctmbstr attrname )
+{
+    const Attribute* np = lookup( attrname );
+    return (Bool)( np && np->literal );
 }
 
 /* may id or name serve as anchor? */
-Bool IsAnchorElement(Node *node)
+Bool IsAnchorElement( TidyDocImpl* doc, Node *node)
 {
-    if (node->tag == tag_a      ||
-        node->tag == tag_applet ||
-        node->tag == tag_form   ||
-        node->tag == tag_frame  ||
-        node->tag == tag_iframe ||
-        node->tag == tag_img    ||
-        node->tag == tag_map)
+    TidyTagImpl* tags = &doc->tags;
+    TidyTagId tid = TagId( node );
+    if ( tid == TidyTag_A      ||
+         tid == TidyTag_APPLET ||
+         tid == TidyTag_FORM   ||
+         tid == TidyTag_FRAME  ||
+         tid == TidyTag_IFRAME ||
+         tid == TidyTag_IMG    ||
+         tid == TidyTag_MAP )
         return yes;
 
     return no;
@@ -480,11 +514,11 @@ Bool IsAnchorElement(Node *node)
 
   #508936 - CSS class naming for -clean option
 */
-Bool IsCSS1Selector(char *buf)
+Bool IsCSS1Selector( ctmbstr buf )
 {
     Bool valid = yes;
     int esclen = 0;
-    unsigned char c;
+    byte c;
     int pos;
 
     for ( pos=0; valid && (c = *buf++); ++pos )
@@ -517,177 +551,117 @@ Bool IsCSS1Selector(char *buf)
 
 
 
-/* anchor/node hash */
 
-Anchor *anchor_list = null;
 
 /* free single anchor */
-void FreeAnchor(Anchor *a)
+static void FreeAnchor(Anchor *a)
 {
-    if (a->name)
-        MemFree(a->name);
-
-    MemFree(a);
+    if ( a )
+        MemFree( a->name );
+    MemFree( a );
 }
 
 /* removes anchor for specific node */
-void RemoveAnchorByNode(Node *node)
+void RemoveAnchorByNode( TidyDocImpl* doc, Node *node )
 {
-    Anchor *delme = null, *found, *prev = null, *next;
+    TidyAttribImpl* attribs = &doc->attribs;
+    Anchor *delme = null, *curr, *prev = null;
 
-    for (found = anchor_list; found != null; found = found->next)
+    for ( curr=attribs->anchor_list; curr!=null; curr=curr->next )
     {
-        next = found->next;
-
-        if (found->node == node)
+        if ( curr->node == node )
         {
-            if (prev)
-                prev->next = next;
+            if ( prev )
+                prev->next = curr->next;
             else
-                anchor_list = next;
-
-            delme = found;
+                attribs->anchor_list = curr->next;
+            delme = curr;
+            break;
         }
-        else
-            prev = found;
+        prev = curr;
     }
-    if (delme)
-        FreeAnchor(delme);
+    FreeAnchor( delme );
 }
 
 /* initialize new anchor */
-Anchor *NewAnchor(void)
+static Anchor* NewAnchor( ctmbstr name, Node* node )
 {
-    Anchor *a = (Anchor *)MemAlloc(sizeof(Anchor));
+    Anchor *a = (Anchor*) MemAlloc( sizeof(Anchor) );
 
-    a->name = null;
+    a->name = tmbstrdup( name );
+    a->node = node;
     a->next = null;
-    a->node = null;
 
     return a;
 }
 
 /* add new anchor to namespace */
-Anchor *AddAnchor(char *name, Node *node)
+Anchor* AddAnchor( TidyDocImpl* doc, ctmbstr name, Node *node )
 {
-    Anchor *a = NewAnchor();
+    TidyAttribImpl* attribs = &doc->attribs;
+    Anchor *a = NewAnchor( name, node );
 
-    a->name = wstrdup(name);
-    a->node = node;
-
-    if (anchor_list == null)
-        anchor_list = a;
+    if ( attribs->anchor_list == null)
+         attribs->anchor_list = a;
     else
     {
-        Anchor *here = anchor_list;
-
+        Anchor *here =  attribs->anchor_list;
         while (here->next)
             here = here->next;
-
         here->next = a;
     }
 
-    return anchor_list;
+    return attribs->anchor_list;
 }
 
 /* return node associated with anchor */
-Node *GetNodeByAnchor(char *name)
+Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
 {
+    TidyAttribImpl* attribs = &doc->attribs;
     Anchor *found;
-    
-    for (found = anchor_list; found != null; found = found->next)
+    for ( found = attribs->anchor_list; found != null; found = found->next )
     {
-        if (wstrcasecmp(found->name, name) == 0)
+        if ( tmbstrcasecmp(found->name, name) == 0 )
             break;
     }
     
-    if (found == null)
-        return null;
-    else
+    if ( found )
         return found->node;
+    return null;
 }
 
 /* free all anchors */
-void FreeAnchors(void)
+void FreeAnchors( TidyDocImpl* doc )
 {
-    Anchor *a;
-    
-    while (anchor_list)
+    TidyAttribImpl* attribs = &doc->attribs;
+    Anchor* a;
+    while ( a = attribs->anchor_list )
     {
-        a = anchor_list;
-        
-        if (a->name)
-            MemFree(a->name);
-        
-        anchor_list = a->next;
-        MemFree(a);
+        attribs->anchor_list = a->next;
+        MemFree( a->name );
+        MemFree( a );
     }
 }
 
 /* public method for inititializing attribute dictionary */
-void InitAttrs(void)
+void InitAttrs( TidyDocImpl* doc )
 {
-    struct _attrlist *ap;
-    
-    for(ap = attrlist; ap->name != null; ++ap)
-        install(ap->name, ap->versions, ap->attrchk);
+    ClearMemory( &doc->attribs, sizeof(TidyAttribImpl) );
 
-    attr_href = lookup("href");
-    attr_src = lookup("src");
-    attr_id = lookup("id");
-    attr_name = lookup("name");
-    attr_summary = lookup("summary");
-    attr_alt = lookup("alt");
-    attr_longdesc = lookup("longdesc");
-    attr_usemap = lookup("usemap");
-    attr_ismap = lookup("ismap");
-    attr_language = lookup("language");
-    attr_type = lookup("type");
-    attr_title = lookup("title");
-    attr_xmlns = lookup("xmlns");
-    attr_datafld = lookup("datafld");
-    attr_value = lookup("value");
-    attr_content = lookup("content");
-    attr_width = lookup("width");
-    attr_height = lookup("height");
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-	/* Additions by Mike Lam */
-    attr_for = lookup("for");
-	attr_selected = lookup("selected");
-	attr_checked = lookup("checked");
-	attr_lang = lookup("lang");
-	attr_target = lookup("target");
-	attr_httpEquiv = lookup("http-equiv");
-	attr_rel = lookup("rel");
-	attr_onMouseMove = lookup ("onmousemove");
-	attr_onMouseDown = lookup ("onmousedown");
-	attr_onMouseUp = lookup ("onmouseup");
-	attr_onClick = lookup ("onclick");
-	attr_onMouseOver = lookup ("onmouseover");
-	attr_onMouseOut = lookup ("onmouseout");
-	attr_onKeyDown = lookup ("onkeydown");
-	attr_onKeyUp = lookup ("onkeyup");
-	attr_onKeyPress = lookup ("onkeypress");
-	attr_onFocus = lookup ("onfocus");
-	attr_onBlur = lookup ("onblur");
-	attr_bgcolor = lookup("bgcolor");
-	attr_text = lookup("text");
-	attr_link = lookup("link");
-	attr_alink = lookup("alink");
-	attr_vlink = lookup("vlink");
-	attr_style = lookup("style");
-	attr_abbr = lookup("abbr");
-	attr_colspan = lookup("colspan");
-	attr_font = lookup ("font");
-	attr_basefont = lookup ("basefont");
-	attr_rowspan = lookup ("rowspan");
+#ifdef _DEBUG
+    {
+      ctmbstr prev = null;
+      TidyAttrId id;
+      for ( id=1; id < N_TIDY_ATTRIBS; ++id )
+      {
+        const Attribute* dict = &attribute_defs[ id ];
+        assert( dict->id == id );
+        if ( prev )
+            assert( tmbstrcmp( prev, dict->name ) < 0 );
+        prev = dict->name;
+      }
+    }
 #endif
-
-    SetNoWrap(attr_alt);
-    SetNoWrap(attr_value);
-    SetNoWrap(attr_content);
 }
 
 /*
@@ -696,37 +670,49 @@ using embed with script attributes where
 newlines are signficant. These need to be
 declared and handled specially!
 */
-void DeclareLiteralAttrib(char *name)
+static void DeclareAttribute( TidyDocImpl* doc, ctmbstr name,
+                              uint versions, Bool nowrap, Bool isliteral )
 {
-    Attribute *attrib = lookup(name);
+    const Attribute *exist = lookup( name );
+    if ( exist == null )
+    {
+        TidyAttribImpl* attribs = &doc->attribs;
+        Attribute* dict = (Attribute*) MemAlloc( sizeof(Attribute) );
+        ClearMemory( dict, sizeof(Attribute) );
 
-    if (attrib == null) /* #431337 - fix by Terry Teague 07 Jun 01 */
-        attrib = install(name, VERS_PROPRIETARY, null);
+        dict->name     = tmbstrdup( name );
+        dict->versions = versions;
+        dict->nowrap   = nowrap;
+        dict->literal  = isliteral;
 
-    attrib->literal = yes;
+        dict->next = attribs->declared_attr_list;
+        attribs->declared_attr_list = dict;
+    }
 }
 
-void FreeAttrTable(void)
+
+/* free all declared attributes */
+static void FreeDeclaredAttributes( TidyDocImpl* doc )
 {
-    Attribute *dict, *next;
-    int i;
-
-    for (i = 0; i < HASHSIZE; ++i)
+    TidyAttribImpl* attribs = &doc->attribs;
+    Attribute* dict;
+    while ( dict = attribs->declared_attr_list )
     {
-        dict = hashtab[i];
-
-        while(dict)
-        {
-            next = dict->next;
-            MemFree(dict->name);
-            MemFree(dict);
-            dict = next;
-        }
-
-        hashtab[i] = null;
+        attribs->declared_attr_list = dict->next;
+        MemFree( dict->name );
+        MemFree( dict );
     }
+}
 
-    FreeAnchors();
+void DeclareLiteralAttrib( TidyDocImpl* doc, ctmbstr name )
+{
+    DeclareAttribute( doc, name, VERS_PROPRIETARY, no, yes );
+}
+
+void FreeAttrTable( TidyDocImpl* doc )
+{
+    FreeAnchors( doc );
+    FreeDeclaredAttributes( doc );
 }
 
 /*
@@ -734,7 +720,7 @@ void FreeAttrTable(void)
  more than once in each element
 */
 
-void RepairDuplicateAttributes(Lexer *lexer, Node *node)
+void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 {
     AttVal *attval;
 
@@ -747,18 +733,19 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
             for (current = attval->next; current != null;)
             {
                 if (current->asp == null && current->php == null &&
-                    wstrcasecmp(attval->attribute, current->attribute) == 0)
+                    tmbstrcasecmp(attval->attribute, current->attribute) == 0)
                 {
                     AttVal *temp;
 
-                    if (wstrcasecmp(current->attribute, "class") == 0 && JoinClasses)
+                    if ( tmbstrcasecmp(current->attribute, "class") == 0 
+                         && cfgBool(doc, TidyJoinClasses) )
                     {
                         /* concatenate classes */
 
-                        current->value = (char *)MemRealloc(current->value, wstrlen(current->value) +
-                                                                            wstrlen(attval->value)  + 2);
-                        wstrcat(current->value, " ");
-                        wstrcat(current->value, attval->value);
+                        current->value = (tmbstr) MemRealloc(current->value, tmbstrlen(current->value) +
+                                                                            tmbstrlen(attval->value)  + 2);
+                        tmbstrcat(current->value, " ");
+                        tmbstrcat(current->value, attval->value);
 
                         temp = attval->next;
 
@@ -767,12 +754,13 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
                         else
                             current = current->next;
 
-                        ReportAttrError(lexer, node, attval, JOINING_ATTRIBUTE);
+                        ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
 
                         RemoveAttribute(node, attval);
                         attval = temp;
                     }
-                    else if (wstrcasecmp(current->attribute, "style") == 0 && JoinStyles)
+                    else if ( tmbstrcasecmp(current->attribute, "style") == 0 
+                              && cfgBool(doc, TidyJoinStyles) )
                     {
                         /* concatenate styles */
 
@@ -788,32 +776,32 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
                         {
                             /* attribute ends with declaration seperator */
 
-                            current->value = (char *)MemRealloc(current->value,
-                                end + wstrlen(attval->value) + 2);
+                            current->value = (tmbstr) MemRealloc(current->value,
+                                end + tmbstrlen(attval->value) + 2);
 
-                            wstrcat(current->value, " ");
-                            wstrcat(current->value, attval->value);
+                            tmbstrcat(current->value, " ");
+                            tmbstrcat(current->value, attval->value);
                         }
                         else if (current->value[end] == '}')
                         {
                             /* attribute ends with rule set */
 
-                            current->value = (char *)MemRealloc(current->value,
-                                end + wstrlen(attval->value) + 6);
+                            current->value = (tmbstr) MemRealloc(current->value,
+                                end + tmbstrlen(attval->value) + 6);
 
-                            wstrcat(current->value, " { ");
-                            wstrcat(current->value, attval->value);
-                            wstrcat(current->value, " }");
+                            tmbstrcat(current->value, " { ");
+                            tmbstrcat(current->value, attval->value);
+                            tmbstrcat(current->value, " }");
                         }
                         else
                         {
                             /* attribute ends with property value */
 
-                            current->value = (char *)MemRealloc(current->value,
-                                end + wstrlen(attval->value) + 3);
+                            current->value = (tmbstr) MemRealloc(current->value,
+                                end + tmbstrlen(attval->value) + 3);
 
-                            wstrcat(current->value, "; ");
-                            wstrcat(current->value, attval->value);
+                            tmbstrcat(current->value, "; ");
+                            tmbstrcat(current->value, attval->value);
                         }
 
                         temp = attval->next;
@@ -823,32 +811,28 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
                         else
                             current = current->next;
 
-                        ReportAttrError(lexer, node, attval, JOINING_ATTRIBUTE);
+                        ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
 
                         RemoveAttribute(node, attval);
                         attval = temp;
 
                     }
-                    else if (DuplicateAttrs == keep_last)
+                    else if ( cfg(doc, TidyDuplicateAttrs) == TidyKeepLast )
                     {
                         temp = current->next;
-
-                        ReportAttrError(lexer, node, current, REPEATED_ATTRIBUTE);
-                        
+                        ReportAttrError( doc, node, current, REPEATED_ATTRIBUTE);
                         RemoveAttribute(node, current);
                         current = temp;
                     }
                     else
                     {
                         temp = attval->next;
-
                         if (attval->next == null)
                             current = null;
                         else
                             current = current->next;
 
-                        ReportAttrError(lexer, node, attval, REPEATED_ATTRIBUTE);
-
+                        ReportAttrError( doc, node, attval, REPEATED_ATTRIBUTE);
                         RemoveAttribute(node, attval);
                         attval = temp;
                     }
@@ -865,50 +849,67 @@ void RepairDuplicateAttributes(Lexer *lexer, Node *node)
 
 
 /* ignore unknown attributes for proprietary elements */
-Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
+const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
 {
-    Attribute *attribute;
+    const Attribute* attribute = attval->dict;
 
-    if ((attribute = attval->dict) != null)
+    if ( attribute != null )
     {
         /* if attribute looks like <foo/> check XML is ok */
-        if (attribute->versions & VERS_XML)
+        if ( attribute->versions & VERS_XML )
         {
-            if (!(XmlTags || XmlOut))
-                ReportAttrError(lexer, node, attval, XML_ATTRIBUTE_VALUE);
+            if ( !(cfgBool(doc, TidyXmlTags) || cfgBool(doc, TidyXmlOut)) )
+                ReportAttrError( doc, node, attval, XML_ATTRIBUTE_VALUE);
         } /* title first appeared in HTML 4.0 except for a/link */
-        else if (attribute != attr_title ||
-                    !(node->tag == tag_a || node->tag == tag_link))
-            ConstrainVersion(lexer, attribute->versions);
+        else if ( attribute->id != TidyAttr_TITLE ||
+                  !(nodeIsA(node) || nodeIsLINK(node)) )
+        {
+            ConstrainVersion( doc, attribute->versions );
+        }
         
         if (attribute->attrchk)
-            attribute->attrchk(lexer, node, attval);
-        else if (attval->dict->versions & VERS_PROPRIETARY)
-            ReportAttrError(lexer, node, attval, PROPRIETARY_ATTRIBUTE);
+            attribute->attrchk( doc, node, attval );
+        else if ( attval->dict->versions & VERS_PROPRIETARY )
+            ReportAttrError( doc, node, attval, PROPRIETARY_ATTRIBUTE);
     }
-    else if (!XmlTags && !(node->tag == null) && attval->asp == null &&
-             !(node->tag && (node->tag->versions & VERS_PROPRIETARY)))
-        ReportAttrError(lexer, node, attval, UNKNOWN_ATTRIBUTE);
+    else if ( !cfgBool(doc, TidyXmlTags)
+              && attval->asp == null 
+              && node->tag != null 
+              && !(node->tag->versions & VERS_PROPRIETARY) )
+    {
+        ReportAttrError( doc, node, attval, UNKNOWN_ATTRIBUTE );
+    }
 
     return attribute;
 }
 
 Bool IsBoolAttribute(AttVal *attval)
 {
-    Attribute *attribute;
-
-    if ((attribute = attval->dict) != null)
-    {
-        if (attribute->attrchk == CheckBool)
-            return yes;
-    }
-
+    const Attribute *attribute = ( attval ? attval->dict : null );
+    if ( attribute && attribute->attrchk == CheckBool )
+        return yes;
     return no;
 }
 
-static void CheckLowerCaseAttrValue(Lexer *lexer, Node *node, AttVal *attval)
+Bool attrIsEvent( AttVal* attval )
 {
-    char *p;
+    TidyAttrId atid = AttrId( attval );
+    return ( atid == TidyAttr_OnMOUSEMOVE ||
+             atid == TidyAttr_OnMOUSEDOWN ||
+             atid == TidyAttr_OnMOUSEUP   ||
+             atid == TidyAttr_OnCLICK     ||
+             atid == TidyAttr_OnMOUSEOVER ||
+             atid == TidyAttr_OnMOUSEOUT  ||
+             atid == TidyAttr_OnKEYDOWN   ||
+             atid == TidyAttr_OnKEYUP     ||
+             atid == TidyAttr_OnKEYPRESS  ||
+             atid == TidyAttr_OnFOCUS     ||
+             atid == TidyAttr_OnBLUR );
+}
+
+static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attval)
+{
+    tmbstr p;
     Bool hasUpper = no;
     
     if (attval == null || attval->value == null)
@@ -928,26 +929,28 @@ static void CheckLowerCaseAttrValue(Lexer *lexer, Node *node, AttVal *attval)
 
     if (hasUpper)
     {
+        Lexer* lexer = doc->lexer;
         if (lexer->isvoyager)
-            ReportAttrError(lexer, node, attval, ATTR_VALUE_NOT_LCASE);
+            ReportAttrError( doc, node, attval, ATTR_VALUE_NOT_LCASE);
   
-        if (lexer->isvoyager || LowerLiterals)
-            attval->value = wstrtolower(attval->value);
+        if ( lexer->isvoyager || cfgBool(doc, TidyLowerLiterals) )
+            attval->value = tmbstrtolower(attval->value);
     }
 }
 
 /* methods for checking value of a specific attribute */
 
-void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
+void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char c, *dest, *p;
+    tmbchar c; 
+    tmbstr dest, p;
     uint escape_count = 0, backslash_count = 0;
     uint i, pos = 0;
     size_t len;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
@@ -958,22 +961,22 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
         if (c == '\\')
         {
             ++backslash_count;
-            if (FixBackslash)
+            if ( cfgBool(doc, TidyFixBackslash) )
                 p[i] = '/';
         }
         else if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
             ++escape_count;
     }
     
-    if (FixUri && escape_count)
+    if ( cfgBool(doc, TidyFixUri) && escape_count )
     {
-        len = wstrlen(p) + escape_count * 2 + 1;
-        dest = (char *)MemAlloc(len);
+        len = tmbstrlen(p) + escape_count * 2 + 1;
+        dest = (tmbstr) MemAlloc(len);
         
         for (i = 0; c = p[i]; ++i)
         {
             if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
-                pos += sprintf(dest + pos, "%%%02X", (unsigned char)c);
+                pos += sprintf( dest + pos, "%%%02X", (byte)c );
             else
                 dest[pos++] = c;
         }
@@ -982,60 +985,61 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
         MemFree(attval->value);
         attval->value = dest;
     }
-    if (backslash_count)
+    if ( backslash_count )
     {
-        if (FixBackslash)
-            ReportAttrError(lexer, node, attval, FIXED_BACKSLASH);
+        if ( cfgBool(doc, TidyFixBackslash) )
+            ReportAttrError( doc, node, attval, FIXED_BACKSLASH );
         else
-            ReportAttrError(lexer, node, attval, BACKSLASH_IN_URI);
+            ReportAttrError( doc, node, attval, BACKSLASH_IN_URI );
     }
-    if (escape_count)
+    if ( escape_count )
     {
-        if (FixUri)
-            ReportAttrError(lexer, node, attval, ESCAPED_ILLEGAL_URI);
+        if ( cfgBool(doc, TidyFixUri) )
+            ReportAttrError( doc, node, attval, ESCAPED_ILLEGAL_URI);
         else
-            ReportAttrError(lexer, node, attval, ILLEGAL_URI_REFERENCE);
+            ReportAttrError( doc, node, attval, ILLEGAL_URI_REFERENCE);
 
-        lexer->badChars |= INVALID_URI;
+        doc->badChars |= INVALID_URI;
     }
 }
 
-void CheckScript(Lexer *lexer, Node *node, AttVal *attval)
+void CheckScript( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
 }
 
-void CheckName(Lexer *lexer, Node *node, AttVal *attval)
+void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     Node *old;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    if (IsAnchorElement(node))
+    if ( IsAnchorElement(doc, node) )
     {
-        ConstrainVersion(lexer, ~VERS_XHTML11);
+        ConstrainVersion( doc, ~VERS_XHTML11 );
 
-        if ((old = GetNodeByAnchor(attval->value)) &&  old != node)
+        if ((old = GetNodeByAnchor(doc, attval->value)) &&  old != node)
         {
-            ReportAttrError(lexer, node, attval, ANCHOR_NOT_UNIQUE);
+            ReportAttrError( doc, node, attval, ANCHOR_NOT_UNIQUE);
         }
         else
-            anchor_list = AddAnchor(attval->value, node);
+            AddAnchor( doc, attval->value, node );
     }
 }
 
-void CheckId(Lexer *lexer, Node *node, AttVal *attval)
+void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
 {
-    char *p;
+    Lexer* lexer = doc->lexer;
+    tmbstr p;
     Node *old;
     uint s;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
@@ -1046,9 +1050,9 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
     if (!IsLetter(s))
     {
         if (lexer->isvoyager && (IsXMLLetter(s) || s == '_' || s == ':'))
-            ReportAttrError(lexer, node, attval, XML_ID_SYNTAX);
+            ReportAttrError( doc, node, attval, XML_ID_SYNTAX);
         else
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
     else
     {
@@ -1057,116 +1061,117 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
             if (!IsNamechar(s))
             {
                 if (lexer->isvoyager && IsXMLNamechar(s))
-                    ReportAttrError(lexer, node, attval, XML_ID_SYNTAX);
+                    ReportAttrError( doc, node, attval, XML_ID_SYNTAX);
                 else
-                    ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                    ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
             }
         }
     }
 
-    if ((old = GetNodeByAnchor(attval->value)) &&  old != node)
+    if ((old = GetNodeByAnchor(doc, attval->value)) &&  old != node)
     {
-        ReportAttrError(lexer, node, attval, ANCHOR_NOT_UNIQUE);
+        ReportAttrError( doc, node, attval, ANCHOR_NOT_UNIQUE);
     }
     else
-        anchor_list = AddAnchor(attval->value, node);
+        AddAnchor( doc, attval->value, node );
 }
 
-void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
+void CheckBool( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     if (attval == null || attval->value == null)
         return;
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
 }
 
-void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
+void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     /* IMG, OBJECT, APPLET and EMBED use align for vertical position */
     if (node->tag && (node->tag->model & CM_IMG))
     {
-        CheckValign(lexer, node, attval);
+        CheckValign( doc, node, attval );
         return;
     }
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval);
 
     value = attval->value;
 
-    if (! (wstrcasecmp(value,    "left") == 0 ||
-           wstrcasecmp(value,  "center") == 0 ||
-           wstrcasecmp(value,   "right") == 0 ||
-           wstrcasecmp(value, "justify") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,    "left") == 0 ||
+           tmbstrcasecmp(value,  "center") == 0 ||
+           tmbstrcasecmp(value,   "right") == 0 ||
+           tmbstrcasecmp(value, "justify") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
+void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
 
     value = attval->value;
 
-    if (wstrcasecmp(value,      "top") == 0 ||
-        wstrcasecmp(value,   "middle") == 0 ||
-        wstrcasecmp(value,   "bottom") == 0 ||
-        wstrcasecmp(value, "baseline") == 0)
+    if (tmbstrcasecmp(value,      "top") == 0 ||
+        tmbstrcasecmp(value,   "middle") == 0 ||
+        tmbstrcasecmp(value,   "bottom") == 0 ||
+        tmbstrcasecmp(value, "baseline") == 0)
     {
             /* all is fine */
     }
-    else if (wstrcasecmp(value,  "left") == 0 ||
-             wstrcasecmp(value, "right") == 0)
+    else if (tmbstrcasecmp(value,  "left") == 0 ||
+             tmbstrcasecmp(value, "right") == 0)
     {
         if (!(node->tag && (node->tag->model & CM_IMG)))
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
-    else if (wstrcasecmp(value,    "texttop") == 0 ||
-             wstrcasecmp(value,  "absmiddle") == 0 ||
-             wstrcasecmp(value,  "absbottom") == 0 ||
-             wstrcasecmp(value, "textbottom") == 0)
+    else if (tmbstrcasecmp(value,    "texttop") == 0 ||
+             tmbstrcasecmp(value,  "absmiddle") == 0 ||
+             tmbstrcasecmp(value,  "absbottom") == 0 ||
+             tmbstrcasecmp(value, "textbottom") == 0)
     {
-        ConstrainVersion(lexer, VERS_PROPRIETARY);
-        ReportAttrError(lexer, node, attval, PROPRIETARY_ATTR_VALUE);
+        ConstrainVersion( doc, VERS_PROPRIETARY );
+        ReportAttrError( doc, node, attval, PROPRIETARY_ATTR_VALUE);
     }
     else
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
+void CheckLength( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *p;
+    tmbstr p;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
     /* don't check for <col width=...> and <colgroup width=...> */
-    if (!wstrcmp(attval->attribute, "width") && (node->tag == tag_col || node->tag == tag_colgroup))
+    if ( tmbstrcmp(attval->attribute, "width") == 0 &&
+         (nodeIsCOL(node) || nodeIsCOLGROUP(node)) )
         return;
 
     p = attval->value;
     
     if (!IsDigit(*p++))
     {
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
     else
     {
@@ -1174,7 +1179,7 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
         {
             if (!IsDigit(*p) && *p != '%')
             {
-                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
                 break;
             }
             ++p;
@@ -1182,18 +1187,18 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
     }
 }
 
-void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
+void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
     /* No target attribute in strict HTML versions */
-    ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
+    ConstrainVersion( doc, ~VERS_HTML40_STRICT);
 
     /*
       target names must begin with A-Za-z or be one of
@@ -1205,124 +1210,124 @@ void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
     if (IsLetter(value[0]))
         return;
     
-    if (! (wstrcasecmp(value,  "_blank") == 0 ||
-           wstrcasecmp(value,   "_self") == 0 ||
-           wstrcasecmp(value, "_parent") == 0 ||
-           wstrcasecmp(value,    "_top") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,  "_blank") == 0 ||
+           tmbstrcasecmp(value,   "_self") == 0 ||
+           tmbstrcasecmp(value, "_parent") == 0 ||
+           tmbstrcasecmp(value,    "_top") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
+void CheckFsubmit( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
     value = attval->value;
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval);
 
-    if (! (wstrcasecmp(value,  "get") == 0 ||
-           wstrcasecmp(value, "post") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,  "get") == 0 ||
+           tmbstrcasecmp(value, "post") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
+void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         if (attval->value == null)
-            attval->value = wstrdup( "none" );
+            attval->value = tmbstrdup( "none" );
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
         
     value = attval->value;
     
-    if (! (wstrcasecmp(value,  "none") == 0 ||
-           wstrcasecmp(value,  "left") == 0 ||
-           wstrcasecmp(value, "right") == 0 ||
-           wstrcasecmp(value,   "all") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,  "none") == 0 ||
+           tmbstrcasecmp(value,  "left") == 0 ||
+           tmbstrcasecmp(value, "right") == 0 ||
+           tmbstrcasecmp(value,   "all") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
+void CheckShape( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
 
     value = attval->value;
     
-    if (! (wstrcasecmp(value,    "rect") == 0 ||
-           wstrcasecmp(value, "default") == 0 ||
-           wstrcasecmp(value,  "circle") == 0 ||
-           wstrcasecmp(value,    "poly") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,    "rect") == 0 ||
+           tmbstrcasecmp(value, "default") == 0 ||
+           tmbstrcasecmp(value,  "circle") == 0 ||
+           tmbstrcasecmp(value,    "poly") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
+void CheckScope( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval);
 
     value = attval->value;
     
-    if (! (wstrcasecmp(value,      "row") == 0 ||
-           wstrcasecmp(value, "rowgroup") == 0 ||
-           wstrcasecmp(value,      "col") == 0 ||
-           wstrcasecmp(value, "colgroup") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,      "row") == 0 ||
+           tmbstrcasecmp(value, "rowgroup") == 0 ||
+           tmbstrcasecmp(value,      "col") == 0 ||
+           tmbstrcasecmp(value, "colgroup") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
-void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
+void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *p;
+    tmbstr p;
     
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
     /* don't check <frameset cols=... rows=...> */
-    if ((!wstrcmp(attval->attribute, "cols") ||
-         !wstrcmp(attval->attribute, "rows")) &&
-         node->tag == tag_frameset)
+    if ( nodeIsFRAMESET(node) &&
+         ( tmbstrcmp(attval->attribute, "cols") == 0 ||
+           tmbstrcmp(attval->attribute, "rows") == 0 ) )
      return;
 
     p  = attval->value;
     
     /* font size may be preceded by + or - */
-    if (node->tag == tag_font && (*p == '+' || *p == '-'))
+    if ( nodeIsFONT(node) && (*p == '+' || *p == '-') )
         ++p;
 
     while (*p)
     {
         if (!IsDigit(*p))
         {
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
             break;
         }
         ++p;
@@ -1330,19 +1335,19 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
 }
 
 /* check color syntax and beautify value by option */
-void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
+void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     /* Bool ReplaceColor = yes; */ /* #477643 - replace hex color attribute values with names */
     Bool HexUppercase = yes;
     Bool invalid = no;
     Bool found = no;
-    char *given;
-    struct _colors *color;
+    tmbstr given;
+    const struct _colors *color;
     uint i = 0;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
@@ -1352,18 +1357,18 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
     {
         if (given[0] == '#')
         {
-            if (wstrlen(given) != 7)
+            if (tmbstrlen(given) != 7)
             {
-                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
                 invalid = yes;
                 break;
             }
-            else if (wstrcasecmp(given, color->hex) == 0)
+            else if (tmbstrcasecmp(given, color->hex) == 0)
             {
-                if (ReplaceColor)
+                if ( cfgBool(doc, TidyReplaceColor) )
                 {
                     MemFree(attval->value);
-                    attval->value = wstrdup(color->name);
+                    attval->value = tmbstrdup(color->name);
                 }
                 found = yes;
                 break;
@@ -1371,12 +1376,12 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
         }
         else if (IsLetter(given[0]))
         {
-            if (wstrcasecmp(given, color->name) == 0)
+            if (tmbstrcasecmp(given, color->name) == 0)
             {
-                if (ReplaceColor)
+                if ( cfgBool(doc, TidyReplaceColor) )
                 {
                     MemFree(attval->value);
-                    attval->value = wstrdup(color->name);
+                    attval->value = tmbstrdup(color->name);
                 }
                 found = yes;
                 break;
@@ -1384,7 +1389,7 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
         }
         else
         {
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
             invalid = yes;
             break;
         }
@@ -1400,7 +1405,7 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
                 if (!IsDigit(given[i]) &&
                     !strchr("abcdef", ToLower(given[i])))
                 {
-                    ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                    ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
                     invalid = yes;
                     break;
                 }
@@ -1411,7 +1416,7 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
             {
                 for (i = 1; i < 7; ++i)
                 {
-                    given[i] = ToUpper(given[i]);
+                    given[i] = (tmbchar) ToUpper( given[i] );
                 }
             }
         }
@@ -1421,420 +1426,88 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
                Proprietary, but I don't thinks it's worth the effort,
                so values not in HTML 4.01 are invalid */
 
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
         }
     }
 }
 
 /* check valuetype attribute for element param */
-void CheckVType(Lexer *lexer, Node *node, AttVal *attval)
+void CheckVType( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
 
     value = attval->value;
 
-    if (! (wstrcasecmp(value,   "data") == 0 ||
-           wstrcasecmp(value, "object") == 0 ||
-           wstrcasecmp(value,    "ref") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,   "data") == 0 ||
+           tmbstrcasecmp(value, "object") == 0 ||
+           tmbstrcasecmp(value,    "ref") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks scrolling attribute */
-void CheckScroll(Lexer *lexer, Node *node, AttVal *attval)
+void CheckScroll( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval );
 
     value = attval->value;
 
-    if (! (wstrcasecmp(value,   "no") == 0 ||
-           wstrcasecmp(value, "auto") == 0 ||
-           wstrcasecmp(value,  "yes") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value,   "no") == 0 ||
+           tmbstrcasecmp(value, "auto") == 0 ||
+           tmbstrcasecmp(value,  "yes") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks dir attribute */
-void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
+void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    char *value;
+    tmbstr value;
 
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    CheckLowerCaseAttrValue(lexer, node, attval);
+    CheckLowerCaseAttrValue( doc, node, attval);
 
     value = attval->value;
 
-    if (! (wstrcasecmp(value, "rtl") == 0 ||
-           wstrcasecmp(value, "ltr") == 0))
-        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+    if (! (tmbstrcasecmp(value, "rtl") == 0 ||
+           tmbstrcasecmp(value, "ltr") == 0))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 /* checks lang and xml:lang attributes */
-void CheckLang(Lexer *lexer, Node *node, AttVal *attval)
+void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (attval == null || attval->value == null)
+    if ( attval == null || attval->value == null )
     {
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-        if (AccessibilityCheckLevel == 0)
-#endif
+        if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
-            ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+            ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE );
         }
-        
         return;
     }
 
-    if (wstrcasecmp(attval->attribute, "lang") == 0)
-        ConstrainVersion(lexer, ~VERS_XHTML11);
-}
-
-/* default method for checking an element's attributes */
-void CheckAttributes(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-        CheckAttribute(lexer, node, attval);
-}
-
-/* methods for checking attributes for specific elements */
-
-void CheckHR(Lexer *lexer, Node *node)
-{
-    AttVal *av = GetAttrByName(node, "src");
-
-    CheckAttributes(lexer, node);
-
-    if (av)
-        ReportAttrError(lexer, node, av, PROPRIETARY_ATTR_VALUE);
-}
-
-void CheckIMG(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-    Attribute *attribute;
-    Bool HasAlt = no;
-    Bool HasSrc = no;
-    Bool HasUseMap = no;
-    Bool HasIsMap = no;
-    Bool HasDataFld = no;
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-    {
-        attribute = CheckAttribute(lexer, node, attval);
-
-        if (attribute == attr_alt)
-            HasAlt = yes;
-        else if (attribute == attr_src)
-            HasSrc = yes;
-        else if (attribute == attr_usemap)
-            HasUseMap = yes;
-        else if (attribute == attr_ismap)
-            HasIsMap = yes;
-        else if (attribute == attr_datafld)
-            HasDataFld = yes;
-        else if (attribute == attr_width || attribute == attr_height)
-            ConstrainVersion(lexer, ~VERS_HTML20);
-    }
-
-    if (!HasAlt)
-    {
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-        if (AccessibilityCheckLevel == 0)
-#endif
-        {
-            lexer->badAccess |= MISSING_IMAGE_ALT;
-            ReportMissingAttr(lexer, node, "alt");
-        }
-  
-        if (alt_text)
-            AddAttribute(node, "alt", alt_text);
-    }
-
-    if (!HasSrc && !HasDataFld)
-        ReportMissingAttr(lexer, node, "src");
-
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-    if (AccessibilityCheckLevel == 0)
-#endif 
-    {
-        if (HasIsMap && !HasUseMap)
-            ReportMissingAttr(lexer, node, "ismap");
-    }
-}
-
-void CheckAnchor(Lexer *lexer, Node *node)
-{
-    CheckAttributes(lexer, node);
-
-    FixId(lexer, node);
-}
-
-void CheckMap(Lexer *lexer, Node *node)
-{
-    CheckAttributes(lexer, node);
-
-    FixId(lexer, node);
-}
-
-void CheckTableCell(Lexer *lexer, Node *node)
-{
-    CheckAttributes(lexer, node);
-
-    /*
-      HTML4 strict doesn't allow mixed content for
-      elements with %block; as their content model
-    */
-    if (GetAttrByName(node, "width") || GetAttrByName(node, "height"))
-        ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
-}
-
-void CheckCaption(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-    char *value = null;
-
-    CheckAttributes(lexer, node);
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-    {
-        if (wstrcasecmp(attval->attribute, "align") == 0)
-        {
-            value = attval->value;
-            break;
-        }
-    }
-
-    if (value != null)
-    {
-        if (wstrcasecmp(value, "left") == 0 || wstrcasecmp(value, "right") == 0)
-            ConstrainVersion(lexer, VERS_HTML40_LOOSE);
-        else if (wstrcasecmp(value, "top") == 0 || wstrcasecmp(value, "bottom") == 0)
-            ConstrainVersion(lexer, ~(VERS_HTML20|VERS_HTML32));
-        else
-            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
-    }
-}
-
-void CheckHTML(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-    AttVal *xmlns;
-    Attribute *attribute;
-
-    xmlns = GetAttrByName(node, "xmlns");
-
-    if (xmlns != null && wstrcmp(xmlns->value, XHTML_NAMESPACE) == 0)
-    {
-        lexer->isvoyager = yes;
-        if (!HtmlOut)    /* Unless user has specified plain HTML output, */
-            xHTML = yes; /* output format will be XHTML. */
-
-            /* adjust other config options, just as in config.c */
-            XmlOut = yes;
-            UpperCaseTags = no;
-            UpperCaseAttrs = no;
-    }
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-    {
-        attribute = CheckAttribute(lexer, node, attval);
-    }
-}
-
-void CheckAREA(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-    Attribute *attribute;
-    Bool HasAlt = no;
-    Bool HasHref = no;
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-    {
-        attribute = CheckAttribute(lexer, node, attval);
-
-        if (attribute == attr_alt)
-            HasAlt = yes;
-        else if (attribute == attr_href)
-            HasHref = yes;
-    }
-
-    if (!HasAlt)
-    {
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-        if (AccessibilityCheckLevel == 0)
-#endif
-        {
-            lexer->badAccess |= MISSING_LINK_ALT;
-            ReportMissingAttr(lexer, node, "alt");
-        }
-    }
-
-    if (!HasHref)
-        ReportMissingAttr(lexer, node, "href");
-}
-
-void CheckTABLE(Lexer *lexer, Node *node)
-{
-    AttVal *attval;
-    Attribute *attribute;
-    Bool HasSummary = no;
-
-    for (attval = node->attributes; attval != null; attval = attval->next)
-    {
-        attribute = CheckAttribute(lexer, node, attval);
-
-        if (attribute == attr_summary)
-            HasSummary = yes;
-    }
-
-    /* suppress warning for missing summary for HTML 2.0 and HTML 3.2 */
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-    if (AccessibilityCheckLevel == 0)
-#endif
-    {
-        if (!HasSummary && lexer->doctype != VERS_HTML20 && lexer->doctype != VERS_HTML32)
-        {
-            lexer->badAccess |= MISSING_SUMMARY;
-            ReportMissingAttr(lexer, node, "summary");
-        }
-    }
-
-    /* convert <table border> to <table border="1"> */
-    if (XmlOut && (attval = GetAttrByName(node, "border")))
-    {
-        if (attval->value == null)
-            attval->value = wstrdup("1");
-    }
-
-    /* <table height="..."> is proprietary */
-    if (attval = GetAttrByName(node, "height"))
-    {
-        ReportAttrError(lexer, node, attval, PROPRIETARY_ATTRIBUTE);
-        ConstrainVersion(lexer, VERS_PROPRIETARY);
-    }
-}
-
-/* add missing type attribute when appropriate */
-void CheckSCRIPT(Lexer *lexer, Node *node)
-{
-    AttVal *lang, *type;
-    char buf[16];
-
-    CheckAttributes(lexer, node);
-
-    lang = GetAttrByName(node, "language");
-    type = GetAttrByName(node, "type");
-
-    if (!type)
-    {
-        ReportMissingAttr(lexer, node, "type");
-
-        /* check for javascript */
-
-        if (lang)
-        {
-            wstrncpy(buf, lang->value, 10);
-            buf[10] = '\0';
-
-            if ( (wstrncasecmp(buf, "javascript", 10) == 0) ||
-                 (wstrncasecmp(buf,    "jscript", 7) == 0) )
-            {
-                AddAttribute(node, "type", "text/javascript");
-            }
-            else if ( wstrcasecmp(buf, "vbscript") == 0 )
-            {
-               /* per Randy Waki 8/6/01 */
-                AddAttribute(node, "type", "text/vbscript");
-            }
-        }
-        else
-            AddAttribute(node, "type", "text/javascript");
-    }
+    if (tmbstrcasecmp(attval->attribute, "lang") == 0)
+        ConstrainVersion( doc, ~VERS_XHTML11 );
 }
 
 
-/* add missing type attribute when appropriate */
-void CheckSTYLE(Lexer *lexer, Node *node)
-{
-    AttVal *type = GetAttrByName(node, "type");
-
-    CheckAttributes(lexer, node);
-
-    if (!type)
-    {
-        ReportMissingAttr(lexer, node, "type");
-
-        AddAttribute(node, "type", "text/css");
-    }
-}
-
-/* add missing type attribute when appropriate */
-void CheckLINK(Lexer *lexer, Node *node)
-{
-    AttVal *rel = GetAttrByName(node, "rel");
-
-    CheckAttributes(lexer, node);
-
-    if (rel && rel->value &&
-          wstrcmp(rel->value, "stylesheet") == 0)
-    {
-        AttVal *type = GetAttrByName(node, "type");
-
-        if (!type)
-        {
-            ReportMissingAttr(lexer, node, "type");
-
-            AddAttribute(node, "type", "text/css");
-        }
-    }
-}
-
-/* reports missing action attribute */
-void CheckFORM(Lexer *lexer, Node *node)
-{
-    AttVal *action = GetAttrByName(node, "action");
-
-    CheckAttributes(lexer, node);
-
-    if (!action)
-        ReportMissingAttr(lexer, node, "action");
-}
-
-/* reports missing content attribute */
-void CheckMETA(Lexer *lexer, Node *node)
-{
-    AttVal *content = GetAttrByName(node, "content");
-
-    CheckAttributes(lexer, node);
-
-    if (!content)
-        ReportMissingAttr(lexer, node, "content");
-
-    /* name or http-equiv attribute must also be set */
-}
 

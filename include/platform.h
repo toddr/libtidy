@@ -1,15 +1,22 @@
-/* platform.h
+#ifndef __PLATFORM_H__
+#define __PLATFORM_H__
 
-  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+/* platform.h -- Platform specifics
+
+  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
+  See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/10/06 19:06:26 $ 
-    $Revision: 1.34 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:09 $ 
+    $Revision: 1.35 $ 
 
 */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
   Uncomment and edit one of the following #defines if you
@@ -32,12 +39,12 @@
 
 /* Enable/disable support for Big5 and Shift_JIS character encodings */
 #ifndef SUPPORT_ASIAN_ENCODINGS
-#define SUPPORT_ASIAN_ENCODINGS 0
+#define SUPPORT_ASIAN_ENCODINGS 1
 #endif
 
 /* Enable/disable support for UTF-16 character encodings */
 #ifndef SUPPORT_UTF16_ENCODINGS
-#define SUPPORT_UTF16_ENCODINGS 0
+#define SUPPORT_UTF16_ENCODINGS 1
 #endif
 
 /* Enable/disable support for additional accessibility checks */
@@ -73,27 +80,22 @@
 #define PLATFORM_NAME "Mac OS"
 #endif
 
-#elif defined(__linux__) && defined(__powerpc__)
-#if #system(linux)
-/* MkLinux on PPC  - gcc (egcs) compiler */
-#define MAC_OS_MKLINUX
-#ifndef PLATFORM_NAME
-#define PLATFORM_NAME "MkLinux"
-#endif
-#endif
-
 #elif defined(__APPLE__) && defined(__MACH__)
 /* Mac OS X (client) 10.x (or server 1.x/10.x) - gcc or Metrowerks MachO compilers */
 #define MAC_OS_X
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Mac OS X"
 #endif
-
 #endif
 
-#if defined(MAC_OS_CLASSIC) || defined(MAC_OS_MKLINUX) || defined(MAC_OS_X)
+#if defined(MAC_OS_CLASSIC) || defined(MAC_OS_X)
 /* Any OS on Mac platform */
 #define MAC_OS
+#define FILENAMES_CASE_SENSITIVE 0
+#define strcasecmp strcmp
+#ifndef DFLT_REPL_CHARENC
+#define DFLT_REPL_CHARENC MACROMAN
+#endif
 #endif
 
 /* Convenience defines for BSD like platforms */
@@ -137,6 +139,7 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Windows"
 #endif
+#define FILENAMES_CASE_SENSITIVE 0
 #endif
 
 /* Convenience defines for Linux platforms */
@@ -165,8 +168,22 @@
 #elif defined(linux) && defined(__powerpc__)
 /* Linux on PPC - gcc compiler */
 #define LINUX_OS
+
+#if defined(__linux__) && defined(__powerpc__)
+
+/* #if #system(linux) */
+/* MkLinux on PPC  - gcc (egcs) compiler */
+/* #define MAC_OS_MKLINUX */
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "MkLinux"
+#endif
+
+#else
+
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Linux/PPC"
+#endif
+
 #endif
 
 #elif defined(linux) || defined(__linux__)
@@ -212,6 +229,8 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OS/2"
 #endif
+#define FILENAMES_CASE_SENSITIVE 0
+#define strcasecmp stricmp
 #endif
 
 /* Convenience defines for IRIX */
@@ -249,6 +268,7 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Cygwin"
 #endif
+#define FILENAMES_CASE_SENSITIVE 0
 #endif
 
 /* Convenience defines for OpenVMS */
@@ -258,6 +278,7 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OpenVMS"
 #endif
+#define FILENAMES_CASE_SENSITIVE 0
 #endif
 
 /* Convenience defines for DEC Alpha OSF + gcc platforms */
@@ -267,6 +288,29 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "DEC Alpha OSF"
 #endif
+#endif
+
+/* Convenience defines for ARM platforms */
+
+#if defined(__arm)
+#define ARM_OS
+
+#if defined(forARM) && defined(__NEWTON_H)
+
+/* Using Newton C++ Tools ARMCpp compiler */
+#define NEWTON_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Newton"
+#endif
+
+#else
+
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "ARM"
+#endif
+
+#endif
+
 #endif
 
 #include <ctype.h>
@@ -286,6 +330,24 @@
 #endif
 
 /* #define __USE_MISC */
+
+#ifdef NEEDS_UNISTD_H
+#include <unistd.h>  /* needed for unlink on some Unix systems */
+#endif
+
+/* This can be set at compile time.  Usually Windows,
+** except for Macintosh builds.
+*/
+#ifndef DFLT_REPL_CHARENC
+#define DFLT_REPL_CHARENC WIN1252
+#endif
+
+/* By default, use case-sensitive filename comparison.
+*/
+#ifndef FILENAMES_CASE_SENSITIVE
+#define FILENAMES_CASE_SENSITIVE 1
+#endif
+
 
 /*
   Tidy preserves the last modified time for the files it
@@ -362,9 +424,21 @@
 #if defined(_WIN32) && !defined(__MSL__) && !defined(__BORLANDC__)
 #define futime _futime
 #define fstat _fstat
-#define utimbuf _utimbuf
+#define utimbuf _utimbuf /* Windows seems to want utimbuf */
 #define stat _stat
 #define fileno _fileno
+#define strcasecmp _stricmp
+#define utime _utime
+#if _MSC_VER > 1000
+#pragma warning( disable : 4189 ) /* local variable is initialized but not referenced */
+#pragma warning( disable : 4100 ) /* unreferenced formal parameter */
+#pragma warning( disable : 4706 ) /* assignment within conditional expression */
+#endif
+#if  defined(_USRDLL) && !defined(TIDY_EXPORT)
+#define TIDY_EXPORT __declspec( dllexport ) 
+#endif
+#elif defined(_WIN32) && defined(__MSL__)
+#define strcasecmp _stricmp
 #endif /* _WIN32 */
 
 #endif /* PRESERVE_FILE_TIMES */
@@ -383,7 +457,24 @@ typedef unsigned long ulong;
 #endif
 #endif /* __USE_MISC */
 
+#ifndef TIDY_EXPORT /* Define it away for most builds */
+#define TIDY_EXPORT
+#endif
+
+#ifndef TIDY_STRUCT
+#define TIDY_STRUCT
+#endif
+
 typedef unsigned char byte;
+
+typedef uint tchar;         /* single, full character */
+typedef char tmbchar;       /* single, possibly partial character */
+#ifndef TMBSTR_DEFINED
+typedef tmbchar* tmbstr;    /* pointer to buffer of possibly partial chars */
+typedef const tmbchar* ctmbstr; /* Ditto, but const */
+#define TMBSTR_DEFINED
+#endif
+
            
 /*
   bool is a reserved word in some but
@@ -404,8 +495,32 @@ typedef enum
 #include "dmalloc.h"
 #endif
 
-/* were defined in html.h - TRT */
-void *MemAlloc(uint size);
-void *MemRealloc(void *mem, uint newsize);
+void *MemAlloc(size_t size);
+void *MemRealloc(void *mem, size_t newsize);
 void MemFree(void *mem);
-void ClearMemory(void *, uint size);
+void ClearMemory(void *, size_t size);
+void FatalError( ctmbstr msg );
+
+/* Opaque data structure.
+*  Cast to implementation type struct within lib.
+*  This will reduce inter-dependencies/conflicts w/ application code.
+*/
+#if 1
+#define opaque( typenam )\
+struct _##typenam { int _opaque; };\
+typedef struct _##typenam* typenam
+#else
+#define opaque(typenam) typedef void* typenam
+#endif
+
+/* Opaque data structure used to pass back
+** and forth to keep current position in a
+** list or other collection.
+*/
+opaque( TidyIterator );
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* __PLATFORM_H__ */

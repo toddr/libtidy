@@ -1,110 +1,282 @@
-/*
-  localize.c
+/* localize.c -- text strings and routines to handle errors and general messages
 
-  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
+  See tidy.h for the copyright notice.
 
   You should only need to edit this file and tidy.c
-  to localize HTML tidy.
+  to localize HTML tidy. *** This needs checking ***
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/12/02 08:28:31 $ 
-    $Revision: 1.66 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:10 $ 
+    $Revision: 1.67 $ 
 
 */
 
-#include "platform.h"
-#include "html.h"
+#include "tidy-int.h"
+#include "lexer.h"
+#include "streamio.h"
+#include "message.h"
+#include "tmbstr.h"
+#include "utf8.h"
 
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
-/* TRT */
-/* points to the Adaptive Technology Resource Centre at the University of Toronto */
+
+/* points to the Adaptive Technology Resource Centre at the
+** University of Toronto
+*/
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-char *release_date = "1st December 2002";
+const static char *release_date = "1st February 2003";
 
-static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
+ctmbstr ReleaseDate()
+{
+  return release_date;
+}
 
-extern uint optionerrors; /* not used for anything yet */
 
-/*
- This routine is the single point via which
- all output is written and as such is a good
- way to interface Tidy to other code when
- embedding Tidy in a GUI application.
+static char* LevelPrefix( TidyReportLevel level, char* buf )
+{
+  *buf = 0;
+  switch ( level )
+  {
+  case TidyInfo:
+    tmbstrcpy( buf, "Info: " );
+    break;
+  case TidyWarning:
+    tmbstrcpy( buf, "Warning: " );
+    break;
+  case TidyConfig:
+    tmbstrcpy( buf, "Config: " );
+    break;
+  case TidyAccess:
+    tmbstrcpy( buf, "Access: " );
+    break;
+  case TidyError:
+    tmbstrcpy( buf, "Error: " );
+    break;
+  case TidyBadDocument:
+    tmbstrcpy( buf, "Document: " );
+    break;
+  case TidyFatal:
+    tmbstrcpy( buf, "panic: " );
+    break;
+  }
+  return buf + tmbstrlen( buf );
+}
+
+/* Updates document message counts and
+** compares counts to options to see if message
+** display should go forward.
 */
-void tidy_out(FILE *fp, const char* msg, ...)
+static Bool UpdateCount( TidyDocImpl* doc, TidyReportLevel level )
 {
-    va_list args;
-    va_start(args, msg);
-    vfprintf(fp, msg, args);
-    va_end(args);
+  /* keep quiet after <ShowErrors> errors */
+  Bool go = ( doc->errors < cfg(doc, TidyShowErrors) );
+
+  switch ( level )
+  {
+  case TidyInfo:
+    doc->infoMessages++;
+    break;
+  case TidyWarning:
+    doc->warnings++;
+    go = go && cfgBool( doc, TidyShowWarnings );
+    break;
+  case TidyConfig:
+    doc->optionErrors++;
+    break;
+  case TidyAccess:
+    doc->accessErrors++;
+    break;
+  case TidyError:
+    doc->errors++;
+    break;
+  case TidyBadDocument:
+    doc->docErrors++;
+    break;
+  case TidyFatal:
+    /* Ack! */;
+    break;
+  }
+
+  return go;
 }
 
-void ShowVersion(FILE *fp)
+static char* ReportPosition( TidyDocImpl* doc, int line, int col, char* buf )
 {
-    /*
-    tidy_out(fp, "HTML Tidy release date: %s\n"
-            "See http://www.w3.org/People/Raggett for details\n", release_date);
-    */
-#ifdef PLATFORM_NAME
-    tidy_out(fp, "\nHTML Tidy for %s (release date: %s; built on %s, at %s)\n"
-            "See http://www.w3.org/People/Raggett for details\n",
-                 PLATFORM_NAME, release_date, __DATE__, __TIME__);
-#else
-    tidy_out(fp, "\nHTML Tidy (release date: %s; built on %s, at %s)\n"
-            "See http://www.w3.org/People/Raggett for details\n",
-                 release_date, __DATE__, __TIME__);
-#endif
+    *buf = 0;
+
+    /* Change formatting to be parsable by GNU Emacs */
+    if ( cfgBool(doc, TidyEmacs) && cfgStr(doc, TidyEmacsFile) )
+        sprintf( buf, "%s:%d:%d: ", 
+                 cfgStr(doc, TidyEmacsFile), line, col );
+    else /* traditional format */
+        sprintf( buf, "line %d column %d - ", line, col );
+    return buf + tmbstrlen( buf );
 }
 
-void FileError(FILE *fp, const char *file)
-{
-    tidy_out(fp, "Can't open \"%s\"\n", file);
-}
+/* General message writing routine.
+** Each message is a single warning, error, etc.
+** 
+** This routine will keep track of counts and,
+** if the caller has set a filter, it will be 
+** called.  The new preferred way of handling
+** Tidy diagnostics output is either a) define
+** a new output sink or b) install a message
+** filter routine.
+*/
 
-static void ReportTag(Lexer *lexer, Node *tag)
+static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
+                        int line, int col, ctmbstr msg, va_list args )
 {
-    if (tag)
+    char message[ 2048 ];
+    Bool go = UpdateCount( doc, level );
+
+    if ( go )
     {
-        if (tag->type == StartTag || tag->type == StartEndTag)
-            tidy_out(lexer->errout, "<%s>", tag->element);
-        else if (tag->type == EndTag)
-            tidy_out(lexer->errout, "</%s>", tag->element);
-        else if (tag->type == DocTypeTag)
-            tidy_out(lexer->errout, "<!DOCTYPE>");
-        else if (tag->type == TextNode)
-            tidy_out(lexer->errout, "plain text");
-        else
-            tidy_out(lexer->errout, "%s", tag->element);
+        vsprintf( message, msg, args );
+        if ( doc->mssgFilt )
+        {
+            TidyDoc tdoc = tidyImplToDoc( doc );
+            go = doc->mssgFilt( tdoc, level, line, col, message );
+        }
+    }
+
+    if ( go )
+    {
+        char buf[ 64 ], *cp;
+        if ( line > 0 && col > 0 )
+        {
+            ReportPosition( doc, line, col, buf );
+            for ( cp = buf; *cp; ++cp )
+                WriteChar( *cp, doc->errout );
+        }
+
+        LevelPrefix( level, buf );
+        for ( cp = buf; *cp; ++cp )
+            WriteChar( *cp, doc->errout );
+
+        for ( cp = message; *cp; ++cp )
+            WriteChar( *cp, doc->errout );
+        WriteChar( '\n', doc->errout );
     }
 }
 
-/* lexer is not defined when this is called */
-void ReportUnknownOption(char *option)
+void message( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... )
 {
-    optionerrors++;
-    fprintf(stderr, "Warning - unknown option: %s\n", option);
+    va_list args;
+    va_start( args, msg );
+    messagePos( doc, level, 0, 0, msg, args );
+    va_end( args );
+}
+
+
+void messageLexer( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... )
+{
+    int line = ( doc->lexer ? doc->lexer->lines : 0 );
+    int col  = ( doc->lexer ? doc->lexer->columns : 0 );
+
+    va_list args;
+    va_start( args, msg );
+    messagePos( doc, level, line, col, msg, args );
+    va_end( args );
+}
+
+void messageNode( TidyDocImpl* doc, TidyReportLevel level, Node* node,
+                  ctmbstr msg, ... )
+{
+    int line = ( node ? node->line :
+                 ( doc->lexer ? doc->lexer->lines : 0 ) );
+    int col  = ( node ? node->column :
+                 ( doc->lexer ? doc->lexer->columns : 0 ) );
+
+    va_list args;
+    va_start( args, msg );
+    messagePos( doc, level, line, col, msg, args );
+    va_end( args );
+}
+
+void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
+{
+    if ( !cfgBool(doc, TidyQuiet) )
+    {
+        ctmbstr cp;
+        char buf[ 2048 ];
+
+        va_list args;
+        va_start( args, msg );
+        vsprintf( buf, msg, args );
+        va_end( args );
+
+        for ( cp=buf; *cp; ++cp )
+          WriteChar( *cp, doc->errout );
+    }
+}
+
+void ShowVersion( TidyDocImpl* doc )
+{
+    ctmbstr platform = "", helper = "";
+
+#ifdef PLATFORM_NAME
+    platform = PLATFORM_NAME;
+    helper = " for ";
+#endif
+
+    tidy_out( doc, "\nHTML Tidy%s%s (release date: %s; built on %s, at %s)\n"
+                   "See http://tidy.sourceforge.net/ for details.\n",
+              helper, platform, release_date, __DATE__, __TIME__ );
+}
+
+void FileError( TidyDocImpl* doc, ctmbstr file )
+{
+    message( doc, TidyError, "Can't open \"%s\"\n", file );
+}
+
+static char* TagToString( Node* tag, char* buf )
+{
+    *buf = 0;
+    if ( tag )
+    {
+      if ( tag->type == StartTag || tag->type == StartEndTag )
+          sprintf( buf, "<%s>", tag->element );
+      else if ( tag->type == EndTag )
+          sprintf( buf, "</%s>", tag->element );
+      else if ( tag->type == DocTypeTag )
+          strcpy( buf, "<!DOCTYPE>" );
+      else if ( tag->type == TextNode )
+          strcpy( buf, "plain text" );
+      else if ( tag->element )
+        strcpy( buf, tag->element );
+    }
+    return buf + tmbstrlen( buf );
 }
 
 /* lexer is not defined when this is called */
-void ReportBadArgument(char *option)
+void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option )
 {
-    optionerrors++;
-    fprintf(stderr, "Warning - missing or malformed argument for option: %s\n", option);
+    assert( option != null );
+    message( doc, TidyConfig, "unknown option: %s", option );
 }
 
-static void NtoS(int n, char *str)
+/* lexer is not defined when this is called */
+void ReportBadArgument( TidyDocImpl* doc, ctmbstr option )
 {
-    char buf[40];
+    assert( option != null );
+    message( doc, TidyConfig,
+             "missing or malformed argument for option: %s", option );
+}
+
+static void NtoS(int n, tmbstr str)
+{
+    tmbchar buf[40];
     int i;
 
     for (i = 0;; ++i)
     {
-        buf[i] = (n % 10) + '0';
+        buf[i] = (tmbchar)( (n % 10) + '0' );
 
         n = n / 10;
 
@@ -123,996 +295,938 @@ static void NtoS(int n, char *str)
     str[n+1] = '\0';
 }
 
-static void ReportPosition(Lexer *lexer)
+
+void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
 {
-    /* Change formatting to be parsable by GNU Emacs */
-    if (Emacs)
+    Lexer* lexer = doc->lexer;
+    char buf[ 32 ];
+
+    uint reason = code & ~DISCARDED_CHAR;
+    ctmbstr action = code & DISCARDED_CHAR ? "discarding" : "replacing";
+    ctmbstr fmt = null;
+
+    doc->warnings++;
+
+    /* An encoding mismatch is currently treated as a non-fatal error */
+    switch ( reason )
     {
-        tidy_out(lexer->errout, "%s", currentFile);
-        tidy_out(lexer->errout, ":%d:", lexer->lines);
-        tidy_out(lexer->errout, "%d: ", lexer->columns);
-    }
-    else /* traditional format */
-    {
-        tidy_out(lexer->errout, "line %d", lexer->lines);
-        tidy_out(lexer->errout, " column %d - ", lexer->columns);
-    }
-}
+    case ENCODING_MISMATCH:
+        /* actual encoding passed in "c" */
+        messageLexer( doc, TidyWarning,
+                      "specified input encoding (%s) does "
+                      "not match actual input encoding (%s)",
+                       CharEncodingName( doc->docIn->encoding ),
+                       CharEncodingName(c) );
+        break;
 
-void ReportEncodingError(Lexer *lexer, uint code, uint c)
-{
-    char buf[256];
-                
-    lexer->warnings++;
+    case VENDOR_SPECIFIC_CHARS:
+        NtoS(c, buf);
+        fmt = "Warning: %s invalid character code %s";
+        break;
 
-    /* keep quiet after <ShowErrors> errors */
-    if (lexer->errors > ShowErrors)
-        return;
+    case INVALID_SGML_CHARS:
+        NtoS(c, buf);
+        fmt = "Warning: %s invalid character code %s";
+        break;
 
-    if (ShowWarnings)
-    {
-        ReportPosition(lexer);
-
-        /* An encoding mismatch is currently treated as a non-fatal error */
-        if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
-        {
-            /* actual encoding passed in "c" */
-            lexer->badChars |= ENCODING_MISMATCH;
-            tidy_out(lexer->errout, "specified input encoding (%s) does not match actual input encoding (%s)",
-                     CharEncodingName(lexer->in->encoding), CharEncodingName(c));
-        }
-        else if ((code & ~DISCARDED_CHAR) == VENDOR_SPECIFIC_CHARS)
-        {
-            NtoS(c, buf);
-            lexer->badChars |= VENDOR_SPECIFIC_CHARS;
-            tidy_out(lexer->errout, "Warning: %s invalid character code %s",
-                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
-        }
-        else if ((code & ~DISCARDED_CHAR) == INVALID_SGML_CHARS)
-        {
-            NtoS(c, buf);
-            lexer->badChars |= INVALID_SGML_CHARS;
-            tidy_out(lexer->errout, "Warning: %s invalid character code %s",
-                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
-        }
-        else if ((code & ~DISCARDED_CHAR) == INVALID_UTF8)
-        {
-            sprintf(buf, "U+%04lX", c);
-            lexer->badChars |= INVALID_UTF8;
-            tidy_out(lexer->errout, "Warning: %s invalid UTF-8 bytes (char. code %s)",
-                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
-        }
+    case INVALID_UTF8:
+        sprintf( buf, "U+%04X", c );
+        fmt = "Warning: %s invalid UTF-8 bytes (char. code %s)";
+        break;
 
 #if SUPPORT_UTF16_ENCODINGS
-
-        else if ((code & ~DISCARDED_CHAR) == INVALID_UTF16)
-        {
-            sprintf(buf, "U+%04lX", c);
-            lexer->badChars |= INVALID_UTF16;
-            tidy_out(lexer->errout, "Warning: %s invalid UTF-16 surrogate pair (char. code %s)",
-                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
-        }
-
+    case INVALID_UTF16:
+        sprintf( buf, "U+%04X", c );
+        fmt = "Warning: %s invalid UTF-16 surrogate pair (char. code %s)";
+        break;
 #endif
 
-        else if ((code & ~DISCARDED_CHAR) == INVALID_NCR)
-        {
-            NtoS(c, buf);
-            lexer->badChars |= INVALID_NCR;
-            tidy_out(lexer->errout, "Warning: %s invalid numeric character reference %s",
-                     code & DISCARDED_CHAR?"discarding":"replacing", buf);
-        }
-
-        tidy_out(lexer->errout, "\n");
+#if SUPPORT_ASIAN_ENCODINGS
+    case INVALID_NCR:
+        NtoS(c, buf);
+        fmt = "Warning: %s invalid numeric character reference %s";
+        break;
+#endif
+    default:
+        reason = 0;
+        break;
     }
+
+    if ( fmt )
+        messageLexer( doc, TidyWarning, fmt, action, buf );
+    if ( reason )
+      doc->badChars |= reason;
 }
 
-void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
+void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
 {
-    /* replacement for #427818 - fix by Tony Goodwin 11 Oct 00 */
-    char *entityname = "NULL";
+    ctmbstr entityname = ( entity ? entity : "NULL" );
+    ctmbstr fmt = null;
 
-    if (entity)
-        entityname = entity;
-
-    lexer->warnings++;
-
-    /* keep quiet after <ShowErrors> errors */
-    if (lexer->errors > ShowErrors)
-        return;
-
-    if (ShowWarnings)
+    switch ( code )
     {
-        ReportPosition(lexer);
-
-        if (code == MISSING_SEMICOLON)
-        {
-            tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entityname);
-        }
-        if (code == MISSING_SEMICOLON_NCR)
-        {
-            tidy_out(lexer->errout, "Warning: numeric character reference \"%s\" doesn't end in ';'", entityname);
-        }
-        else if (code == UNKNOWN_ENTITY)
-        {
-            tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entityname);
-        }
-        else if (code == UNESCAPED_AMPERSAND)
-        {
-            tidy_out(lexer->errout, "Warning: unescaped & which should be written as &amp;");
-        }
-        else if (code == APOS_UNDEFINED)
-        {
-            tidy_out(lexer->errout, "Warning: named entity &apos; only defined in XML/XHTML");
-        }
-
-        tidy_out(lexer->errout, "\n");
+    case MISSING_SEMICOLON:
+        fmt = "entity \"%s\" doesn't end in ';'";
+        break;
+    case MISSING_SEMICOLON_NCR:
+        fmt = "numeric character reference \"%s\" doesn't end in ';'";
+        break;
+    case UNKNOWN_ENTITY:
+        fmt = "unescaped & or unknown entity \"%s\"";
+        break;
+    case UNESCAPED_AMPERSAND:
+        fmt = "unescaped & which should be written as &amp;";
+        break;
+    case APOS_UNDEFINED:
+        fmt = "named entity &apos; only defined in XML/XHTML";
+        break;
     }
+
+    if ( fmt )
+        messageLexer( doc, TidyWarning, fmt, entityname );
 }
 
-void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
+void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 {
-    /* replacement for #427676 - fix by Tony Goodwin 11 Oct 00 */
-    char *name = "NULL", *value = "NULL";
+    char *name = "NULL", *value = "NULL", tagdesc[ 64 ];
 
-    if (av)
+    TagToString( node, tagdesc );
+    if ( av )
     {
-        if (av->attribute)
+        if ( av->attribute )
             name = av->attribute;
-        if (av->value)
+        if ( av->value )
             value = av->value;
     }
 
-    if (code == UNEXPECTED_GT)
-        lexer->errors++;
-    else
-        lexer->warnings++;
-
-    /* keep quiet after <ShowErrors> errors */
-    if (lexer->errors > ShowErrors)
-        return;
-
-    if (ShowWarnings)
+    switch ( code )
     {
+    case UNKNOWN_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "unknown attribute \"%s\"", name );
+        break;
+
+    case INSERTING_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "inserting \"%s\" attribute for %s element", name, tagdesc );
+        break;
+
+    case MISSING_ATTR_VALUE:
+        messageNode( doc, TidyWarning, node,
+                     "%s attribute \"%s\" lacks value", tagdesc, name );
+        break;
+
+    case MISSING_IMAGEMAP:  /* this is not used anywhere */
+        messageNode( doc, TidyWarning, node,
+                     "%s should use client-side image map", tagdesc );
+        doc->badAccess |= MISSING_IMAGE_MAP;
+        break;
+
+    case BAD_ATTRIBUTE_VALUE:
+        messageNode( doc, TidyWarning, node,
+                     "%s attribute \"%s\" has invalid value \"%s\"",
+                     tagdesc, name, value );
+        break;
+
+    case INVALID_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "%s attribute name \"%s\" (value=\"%s\") is invalid",
+                     tagdesc, name, value );
+        break;
+    case XML_ID_SYNTAX:
+        messageNode( doc, TidyWarning, node,
+                     "%s ID \"%s\" uses XML ID syntax", tagdesc, value );
+        break;
+
+    case XML_ATTRIBUTE_VALUE:
+        messageNode( doc, TidyWarning, node,
+                     "%s has XML attribute \"%s\"", tagdesc, name );
+        break;
+
+    case UNEXPECTED_QUOTEMARK:
+        messageNode( doc, TidyWarning, node,
+                     "%s unexpected or duplicate quote mark", tagdesc );
+        break;
+
+    case MISSING_QUOTEMARK:
+        messageNode( doc, TidyWarning, node,
+                     "%s attribute with missing trailing quote mark",
+                     tagdesc );
+        break;
+
+    case REPEATED_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "%s dropping value \"%s\" for repeated attribute \"%s\"",
+                     tagdesc, value, name );
+        break;
+
+    case PROPRIETARY_ATTR_VALUE:
+        messageNode( doc, TidyWarning, node,
+                     "%s proprietary attribute value \"%s\"", tagdesc, value );
+        break;
+
+    case PROPRIETARY_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "%s proprietary attribute \"%s\"", tagdesc, name );
+        break;
+
+    case UNEXPECTED_END_OF_FILE:
         /* on end of file adjust reported position to end of input */
-        if (code == UNEXPECTED_END_OF_FILE)
-        {
-            lexer->lines = lexer->in->curline;
-            lexer->columns = lexer->in->curcol;
-        }
+        doc->lexer->lines   = doc->docIn->curline;
+        doc->lexer->columns = doc->docIn->curcol;
+        messageLexer( doc, TidyWarning,
+                      "end of file while parsing attributes" );
+        break;
 
-        ReportPosition(lexer);
+    case ID_NAME_MISMATCH:
+        messageNode( doc, TidyWarning, node,
+                     "%s id and name attribute value mismatch", tagdesc );
+        break;
 
-        if (code == UNKNOWN_ATTRIBUTE)
-            tidy_out(lexer->errout, "Warning: unknown attribute \"%s\"", name);
-        else if (code == MISSING_ATTRIBUTE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " lacks \"%s\" attribute", name);
-        }
-        else if (code == MISSING_ATTR_VALUE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute \"%s\" lacks value", name);
-        }
-        else if (code == MISSING_IMAGEMAP) /* this is not used anywhere */
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " should use client-side image map");
-            lexer->badAccess |= MISSING_IMAGE_MAP;
-        }
-        else if (code == BAD_ATTRIBUTE_VALUE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute \"%s\" has invalid value \"%s\"", name, value);
-        }
-        else if (code == XML_ID_SYNTAX)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " ID \"%s\" uses XML ID syntax", value, name);
-        }
-        else if (code == XML_ATTRIBUTE_VALUE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " has XML attribute \"%s\"", name);
-        }
-        else if (code == UNEXPECTED_QUOTEMARK)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " unexpected or duplicate quote mark");
-        }
-        else if (code == MISSING_QUOTEMARK)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute with missing trailing quote mark");
-        }
-        else if (code == REPEATED_ATTRIBUTE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " dropping value \"%s\" for repeated attribute \"%s\"", value, name);
-        }
-        else if (code == PROPRIETARY_ATTR_VALUE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " proprietary attribute value \"%s\"", value);
-        }
-        else if (code == PROPRIETARY_ATTRIBUTE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " proprietary attribute \"%s\"", name);
-        }
-        else if (code == UNEXPECTED_END_OF_FILE)
-        {
-            tidy_out(lexer->errout, "Warning: end of file while parsing attributes");
-        }
-        else if (code == ID_NAME_MISMATCH)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " id and name attribute value mismatch");
-        }
-        else if (code == BACKSLASH_IN_URI)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " URI reference contains backslash. Typo?");
-        }
-        else if (code == FIXED_BACKSLASH)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " converting backslash in URI to slash");
-        }
-        else if (code == ILLEGAL_URI_REFERENCE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " improperly escaped URI reference");
-        }
-        else if (code == ESCAPED_ILLEGAL_URI)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " escaping malformed URI reference");
-        }
-        else if (code == NEWLINE_IN_URI)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " discarding newline in URI reference");
-        }
-        else if (code == ANCHOR_NOT_UNIQUE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " Anchor \"%s\" already defined", value);
-        }
-        else if (code == ENTITY_IN_ID)
-        {
-            tidy_out(lexer->errout, "Warning: No entities allowed in id attribute, discarding \"&\"");
-        }
-        else if (code == JOINING_ATTRIBUTE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " joining values of repeated attribute \"%s\"", name);
-        }
-        else if (code == UNEXPECTED_EQUALSIGN)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " unexpected '=', expected attribute name");
-        }
-        else if (code == ATTR_VALUE_NOT_LCASE)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute value \"%s\" must be lower case for XHTML", value);
-        }
+    case BACKSLASH_IN_URI:
+        messageNode( doc, TidyWarning, node,
+                     "%s URI reference contains backslash. Typo?", tagdesc );
+        break;
 
-        if ((code != UNEXPECTED_GT))
-            tidy_out(lexer->errout, "\n");
-    }
-    
-    if (code == UNEXPECTED_GT)
-    {
-        if (!ShowWarnings)
-            ReportPosition(lexer);
+    case FIXED_BACKSLASH:
+        messageNode( doc, TidyWarning, node,
+                     "%s converting backslash in URI to slash", tagdesc );
+        break;
 
-        tidy_out(lexer->errout, "Error: ");
-        ReportTag(lexer, node);
-        tidy_out(lexer->errout, " missing '>' for end of tag\n");
+    case ILLEGAL_URI_REFERENCE:
+        messageNode( doc, TidyWarning, node,
+                     "%s improperly escaped URI reference", tagdesc );
+        break;
+
+    case ESCAPED_ILLEGAL_URI:
+        messageNode( doc, TidyWarning, node,
+                     "%s escaping malformed URI reference", tagdesc );
+        break;
+
+    case NEWLINE_IN_URI:
+        messageNode( doc, TidyWarning, node,
+                     "%s discarding newline in URI reference", tagdesc );
+        break;
+
+    case ANCHOR_NOT_UNIQUE:
+        messageNode( doc, TidyWarning, node,
+                     "%s Anchor \"%s\" already defined", tagdesc, value);
+        break;
+
+    case ENTITY_IN_ID:
+        messageNode( doc, TidyWarning, node,
+                     "No entities allowed in id attribute, discarding \"&\"" );
+        break;
+
+    case JOINING_ATTRIBUTE:
+        messageNode( doc, TidyWarning, node,
+                     "%s joining values of repeated attribute \"%s\"",
+                 tagdesc, name );
+        break;
+
+    case UNEXPECTED_EQUALSIGN:
+        messageNode( doc, TidyWarning, node,
+                     "%s unexpected '=', expected attribute name", tagdesc );
+        break;
+
+    case ATTR_VALUE_NOT_LCASE:
+        messageNode( doc, TidyWarning, node,
+                     "%s attribute value \"%s\" must be lower case for XHTML",
+                     tagdesc, value );
+        break;
+
+    case UNEXPECTED_GT:
+        messageNode( doc, TidyWarning, node,
+                     "%s missing '>' for end of tag", tagdesc );
+        break;
     }
 }
 
-void ReportMissingAttr(Lexer* lexer, Node* node, char* name)
+
+void ReportNonCompliantAttr( TidyDocImpl* doc, Node* node, AttVal* attr, uint versWanted )
 {
-   AttVal *dummy = NewAttributeEx(name, null);
-   ReportAttrError(lexer, node, dummy, MISSING_ATTRIBUTE);
-   FreeAttribute(dummy);
+    ctmbstr attrnam = ( attr && attr->attribute ? attr->attribute : "Unknown" );
+    ctmbstr htmlVer = HTMLVersionNameFromCode( versWanted, doc->lexer->isvoyager );
+    messageNode( doc, TidyWarning, node,
+                 "Attribute \"%s\" not supported in %s", attrnam, htmlVer );
 }
 
-void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
+void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versWanted )
 {
-    if ((code == DISCARDING_UNEXPECTED) && lexer->badForm)
-        /* lexer->errors++ */; /* already done in BadForm() */
-    else
-        lexer->warnings++;
+    char desc[ 256 ] = {0};
+    ctmbstr htmlVer = HTMLVersionNameFromCode( versWanted, doc->lexer->isvoyager );
+    TagToString( node, desc );
 
-    /* keep quiet after <ShowErrors> errors */
-    if (lexer->errors > ShowErrors)
-        return;
-
-    if (ShowWarnings)
+    switch ( code )
     {
-        /* on end of file adjust reported position to end of input */
-        if (code == UNEXPECTED_END_OF_FILE)
-        {
-            lexer->lines = lexer->in->curline;
-            lexer->columns = lexer->in->curcol;
-        }
+    case MIXED_CONTENT_IN_BLOCK:
+        messageNode( doc, TidyWarning, node,
+                     "Text node in %s in %s", desc, htmlVer );
+        break;
 
-        ReportPosition(lexer);
-
-        if (code == MISSING_ENDTAG_FOR)
-            tidy_out(lexer->errout, "Warning: missing </%s>", element->element);
-        else if (code == MISSING_ENDTAG_BEFORE)
-        {
-            tidy_out(lexer->errout, "Warning: missing </%s> before ", element->element);
-            ReportTag(lexer, node);
-        }
-        else if ((code == DISCARDING_UNEXPECTED) && (lexer->badForm == no))
-        {
-            /* the case for when this is an error not a warning, is handled later */
-            tidy_out(lexer->errout, "Warning: discarding unexpected ");
-            ReportTag(lexer, node);
-        }
-        else if (code == NESTED_EMPHASIS)
-        {
-            tidy_out(lexer->errout, "Warning: nested emphasis ");
-            ReportTag(lexer, node);
-        }
-        else if (code == COERCE_TO_ENDTAG)
-        {
-            tidy_out(lexer->errout, "Warning: <%s> is probably intended as </%s>",
-                node->element, node->element);
-        }
-        else if (code == NON_MATCHING_ENDTAG)
-        {
-            tidy_out(lexer->errout, "Warning: replacing unexpected ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " by </%s>", element->element);
-        }
-        else if (code == TAG_NOT_ALLOWED_IN)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " isn't allowed in <%s> elements", element->element);
-        }
-        else if (code == DOCTYPE_AFTER_TAGS)
-        {
-            tidy_out(lexer->errout, "Warning: <!DOCTYPE> isn't allowed after elements");
-        }
-        else if (code == MISSING_STARTTAG)
-            tidy_out(lexer->errout, "Warning: missing <%s>", node->element);
-        else if (code == UNEXPECTED_ENDTAG)
-        {
-            tidy_out(lexer->errout, "Warning: unexpected </%s>", node->element);
-
-            if (element)
-                tidy_out(lexer->errout, " in <%s>", element->element);
-        }
-        else if (code == TOO_MANY_ELEMENTS)
-        {
-            tidy_out(lexer->errout, "Warning: too many %s elements", node->element);
-
-            if (element)
-                tidy_out(lexer->errout, " in <%s>", element->element);
-        }
-        else if (code == USING_BR_INPLACE_OF)
-        {
-            tidy_out(lexer->errout, "Warning: using <br> in place of ");
-            ReportTag(lexer, node);
-        }
-        else if (code == INSERTING_TAG)
-            tidy_out(lexer->errout, "Warning: inserting implicit <%s>", node->element);
-        else if (code == CANT_BE_NESTED)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " can't be nested");
-        }
-        else if (code == PROPRIETARY_ELEMENT)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " is not approved by W3C");
-
-            if (node->tag == tag_layer)
-                lexer->badLayout |= USING_LAYER;
-            else if (node->tag == tag_spacer)
-                lexer->badLayout |= USING_SPACER;
-            else if (node->tag == tag_nobr)
-                lexer->badLayout |= USING_NOBR;
-        }
-        else if (code == OBSOLETE_ELEMENT)
-        {
-            if (element->tag && (element->tag->model & CM_OBSOLETE))
-                tidy_out(lexer->errout, "Warning: replacing obsolete element ");
-            else
-                tidy_out(lexer->errout, "Warning: replacing element ");
-
-            ReportTag(lexer, element);
-            tidy_out(lexer->errout, " by ");
-            ReportTag(lexer, node);
-        }
-        else if (code == UNESCAPED_ELEMENT)
-        {
-            tidy_out(lexer->errout, "Warning: unescaped ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " in pre content");
-        }
-        else if (code == TRIM_EMPTY_ELEMENT)
-        {
-            tidy_out(lexer->errout, "Warning: trimming empty ");
-            ReportTag(lexer, element);
-        }
-        else if (code == MISSING_TITLE_ELEMENT)
-            tidy_out(lexer->errout, "Warning: inserting missing 'title' element");
-        else if (code == ILLEGAL_NESTING)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, element);
-            tidy_out(lexer->errout, " shouldn't be nested");
-        }
-        else if (code == NOFRAMES_CONTENT)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " not inside 'noframes' element");
-        }
-        else if (code == INCONSISTENT_VERSION)
-        {
-            tidy_out(lexer->errout, "Warning: HTML DOCTYPE doesn't match content");
-        }
-        else if (code == MALFORMED_DOCTYPE)
-        {
-            tidy_out(lexer->errout, "Warning: expected \"html PUBLIC\" or \"html SYSTEM\"");
-        }
-        else if (code == CONTENT_AFTER_BODY)
-        {
-            tidy_out(lexer->errout, "Warning: content occurs after end of body");
-        }
-        else if (code == MALFORMED_COMMENT)
-        {
-            tidy_out(lexer->errout, "Warning: adjacent hyphens within comment");
-        }
-        else if (code == BAD_COMMENT_CHARS)
-        {
-            tidy_out(lexer->errout, "Warning: expecting -- or >");
-        }
-        else if (code == BAD_XML_COMMENT)
-        {
-            tidy_out(lexer->errout, "Warning: XML comments can't contain --");
-        }
-        else if (code == BAD_CDATA_CONTENT)
-        {
-            tidy_out(lexer->errout, "Warning: '<' + '/' + letter not allowed here");
-        }
-        else if (code == INCONSISTENT_NAMESPACE)
-        {
-            tidy_out(lexer->errout, "Warning: HTML namespace doesn't match content");
-        }
-        else if (code == DTYPE_NOT_UPPER_CASE)
-        {
-            tidy_out(lexer->errout, "Warning: SYSTEM, PUBLIC, W3C, DTD, EN must be upper case");
-        }
-        else if (code == UNEXPECTED_END_OF_FILE)
-        {
-            tidy_out(lexer->errout, "Warning: unexpected end of file");
-            ReportTag(lexer, element);
-        }
-        else if (code == NESTED_QUOTATION)
-        {
-            tidy_out(lexer->errout, "Warning: nested q elements, possible typo.");
-        }
-        else if (code == ELEMENT_NOT_EMPTY)
-        {
-            tidy_out(lexer->errout, "Warning: ");
-            ReportTag(lexer, element);
-            tidy_out(lexer->errout, " element not empty or not closed");
-        }
-
-        if ((code != DISCARDING_UNEXPECTED) || (lexer->badForm == no))
-            tidy_out(lexer->errout, "\n");
-    }
-    
-    if ((code == DISCARDING_UNEXPECTED) && lexer->badForm)
-    {
-        /* the case for when this is a warning not an error, is handled earlier */
-        if (!ShowWarnings)
-            ReportPosition(lexer);
-
-        tidy_out(lexer->errout, "Error: discarding unexpected ");
-        ReportTag(lexer, node);
-        tidy_out(lexer->errout, "\n");
+    case OBSOLETE_ELEMENT:
+        messageNode( doc, TidyWarning, node,
+                     "Element %s not supported in %s", desc, htmlVer );
+        break;
     }
 }
 
-void ReportError(Lexer *lexer, Node *element, Node *node, uint code)
+void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
 {
-    /* lexer->warnings++; */
-    lexer->errors++;
+    /* ReportAttrError( doc, node, null, MISSING_ATTRIBUTE ); */
+    char tagdesc[ 64 ];
+    TagToString( node, tagdesc );
+    messageNode( doc, TidyWarning, node,
+                 "%s lacks \"%s\" attribute", tagdesc, name );
+}
 
-    /* keep quiet after <ShowErrors> errors */
-    if (lexer->errors > ShowErrors)
-        return;
+void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
+{
+    char nodedesc[ 256 ] = {0};
+    char elemdesc[ 256 ] = {0};
+    Node* rpt = ( element ? element : node );
+    TagToString( node, nodedesc );
 
-    ReportPosition(lexer);
-
-    if (code == SUSPECTED_MISSING_QUOTE)
+    switch ( code )
     {
-        tidy_out(lexer->errout, "Error: missing quote mark for attribute value");
+    case MISSING_ENDTAG_FOR:
+        messageNode( doc, TidyWarning, rpt,
+                     "missing </%s>", element->element );
+        break;
+
+    case MISSING_ENDTAG_BEFORE:
+        messageNode( doc, TidyWarning, rpt,
+                     "missing </%s> before %s",
+                     element->element, nodedesc );
+        break;
+
+    case DISCARDING_UNEXPECTED:
+        /* Force error if in a bad form */
+        messageNode( doc, doc->badForm ? TidyError : TidyWarning, node,
+                     "discarding unexpected %s", nodedesc );
+        break;
+
+    case NESTED_EMPHASIS:
+        messageNode( doc, TidyWarning, rpt,
+                     "nested emphasis %s", nodedesc );
+        break;
+
+    case COERCE_TO_ENDTAG:
+        messageNode( doc, TidyWarning, rpt,
+                     "<%s> is probably intended as </%s>",
+                     node->element, node->element );
+        break;
+
+    case NON_MATCHING_ENDTAG:
+        messageNode( doc, TidyWarning, rpt,
+                     "replacing unexpected %s by </%s>",
+                     node->element, node->element );
+        break;
+
+    case TAG_NOT_ALLOWED_IN:
+        messageNode( doc, TidyWarning, rpt,
+                     "%s isn't allowed in <%s> elements",
+                     nodedesc, element->element );
+        break;
+
+    case DOCTYPE_AFTER_TAGS:
+        messageNode( doc, TidyWarning, rpt,
+                     "<!DOCTYPE> isn't allowed after elements" );
+        break;
+
+    case MISSING_STARTTAG:
+        messageNode( doc, TidyWarning, node,
+                     "missing <%s>", node->element );
+        break;
+
+    case UNEXPECTED_ENDTAG:
+        if ( element )
+            messageNode( doc, TidyWarning, node,
+                         "unexpected </%s> in <%s>",
+                         node->element, element->element );
+        else
+            messageNode( doc, TidyWarning, node,
+                         "unexpected </%s>", node->element );
+        break;
+
+    case TOO_MANY_ELEMENTS:
+        if ( element )
+            messageNode( doc, TidyWarning, node,
+                         "too many %s elements in <%s>",
+                         node->element, element->element );
+        else
+            messageNode( doc, TidyWarning, node,
+                         "too many %s elements",
+                         node->element );
+        break;
+
+    case USING_BR_INPLACE_OF:
+        messageNode( doc, TidyWarning, node,
+                     "using <br> in place of %s", nodedesc );
+        break;
+
+    case INSERTING_TAG:
+        messageNode( doc, TidyWarning, node,
+                     "inserting implicit <%s>", node->element );
+        break;
+
+    case CANT_BE_NESTED:
+        messageNode( doc, TidyWarning, node,
+                     "%s can't be nested", nodedesc );
+        break;
+
+    case PROPRIETARY_ELEMENT:
+        messageNode( doc, TidyWarning, node,
+                     "%s is not approved by W3C", nodedesc );
+        break;
+
+    case OBSOLETE_ELEMENT:
+        {
+          ctmbstr obsolete = "";
+          if ( element->tag && (element->tag->model & CM_OBSOLETE) )
+              obsolete = " obsolete";
+
+          TagToString( element, elemdesc );
+          messageNode( doc, TidyWarning, rpt,
+                       "replacing %s element %s by %s",
+                       obsolete, elemdesc, nodedesc );
+        }
+        break;
+
+    case UNESCAPED_ELEMENT:
+        messageNode( doc, TidyWarning, node,
+                     "unescaped %s in pre content", nodedesc );
+        break;
+
+    case TRIM_EMPTY_ELEMENT:
+        TagToString( element, elemdesc );
+        messageNode( doc, TidyWarning, element,
+                     "trimming empty %s", elemdesc );
+        break;
+
+    case MISSING_TITLE_ELEMENT:
+        messageNode( doc, TidyWarning, rpt,
+                     "inserting missing 'title' element" );
+        break;
+
+    case ILLEGAL_NESTING:
+        TagToString( element, elemdesc );
+        messageNode( doc, TidyWarning, element,
+                     "%s shouldn't be nested", elemdesc );
+        break;
+
+    case NOFRAMES_CONTENT:
+        messageNode( doc, TidyWarning, node,
+                     "%s not inside 'noframes' element", nodedesc );
+        break;
+
+    case INCONSISTENT_VERSION:
+        messageNode( doc, TidyWarning, rpt,
+                     "HTML DOCTYPE doesn't match content" );
+        break;
+
+    case MALFORMED_DOCTYPE:
+        messageNode( doc, TidyWarning, rpt,
+                     "expected \"html PUBLIC\" or \"html SYSTEM\"" );
+        break;
+
+    case CONTENT_AFTER_BODY:
+        messageNode( doc, TidyWarning, rpt,
+                     "content occurs after end of body" );
+        break;
+
+    case MALFORMED_COMMENT:
+        messageNode( doc, TidyWarning, rpt,
+                     "adjacent hyphens within comment" );
+        break;
+
+    case BAD_COMMENT_CHARS:
+        messageNode( doc, TidyWarning, rpt,
+                     "expecting -- or >" );
+        break;
+
+    case BAD_XML_COMMENT:
+        messageNode( doc, TidyWarning, rpt,
+                     "XML comments can't contain --" );
+        break;
+
+    case BAD_CDATA_CONTENT:
+        messageNode( doc, TidyWarning, rpt,
+                     "'<' + '/' + letter not allowed here" );
+        break;
+
+    case INCONSISTENT_NAMESPACE:
+        messageNode( doc, TidyWarning, rpt,
+                     "HTML namespace doesn't match content" );
+        break;
+
+    case DTYPE_NOT_UPPER_CASE:
+        messageNode( doc, TidyWarning, rpt,
+                     "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case" );
+        break;
+
+    case UNEXPECTED_END_OF_FILE:
+        /* on end of file report position at end of input */
+        TagToString( element, elemdesc );
+        messageNode( doc, TidyWarning, element,
+                     "unexpected end of file %s", elemdesc );
+        break;
+
+    case NESTED_QUOTATION:
+        messageNode( doc, TidyWarning, rpt,
+                     "nested q elements, possible typo." );
+        break;
+
+    case ELEMENT_NOT_EMPTY:
+        TagToString( element, elemdesc );
+        messageNode( doc, TidyWarning, element,
+                     "%s element not empty or not closed", elemdesc );
+        break;
+
+    case ENCODING_IO_CONFLICT:
+        messageNode( doc, TidyWarning, node,
+           "Output encoding does not work with standard output" );
+        break;
     }
-    else if (code == DUPLICATE_FRAMESET)
-    {
-        tidy_out(lexer->errout, "Error: repeated FRAMESET element");
-    }
-    else if (code == UNKNOWN_ELEMENT)
-    {
-        tidy_out(lexer->errout, "Error: ");
-        ReportTag(lexer, node);
-        tidy_out(lexer->errout, " is not recognized!");
-    }
-    else if (code == UNEXPECTED_ENDTAG)  /* generated by XML docs */
-    {
-        tidy_out(lexer->errout, "Error: unexpected </%s>", node->element); /* #434100 - fix by various */
+}
 
+void ReportError( TidyDocImpl* doc, Node *element, Node *node, uint code)
+{
+    char nodedesc[ 256 ] = {0};
+    Node* rpt = ( element ? element : node );
+
+    switch ( code )
+    {
+    case SUSPECTED_MISSING_QUOTE:
+        messageNode( doc, TidyError, rpt, 
+                     "missing quote mark for attribute value" );
+        break;
+
+    case DUPLICATE_FRAMESET:
+        messageNode( doc, TidyError, rpt, "repeated FRAMESET element" );
+        break;
+
+    case UNKNOWN_ELEMENT:
+        TagToString( node, nodedesc );
+        messageNode( doc, TidyError, node, "%s is not recognized!", nodedesc );
+        break;
+
+    case UNEXPECTED_ENDTAG:  /* generated by XML docs */
         if (element)
-            tidy_out(lexer->errout, " in <%s>", element->element);
+            messageNode( doc, TidyError, node, "unexpected </%s> in <%s>",
+                         node->element, element->element );
+#if defined(__arm)
+        if (!element)
+#else
+	    else
+#endif
+            messageNode( doc, TidyError, node, "unexpected </%s>",
+                         node->element );
+        break;
     }
-
-    tidy_out(lexer->errout, "\n");
 }
 
-void ErrorSummary(Lexer *lexer)
+void ErrorSummary( TidyDocImpl* doc )
 {
     /* adjust badAccess to that its null if frames are ok */
-    if (lexer->badAccess & (USING_FRAMES | USING_NOFRAMES))
+    ctmbstr encnam = "specified";
+    int charenc = cfg( doc, TidyCharEncoding ); 
+    if ( charenc == WIN1252 ) 
+        encnam = "Windows-1252";
+    else if ( charenc == MACROMAN )
+        encnam = "MacRoman";
+    else if ( charenc == IBM858 )
+        encnam = "ibm858";
+    else if ( charenc == LATIN0 )
+        encnam = "latin0";
+
+    if ( doc->badAccess & (USING_FRAMES | USING_NOFRAMES) )
     {
-        if (!((lexer->badAccess & USING_FRAMES) && !(lexer->badAccess & USING_NOFRAMES)))
-            lexer->badAccess &= ~(USING_FRAMES | USING_NOFRAMES);
+        if (!((doc->badAccess & USING_FRAMES) && !(doc->badAccess & USING_NOFRAMES)))
+            doc->badAccess &= ~(USING_FRAMES | USING_NOFRAMES);
     }
 
-    if (lexer->badChars)
+    if (doc->badChars)
     {
 #if 0
-        if (lexer->badChars & WINDOWS_CHARS)
+        if ( doc->badChars & WINDOWS_CHARS )
         {
-            tidy_out(lexer->errout, "Characters codes for the Microsoft Windows fonts in the range\n");
-            tidy_out(lexer->errout, "128 - 159 may not be recognized on other platforms. You are\n");
-            tidy_out(lexer->errout, "instead recommended to use named entities, e.g. &trade; rather\n");
-            tidy_out(lexer->errout, "than Windows character code 153 (0x2122 in Unicode). Note that\n");
-            tidy_out(lexer->errout, "as of February 1998 few browsers support the new entities.\n\n");
+            tidy_out(doc, "Characters codes for the Microsoft Windows fonts in the range\n");
+            tidy_out(doc, "128 - 159 may not be recognized on other platforms. You are\n");
+            tidy_out(doc, "instead recommended to use named entities, e.g. &trade; rather\n");
+            tidy_out(doc, "than Windows character code 153 (0x2122 in Unicode). Note that\n");
+            tidy_out(doc, "as of February 1998 few browsers support the new entities.\n\n");
         }
 #endif
-        if (lexer->badChars & VENDOR_SPECIFIC_CHARS)
+        if (doc->badChars & VENDOR_SPECIFIC_CHARS)
         {
-            tidy_out(lexer->errout, "It is unlikely that vendor-specific, system-dependent encodings\n");
-            tidy_out(lexer->errout, "work widely enough on the World Wide Web; you should avoid using the \n");
-            tidy_out(lexer->errout, "%s character encoding, instead you are recommended to\n",
-                     (lexer->in->encoding == WIN1252)?"Windows-1252":
-                     (lexer->in->encoding == MACROMAN)?"MacRoman":"specified");
-            tidy_out(lexer->errout, "use named entities, e.g. &trade;.\n\n");
+
+            tidy_out(doc, "It is unlikely that vendor-specific, system-dependent encodings\n");
+            tidy_out(doc, "work widely enough on the World Wide Web; you should avoid using the \n");
+            tidy_out(doc, encnam );
+            tidy_out(doc, " character encoding, instead you are recommended to\n" );
+            tidy_out(doc, "use named entities, e.g. &trade;.\n\n");
         }
-        if ((lexer->badChars & INVALID_SGML_CHARS) || (lexer->badChars & INVALID_NCR))
+        if ((doc->badChars & INVALID_SGML_CHARS) || (doc->badChars & INVALID_NCR))
         {
-            tidy_out(lexer->errout, "Character codes 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
-            tidy_out(lexer->errout, "even if they were, they would likely be unprintable control characters.\n");
-            tidy_out(lexer->errout, "Tidy assumed you wanted to refer to a character with the same byte value in the \n");
-            tidy_out(lexer->errout, "%s encoding and replaced that reference with the Unicode equivalent.\n\n",
-                     (ReplacementCharEncoding == WIN1252)?"Windows-1252":
-                     (ReplacementCharEncoding == MACROMAN)?"MacRoman":"default");
+            tidy_out(doc, "Character codes 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
+            tidy_out(doc, "even if they were, they would likely be unprintable control characters.\n");
+            tidy_out(doc, "Tidy assumed you wanted to refer to a character with the same byte value in the \n");
+            tidy_out(doc, encnam );
+            tidy_out(doc, " encoding and replaced that reference with the Unicode equivalent.\n\n" );
         }
-        if (lexer->badChars & INVALID_UTF8)
+        if (doc->badChars & INVALID_UTF8)
         {
-            tidy_out(lexer->errout, "Character codes for UTF-8 must be in the range: U+0000 to U+10FFFF.\n");
-            tidy_out(lexer->errout, "The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also\n");
-            tidy_out(lexer->errout, "allows for the use of five- and six-byte sequences to encode\n");
-            tidy_out(lexer->errout, "characters that are outside the range of the Unicode character set;\n");
-            tidy_out(lexer->errout, "those five- and six-byte sequences are illegal for the use of\n");
-            tidy_out(lexer->errout, "UTF-8 as a transformation of Unicode characters. ISO/IEC 10646\n");
-            tidy_out(lexer->errout, "does not allow mapping of unpaired surrogates, nor U+FFFE and U+FFFF\n");
-            tidy_out(lexer->errout, "(but it does allow other noncharacters). For more information please refer to\n");
-            tidy_out(lexer->errout, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
+            tidy_out(doc, "Character codes for UTF-8 must be in the range: U+0000 to U+10FFFF.\n");
+            tidy_out(doc, "The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also\n");
+            tidy_out(doc, "allows for the use of five- and six-byte sequences to encode\n");
+            tidy_out(doc, "characters that are outside the range of the Unicode character set;\n");
+            tidy_out(doc, "those five- and six-byte sequences are illegal for the use of\n");
+            tidy_out(doc, "UTF-8 as a transformation of Unicode characters. ISO/IEC 10646\n");
+            tidy_out(doc, "does not allow mapping of unpaired surrogates, nor U+FFFE and U+FFFF\n");
+            tidy_out(doc, "(but it does allow other noncharacters). For more information please refer to\n");
+            tidy_out(doc, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
         }
 
 #if SUPPORT_UTF16_ENCODINGS
 
-        if (lexer->badChars & INVALID_UTF16)
-        {
-            tidy_out(lexer->errout, "Character codes for UTF-16 must be in the range: U+0000 to U+10FFFF.\n");
-            tidy_out(lexer->errout, "The definition of UTF-16 in Annex C of ISO/IEC 10646-1:2000 does not allow the\n");
-            tidy_out(lexer->errout, "mapping of unpaired surrogates. For more information please refer to\n");
-            tidy_out(lexer->errout, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
-        }
+      if (doc->badChars & INVALID_UTF16)
+      {
+        tidy_out(doc, "Character codes for UTF-16 must be in the range: U+0000 to U+10FFFF.\n");
+        tidy_out(doc, "The definition of UTF-16 in Annex C of ISO/IEC 10646-1:2000 does not allow the\n");
+        tidy_out(doc, "mapping of unpaired surrogates. For more information please refer to\n");
+        tidy_out(doc, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
+      }
 
 #endif
 
-        if (lexer->badChars & INVALID_URI)
-        {
-            tidy_out(lexer->errout, "URIs must be properly escaped, they must not contain unescaped\n");
-            tidy_out(lexer->errout, "characters below U+0021 including the space character and not\n");
-            tidy_out(lexer->errout, "above U+007E. Tidy escapes the URI for you as recommended by\n");
-            tidy_out(lexer->errout, "HTML 4.01 section B.2.1 and XML 1.0 section 4.2.2. Some user agents\n");
-            tidy_out(lexer->errout, "use another algorithm to escape such URIs and some server-sided\n");
-            tidy_out(lexer->errout, "scripts depend on that. If you want to depend on that, you must\n");
-            tidy_out(lexer->errout, "escape the URI by your own. For more information please refer to\n");
-            tidy_out(lexer->errout, "http://www.w3.org/International/O-URL-and-ident.html\n\n");
-        }
+      if (doc->badChars & INVALID_URI)
+      {
+        tidy_out(doc, "URIs must be properly escaped, they must not contain unescaped\n");
+        tidy_out(doc, "characters below U+0021 including the space character and not\n");
+        tidy_out(doc, "above U+007E. Tidy escapes the URI for you as recommended by\n");
+        tidy_out(doc, "HTML 4.01 section B.2.1 and XML 1.0 section 4.2.2. Some user agents\n");
+        tidy_out(doc, "use another algorithm to escape such URIs and some server-sided\n");
+        tidy_out(doc, "scripts depend on that. If you want to depend on that, you must\n");
+        tidy_out(doc, "escape the URI by your own. For more information please refer to\n");
+        tidy_out(doc, "http://www.w3.org/International/O-URL-and-ident.html\n\n");
+      }
     }
 
-    if (lexer->badForm)
+    if (doc->badForm)
     {
-        tidy_out(lexer->errout, "You may need to move one or both of the <form> and </form>\n");
-        tidy_out(lexer->errout, "tags. HTML elements should be properly nested and form elements\n");
-        tidy_out(lexer->errout, "are no exception. For instance you should not place the <form>\n");
-        tidy_out(lexer->errout, "in one table cell and the </form> in another. If the <form> is\n");
-        tidy_out(lexer->errout, "placed before a table, the </form> cannot be placed inside the\n");
-        tidy_out(lexer->errout, "table! Note that one form can't be nested inside another!\n\n");
+        tidy_out(doc, "You may need to move one or both of the <form> and </form>\n");
+        tidy_out(doc, "tags. HTML elements should be properly nested and form elements\n");
+        tidy_out(doc, "are no exception. For instance you should not place the <form>\n");
+        tidy_out(doc, "in one table cell and the </form> in another. If the <form> is\n");
+        tidy_out(doc, "placed before a table, the </form> cannot be placed inside the\n");
+        tidy_out(doc, "table! Note that one form can't be nested inside another!\n\n");
     }
     
-    if (lexer->badAccess)
+    if (doc->badAccess)
     {
-/* TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-        if (AccessibilityCheckLevel != 0)
+      if ( cfg(doc, TidyAccessibilityCheckLevel) > 0 )
+      {
+        tidy_out(doc, "For further advice on how to make your pages accessible, see\n");
+        tidy_out(doc, ACCESS_URL );
+        tidy_out(doc, "and\n" );
+        tidy_out(doc, ATRC_ACCESS_URL );
+        tidy_out(doc, ".\n" );
+        tidy_out(doc, "You may also want to try \"http://www.cast.org/bobby/\" which is a free Web-based\n");
+        tidy_out(doc, "service for checking URLs for accessibility.\n\n");
+      }
+      else
+      {
+        if (doc->badAccess & MISSING_SUMMARY)
         {
-            tidy_out(lexer->errout, "For further advice on how to make your pages accessible, see\n");
-            tidy_out(lexer->errout, "\"%s\" and \n\"%s\".\n", ACCESS_URL, ATRC_ACCESS_URL);
-            tidy_out(lexer->errout, "You may also want to try \"http://www.cast.org/bobby/\" which is a free Web-based\n");
-            tidy_out(lexer->errout, "service for checking URLs for accessibility.\n\n");
-        } else
-#endif
-        {
-        if (lexer->badAccess & MISSING_SUMMARY)
-        {
-            tidy_out(lexer->errout, "The table summary attribute should be used to describe\n");
-            tidy_out(lexer->errout, "the table structure. It is very helpful for people using\n");
-            tidy_out(lexer->errout, "non-visual browsers. The scope and headers attributes for\n");
-            tidy_out(lexer->errout, "table cells are useful for specifying which headers apply\n");
-            tidy_out(lexer->errout, "to each table cell, enabling non-visual browsers to provide\n");
-            tidy_out(lexer->errout, "a meaningful context for each cell.\n\n");
+          tidy_out(doc, "The table summary attribute should be used to describe\n");
+          tidy_out(doc, "the table structure. It is very helpful for people using\n");
+          tidy_out(doc, "non-visual browsers. The scope and headers attributes for\n");
+          tidy_out(doc, "table cells are useful for specifying which headers apply\n");
+          tidy_out(doc, "to each table cell, enabling non-visual browsers to provide\n");
+          tidy_out(doc, "a meaningful context for each cell.\n\n");
         }
 
-        if (lexer->badAccess & MISSING_IMAGE_ALT)
+        if (doc->badAccess & MISSING_IMAGE_ALT)
         {
-            tidy_out(lexer->errout, "The alt attribute should be used to give a short description\n");
-            tidy_out(lexer->errout, "of an image; longer descriptions should be given with the\n");
-            tidy_out(lexer->errout, "longdesc attribute which takes a URL linked to the description.\n");
-            tidy_out(lexer->errout, "These measures are needed for people using non-graphical browsers.\n\n");
+          tidy_out(doc, "The alt attribute should be used to give a short description\n");
+          tidy_out(doc, "of an image; longer descriptions should be given with the\n");
+          tidy_out(doc, "longdesc attribute which takes a URL linked to the description.\n");
+          tidy_out(doc, "These measures are needed for people using non-graphical browsers.\n\n");
         }
 
-        if (lexer->badAccess & MISSING_IMAGE_MAP)
+        if (doc->badAccess & MISSING_IMAGE_MAP)
         {
-            tidy_out(lexer->errout, "Use client-side image maps in preference to server-side image\n");
-            tidy_out(lexer->errout, "maps as the latter are inaccessible to people using non-\n");
-            tidy_out(lexer->errout, "graphical browsers. In addition, client-side maps are easier\n");
-            tidy_out(lexer->errout, "to set up and provide immediate feedback to users.\n\n");
+          tidy_out(doc, "Use client-side image maps in preference to server-side image\n");
+          tidy_out(doc, "maps as the latter are inaccessible to people using non-\n");
+          tidy_out(doc, "graphical browsers. In addition, client-side maps are easier\n");
+          tidy_out(doc, "to set up and provide immediate feedback to users.\n\n");
         }
 
-        if (lexer->badAccess & MISSING_LINK_ALT)
+        if (doc->badAccess & MISSING_LINK_ALT)
         {
-            tidy_out(lexer->errout, "For hypertext links defined using a client-side image map, you\n");
-            tidy_out(lexer->errout, "need to use the alt attribute to provide a textual description\n");
-            tidy_out(lexer->errout, "of the link for people using non-graphical browsers.\n\n");
+          tidy_out(doc, "For hypertext links defined using a client-side image map, you\n");
+          tidy_out(doc, "need to use the alt attribute to provide a textual description\n");
+          tidy_out(doc, "of the link for people using non-graphical browsers.\n\n");
         }
 
-        if ((lexer->badAccess & USING_FRAMES) && !(lexer->badAccess & USING_NOFRAMES))
+        if ((doc->badAccess & USING_FRAMES) && !(doc->badAccess & USING_NOFRAMES))
         {
-            tidy_out(lexer->errout, "Pages designed using frames presents problems for\n");
-            tidy_out(lexer->errout, "people who are either blind or using a browser that\n");
-            tidy_out(lexer->errout, "doesn't support frames. A frames-based page should always\n");
-            tidy_out(lexer->errout, "include an alternative layout inside a NOFRAMES element.\n\n");
+          tidy_out(doc, "Pages designed using frames presents problems for\n");
+          tidy_out(doc, "people who are either blind or using a browser that\n");
+          tidy_out(doc, "doesn't support frames. A frames-based page should always\n");
+          tidy_out(doc, "include an alternative layout inside a NOFRAMES element.\n\n");
         }
 
-        tidy_out(lexer->errout, "For further advice on how to make your pages accessible\n");
-        tidy_out(lexer->errout, "see \"%s\". You may also want to try\n", ACCESS_URL);
-        tidy_out(lexer->errout, "\"http://www.cast.org/bobby/\" which is a free Web-based\n");
-        tidy_out(lexer->errout, "service for checking URLs for accessibility.\n\n");
-        }
+        tidy_out(doc, "For further advice on how to make your pages accessible\n");
+        tidy_out(doc, "see " );
+        tidy_out(doc, ACCESS_URL );
+        tidy_out(doc, ". You may also want to try\n" );
+        tidy_out(doc, "\"http://www.cast.org/bobby/\" which is a free Web-based\n");
+        tidy_out(doc, "service for checking URLs for accessibility.\n\n");
+      }
     }
 
-    if (lexer->badLayout)
+    if (doc->badLayout)
     {
-        if (lexer->badLayout & USING_LAYER)
+        if (doc->badLayout & USING_LAYER)
         {
-            tidy_out(lexer->errout, "The Cascading Style Sheets (CSS) Positioning mechanism\n");
-            tidy_out(lexer->errout, "is recommended in preference to the proprietary <LAYER>\n");
-            tidy_out(lexer->errout, "element due to limited vendor support for LAYER.\n\n");
+            tidy_out(doc, "The Cascading Style Sheets (CSS) Positioning mechanism\n");
+            tidy_out(doc, "is recommended in preference to the proprietary <LAYER>\n");
+            tidy_out(doc, "element due to limited vendor support for LAYER.\n\n");
         }
 
-        if (lexer->badLayout & USING_SPACER)
+        if (doc->badLayout & USING_SPACER)
         {
-            tidy_out(lexer->errout, "You are recommended to use CSS for controlling white\n");
-            tidy_out(lexer->errout, "space (e.g. for indentation, margins and line spacing).\n");
-            tidy_out(lexer->errout, "The proprietary <SPACER> element has limited vendor support.\n\n");
+            tidy_out(doc, "You are recommended to use CSS for controlling white\n");
+            tidy_out(doc, "space (e.g. for indentation, margins and line spacing).\n");
+            tidy_out(doc, "The proprietary <SPACER> element has limited vendor support.\n\n");
         }
 
-        if (lexer->badLayout & USING_FONT)
+        if (doc->badLayout & USING_FONT)
         {
-            tidy_out(lexer->errout, "You are recommended to use CSS to specify the font and\n");
-            tidy_out(lexer->errout, "properties such as its size and color. This will reduce\n");
-            tidy_out(lexer->errout, "the size of HTML files and make them easier to maintain\n"); /* #427674 - fix by Andrew Billington 22 Aug 00 */
-            tidy_out(lexer->errout, "compared with using <FONT> elements.\n\n");
+            tidy_out(doc, "You are recommended to use CSS to specify the font and\n");
+            tidy_out(doc, "properties such as its size and color. This will reduce\n");
+            tidy_out(doc, "the size of HTML files and make them easier to maintain\n");
+            tidy_out(doc, "compared with using <FONT> elements.\n\n");
         }
 
-        if (lexer->badLayout & USING_NOBR)
+        if (doc->badLayout & USING_NOBR)
         {
-            tidy_out(lexer->errout, "You are recommended to use CSS to control line wrapping.\n");
-            tidy_out(lexer->errout, "Use \"white-space: nowrap\" to inhibit wrapping in place\n");
-            tidy_out(lexer->errout, "of inserting <NOBR>...</NOBR> into the markup.\n\n");
+            tidy_out(doc, "You are recommended to use CSS to control line wrapping.\n");
+            tidy_out(doc, "Use \"white-space: nowrap\" to inhibit wrapping in place\n");
+            tidy_out(doc, "of inserting <NOBR>...</NOBR> into the markup.\n\n");
         }
 
-        if (lexer->badLayout & USING_BODY)
+        if (doc->badLayout & USING_BODY)
         {
-            tidy_out(lexer->errout, "You are recommended to use CSS to specify page and link colors\n");
+            tidy_out(doc, "You are recommended to use CSS to specify page and link colors\n");
         }
     }
 }
 
-void UnknownOption(FILE *errout, char c)
+void UnknownOption( TidyDocImpl* doc, char c )
 {
-    tidy_out(errout, "unrecognized option -%c use -help to list options\n", c);
+    message( doc, TidyConfig,
+             "unrecognized option -%c use -help to list options\n", c );
 }
 
-void UnknownFile(FILE *errout, char *program, char *file)
+void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file )
 {
-    tidy_out(errout, "%s: can't open file \"%s\"\n", program, file);
+    message( doc, TidyConfig, 
+             "%s: can't open file \"%s\"\n", program, file );
 }
 
-void NeedsAuthorIntervention(FILE *errout)
+void NeedsAuthorIntervention( TidyDocImpl* doc )
 {
-    tidy_out(errout, "This document has errors that must be fixed before\n");
-    tidy_out(errout, "using HTML Tidy to generate a tidied up version.\n\n");
+    tidy_out(doc, "This document has errors that must be fixed before\n");
+    tidy_out(doc, "using HTML Tidy to generate a tidied up version.\n\n");
 }
 
-void MissingBody(FILE *errout)
+void MissingBody( TidyDocImpl* doc )
 {
-    tidy_out(errout, "Can't create slides - document is missing a body element.\n");
+    tidy_out( doc, "Can't create slides - document is missing a body element.\n" );
 }
 
-void ReportNumberOfSlides(FILE *errout, int count)
+void ReportNumberOfSlides( TidyDocImpl* doc, int count)
 {
-    tidy_out(errout, "%d Slides found\n", count);
+    tidy_out( doc, "%d Slides found", count );
 }
 
-void GeneralInfo(FILE *errout)
+void GeneralInfo( TidyDocImpl* doc )
 {
-    tidy_out(errout, "To learn more about HTML Tidy see http://tidy.sourceforge.net\n");
-    tidy_out(errout, "Please send bug reports to html-tidy@w3.org\n");
-    tidy_out(errout, "HTML and CSS specifications are available from http://www.w3.org/\n");
-    tidy_out(errout, "Lobby your company to join W3C, see http://www.w3.org/Consortium\n");
+    tidy_out(doc, "To learn more about HTML Tidy see http://tidy.sourceforge.net\n");
+    tidy_out(doc, "Please send bug reports to html-tidy@w3.org\n");
+    tidy_out(doc, "HTML and CSS specifications are available from http://www.w3.org/\n");
+    tidy_out(doc, "Lobby your company to join W3C, see http://www.w3.org/Consortium\n");
 }
 
-/* #431895 - fix by Dave Bryan 04 Jan 01 */
-void SetFilename (char *filename) 
-{
-    currentFile = filename;  /* for use with Gnu Emacs */
-}
 
-void HelloMessage(FILE *errout, char *date, char *filename)
+void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
 {
-    /* #431895 - fix by Dave Bryan 04 Jan 01 */
-    /* currentFile = filename; */  /* for use with Gnu Emacs */
+    tmbchar buf[ 2048 ];
+    ctmbstr platform = "", helper = "";
+    ctmbstr msgfmt = "\nHTML Tidy for %s (vers %s; built on %s, at %s)\n"
+                  "Parsing \"%s\"\n";
 
-    /*
-    if (wstrcmp(filename, "stdin") == 0)
-        tidy_out(errout, "\nTidy (vers %s) Parsing console input (stdin)\n", date);
-    else
-        tidy_out(errout, "\nTidy (vers %s) Parsing \"%s\"\n", date, filename);
-    */
-    
 #ifdef PLATFORM_NAME
-    if (wstrcmp(filename, "stdin") == 0)
-        tidy_out(errout, "\nHTML Tidy for %s (vers %s; built on %s, at %s)\nParsing console input (stdin)\n",
-                 PLATFORM_NAME, date, __DATE__, __TIME__);
-    else
-        tidy_out(errout, "\nHTML Tidy for %s (vers %s; built on %s, at %s)\nParsing \"%s\"\n",
-                 PLATFORM_NAME, date, __DATE__, __TIME__, filename);
-#else
-    if (wstrcmp(filename, "stdin") == 0)
-        tidy_out(errout, "\nHTML Tidy (vers %s; built on %s, at %s)\nParsing console input (stdin)\n",
-                 date, __DATE__, __TIME__);
-    else
-        tidy_out(errout, "\nHTML Tidy (vers %s; built on %s, at %s)\nParsing \"%s\"\n",
-                 date, __DATE__, __TIME__, filename);
+    platform = PLATFORM_NAME;
+    helper = " for ";
 #endif
+    
+    if ( tmbstrcmp(filename, "stdin") == 0 )
+    {
+        /* Filename will be ignored at end of varargs */
+        msgfmt = "\nHTML Tidy for %s (vers %s; built on %s, at %s)\n"
+                 "Parsing console input (stdin)\n";
+    }
+    
+    sprintf( buf, msgfmt, helper, platform, 
+             date, __DATE__, __TIME__, filename );
+    tidy_out( doc, buf );
 }
 
-void ReportVersion(FILE *errout, Lexer *lexer, char *filename, Node *doctype)
+void ReportMarkupVersion( TidyDocImpl* doc )
 {
-    uint i, c;
-    int state = 0;
-    char *vers = HTMLVersionName(lexer);
+    Node* doctype = doc->givenDoctype;
 
-    if (doctype)
+    if ( doctype )
     {
-        tidy_out(errout, "\n%s: Doctype given is \"", filename);
+        Lexer* lexer = doc->lexer;
+        uint ix;
+        int quoteCount = 0;
+        tmbchar buf[ 2048 ] = {0};
+        tmbstr cp = buf;
 
-        for (i = doctype->start; i < doctype->end; ++i)
+        for ( ix = doctype->start; ix < doctype->end; ++ix )
         {
-            c = (unsigned char)lexer->lexbuf[i];
+            uint c = (byte) lexer->lexbuf[ix];
 
             /* look for UTF-8 multibyte character */
-            if (c > 0x7F)
-                 i += GetUTF8((unsigned char *)lexer->lexbuf + i, &c);
+            if ( c > 0x7F )
+                ix += GetUTF8( lexer->lexbuf + ix, &c );
 
-            if (c == '"')
-                ++state;
-            else if (state == 1)
-                putc(c, errout);
+            if ( c == '"' )
+                ++quoteCount;
+            else if ( quoteCount == 1 )
+                *cp++ = (tmbchar) c;
         }
 
-        putc('"', errout);
+        *cp = 0;
+        message( doc, TidyInfo, "Doctype given is \"%s\"", buf );
     }
 
-    tidy_out(errout, "\n%s: Document content looks like %s\n",
-                filename, (vers ? vers : "HTML proprietary"));
+    if ( ! cfgBool(doc, TidyXmlTags) )
+    {
+        uint apparentVers = HTMLVersion( doc );
+        Bool isXhtml = doc->lexer->isvoyager;
+        ctmbstr vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
+        message( doc, TidyInfo, "Document content looks like %s", vers );
+    }
 }
 
-void ReportNumWarnings(FILE *errout, Lexer *lexer)
+void ReportNumWarnings( TidyDocImpl* doc )
 {
-    /*
-    if (lexer->warnings > 0)
-        tidy_out(errout, "%d warnings/errors were found!\n\n", lexer->warnings);
-    */
-    if ((lexer->warnings > 0) || (lexer->errors > 0))
+    if ( doc->warnings > 0 || doc->errors > 0 )
     {
-        tidy_out(errout, "%d %s, %d %s were found!",
-                 lexer->warnings, lexer->warnings == 1?"warning":"warnings",
-                 lexer->errors, lexer->errors == 1?"error":"errors");
-        if ((lexer->errors > ShowErrors) || !ShowWarnings)
-            tidy_out(errout, " Not all warnings/errors were shown.\n\n");
+        tidy_out( doc, "%d %s, %d %s were found!",
+                  doc->warnings, doc->warnings == 1 ? "warning" : "warnings",
+                  doc->errors, doc->errors == 1 ? "error" : "errors" );
+
+        if ( doc->errors > cfg(doc, TidyShowErrors) ||
+             !cfgBool(doc, TidyShowWarnings) )
+            tidy_out( doc, " Not all warnings/errors were shown.\n\n" );
         else
-            tidy_out(errout, "\n\n");
+            tidy_out( doc, "\n\n" );
     }
     else
-        tidy_out(errout, "No warnings or errors were found.\n\n");
+        tidy_out( doc, "No warnings or errors were found.\n\n" );
 }
 
-void HelpText(FILE *out, char *prog)
+void HelpText( TidyDocImpl* doc, ctmbstr prog )
 {
-#if 0  /* old style help text */
-    tidy_out(out, "%s: file1 file2 ...\n", prog);
-    tidy_out(out, "Utility to clean up & pretty print html files\n");
-    tidy_out(out, "see http://www.w3.org/People/Raggett/tidy/\n");
-    tidy_out(out, "options for tidy released on %s\n", release_date);
-    tidy_out(out, "  -config <file>  set options from config file\n");
-    tidy_out(out, "  -indent or -i   indent element content\n");
-    tidy_out(out, "  -omit   or -o   omit optional endtags\n");
-    tidy_out(out, "  -wrap 72        wrap text at column 72 (default is 68)\n");
-    tidy_out(out, "  -upper  or -u   force tags to upper case (default is lower)\n");
-    tidy_out(out, "  -clean  or -c   replace font, nobr & center tags by CSS\n");
-    tidy_out(out, "  -raw            leave chars > 128 unchanged upon output\n");
-    tidy_out(out, "  -ascii          use ASCII for output, Latin-1 for input\n");
-    tidy_out(out, "  -latin1         use Latin-1 for both input and output\n");
-    tidy_out(out, "  -iso2022        use ISO2022 for both input and output\n");
-    tidy_out(out, "  -utf8           use UTF-8 for both input and output\n");
-    tidy_out(out, "  -mac            use the Apple MacRoman character set\n");
-    tidy_out(out, "  -numeric or -n  output numeric rather than named entities\n");
-    tidy_out(out, "  -modify or -m   to modify original files\n");
-    tidy_out(out, "  -errors or -e   only show errors\n");
-    tidy_out(out, "  -quiet or -q    suppress nonessential output\n");
-    tidy_out(out, "  -f <file>       write errors to named <file>\n");
-    tidy_out(out, "  -xml            use this when input is wellformed xml\n");
-    tidy_out(out, "  -asxml          to convert html to wellformed xml\n");
-    tidy_out(out, "  -slides         to burst into slides on h2 elements\n");
-    tidy_out(out, "  -version or -v  show version\n");
-    tidy_out(out, "  -help   or -h   list command line options (this message)\n");
-    tidy_out(out, "  -help-config    list all configuration file options\n");
-    tidy_out(out, "Input/Output default to stdin/stdout respectively\n");
-    tidy_out(out, "Single letter options apart from -f may be combined\n");
-    tidy_out(out, "as in:  tidy -f errs.txt -imu foo.html\n");
-    tidy_out(out, "You can also use --blah for any config file option blah\n");
-    tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
-#else
-    tidy_out(out, "%s [option...] [file...]\n", prog);
-    tidy_out(out, "Utility to clean up and pretty print HTML/XHTML/XML\n");
-    tidy_out(out, "see http://www.w3.org/People/Raggett/tidy/\n");
-    tidy_out(out, "\n");
-#ifdef PLATFORM_NAME
-    tidy_out(out, "Options for HTML Tidy for %s released on %s:\n", PLATFORM_NAME, release_date);
-#else
-    tidy_out(out, "Options for HTML Tidy released on %s:\n", release_date);
-#endif
-    tidy_out(out, "\n");
+    tidy_out(doc, "%s [option...] [file...] [option...] [file...]\n", prog );
+    tidy_out(doc, "Utility to clean up and pretty print HTML/XHTML/XML\n");
+    tidy_out(doc, "see http://tidy.sourgeforge.net/\n");
+    tidy_out(doc, "\n");
 
-    tidy_out(out, "Processing directives\n");
-    tidy_out(out, "---------------------\n");
-    tidy_out(out, "  -indent  or -i    to indent element content\n");
-    tidy_out(out, "  -omit    or -o    to omit optional end tags\n");
-    tidy_out(out, "  -wrap <column>    to wrap text at the specified <column> (default is 68)\n");
-    tidy_out(out, "  -upper   or -u    to force tags to upper case (default is lower case)\n");
-    tidy_out(out, "  -clean   or -c    to replace FONT, NOBR and CENTER tags by CSS\n");
-    tidy_out(out, "  -bare    or -b    to strip out smart quotes and em dashes, etc.\n");
-    tidy_out(out, "  -numeric or -n    to output numeric rather than named entities\n");
-    tidy_out(out, "  -errors  or -e    to only show errors\n");
-    tidy_out(out, "  -quiet   or -q    to suppress nonessential output\n");
-    tidy_out(out, "  -xml              to specify the input is well formed XML\n");
-    tidy_out(out, "  -asxml            to convert HTML to well formed XHTML\n");
-    tidy_out(out, "  -asxhtml          to convert HTML to well formed XHTML\n");
-    tidy_out(out, "  -ashtml           to force XHTML to well formed HTML\n");
-    tidy_out(out, "  -slides           to burst into slides on H2 elements\n");
+#ifdef PLATFORM_NAME
+    tidy_out(doc, "Options for HTML Tidy for %s released on %s:\n",
+             PLATFORM_NAME, release_date);
+#else
+    tidy_out(doc, "Options for HTML Tidy released on %s:\n", release_date);
+#endif
+    tidy_out(doc, "\n");
+
+    tidy_out(doc, "File manipulation\n");
+    tidy_out(doc, "-----------------\n");
+    tidy_out(doc, "  -o <file>         to write output markup to specified <file>\n");
+    tidy_out(doc, "  -config <file>    to set configuration options from the specified <file>\n");
+    tidy_out(doc, "  -f <file>         to write errors to the specified <file>\n");
+    tidy_out(doc, "  -modify or -m     to modify the original input files\n");
+    tidy_out(doc, "\n");
+
+    tidy_out(doc, "Processing directives\n");
+    tidy_out(doc, "---------------------\n");
+    tidy_out(doc, "  -asxhtml          to convert HTML to well formed XHTML\n");
+    tidy_out(doc, "  -ashtml           to force XHTML to (non-XML) HTML\n");
+    tidy_out(doc, "  -xml              to specify the input is XML\n");
+    tidy_out(doc, "  -asxml            to convert input to well formed XML\n");
+    tidy_out(doc, "  -indent  or -i    to indent element content\n");
+    tidy_out(doc, "  -wrap <column>    to wrap text at the specified <column> (default is 68)\n");
+    tidy_out(doc, "  -upper   or -u    to force tags to upper case (default is lower case)\n");
+    tidy_out(doc, "  -clean   or -c    to replace FONT, NOBR and CENTER tags by CSS\n");
+    tidy_out(doc, "  -bare    or -b    to strip out smart quotes and em dashes, etc.\n");
+    tidy_out(doc, "  -numeric or -n    to output numeric rather than named entities\n");
+    tidy_out(doc, "  -errors  or -e    to only show errors\n");
+    tidy_out(doc, "  -quiet   or -q    to suppress nonessential output\n");
+    tidy_out(doc, "  -omit             to omit optional end tags\n");
 
 /* TRT */
 #if SUPPORT_ACCESSIBILITY_CHECKS
-    tidy_out(out, "  -access <level>   to do additional accessibility checks (<level> = 1, 2, 3)\n");
+    tidy_out(doc, "  -access <level>   to do additional accessibility checks (<level> = 1, 2, 3)\n");
 #endif
 
-    tidy_out(out, "\n");
+    tidy_out(doc, "\n");
 
-    tidy_out(out, "Character encodings\n");
-    tidy_out(out, "-------------------\n");
-    tidy_out(out, "  -raw              to output values above 127 without conversion to entities\n");
-    tidy_out(out, "  -ascii            to use US-ASCII for output, ISO-8859-1 for input\n");
-    tidy_out(out, "  -latin1           to use ISO-8859-1 for both input and output\n");
-    tidy_out(out, "  -iso2022          to use ISO-2022 for both input and output\n");
-    tidy_out(out, "  -utf8             to use UTF-8 for both input and output\n");
-    tidy_out(out, "  -mac              to use MacRoman for input, US-ASCII for output\n");
+    tidy_out(doc, "Character encodings\n");
+    tidy_out(doc, "-------------------\n");
+    tidy_out(doc, "  -raw              to output values above 127 without conversion to entities\n");
+    tidy_out(doc, "  -ascii            to use US-ASCII for output, ISO-8859-1 for input\n");
+    tidy_out(doc, "  -latin0           to use ISO-8859-15 for input and US-ASCII for output\n");
+    tidy_out(doc, "  -latin1           to use ISO-8859-1 for both input and output\n");
+    tidy_out(doc, "  -iso2022          to use ISO-2022 for both input and output\n");
+    tidy_out(doc, "  -utf8             to use UTF-8 for both input and output\n");
+    tidy_out(doc, "  -mac              to use MacRoman for input, US-ASCII for output\n");
+    tidy_out(doc, "  -win1252          to use Windows-1252 for input, US-ASCII for output\n");
+    tidy_out(doc, "  -ibm858           to use IBM-858 (CP850+Euro) for input, US-ASCII for output\n");
 
 #if SUPPORT_UTF16_ENCODINGS
-
-    tidy_out(out, "  -utf16le          to use UTF-16LE for both input and output\n");
-    tidy_out(out, "  -utf16be          to use UTF-16BE for both input and output\n");
-    tidy_out(out, "  -utf16            to use UTF-16 for both input and output\n");
-
+    tidy_out(doc, "  -utf16le          to use UTF-16LE for both input and output\n");
+    tidy_out(doc, "  -utf16be          to use UTF-16BE for both input and output\n");
+    tidy_out(doc, "  -utf16            to use UTF-16 for both input and output\n");
 #endif
-
-    tidy_out(out, "  -win1252          to use Windows-1252 for input, US-ASCII for output\n");
 
 #if SUPPORT_ASIAN_ENCODINGS
-
-    tidy_out(out, "  -big5             to use Big5 for both input and output\n"); /* #431953 - RJ */
-    tidy_out(out, "  -shiftjis         to use Shift_JIS for both input and output\n"); /* #431953 - RJ */
-    tidy_out(out, "  -language <lang>  to set the two-letter language code <lang> (for future use)\n"); /* #431953 - RJ */
-
+    tidy_out(doc, "  -big5             to use Big5 for both input and output\n"); /* #431953 - RJ */
+    tidy_out(doc, "  -shiftjis         to use Shift_JIS for both input and output\n"); /* #431953 - RJ */
+    tidy_out(doc, "  -language <lang>  to set the two-letter language code <lang> (for future use)\n"); /* #431953 - RJ */
 #endif
+    tidy_out(doc, "\n");
 
-    tidy_out(out, "\n");
+    tidy_out(doc, "Miscellaneous\n");
+    tidy_out(doc, "-------------\n");
+    tidy_out(doc, "  -version  or -v   to show the version of Tidy\n");
+    tidy_out(doc, "  -help, -h or -?   to list the command line options\n");
+    tidy_out(doc, "  -help-config      to list all configuration options\n");
+    tidy_out(doc, "  -show-config      to list the current configuration settings\n");
+    tidy_out(doc, "\n");
+    tidy_out(doc, "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
+    tidy_out(doc, "\n");
 
-    tidy_out(out, "File manipulation\n");
-    tidy_out(out, "-----------------\n");
-    tidy_out(out, "  -config <file>    to set configuration options from the specified <file>\n");
-    tidy_out(out, "  -f      <file>    to write errors to the specified <file>\n");
-    tidy_out(out, "  -modify or -m     to modify the original input files\n");
-    tidy_out(out, "\n");
-
-    tidy_out(out, "Miscellaneous\n");
-    tidy_out(out, "-------------\n");
-    tidy_out(out, "  -version  or -v   to show the version of Tidy\n");
-    tidy_out(out, "  -help, -h or -?   to list the command line options\n");
-    tidy_out(out, "  -help-config      to list all configuration options\n");
-    tidy_out(out, "  -show-config      to list the current configuration settings\n");
-    tidy_out(out, "\n");
-    tidy_out(out, "You can also use --blah for any configuration option blah\n");
-    tidy_out(out, "\n");
-
-    tidy_out(out, "Input/Output default to stdin/stdout respectively\n");
-    tidy_out(out, "Single letter options apart from -f may be combined\n");
-    tidy_out(out, "as in:  tidy -f errs.txt -imu foo.html\n");
-    tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
-    tidy_out(out, "\n");
-#endif
+    tidy_out(doc, "Input/Output default to stdin/stdout respectively\n");
+    tidy_out(doc, "Single letter options apart from -f may be combined\n");
+    tidy_out(doc, "as in:  tidy -f errs.txt -imu foo.html\n");
+    tidy_out(doc, "For further info on HTML see http://www.w3.org/MarkUp\n");
+    tidy_out(doc, "\n");
 }

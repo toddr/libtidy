@@ -11,8 +11,8 @@
 # CVS Info:
 #
 #    $Author: creitzel $
-#    $Date: 2002/04/26 17:45:55 $
-#    $Revision: 1.5 $
+#    $Date: 2003/02/16 19:33:12 $
+#    $Revision: 1.6 $
 #
 # set -x
 
@@ -22,13 +22,12 @@ echo Testing $1
 
 set +f
 
+TIDY=../bin/tidy
 INFILES=./input/in_$1.*ml
 CFGFILE=./input/cfg_$1.txt
-OUTFILE=./output/out_$1.html
 
 TIDYFILE=./tmp/out_$1.html
 MSGFILE=./tmp/msg_$1.txt
-DIFFOUT=./tmp/diff_$1.txt
 
 unset HTML_TIDY
 
@@ -40,7 +39,7 @@ then
 fi
 
 # Remove any pre-exising test outputs
-for INFIL in $MSGFILE $TIDYFILE $DIFFOUT
+for INFIL in $MSGFILE $TIDYFILE
 do
   if [ -f $INFIL ]
   then
@@ -62,7 +61,7 @@ then
   CFGFILE=./input/cfg_default.txt
 fi
 
-../tidy -f $MSGFILE -config $CFGFILE "$@" --tidy-mark no $INFILE > $TIDYFILE
+$TIDY -f $MSGFILE -config $CFGFILE "$@" --tidy-mark no -o $TIDYFILE $INFILE
 STATUS=$?
 
 if [ $STATUS -gt 1 ]
@@ -85,19 +84,6 @@ if [ ! -s $TIDYFILE ]
 then
   cat $MSGFILE
   exit 1
-fi
-
-if [ -f $OUTFILE ]
-then
-  diff $TIDYFILE $OUTFILE > $DIFFOUT
-
-  # Not a valid shell test
-  if [ -s diff.txt ]
-  then
-    cat $MSGFILE
-    cat $DIFFOUT
-    exit 1
-  fi
 fi
 
 exit 0

@@ -1,14 +1,13 @@
-/*
-  lexer.c - Lexer for html parser
+/* lexer.c -- Lexer for html parser
   
-  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+  (c) 1998-2003 (W3C) MIT, INRIA, Keio University
+  See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/08/22 16:48:52 $ 
-    $Revision: 1.74 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:10 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -27,7 +26,7 @@
   white space is compacted if not in preformatted mode
   If not in preformatted mode then leading white space
   is discarded and subsequent white space sequences
-  compacted to single space chars.
+  compacted to single space characters.
 
   If XmlTags is no then Tag names are folded to upper
   case and attribute names to lower case.
@@ -36,17 +35,33 @@
     -   Doctype subset and marked sections
 */
 
-#include "platform.h"
-#include "html.h"
+#include "tidy-int.h"
+#include "lexer.h"
+#include "parser.h"
+#include "entities.h"
+#include "streamio.h"
+#include "message.h"
+#include "tmbstr.h"
+#include "clean.h"
+#include "utf8.h"
 
-extern char *release_date;
 
-AttVal *ParseAttrs(Lexer *lexer, Bool *isempty);  /* forward references */
-Node *CommentToken(Lexer *lexer);
-static char *ParseAttribute(Lexer *lexer, Bool *isempty, Node **asp, Node **php);
-static char *ParseValue(Lexer *lexer, char *name, Bool foldCase, Bool *isempty, int *pdelim);
+/* Forward references
+*/
+/* swallows closing '>' */
+AttVal *ParseAttrs( TidyDocImpl* doc, Bool *isempty );
 
-/* used to classify chars for lexical purposes */
+Node *CommentToken( Lexer *lexer);
+
+static tmbstr ParseAttribute( TidyDocImpl* doc, Bool* isempty, 
+                             Node **asp, Node **php );
+
+static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name, Bool foldCase,
+                         Bool *isempty, int *pdelim );
+
+static void AddAttrToList( AttVal** list, AttVal* av );
+
+/* used to classify characters for lexical purposes */
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
 uint lexmap[128];
 
@@ -65,11 +80,12 @@ uint lexmap[128];
 
 struct _vers
 {
-    char *name;
-    char *voyager_name;
-    char *profile;
-    int code;
-} W3C_Version[] =
+    ctmbstr name;
+    ctmbstr voyager_name;
+    ctmbstr profile;
+    uint    code;
+}
+const W3C_Version[] =
 {
     {"HTML 4.01", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
     {"HTML 4.01 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
@@ -85,9 +101,9 @@ struct _vers
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */
-void ConstrainVersion(Lexer *lexer, uint vers)
+void ConstrainVersion(TidyDocImpl* doc, uint vers)
 {
-    lexer->versions &= (vers | VERS_PROPRIETARY);
+    doc->lexer->versions &= (vers | VERS_PROPRIETARY);
 }
 
 Bool IsWhite(uint c)
@@ -95,6 +111,12 @@ Bool IsWhite(uint c)
     uint map = MAP(c);
 
     return (Bool)(map & white);
+}
+
+Bool IsNewline(uint c)
+{
+    uint map = MAP(c);
+    return (Bool)(map & newline);
 }
 
 Bool IsDigit(uint c)
@@ -117,10 +139,7 @@ Bool IsLetter(uint c)
 
 Bool IsNamechar(uint c)
 {
-    uint map;
-
-    map = MAP(c);
-
+    uint map = MAP(c);
     return (Bool)(map & namechar);
 }
 
@@ -336,7 +355,6 @@ Bool IsXMLLetter(uint c)
         (c >= 0x3021 && c <= 0x3029));
 }
 
-/* #553058 Definition of IsXMLNameChar does not match Prototype (introduced by fix #516370) */
 Bool IsXMLNamechar(uint c)
 {
     return (IsXMLLetter(c) ||
@@ -494,44 +512,40 @@ uint ToUpper(uint c)
     uint map = MAP(c);
 
     if (map & lowercase)
-        c += 'A' - 'a';
+        c += (uint) ('A' - 'a' );
 
     return c;
 }
 
-char FoldCase(char c, Bool tocaps)
+char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps )
 {
-    if (!XmlTags)
+    if ( !cfgBool(doc, TidyXmlTags) )
     {
-        if (tocaps)
+        if ( tocaps )
         {
-            c = ToUpper(c);
+            c = (tmbchar) ToUpper(c);
         }
         else /* force to lower case */
         {
-            c = ToLower(c);
+            c = (tmbchar) ToLower(c);
         }
     }
-
     return c;
 }
 
 
 /*
- return last char in string
+ return last character in string
  this is useful when trailing quotemark
  is missing on an attribute
 */
-static int LastChar(char *str)
+static tmbchar LastChar( tmbstr str )
 {
-    int n;
-
-    if (str != null && *str != '\0')
+    if ( str && *str )
     {
-        n = wstrlen(str);
+        int n = tmbstrlen(str);
         return str[n-1];
     }
-
     return 0;
 }
 
@@ -543,139 +557,125 @@ static int LastChar(char *str)
     #define EndTag      3
     #define StartEndTag 4
 */
-Lexer *NewLexer(StreamIn *in)
+
+Lexer* NewLexer()
 {
-    Lexer *lexer;
+    Lexer* lexer = (Lexer*) MemAlloc( sizeof(Lexer) );
 
-    lexer = (Lexer *)MemAlloc(sizeof(Lexer));
-
-    if (lexer != null)
+    if ( lexer != null )
     {
-        lexer->in = in;
+        ClearMemory( lexer, sizeof(Lexer) );
+
         lexer->lines = 1;
         lexer->columns = 1;
         lexer->state = LEX_CONTENT;
-        lexer->badAccess = 0;
-        lexer->badLayout = 0;
-        lexer->badChars = 0;
-        lexer->badForm = 0;
-        lexer->warnings = 0;
-        lexer->errors = no;
-        lexer->waswhite = no;
-        lexer->pushed = no;
-        lexer->insertspace = no;
-        lexer->exiled = no;
-        lexer->isvoyager = no;
+
         lexer->versions = (VERS_ALL|VERS_PROPRIETARY);
         lexer->doctype = VERS_UNKNOWN;
-        lexer->bad_doctype = no;
-        lexer->txtstart = 0;
-        lexer->txtend = 0;
-        lexer->token = null;
-        lexer->root = null;
-        lexer->lexbuf =  null;
-        lexer->lexlength = 0;
-        lexer->lexsize = 0;
-        lexer->inode = null;
-        lexer->insert = null;
-        lexer->istack = null;
-        lexer->istacklength = 0;
-        lexer->istacksize = 0;
-        lexer->istackbase = 0;
-        lexer->styles = null;
-
-        /* #538536 Extra endtags not detected */
-        lexer->seenEndBody = 0;
-        lexer->seenEndHtml = 0;
     }
-
-
     return lexer;
 }
 
-Bool EndOfInput(Lexer *lexer)
+Bool EndOfInput( TidyDocImpl* doc )
 {
-    return  (feof(lexer->in->file));
+    return doc->docIn->source.eof( doc->docIn->source.sourceData );
 }
 
-void FreeLexer(Lexer *lexer)
+void FreeLexer( TidyDocImpl* doc )
 {
-    if (lexer->pushed)
-        FreeNode(lexer->token);
-
-    if (lexer->lexbuf != null)
-        MemFree(lexer->lexbuf);
-
-    while (lexer->istacksize > 0)
-        PopInline(lexer, null);
-
-    if (lexer->istack)
-        MemFree(lexer->istack);
-
-    if (lexer->styles)
-        FreeStyles(lexer);
-
-    MemFree(lexer);
-}
-
-void AddByte(Lexer *lexer, uint c)
-{
-    if (lexer->lexsize + 1 >= lexer->lexlength)
+    Lexer *lexer = doc->lexer;
+    if ( lexer )
     {
-        while (lexer->lexsize + 1 >= lexer->lexlength)
+        FreeStyles( doc );
+
+        while ( lexer->istacksize > 0 )
+            PopInline( doc, null );
+
+        MemFree( lexer->istack );
+        MemFree( lexer->lexbuf );
+        MemFree( lexer );
+        doc->lexer = null;
+    }
+
+    FreeNode( doc, doc->root );
+    doc->root = null;
+
+    FreeNode( doc, doc->givenDoctype );
+    doc->givenDoctype = null;
+}
+
+/* Lexer uses bigger memory chunks than pprint as
+** it must hold the entire input document. not just
+** the last line or three.
+*/
+void AddByte( Lexer *lexer, tmbchar ch )
+{
+    if ( lexer->lexsize + 1 >= lexer->lexlength )
+    {
+        tmbstr buf = null;
+        uint allocAmt = lexer->lexlength;
+        while ( lexer->lexsize + 1 >= allocAmt )
         {
-            if (lexer->lexlength == 0)
-                lexer->lexlength = 8192;
+            if ( allocAmt == 0 )
+                allocAmt = 8192;
             else
-                lexer->lexlength = lexer->lexlength * 2;
+                allocAmt *= 2;
         }
-
-        lexer->lexbuf = (char *)MemRealloc(lexer->lexbuf, lexer->lexlength*sizeof(char));
+        buf = (tmbstr) MemRealloc( lexer->lexbuf, allocAmt );
+        if ( buf )
+        {
+          ClearMemory( buf + lexer->lexlength, 
+                       allocAmt - lexer->lexlength );
+          lexer->lexbuf = buf;
+          lexer->lexlength = allocAmt;
+        }
     }
 
-    lexer->lexbuf[lexer->lexsize++] = (char)c;
-    lexer->lexbuf[lexer->lexsize] = '\0';  /* debug */
+    lexer->lexbuf[ lexer->lexsize++ ] = ch;
+    lexer->lexbuf[ lexer->lexsize ]   = '\0';  /* debug */
 }
 
-static void ChangeChar(Lexer *lexer, char c)
+static void ChangeChar( Lexer *lexer, tmbchar c )
 {
-    if (lexer->lexsize > 0)
+    if ( lexer->lexsize > 0 )
     {
-        lexer->lexbuf[lexer->lexsize-1] = c;
+        lexer->lexbuf[ lexer->lexsize-1 ] = c;
     }
 }
 
-/* store char c as UTF-8 encoded byte stream */
-void AddCharToLexer(Lexer *lexer, uint c)
+/* store character c as UTF-8 encoded byte stream */
+void AddCharToLexer( Lexer *lexer, uint c )
 {
     int i, err, count = 0;
-    unsigned char buf[10];
+    tmbchar buf[10] = {0};
     
-    err = EncodeCharToUTF8Bytes(c, buf, null, null, &count);
+    err = EncodeCharToUTF8Bytes( c, buf, null, &count );
     if (err)
     {
-#if 0
-        extern FILE* errout; /* debug */
-
-        tidy_out(errout, "lexer UTF-8 encoding error for U+%x : ", c); /* debug */
+#if 0 && defined(_DEBUG)
+        fprintf( stderr, "lexer UTF-8 encoding error for U+%x : ", c );
 #endif
-        /* replacement char 0xFFFD encoded as UTF-8 */
-        buf[0] = 0xEF;
-        buf[1] = 0xBF;
-        buf[2] = 0xBD;
+        /* replacement character 0xFFFD encoded as UTF-8 */
+        buf[0] = (byte) 0xEF;
+        buf[1] = (byte) 0xBF;
+        buf[2] = (byte) 0xBD;
         count = 3;
     }
     
-    for (i = 0; i < count; i++)
-        AddByte(lexer, (uint)buf[i]);
+    for ( i = 0; i < count; ++i )
+        AddByte( lexer, buf[i] );
 }
 
-static void AddStringToLexer(Lexer *lexer, char *str)
+static void AddStringToLexer( Lexer *lexer, ctmbstr str )
 {
     uint c;
 
-    while((c = (unsigned char)*str++))
-        AddCharToLexer(lexer, c);
+    /*  Many (all?) compilers will sign-extend signed chars (the default) when
+    **  converting them to unsigned integer values.  We must cast our char to
+    **  unsigned char before assigning it to prevent this from happening.
+    */
+    while( 0 != (c = (unsigned char) *str++ ))
+        AddCharToLexer( lexer, c );
 }
 
 /*
@@ -704,20 +704,20 @@ static void AddStringToLexer(Lexer *lexer, char *str)
   
   "ParseEntity" is also a bit of a misnomer - it handles entities and
   numeric character references. Invalid NCR's are now reported.
-
-  */
-static void ParseEntity(Lexer *lexer, int mode)
+*/
+static void ParseEntity( TidyDocImpl* doc, int mode )
 {
     uint start;
     Bool first = yes, semicolon = no;
     int c, ch, startcol;
+    Lexer* lexer = doc->lexer;
 
     start = lexer->lexsize - 1;  /* to start at "&" */
-    startcol = lexer->in->curcol - 1;
+    startcol = doc->docIn->curcol - 1;
 
-    while ((c = ReadChar(lexer->in)) != EndOfStream)
+    while ( (c = ReadChar(doc->docIn)) != EndOfStream )
     {
-        if (c == ';')
+        if ( c == ';' )
         {
             semicolon = yes;
             break;
@@ -726,54 +726,53 @@ static void ParseEntity(Lexer *lexer, int mode)
         if (first && c == '#')
         {
 #if SUPPORT_ASIAN_ENCODINGS
-
-            /* #431953 - start RJ */
-            if ( NCR == no || inCharEncoding == BIG5 || inCharEncoding == SHIFTJIS )
+            if ( !cfgBool(doc, TidyNCR) || 
+                 cfg(doc, TidyInCharEncoding) == BIG5 ||
+                 cfg(doc, TidyInCharEncoding) == SHIFTJIS )
             {
-                UngetChar('#', lexer->in);
+                UngetChar('#', doc->docIn);
                 return;
             }
-            /* #431953 - end RJ */
-
 #endif
-
-            AddCharToLexer(lexer, c);
+            AddCharToLexer( lexer, c );
             first = no;
             continue;
         }
 
         first = no;
 
-        if (IsNamechar(c))
+        if ( IsNamechar(c) )
         {
-            AddCharToLexer(lexer, c);
+            AddCharToLexer( lexer, c );
             continue;
         }
 
         /* otherwise put it back */
 
-        UngetChar(c, lexer->in);
+        UngetChar( c, doc->docIn );
         break;
     }
 
     /* make sure entity is null terminated */
     lexer->lexbuf[lexer->lexsize] = '\0';
 
-    if ((wstrcmp(lexer->lexbuf+start, "&apos") == 0)
-        && !XmlOut
-        && !lexer->isvoyager
-        && !xHTML)
-        ReportEntityError(lexer, APOS_UNDEFINED, lexer->lexbuf+start, 39);
+    if ( tmbstrcmp(lexer->lexbuf+start, "&apos") == 0
+         && !cfgBool(doc, TidyXmlOut)
+         && !lexer->isvoyager
+         && !cfgBool(doc, TidyXhtmlOut) )
+        ReportEntityError( doc, APOS_UNDEFINED, lexer->lexbuf+start, 39 );
 
-    ch = EntityCode(lexer->lexbuf+start);
+    /* On input, we want to recognize all possible entities.
+    */
+    ch = EntityCode( lexer->lexbuf+start, VERS_ALL );
 
     /* deal with unrecognized or invalid entities */
     /* #433012 - fix by Randy Waki 17 Feb 01 */
     /* report invalid NCR's - Terry Teague 01 Sep 01 */
-    if (ch <= 0 || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';'))
+    if ( ch <= 0 || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';') )
     {
         /* set error position just before offending character */
-        lexer->lines = lexer->in->curline;
+        lexer->lines = doc->docIn->curline;
         lexer->columns = startcol;
 
         if (lexer->lexsize > start + 1)
@@ -782,25 +781,27 @@ static void ParseEntity(Lexer *lexer, int mode)
             {
                 /* invalid numeric character reference */
                 
-                int c1, replaceMode;
+                int c1 = 0, replaceMode = DISCARDED_CHAR;
             
-                if (ReplacementCharEncoding == WIN1252)
-                    c1 = DecodeWin1252(ch);
-                else if (ReplacementCharEncoding == MACROMAN)
-                    c1 = DecodeMacRoman(ch);
+                if ( ReplacementCharEncoding == WIN1252 )
+                    c1 = DecodeWin1252( ch );
+                else if ( ReplacementCharEncoding == MACROMAN )
+                    c1 = DecodeMacRoman( ch );
 
-                replaceMode = c1?REPLACED_CHAR:DISCARDED_CHAR;
+                if ( c1 )
+                    replaceMode = REPLACED_CHAR;
                 
-               if (c != ';')    /* issue warning if not terminated by ';' */
-                   ReportEntityError(lexer, MISSING_SEMICOLON_NCR, lexer->lexbuf+start, c);
+                if ( c != ';' )  /* issue warning if not terminated by ';' */
+                    ReportEntityError( doc, MISSING_SEMICOLON_NCR,
+                                       lexer->lexbuf+start, c );
  
-                ReportEncodingError(lexer, INVALID_NCR | replaceMode, ch);
+                ReportEncodingError( doc, INVALID_NCR | replaceMode, ch );
                 
-                if (c1 != 0)
+                if ( c1 )
                 {
                     /* make the replacement */
                     lexer->lexsize = start;
-                    AddCharToLexer(lexer, c1);
+                    AddCharToLexer( lexer, c1 );
                     semicolon = no;
                 }
                 else
@@ -812,69 +813,61 @@ static void ParseEntity(Lexer *lexer, int mode)
                
             }
             else
-                ReportEntityError(lexer, UNKNOWN_ENTITY, lexer->lexbuf+start, ch);
+                ReportEntityError( doc, UNKNOWN_ENTITY,
+                                   lexer->lexbuf+start, ch );
 
             if (semicolon)
-                AddCharToLexer(lexer, ';');
+                AddCharToLexer( lexer, ';' );
         }
         else /* naked & */
-            ReportEntityError(lexer, UNESCAPED_AMPERSAND, lexer->lexbuf+start, ch);
+            ReportEntityError( doc, UNESCAPED_AMPERSAND,
+                               lexer->lexbuf+start, ch );
     }
     else
     {
-        if (c != ';')    /* issue warning if not terminated by ';' */
+        if ( c != ';' )    /* issue warning if not terminated by ';' */
         {
             /* set error position just before offending chararcter */
-            lexer->lines = lexer->in->curline;
+            lexer->lines = doc->docIn->curline;
             lexer->columns = startcol;
-            ReportEntityError(lexer, MISSING_SEMICOLON, lexer->lexbuf+start, c);
+            ReportEntityError( doc, MISSING_SEMICOLON, lexer->lexbuf+start, c );
         }
 
         lexer->lexsize = start;
-
-        if (ch == 160 && (mode & Preformatted))
+        if ( ch == 160 && (mode & Preformatted) )
             ch = ' ';
+        AddCharToLexer( lexer, ch );
 
-        AddCharToLexer(lexer, ch);
-
-        if (ch == '&' && !QuoteAmpersand)
-        {
-            AddCharToLexer(lexer, 'a');
-            AddCharToLexer(lexer, 'm');
-            AddCharToLexer(lexer, 'p');
-            AddCharToLexer(lexer, ';');
-        }
+        if ( ch == '&' && !cfgBool(doc, TidyQuoteAmpersand) )
+            AddStringToLexer( lexer, "amp;" );
     }
 }
 
-static char ParseTagName(Lexer *lexer)
+static tmbchar ParseTagName( TidyDocImpl* doc )
 {
-    uint c;
+    Lexer *lexer = doc->lexer;
+    uint c = lexer->lexbuf[ lexer->txtstart ];
 
-    /* fold case of first char in buffer */
+    /* fold case of first character in buffer */
 
-    c = lexer->lexbuf[lexer->txtstart];
+    if ( !cfgBool(doc, TidyXmlTags) && IsUpper(c) )
+        lexer->lexbuf[lexer->txtstart] = (tmbchar) ToLower(c);
 
-    if (!XmlTags && IsUpper(c))
-    {
-        lexer->lexbuf[lexer->txtstart] = ToLower(c);
-    }
-
-    while ((c = ReadChar(lexer->in)) != EndOfStream)
+    while ( (c = ReadChar(doc->docIn)) != EndOfStream )
     {
         if (!IsNamechar(c))
             break;
 
-       /* fold case of subsequent chars */
+        /* fold case of subsequent characters */
 
-       if (!XmlTags && IsUpper(c))
-            c = ToLower(c);
+        if ( !cfgBool(doc, TidyXmlTags) && IsUpper(c) )
+             c = ToLower(c);
 
-       AddCharToLexer(lexer, c);
+        AddCharToLexer( lexer, c );
     }
 
     lexer->txtend = lexer->lexsize;
-    return c;
+    return (tmbchar) c;
 }
 
 /*
@@ -890,127 +883,88 @@ static char ParseTagName(Lexer *lexer)
   list of AttVal nodes which hold the
   strings for attribute/value pairs.
 */
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
+
+
 Node *NewNode(Lexer *lexer)
-#else
-Node *NewNode(void)
-#endif
 {
-    Node *node;
-
-    node = (Node *)MemAlloc(sizeof(Node));
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    if (lexer)
+    Node* node = (Node*) MemAlloc( sizeof(Node) );
+    ClearMemory( node, sizeof(Node) );
+    if ( lexer )
     {
         node->line = lexer->lines;
         node->column = lexer->columns;
     }
-    else
-    {
-        node->line = 0;
-        node->column = 0;
-    }
-#endif
-
-    node->parent = null;
-    node->prev = null;
-    node->next = null;
-    node->last = null;
-    node->start = 0;
-    node->end = 0;
     node->type = TextNode;
-    node->closed = no;
-    node->implicit = no;
-    node->linebreak = no;
-    node->tag = null;
-    node->was = null;
-    node->element = null;
-    node->attributes = null;
-    node->content = null;
     return node;
 }
 
 /* used to clone heading nodes when split by an <HR> */
-Node *CloneNode(Lexer *lexer, Node *element)
+Node *CloneNode( TidyDocImpl* doc, Node *element )
 {
-    Node *node;
+    Lexer* lexer = doc->lexer;
+    Node *node = NewNode( lexer );
 
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
-    node->parent = element->parent;
     node->start = lexer->lexsize;
-    node->end = lexer->lexsize;
-    node->type = element->type;
-    node->closed = element->closed;
-    node->implicit = element->implicit;
-    node->tag = element->tag;
-    node->element = wstrdup(element->element);
-    node->attributes = DupAttrs(element->attributes);
+    node->end   = lexer->lexsize;
+
+    if ( element )
+    {
+        node->parent     = element->parent;
+        node->type       = element->type;
+        node->closed     = element->closed;
+        node->implicit   = element->implicit;
+        node->tag        = element->tag;
+        node->element    = tmbstrdup( element->element );
+        node->attributes = DupAttrs( doc, element->attributes );
+    }
     return node;
 }
 
 /* Does, what CloneNode should do, clones the given node */
 /* Maybe CloneNode is just buggy and could be modified   */
-Node *CloneNodeEx(Lexer *lexer, Node *element)
+Node *CloneNodeEx( TidyDocImpl* doc, Node *element )
 {
-    Node *node;
+    Node *node = null;
 
-    if (!element)
-        return null;
+    if ( element )
+    {
+        node = NewNode( doc->lexer );
 
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
-    node->parent     = element->parent;
-    node->start      = element->start;
-    node->end        = element->end;
-    node->type       = element->type;
-    node->closed     = element->closed;
-    node->implicit   = element->implicit;
-    node->tag        = element->tag;
-    node->element    = wstrdup(element->element);
-    node->attributes = DupAttrs(element->attributes);
-
+        node->parent     = element->parent;
+        node->start      = element->start;
+        node->end        = element->end;
+        node->type       = element->type;
+        node->closed     = element->closed;
+        node->implicit   = element->implicit;
+        node->tag        = element->tag;
+        node->element    = tmbstrdup( element->element );
+        node->attributes = DupAttrs( doc, element->attributes );
+    }
     return node;
 }
 
 /* free node's attributes */
-void FreeAttrs(Node *node)
+void FreeAttrs( TidyDocImpl* doc, Node *node )
 {
-    AttVal *av;
 
-    while (node->attributes)
+    while ( node->attributes )
     {
-        av = node->attributes;
+        AttVal *av = node->attributes;
 
-        if (av->attribute)
+        if ( av->attribute )
         {
-            if ((wstrcasecmp(av->attribute, "id") == 0) ||
-               ((wstrcasecmp(av->attribute, "name") == 0) &&
-               IsAnchorElement(node)))
-                RemoveAnchorByNode(node);
-
-            MemFree(av->attribute);
+            if ( ( tmbstrcasecmp(av->attribute, "id") == 0 ||
+                   tmbstrcasecmp(av->attribute, "name") == 0 )
+                 && IsAnchorElement(doc, node) )
+            {
+                RemoveAnchorByNode( doc, node );
+            }
+            MemFree( av->attribute );
         }
 
-        if (av->value)
-            MemFree(av->value);
-
-        if (av->asp)
-            FreeNode(av->asp);
-
-        if (av->php)
-            FreeNode(av->php);
+        MemFree( av->value );
+        FreeNode( doc, av->asp );
+        FreeNode( doc, av->php );
 
         node->attributes = av->next;
         MemFree(av);
@@ -1018,37 +972,32 @@ void FreeAttrs(Node *node)
 }
 
 /* doesn't repair attribute list linkage */
-void FreeAttribute(AttVal *av)
+void FreeAttribute( AttVal *av )
 {
-    if (av->attribute)
-        MemFree(av->attribute);
-    if (av->value)
-        MemFree(av->value);
-
-    MemFree(av);
+    MemFree( av->attribute );
+    MemFree( av->value );
+    MemFree( av );
 }
 
-/* remove attribute from node then free it */
-void RemoveAttribute(Node *node, AttVal *attr)
+/* remove attribute from node then free it
+*/
+void RemoveAttribute( Node *node, AttVal *attr )
 {
-    AttVal *av, *prev = null, *next;
+    AttVal *av, *prev = null;
 
-    for (av = node->attributes; av != null; av = next)
+    for ( av = node->attributes; av; av = av->next )
     {
-        next = av->next;
-
-        if (av == attr)
+        if ( av == attr )
         {
-            if (prev)
-                prev->next = next;
+            if ( prev )
+                prev->next = attr->next;
             else
-                node->attributes = next;
+                node->attributes = attr->next;
+            break;
         }
-        else
-            prev = av;
+        prev = av;
     }
-
-    FreeAttribute(attr);
+    FreeAttribute( attr );
 }
 
 /*
@@ -1056,156 +1005,86 @@ void RemoveAttribute(Node *node, AttVal *attr)
   through children. Set next to null before calling FreeNode()
   to avoid freeing peer nodes. Doesn't patch up prev/next links.
  */
-void FreeNode(Node *node)
+void FreeNode( TidyDocImpl* doc, Node *node )
 {
-    Node *next;
-
-    while (node)
+    while ( node )
     {
-        if (node->attributes)
-            FreeAttrs(node);
+        Node* next = node->next;
 
-        if (node->element)
-            MemFree(node->element);
+        MemFree( node->element );
+        FreeAttrs( doc, node );
+        FreeNode( doc, node->content );
+        MemFree( node );
 
-        if (node->content)
-            FreeNode(node->content);
-
-        if (node->next)
-        {
-            next = node->next;
-            MemFree(node);
-            node = next;
-            continue;
-        }
-
-        node->element = null;
-        node->tag = null;
-
-#if 0
-        if (_msize(node) != sizeof (Node)) /* debug */
-            fprintf(stderr, 
-            "Error in FreeNode() - trying to free corrupted node size %d vs %d\n",
-                _msize(node), sizeof(Node));
-#endif
-        MemFree(node);
-        break;
+        node = next;
     }
 }
 
-Node *TextToken(Lexer *lexer)
+Node* TextToken( Lexer *lexer )
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node *node = NewNode( lexer );
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
 }
 
 /* used for creating preformatted text from Word2000 */
-Node *NewLineNode(Lexer *lexer)
+Node *NewLineNode( Lexer *lexer )
 {
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    Node *node = NewNode(lexer);
-#else
-    Node *node = NewNode();
-#endif
-
+    Node *node = NewNode( lexer );
     node->start = lexer->lexsize;
-    AddCharToLexer(lexer, (uint)'\n');
+    AddCharToLexer( lexer, (uint)'\n' );
     node->end = lexer->lexsize;
     return node;
 }
 
 /* used for adding a &nbsp; for Word2000 */
-Node *NewLiteralTextNode(Lexer *lexer, char* txt )
+Node* NewLiteralTextNode( Lexer *lexer, ctmbstr txt )
 {
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    Node *node = NewNode(lexer);
-#else
-    Node *node = NewNode();
-#endif
-
+    Node *node = NewNode( lexer );
     node->start = lexer->lexsize;
-    AddStringToLexer(lexer, txt);
+    AddStringToLexer( lexer, txt );
     node->end = lexer->lexsize;
     return node;
 }
 
-static Node *TagToken(Lexer *lexer, uint type)
+static Node* TagToken( TidyDocImpl* doc, uint type )
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Lexer* lexer = doc->lexer;
+    Node* node = NewNode( lexer );
     node->type = type;
-    node->element = wstrndup(lexer->lexbuf + lexer->txtstart,
-                        lexer->txtend - lexer->txtstart);
+    node->element = tmbstrndup( lexer->lexbuf + lexer->txtstart,
+                                lexer->txtend - lexer->txtstart );
     node->start = lexer->txtstart;
     node->end = lexer->txtstart;
 
-    if (type == StartTag || type == StartEndTag || type == EndTag)
-        FindTag(node);
+    if ( type == StartTag || type == StartEndTag || type == EndTag )
+        FindTag(doc, node);
 
     return node;
 }
 
-Node *CommentToken(Lexer *lexer)
+Node* CommentToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode( lexer );
     node->type = CommentTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
 }
 
-
-static Node *DocTypeToken(Lexer *lexer)
+static Node* DocTypeToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode( lexer );
     node->type = DocTypeTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
 }
 
-
 static Node *PIToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node *node = NewNode(lexer);
     node->type = ProcInsTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1214,14 +1093,7 @@ static Node *PIToken(Lexer *lexer)
 
 static Node *AspToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = AspTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1230,14 +1102,7 @@ static Node *AspToken(Lexer *lexer)
 
 static Node *JsteToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = JsteTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1247,14 +1112,7 @@ static Node *JsteToken(Lexer *lexer)
 /* Added by Baruch Even - handle PHP code too. */
 static Node *PhpToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = PhpTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1264,14 +1122,7 @@ static Node *PhpToken(Lexer *lexer)
 /* XML Declaration <?xml version='1.0' ... ?> */
 static Node *XmlDeclToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = XmlDecl;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1281,14 +1132,7 @@ static Node *XmlDeclToken(Lexer *lexer)
 /* Word2000 uses <![if ... ]> and <![endif]> */
 static Node *SectionToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = SectionTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1298,102 +1142,103 @@ static Node *SectionToken(Lexer *lexer)
 /* CDATA uses <![CDATA[ ... ]]> */
 static Node *CDATAToken(Lexer *lexer)
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Node* node = NewNode(lexer);
     node->type = CDATATag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
 }
 
-void AddStringLiteral(Lexer *lexer, char *str)
+void AddStringLiteral( Lexer* lexer, ctmbstr str )
 {
-    unsigned char c;
-
-    while((c = *str++) != '\0')
-        AddCharToLexer(lexer, c);
+    byte c;
+    while( c = *str++ )
+        AddCharToLexer( lexer, c );
 }
 
-void AddStringLiteralLen(Lexer *lexer, char *str, int len )
+void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len )
 {
-    unsigned char c;
+    byte c;
     int ix;
 
-    for ( ix=0; ix < len && (c = *str++) != '\0'; ++ix )
+    for ( ix=0; ix < len && (c = *str++); ++ix )
         AddCharToLexer(lexer, c);
 }
 
 /* find doctype element */
-Node *FindDocType(Node *root)
+Node *FindDocType( TidyDocImpl* doc )
 {
-    Node *node;
+    Node* node;
+    for ( node = (doc->root ? doc->root->content : null);
+          node && node->type != DocTypeTag; 
+          node = node->next )
+        /**/;
+    return node;
+}
 
-    for (node = root->content; 
-            node && node->type != DocTypeTag; node = node->next);
+/* find parent container element */
+Node* FindContainer( Node* node )
+{
+    for ( node = (node ? node->parent : null);
+          node && nodeHasCM(node, CM_INLINE);
+          node = node->parent )
+        /**/;
 
     return node;
 }
+
 
 /* find html element */
-Node *FindHTML(Node *root)
+Node *FindHTML( TidyDocImpl* doc )
 {
-    Node *node;
-
-    for (node = root->content; 
-            node && node->tag != tag_html; node = node->next);
+    Node *node = doc->root;
+    for ( node = (node ? node->content : null);
+          node && !nodeIsHTML(node); 
+          node = node->next )
+        /**/;
 
     return node;
 }
 
-Node *FindHEAD(Node *root)
+Node *FindHEAD( TidyDocImpl* doc )
 {
-    Node *node;
+    Node *node = FindHTML( doc );
 
-    node = FindHTML(root);
-
-    if (node)
+    if ( node )
     {
-        for (node = node->content;
-            node && node->tag != tag_head; node = node->next);
+        for ( node = node->content;
+              node && !nodeIsHEAD(node); 
+              node = node->next )
+            /**/;
     }
 
     return node;
 }
 
-Node *FindBody(Node *root)
+Node *FindBody( TidyDocImpl* doc )
 {
-    Node *node;
+    Node *node = ( doc->root ? doc->root->content : null );
 
-    node = root->content;
-
-    while (node && node->tag != tag_html)
+    while ( node && !nodeIsHTML(node) )
         node = node->next;
 
     if (node == null)
         return null;
 
     node = node->content;
-
-    while (node && node->tag != tag_body && node->tag != tag_frameset)
+    while ( node && !nodeIsBODY(node) && !nodeIsFRAMESET(node) )
         node = node->next;
 
-    if (node->tag == tag_frameset)
+    if ( node && nodeIsFRAMESET(node) )
     {
         node = node->content;
-
-        while (node && node->tag != tag_noframes)
+        while ( node && !nodeIsNOFRAMES(node) )
             node = node->next;
 
-        if (node)
+        if ( node )
         {
             node = node->content;
-            while (node && node->tag != tag_body) 
+            while ( node && !nodeIsBODY(node) )
                 node = node->next;
         }
     }
@@ -1402,58 +1247,54 @@ Node *FindBody(Node *root)
 }
 
 /* add meta element for Tidy */
-Bool AddGenerator(Lexer *lexer, Node *root)
+Bool AddGenerator( TidyDocImpl* doc )
 {
     AttVal *attval;
     Node *node;
-    Node *head = FindHEAD(root);
-    char buf[256];
+    Node *head = FindHEAD( doc );
+    tmbchar buf[256];
     
     if (head)
     {
 #ifdef PLATFORM_NAME
-        sprintf(buf, "HTML Tidy for "PLATFORM_NAME" (vers %s), see www.w3.org", release_date);
+        sprintf( buf, "HTML Tidy for "PLATFORM_NAME" (vers %s), see www.w3.org",
+                 tidyReleaseDate() );
 #else
-        sprintf(buf, "HTML Tidy (vers %s), see www.w3.org", release_date);
+        sprintf( buf, "HTML Tidy (vers %s), see www.w3.org", tidyReleaseDate() );
 #endif
 
-        for (node = head->content; node; node = node->next)
+        for ( node = head->content; node; node = node->next )
         {
-            if (node->tag == tag_meta)
+            if ( nodeIsMETA(node) )
             {
                 attval = GetAttrByName(node, "name");
 
-                if (attval && attval->value &&
-                    wstrcasecmp(attval->value, "generator") == 0)
+                if ( attval && attval->value &&
+                     tmbstrcasecmp(attval->value, "generator") == 0 )
                 {
                     attval = GetAttrByName(node, "content");
 
-                    if (attval && attval->value &&
-                        wstrncasecmp(attval->value, "HTML Tidy", 9) == 0)
+                    if ( attval && attval->value &&
+                         tmbstrncasecmp(attval->value, "HTML Tidy", 9) == 0 )
                     {
                         /* update the existing content to reflect the */
                         /* actual version of Tidy currently being used */
                         
                         MemFree(attval->value);
-                        attval->value = wstrdup(buf);
-                        
+                        attval->value = tmbstrdup(buf);
                         return no;
                     }
                 }
             }
         }
 
-/* Mike Lam/TRT */
-#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-        if (AccessibilityCheckLevel == 0)
-#endif
+        if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
-            node = InferredTag(lexer, "meta");
-            AddAttribute(node, "content", buf);
-            AddAttribute(node, "name", "generator");
-            InsertNodeAtStart(head, node);
-
-	        return yes;
+            node = InferredTag( doc, "meta" );
+            AddAttribute( doc, node, "content", buf );
+            AddAttribute( doc, node, "name", "generator" );
+            InsertNodeAtStart( head, node );
+            return yes;
         }
     }
 
@@ -1461,71 +1302,78 @@ Bool AddGenerator(Lexer *lexer, Node *root)
 }
 
 /* examine <!DOCTYPE> to identify version */
-static int FindGivenVersion(Lexer *lexer, Node *doctype)
+int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 {
-    char *p, *s = lexer->lexbuf+doctype->start;
+    Lexer* lexer = doc->lexer;
+    tmbstr p, s = lexer->lexbuf+doctype->start;
+    ctmbstr nm;
     uint i, j;
-    int len;
+    uint len;
 
     /* if root tag for doctype isn't html give up now */
-    if (wstrncasecmp(s, "html ", 5) != 0)
+    if ( tmbstrncasecmp(s, "html ", 5) != 0 )
         return 0;
 
     s += 5; /* if all is well s -> SYSTEM or PUBLIC */
 
-    if  (!CheckDocTypeKeyWords(lexer, doctype))
-            ReportWarning(lexer, doctype, null, DTYPE_NOT_UPPER_CASE);
+    if ( !CheckDocTypeKeyWords(lexer, doctype) )
+        ReportWarning( doc, doctype, null, DTYPE_NOT_UPPER_CASE );
 
 
     /* give up if all we are given is the system id for the doctype */
-    if (wstrncasecmp(s, "SYSTEM ", 7) == 0)
+    if ( tmbstrncasecmp(s, "SYSTEM ", 7) == 0 )
     {
         /* but at least ensure the case is correct */
-        if (wstrncmp(s, "SYSTEM", 6) != 0)
-            memcpy(s, "SYSTEM", 6);
-
+        if ( tmbstrncmp(s, "SYSTEM", 6) != 0 )
+             memcpy( s, "SYSTEM", 6 );  /* No null terminator! */
         return 0;  /* unrecognized */
     }
 
-    if (wstrncasecmp(s, "PUBLIC ", 7) == 0)
+    if (tmbstrncasecmp(s, "PUBLIC ", 7) == 0)
     {
-        if (wstrncmp(s, "PUBLIC", 6) != 0)
-            memcpy(s, "PUBLIC", 6);
+        if ( tmbstrncmp(s, "PUBLIC", 6) != 0 )
+            memcpy( s, "PUBLIC", 6 );   /* No null terminator! */
     }
-    else
+    else if ( lexer->doctype == VERS_UNKNOWN )
         lexer->bad_doctype = yes;
 
-    for (i = doctype->start; i < doctype->end; ++i)
+    for ( i = doctype->start; i < doctype->end; ++i )
     {
-        if (lexer->lexbuf[i] == '"')
+        if ( lexer->lexbuf[i] == '"' )
         {
-            if (wstrncmp(lexer->lexbuf+i+1, "-//W3C//DTD ", 12) == 0)
+            if ( tmbstrncmp(lexer->lexbuf+i+1, "-//W3C//DTD ", 12) == 0 )
             {
                 p = lexer->lexbuf + i + 13;
 
                 /* compute length of identifier e.g. "HTML 4.0 Transitional" */
-                for (j = i + 13; j < doctype->end && lexer->lexbuf[j] != '/'; ++j);
+                for ( j=i+13; j<doctype->end && lexer->lexbuf[j] != '/'; ++j )
+                    /**/;
                 len = j - i - 13;
 
-                for (j = 1; j < W3C_VERSIONS; ++j)
+                for (j = 0; j < W3C_VERSIONS; ++j)
                 {
-                    s = W3C_Version[j].name;
-                    if (len == wstrlen(s) && wstrncmp(p, s, len) == 0)
+                    nm = W3C_Version[j].name;
+                    if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
+                        return W3C_Version[j].code;
+
+                    nm = W3C_Version[j].voyager_name;
+                    if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
                         return W3C_Version[j].code;
                 }
 
                 /* else unrecognized version */
             }
-            else if (wstrncmp(lexer->lexbuf+i+1, "-//IETF//DTD ", 13) == 0)
+            else if ( tmbstrncmp(lexer->lexbuf+i+1, "-//IETF//DTD ", 13) == 0 )
             {
                 p = lexer->lexbuf + i + 14;
 
                 /* compute length of identifier e.g. "HTML 2.0" */
-                for (j = i + 14; j < doctype->end && lexer->lexbuf[j] != '/'; ++j);
+                for ( j=i+14; j<doctype->end && lexer->lexbuf[j] != '/'; ++j )
+                    /**/;
                 len = j - i - 14;
 
-                s = W3C_Version[0].name;
-                if (len == wstrlen(s) && wstrncmp(p, s, len) == 0)
+                nm = W3C_Version[0].name;
+                if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
                     return W3C_Version[0].code;
 
                 /* else unrecognized version */
@@ -1539,15 +1387,16 @@ static int FindGivenVersion(Lexer *lexer, Node *doctype)
 
 /* return true if substring s is in p and isn't all in upper case */
 /* this is used to check the case of SYSTEM, PUBLIC, DTD and EN */
-/* len is how many chars to check in p */
-static Bool FindBadSubString(char *s, char *p, int len)
+/* len is how many characters to check in p */
+
+static Bool FindBadSubString( ctmbstr s, ctmbstr p, int len )
 {
-    int n = wstrlen(s);
+    int n = tmbstrlen(s);
 
     while (n < len)
     {
-        if (wstrncasecmp(s, p, n) == 0)
-            return (wstrncmp(s, p, n) != 0);
+        if (tmbstrncasecmp(s, p, n) == 0)
+            return (tmbstrncmp(s, p, n) != 0);
 
         ++p;
         --len;
@@ -1558,7 +1407,7 @@ static Bool FindBadSubString(char *s, char *p, int len)
 
 Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype)
 {
-    char *s = lexer->lexbuf+doctype->start;
+    ctmbstr s = lexer->lexbuf+doctype->start;
     int len = doctype->end - doctype->start;
 
     return !(
@@ -1570,62 +1419,50 @@ Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype)
         );
 }
 
-char *HTMLVersionName(Lexer *lexer)
+ctmbstr HTMLVersionName( TidyDocImpl* doc )
 {
-    int guessed, j;
-
-    guessed = ApparentVersion(lexer);
-
-    for (j = 0; j < W3C_VERSIONS; ++j)
-    {
-        if (guessed == W3C_Version[j].code)
-        {
-            if (lexer->isvoyager)
-                return W3C_Version[j].voyager_name;
-
-            return W3C_Version[j].name;
-        }
-    }
-
-    return null;
+    uint vers = ApparentVersion( doc );
+    return HTMLVersionNameFromCode( vers, doc->lexer->isvoyager );
 }
 
-static void FixHTMLNameSpace(Lexer *lexer, Node *root, char *profile)
+ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
 {
-    Node *node;
-    AttVal *prev, *attr;
-
-    for (node = root->content; 
-            node && node->tag != tag_html; node = node->next);
-
-    if (node)
+  int ix;
+  for ( ix=0; ix < W3C_VERSIONS; ++ix )
+  {
+    if ( vers == W3C_Version[ix].code )
     {
-        prev = null;
+        if ( isXhtml )
+            return W3C_Version[ix].voyager_name;
+        return W3C_Version[ix].name;
+    }
+  }
+  return "HTML Proprietary";
+}
 
-        for (attr = node->attributes; attr; attr = attr->next)
+
+static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
+{
+    Node* node = FindHTML( doc );
+    if ( node )
+    {
+        AttVal *attr = GetAttrByName( node, "xmlns" );
+        if ( attr )
         {
-            if (wstrcmp(attr->attribute, "xmlns") == 0)
-                break;
-
-            prev = attr;
-        }
-
-        if (attr)
-        {
-            if (wstrcmp(attr->value, profile))
+            if ( tmbstrcmp(attr->value, profile) != 0 )
             {
-                ReportWarning(lexer, node, null, INCONSISTENT_NAMESPACE);
-                MemFree(attr->value);
-                attr->value = wstrdup(profile);
+                ReportWarning( doc, node, null, INCONSISTENT_NAMESPACE );
+                MemFree( attr->value );
+                attr->value = tmbstrdup( profile );
             }
         }
         else
         {
             attr = NewAttribute();
             attr->delim = '"';
-            attr->attribute = wstrdup("xmlns");
-            attr->value = wstrdup(profile);
-            attr->dict = FindAttribute(attr);
+            attr->attribute = tmbstrdup("xmlns");
+            attr->value = tmbstrdup(profile);
+            attr->dict = FindAttribute( doc, attr );
             attr->next = node->attributes;
             node->attributes = attr;
         }
@@ -1639,20 +1476,16 @@ static void FixHTMLNameSpace(Lexer *lexer, Node *root, char *profile)
 ** etc. that may precede the <html> tag.
 */
 
-static Node* NewXhtmlDocTypeNode( Node* root )
-{
-    Node *doctype, *html;
 
-    html = FindHTML( root );
+static Node* NewDocTypeNode( TidyDocImpl* doc )
+{
+    Node* doctype = null;
+    Node* html = FindHTML( doc );
+    Node* root = doc->root;
     if ( !html )
         return null;
 
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    doctype = NewNode(null);
-#else
-    doctype = NewNode();
-#endif
+    doctype = NewNode( null );
     doctype->type = DocTypeTag;
     doctype->next = html;
     doctype->parent = root;
@@ -1674,33 +1507,32 @@ static Node* NewXhtmlDocTypeNode( Node* root )
     return doctype;
 }
 
-Bool SetXHTMLDocType(Lexer *lexer, Node *root)
+Bool SetXHTMLDocType( TidyDocImpl* doc )
 {
-    char *fpi = "", *sysid = "", *dtdsub, *name_space = XHTML_NAMESPACE; /* #578005 - fix by Anonymous 05 Jul 02 */
-    Node *doctype;
+    Lexer *lexer = doc->lexer;
+    ctmbstr fpi = null, sysid = null, dtdsub = null, name_space = XHTML_NAMESPACE;
     int dtdlen = 0;
+    Node *doctype = FindDocType( doc );
+    uint dtmode = cfg(doc, TidyDoctypeMode);
 
-    doctype = FindDocType(root);
+    FixHTMLNameSpace( doc, name_space );
 
-    FixHTMLNameSpace(lexer, root, name_space); /* #427839 - fix by Evan Lenz 05 Sep 00 */
-
-    if (doctype_mode == doctype_omit)
+    if ( dtmode == TidyDoctypeOmit )
     {
-        if (doctype)
-            DiscardElement(doctype);
-
+        if ( doctype )
+            DiscardElement( doc, doctype );
         return yes;
     }
 
-    if (doctype_mode == doctype_auto)
+    if ( dtmode == TidyDoctypeAuto )
     {
         /* see what flavor of XHTML this document matches */
-        if (lexer->versions & VERS_HTML40_STRICT)
+        if ( lexer->versions & VERS_HTML40_STRICT )
         {  /* use XHTML strict */
             fpi = "-//W3C//DTD XHTML 1.0 Strict//EN";
             sysid = voyager_strict;
         }
-        else if (lexer->versions & VERS_FRAMESET)
+        else if ( lexer->versions & VERS_FRAMESET )
         {   /* use XHTML frames */
             fpi = "-//W3C//DTD XHTML 1.0 Frameset//EN";
             sysid = voyager_frameset;
@@ -1715,41 +1547,41 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
             fpi = null;
             sysid = "";
         
-            if (doctype)/* #473490 - fix by Bjšrn Hšhrmann 10 Oct 01 */
-                DiscardElement(doctype);
+            if ( doctype )
+                DiscardElement( doc, doctype );
         }
     }
-    else if (doctype_mode == doctype_strict)
+    else if ( dtmode == TidyDoctypeStrict )
     {
         fpi = "-//W3C//DTD XHTML 1.0 Strict//EN";
         sysid = voyager_strict;
     }
-    else if (doctype_mode == doctype_loose)
+    else if ( dtmode == TidyDoctypeLoose )
     {
         fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
         sysid = voyager_loose;
     }
 
-    if (doctype_mode == doctype_user && doctype_str)
+    if ( dtmode == TidyDoctypeUser && cfgStr(doc, TidyDoctype) )
     {
-        fpi = doctype_str;
+        fpi = cfgStr( doc, TidyDoctype );
         sysid = "";
     }
 
-    if (!fpi)
+    if ( !fpi )
         return no;
 
-    if (doctype)
+    if ( doctype )
     {
       /* Look for internal DTD subset */
-      if ( xHTML || XmlOut )
+      if ( cfgBool(doc, TidyXhtmlOut) || cfgBool(doc, TidyXmlOut) )
       {
-        char* start = lexer->lexbuf + doctype->start;
+        ctmbstr start = lexer->lexbuf + doctype->start;
         int len = doctype->end - doctype->start + 1;
-        int dtdbeg = wstrnchr( start, len, '[' );
+        int dtdbeg = tmbstrnchr( start, len, '[' );
         if ( dtdbeg >= 0 )
         {
-          int dtdend = wstrnchr( start+dtdbeg, len-dtdbeg, ']' );
+          int dtdend = tmbstrnchr( start+dtdbeg, len-dtdbeg, ']' );
           if ( dtdend >= 0 )
           {
             dtdlen = dtdend + 1;
@@ -1760,7 +1592,7 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
     }
     else
     {
-        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
+        if ( !(doctype = NewDocTypeNode( doc )) )
             return no;
     }
 
@@ -1779,7 +1611,7 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
         AddStringLiteral(lexer, "\"");
     }
 
-    if ((unsigned)(wstrlen(sysid) + 6) >= wraplen)
+    if ( tmbstrlen(sysid) + 6 >= cfg(doc, TidyWrapLen) )
         AddStringLiteral(lexer, "\n\"");
     else
         AddStringLiteral(lexer, "\n    \"");
@@ -1802,41 +1634,37 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
     return no;
 }
 
-int ApparentVersion(Lexer *lexer)
+int ApparentVersion( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     switch (lexer->doctype)
     {
     case VERS_UNKNOWN:
-        return HTMLVersion(lexer);
+        return HTMLVersion( doc );
 
     case VERS_HTML20:
-        if (lexer->versions & VERS_HTML20)
+        if ( lexer->versions & VERS_HTML20 )
             return VERS_HTML20;
-
         break;
 
     case VERS_HTML32:
-        if (lexer->versions & VERS_HTML32)
+        if ( lexer->versions & VERS_HTML32 )
             return VERS_HTML32;
-
         break; /* to replace old version by new */
 
     case VERS_HTML40_STRICT:
-        if (lexer->versions & VERS_HTML40_STRICT)
+        if ( lexer->versions & VERS_HTML40_STRICT )
             return VERS_HTML40_STRICT;
-
         break;
 
     case VERS_HTML40_LOOSE:
-        if (lexer->versions & VERS_HTML40_LOOSE)
+        if ( lexer->versions & VERS_HTML40_LOOSE )
             return VERS_HTML40_LOOSE;
-
         break; /* to replace old version by new */
 
     case VERS_FRAMESET:
-        if (lexer->versions & VERS_FRAMESET)
+        if ( lexer->versions & VERS_FRAMESET )
             return VERS_FRAMESET;
-
         break;
     }
 
@@ -1847,53 +1675,49 @@ int ApparentVersion(Lexer *lexer)
     */
     lexer->lines = 1;
     lexer->columns = 1;
-    ReportWarning(lexer, null, null, INCONSISTENT_VERSION);
-    return HTMLVersion(lexer);
+    ReportWarning( doc, null, null, INCONSISTENT_VERSION);
+    return HTMLVersion( doc );
 }
 
 
 /* fixup doctype if missing */
-Bool FixDocType(Lexer *lexer, Node *root)
+Bool FixDocType( TidyDocImpl* doc )
 {
-    Node *doctype;
-    int guessed = VERS_HTML40_STRICT, i;
+    Lexer* lexer = doc->lexer;
+    Node* doctype = FindDocType( doc );
+    uint i, guessed = VERS_HTML40_STRICT;
+    uint dtmode = cfg( doc, TidyDoctypeMode );
 
-    if (lexer->bad_doctype)
-        ReportWarning(lexer, null, null, MALFORMED_DOCTYPE);
+    if ( lexer->bad_doctype )
+        ReportWarning( doc, doc->root, doctype, MALFORMED_DOCTYPE );
 
-    doctype = FindDocType(root);
-
-    if (doctype_mode == doctype_omit)
+    if ( dtmode == TidyDoctypeOmit )
     {
-        if (doctype)
-            DiscardElement(doctype);
-
+        if ( doctype )
+            DiscardElement( doc, doctype );
         return yes;
     }
 
-    if (XmlOut)
+    if ( cfgBool(doc, TidyXmlOut) )
         return yes;
 
-    if (doctype_mode == doctype_strict)
+    if ( dtmode == TidyDoctypeStrict )
     {
-        DiscardElement(doctype);
+        DiscardElement( doc, doctype );
         doctype = null;
         guessed = VERS_HTML40_STRICT;
     }
-    else if (doctype_mode == doctype_loose)
+    else if ( dtmode == TidyDoctypeLoose )
     {
-        DiscardElement(doctype);
+        DiscardElement( doc, doctype );
         doctype = null;
         guessed = VERS_HTML40_LOOSE;
     }
-    else if (doctype_mode == doctype_auto)
+    else if ( dtmode == TidyDoctypeAuto )
     {
-        if (doctype)
+        if ( doctype )
         {
-            if (lexer->doctype == VERS_UNKNOWN)
-                return no;
-
-            switch (lexer->doctype)
+            switch ( lexer->doctype )
             {
             case VERS_UNKNOWN:
                 return no;
@@ -1901,31 +1725,26 @@ Bool FixDocType(Lexer *lexer, Node *root)
             case VERS_HTML20:
                 if (lexer->versions & VERS_HTML20)
                     return yes;
-
                 break; /* to replace old version by new */
 
             case VERS_HTML32:
                 if (lexer->versions & VERS_HTML32)
                     return yes;
-
                 break; /* to replace old version by new */
 
             case VERS_HTML40_STRICT:
                 if (lexer->versions & VERS_HTML40_STRICT)
                     return yes;
-
                 break; /* to replace old version by new */
 
             case VERS_HTML40_LOOSE:
                 if (lexer->versions & VERS_HTML40_LOOSE)
                     return yes;
-
                 break; /* to replace old version by new */
 
             case VERS_FRAMESET:
                 if (lexer->versions & VERS_FRAMESET)
                     return yes;
-
                 break; /* to replace old version by new */
             }
 
@@ -1933,40 +1752,26 @@ Bool FixDocType(Lexer *lexer, Node *root)
         }
 
         /* choose new doctype */
-        guessed = HTMLVersion(lexer);
+        guessed = HTMLVersion( doc );
     }
 
-    if (guessed == VERS_UNKNOWN)
+    if ( guessed == VERS_UNKNOWN )
         return no;
 
     /* for XML use the Voyager system identifier */
-    if (XmlOut || XmlTags || lexer->isvoyager)
+    if ( !cfgBool(doc, TidyHtmlOut) &&
+         ( cfgBool(doc, TidyXmlOut) || cfgBool(doc, TidyXmlTags) ||
+           lexer->isvoyager ) )
     {
-        if (doctype)
-            DiscardElement(doctype);
+        if ( doctype )
+            DiscardElement( doc, doctype );
 
-        FixHTMLNameSpace(lexer, root, XHTML_NAMESPACE);
-
-        /*  Namespace is the same for all XHTML variants
-        **  Also, don't return yet.  Still need to add
-        **  DOCTYPE declaration.
-        **  
-        **  for (i = 0; i < W3C_VERSIONS; ++i)
-        **  {
-        **      if (guessed == W3C_Version[i].code)
-        **      {
-        **          FixHTMLNameSpace(lexer, root, W3C_Version[i].profile);
-        **          break;
-        **      }
-        **  }
-        **  
-        **  return yes;
-        */
+        FixHTMLNameSpace( doc, XHTML_NAMESPACE );
     }
 
-    if (!doctype)
+    if ( !doctype )
     {
-        if ( !(doctype = NewXhtmlDocTypeNode( root )) )
+        if ( !(doctype = NewDocTypeNode( doc )) )
             return no;
     }
 
@@ -1975,11 +1780,11 @@ Bool FixDocType(Lexer *lexer, Node *root)
    /* use the appropriate public identifier */
     AddStringLiteral(lexer, "html PUBLIC ");
 
-    if (doctype_mode == doctype_user && doctype_str)
+    if ( dtmode == TidyDoctypeUser && cfgStr(doc, TidyDoctype) )
     { 
-       AddStringLiteral(lexer, "\""); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
-       AddStringLiteral(lexer, doctype_str); 
-       AddStringLiteral(lexer, "\""); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
+       AddStringLiteral(lexer, "\"" );
+       AddStringLiteral(lexer, cfgStr(doc, TidyDoctype) ); 
+       AddStringLiteral(lexer, "\"" );
     }
     else if (guessed == VERS_HTML20)
         AddStringLiteral(lexer, "\"-//IETF//DTD HTML 2.0//EN\"");
@@ -2009,27 +1814,24 @@ Bool FixDocType(Lexer *lexer, Node *root)
 
 /* ensure XML document starts with <?XML version="1.0"?> */
 /* add encoding attribute if not using ASCII or UTF-8 output */
-Bool FixXmlDecl(Lexer *lexer, Node *root)
+Bool FixXmlDecl( TidyDocImpl* doc )
 {
-    Node *xml;
+    Node* xml;
     AttVal *version, *encoding;
+    Lexer*lexer = doc->lexer;
+    Node* root = doc->root;
 
-    if (root->content && root->content->type == XmlDecl)
+    if ( root->content && root->content->type == XmlDecl )
     {
         xml = root->content;
     }
     else
     {
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
         xml = NewNode(lexer);
-#else
-        xml = NewNode();
-#endif
         xml->type = XmlDecl;
         xml->next = root->content;
         
-        if (root->content)
+        if ( root->content )
         {
             root->content->prev = xml;
             xml->next = root->content;
@@ -2047,36 +1849,51 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
       declaration accordingly!!!
     */
 
-    if (encoding == null && outCharEncoding != UTF8)
+    if ( encoding == null && cfg(doc, TidyOutCharEncoding) != UTF8 )
     {
-        if (outCharEncoding == LATIN1)
-            AddAttribute(xml, "encoding", "iso-8859-1");
-        else if (outCharEncoding == ISO2022)
-            AddAttribute(xml, "encoding", "iso-2022");
+        ctmbstr enc = null;
+        switch ( cfg(doc, TidyOutCharEncoding) )
+        {
+        case LATIN1:    enc = "iso-8859-1";   break;
+        case ISO2022:   enc = "iso-2022";     break;
+
+        /* TODO: Add declarations for other encodings!
+        case RAW:       enc = "raw";          break;
+        case MACROMAN:  enc = "mac";          break;
+        */
+
+#if SUPPORT_UTF16_ENCODINGS
+        case UTF16LE:   enc = "UTF-16LE";      break;
+        case UTF16BE:   enc = "UTF-16BE";      break;
+        case UTF16:     enc = "UTF-16";        break;
+#endif
+        /* TODO: Add declarations for other encodings!
+        case WIN1252:   enc = "win1252";      break;
+#if SUPPORT_ASIAN_ENCODINGS
+        case BIG5:      enc = "big5";         break;
+        case SHIFTJIS:  enc = "shiftjis";     break;
+#endif
+        */
+        }
+        if ( enc )
+            AddAttribute( doc, xml, "encoding", enc );
     }
 
-    if (version == null)
-        AddAttribute(xml, "version", "1.0");
-
+    if ( version == null )
+        AddAttribute( doc, xml, "version", "1.0" );
     return yes;
 }
 
-Node *InferredTag(Lexer *lexer, char *name)
+Node* InferredTag( TidyDocImpl* doc, ctmbstr name )
 {
-    Node *node;
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
+    Lexer *lexer = doc->lexer;
+    Node *node = NewNode( lexer );
     node->type = StartTag;
     node->implicit = yes;
-    node->element = wstrdup(name);
+    node->element = tmbstrdup(name);
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
-    FindTag(node);
+    FindTag( doc, node );
     return node;
 }
 
@@ -2105,31 +1922,29 @@ static Bool IsQuote( int c )
   return ( c == '\'' || c == '\"' );
 }
 
-Node *GetCDATA(Lexer *lexer, Node *container)
+Node *GetCDATA( TidyDocImpl* doc, Node *container )
 {
-    int c, lastc, start, i, len, qt = 0, esc = 0;
+    Lexer* lexer = doc->lexer;
+    uint c, lastc = 0, len, qt = 0, esc = 0;
+    int i, start = -1;
     Bool endtag = no;
     Bool begtag = no;
 
     if ( IsJavaScript(container) )
       esc = '\\';
 
-    lexer->lines = lexer->in->curline;
-    lexer->columns = lexer->in->curcol;
+    lexer->lines = doc->docIn->curline;
+    lexer->columns = doc->docIn->curcol;
     lexer->waswhite = no;
     lexer->txtstart = lexer->txtend = lexer->lexsize;
 
-    lastc = '\0';
-    start = -1;
 
-    while ( (c = ReadChar(lexer->in)) != EndOfStream )
+    while ( (c = ReadChar(doc->docIn)) != EndOfStream )
     {
         /* treat \r\n as \n and \r as \n */
         if ( qt > 0 )
         {
-                                    /* #598860 script parsing fails with quote chars */
-                                    /* A quoted string is ended by the quotation character, or end of line */
-            if ( (c == '\r' || c == '\n' || c == qt) && (!esc || lastc != esc) )
+            if ( c == qt && (!esc || lastc != esc) )
             {
                 qt = 0;
             }
@@ -2137,12 +1952,12 @@ Node *GetCDATA(Lexer *lexer, Node *container)
             {
                 start = lexer->lexsize + 1;  /* to first letter */
             }
-            else if (c == '>' && start >= 0)
+            else if ( c == '>' && start > 0 )
             {
-                lexer->lines = lexer->in->curline;
-                lexer->columns = lexer->in->curcol - 3;
+                lexer->lines = doc->docIn->curline;
+                lexer->columns = doc->docIn->curcol - 3;
 
-                ReportWarning(lexer, null, null, BAD_CDATA_CONTENT);
+                ReportWarning( doc, null, null, BAD_CDATA_CONTENT );
 
                 /* if javascript insert backslash before / */
                 if ( esc )
@@ -2150,7 +1965,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
                     for (i = lexer->lexsize; i > start-1; --i)
                         lexer->lexbuf[i] = lexer->lexbuf[i-1];
 
-                    lexer->lexbuf[start-1] = esc;
+                    lexer->lexbuf[start-1] = (byte) esc;
                     lexer->lexsize++;
                 }
 
@@ -2161,30 +1976,32 @@ Node *GetCDATA(Lexer *lexer, Node *container)
         {
           qt = c;
         }
-        else if (c == '<' )
+        else if ( IsXMLLetter(c) && lastc == '<' )
         {
-            start = lexer->lexsize + 1;  /* to first letter */
+            start = lexer->lexsize;  /* to first letter */
             endtag = no;
             begtag = yes;
         }
-        else if (c == '!' && lastc == '<') /* Cancel start tag */
+        /*
+        else if (c == '!' && lastc == '<')  Cancel start tag
         {
             start = -1;
             endtag = no;
             begtag = no;
         }
+        */
         else if (c == '/' && lastc == '<')
         {
             start = lexer->lexsize + 1;  /* to first letter */
             endtag = yes;
             begtag = no;
         }
-        else if (c == '>' && start >= 0)  /* End of begin or end tag */
+        else if ( c == '>' && start > 0 )  /* End of begin or end tag */
         {
-            int decr = 2;
+            uint decr = 2;
             if ( endtag && 
-                 ((len = lexer->lexsize - start) == wstrlen(container->element)) &&
-                 wstrncasecmp(lexer->lexbuf+start, container->element, len) == 0 )
+                 ( (len = lexer->lexsize - start) == tmbstrlen(container->element) ) &&
+                 tmbstrncasecmp(lexer->lexbuf+start, container->element, len) == 0 )
             {
                 lexer->txtend = start - decr;
                 lexer->lexsize = start - decr; /* #433857 - fix by Huajun Zeng 26 Apr 01 */
@@ -2193,10 +2010,10 @@ Node *GetCDATA(Lexer *lexer, Node *container)
 
             /* Unquoted markup will end SCRIPT or STYLE elements 
             */
-            lexer->lines = lexer->in->curline;
-            lexer->columns = lexer->in->curcol - 3;
+            lexer->lines = doc->docIn->curline;
+            lexer->columns = doc->docIn->curcol - 3;
 
-            ReportWarning(lexer, null, null, BAD_CDATA_CONTENT);
+            ReportWarning( doc, null, null, BAD_CDATA_CONTENT );
             if ( begtag )
               decr = 1;
             lexer->txtend = start - decr;
@@ -2212,10 +2029,10 @@ Node *GetCDATA(Lexer *lexer, Node *container)
             } 
             else 
             { 
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != '\n')
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
 
                 c = '\n';
             }
@@ -2231,7 +2048,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
     }
 
     if (c == EndOfStream)
-        ReportWarning(lexer, container, null, MISSING_ENDTAG_FOR);
+        ReportWarning( doc, container, null, MISSING_ENDTAG_FOR );
 
     if (lexer->txtend > lexer->txtstart)
         return lexer->token = TextToken(lexer);
@@ -2239,9 +2056,9 @@ Node *GetCDATA(Lexer *lexer, Node *container)
     return null;
 }
 
-void UngetToken(Lexer *lexer)
+void UngetToken( TidyDocImpl* doc )
 {
-    lexer->pushed = yes;
+    doc->lexer->pushed = yes;
 }
 
 /*
@@ -2252,11 +2069,12 @@ void UngetToken(Lexer *lexer)
   IgnoreMarkup   -- for CDATA elements such as script, style
 */
 
-Node *GetToken(Lexer *lexer, uint mode)
+Node* GetToken( TidyDocImpl* doc, uint mode )
 {
+    Lexer* lexer = doc->lexer;
     int c, lastc, badcomment = 0;
     Bool isempty, inDTDSubset = no;
-    AttVal *attributes;
+    AttVal *attributes = null;
 
     if (lexer->pushed)
     {
@@ -2272,15 +2090,15 @@ Node *GetToken(Lexer *lexer, uint mode)
        elements are inserted into the token stream */
      
     if (lexer->insert || lexer->inode)
-        return InsertedToken(lexer);
+        return InsertedToken( doc );
 
-    lexer->lines = lexer->in->curline;
-    lexer->columns = lexer->in->curcol;
+    lexer->lines = doc->docIn->curline;
+    lexer->columns = doc->docIn->curcol;
     lexer->waswhite = no;
 
     lexer->txtstart = lexer->txtend = lexer->lexsize;
 
-    while ((c = ReadChar(lexer->in)) != EndOfStream)
+    while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
         if (lexer->insertspace && !(mode & IgnoreWhitespace))
         {
@@ -2293,10 +2111,10 @@ Node *GetToken(Lexer *lexer, uint mode)
 
         if (c == '\r')
         {
-            c = ReadChar(lexer->in);
+            c = ReadChar(doc->docIn);
 
             if (c != '\n')
-                UngetChar(c, lexer->in);
+                UngetChar(c, doc->docIn);
 
             c = '\n';
         }
@@ -2317,8 +2135,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                 {
                     --(lexer->lexsize);
                     lexer->waswhite = no;
-                    lexer->lines = lexer->in->curline;
-                    lexer->columns = lexer->in->curcol;
+                    lexer->lines = doc->docIn->curline;
+                    lexer->columns = doc->docIn->curcol;
                     continue;
                 }
 
@@ -2330,17 +2148,17 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                 if (IsWhite(c))
                 {
-                    /* was previous char white? */
+                    /* was previous character white? */
                     if (lexer->waswhite)
                     {
                         if (mode != Preformatted && mode != IgnoreMarkup)
                         {
                             --(lexer->lexsize);
-                            lexer->lines = lexer->in->curline;
-                            lexer->columns = lexer->in->curcol;
+                            lexer->lines = doc->docIn->curline;
+                            lexer->columns = doc->docIn->curcol;
                         }
                     }
-                    else /* prev char wasn't white */
+                    else /* prev character wasn't white */
                     {
                         lexer->waswhite = yes;
                         lastc = c;
@@ -2352,7 +2170,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
                 }
                 else if (c == '&' && mode != IgnoreMarkup)
-                    ParseEntity(lexer, mode);
+                    ParseEntity( doc, mode );
 
                 /* this is needed to avoid trimming trailing whitespace */
                 if (mode == IgnoreWhitespace)
@@ -2366,9 +2184,9 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* check for endtag */
                 if (c == '/')
                 {
-                    if ((c = ReadChar(lexer->in)) == EndOfStream)
+                    if ((c = ReadChar(doc->docIn)) == EndOfStream)
                     {
-                        UngetChar(c, lexer->in);
+                        UngetChar(c, doc->docIn);
                         continue;
                     }
 
@@ -2378,15 +2196,15 @@ Node *GetToken(Lexer *lexer, uint mode)
                     {
                         lexer->lexsize -= 3;
                         lexer->txtend = lexer->lexsize;
-                        UngetChar(c, lexer->in);
+                        UngetChar(c, doc->docIn);
                         lexer->state = LEX_ENDTAG;
                         lexer->lexbuf[lexer->lexsize] = '\0';  /* debug */
-                        lexer->in->curcol -= 2;
+                        doc->docIn->curcol -= 2;
 
                         /* if some text before the </ return it now */
                         if (lexer->txtend > lexer->txtstart)
                         {
-                            /* trim space char before end tag */
+                            /* trim space character before end tag */
                             if (mode == IgnoreWhitespace && lexer->lexbuf[lexer->lexsize - 1] == ' ')
                             {
                                 lexer->lexsize -= 1;
@@ -2419,11 +2237,11 @@ Node *GetToken(Lexer *lexer, uint mode)
                 */
                 if (c == '!')
                 {
-                    c = ReadChar(lexer->in);
+                    c = ReadChar(doc->docIn);
 
                     if (c == '-')
                     {
-                        c = ReadChar(lexer->in);
+                        c = ReadChar(doc->docIn);
 
                         if (c == '-')
                         {
@@ -2439,7 +2257,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                             continue;
                         }
 
-                        ReportWarning(lexer, null, null, MALFORMED_COMMENT);
+                        ReportWarning( doc, null, null, MALFORMED_COMMENT );
                     }
                     else if (c == 'd' || c == 'D')
                     {
@@ -2452,11 +2270,11 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                         for (;;)
                         {
-                            c = ReadChar(lexer->in);
+                            c = ReadChar(doc->docIn);
 
                             if (c == EndOfStream || c == '>')
                             {
-                                UngetChar(c, lexer->in);
+                                UngetChar(c, doc->docIn);
                                 break;
                             }
 
@@ -2468,11 +2286,11 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                             for (;;)
                             {
-                                c = ReadChar(lexer->in);
+                                c = ReadChar(doc->docIn);
 
                                 if (c == EndOfStream || c == '>')
                                 {
-                                    UngetChar(c, lexer->in);
+                                    UngetChar(c, doc->docIn);
                                     break;
                                 }
 
@@ -2480,7 +2298,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                                 if (IsWhite(c))
                                     continue;
 
-                                UngetChar(c, lexer->in);
+                                UngetChar(c, doc->docIn);
                                 break;
                             }
 
@@ -2511,12 +2329,12 @@ Node *GetToken(Lexer *lexer, uint mode)
 
 
 
-                    /* otherwise swallow chars up to and including next '>' */
-                    while ((c = ReadChar(lexer->in)) != '>')
+                    /* else swallow characters up to and including next '>' */
+                    while ((c = ReadChar(doc->docIn)) != '>')
                     {
                         if (c == EndOfStream)
                         {
-                            UngetChar(c, lexer->in);
+                            UngetChar(c, doc->docIn);
                             break;
                         }
                     }
@@ -2578,7 +2396,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* check for start tag */
                 if (IsLetter(c))
                 {
-                    UngetChar(c, lexer->in);     /* push back letter */
+                    UngetChar(c, doc->docIn);     /* push back letter */
                     lexer->lexsize -= 2;      /* discard "<" + letter */
                     lexer->txtend = lexer->lexsize;
                     lexer->state = LEX_STARTTAG;         /* ready to read tag name */
@@ -2597,15 +2415,15 @@ Node *GetToken(Lexer *lexer, uint mode)
 
             case LEX_ENDTAG:  /* </letter */
                 lexer->txtstart = lexer->lexsize - 1;
-                lexer->in->curcol += 2;
-                c = ParseTagName(lexer);
-                lexer->token = TagToken(lexer, EndTag);  /* create endtag token */
+                doc->docIn->curcol += 2;
+                c = ParseTagName( doc );
+                lexer->token = TagToken( doc, EndTag );  /* create endtag token */
                 lexer->lexsize = lexer->txtend = lexer->txtstart;
 
                 /* skip to '>' */
                 while (c != '>')
                 {
-                    c = ReadChar(lexer->in);
+                    c = ReadChar(doc->docIn);
 
                     if (c == EndOfStream)
                         break;
@@ -2613,7 +2431,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                 if (c == EndOfStream)
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -2623,18 +2441,18 @@ Node *GetToken(Lexer *lexer, uint mode)
 
             case LEX_STARTTAG: /* first letter of tagname */
                 lexer->txtstart = lexer->lexsize - 1; /* set txtstart to first letter */
-                c = ParseTagName(lexer);
+                c = ParseTagName( doc );
                 isempty = no;
                 attributes = null;
-                lexer->token = TagToken(lexer, (isempty ? StartEndTag : StartTag));
+                lexer->token = TagToken( doc, (isempty ? StartEndTag : StartTag) );
 
                 /* parse attributes, consuming closing ">" */
                 if (c != '>')
                 {
                     if (c == '/')
-                        UngetChar(c, lexer->in);
+                        UngetChar(c, doc->docIn);
 
-                    attributes = ParseAttrs(lexer, &isempty);
+                    attributes = ParseAttrs( doc, &isempty );
                 }
 
                 if (isempty)
@@ -2649,21 +2467,22 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* this doesn't apply to empty elements */
                 /* nor to preformatted content that needs escaping */
 
-                if ((mode != Preformatted || PreContent(lexer->token))
-                    && (ExpectsContent(lexer->token) ||
-                               lexer->token->tag == tag_br))
+                if ( ( mode != Preformatted || PreContent(doc, lexer->token) ) &&
+                     ( ExpectsContent(lexer->token) || 
+                       nodeIsBR(lexer->token) )
+                   )
                 {
-                    c = ReadChar(lexer->in);
+                    c = ReadChar(doc->docIn);
 
                     if (c == '\r')
                     {
-                        c = ReadChar(lexer->in);
+                        c = ReadChar(doc->docIn);
 
                         if (c != '\n')
-                            UngetChar(c, lexer->in);
+                            UngetChar(c, doc->docIn);
                     }
                     else if (c != '\n' && c != '\f')
-                        UngetChar(c, lexer->in);
+                        UngetChar(c, doc->docIn);
 
                     lexer->waswhite = yes;  /* to swallow leading whitespace */
                 }
@@ -2672,54 +2491,56 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                 lexer->state = LEX_CONTENT;
                 if (lexer->token->tag == null)
-                    ReportError(lexer, null, lexer->token, UNKNOWN_ELEMENT);
-                else if (!XmlTags)
+                    ReportError( doc, null, lexer->token, UNKNOWN_ELEMENT );
+                else if ( !cfgBool(doc, TidyXmlTags) )
                 {
-                    ConstrainVersion(lexer, lexer->token->tag->versions);
+                    Node* curr = lexer->token;
+                    ConstrainVersion( doc, curr->tag->versions );
                     
-                    if (lexer->token->tag->versions & VERS_PROPRIETARY)
+                    if ( curr->tag->versions & VERS_PROPRIETARY )
                     {
-                        /* #427810 - fix by Gary Deschaines 24 May 00 */
-                        if (MakeClean && (lexer->token->tag != tag_nobr &&
-                                                lexer->token->tag != tag_wbr))
-                            ReportWarning(lexer, null, lexer->token, PROPRIETARY_ELEMENT);
-                        else
-                        /* #427810 - fix by Terry Teague 2 Jul 01 */
-                        if (!MakeClean)
-                        /* if (!MakeClean && (lexer->token->tag == tag_nobr ||
-                                                lexer->token->tag == tag_wbr)) */
-                            ReportWarning(lexer, null, lexer->token, PROPRIETARY_ELEMENT);
+                        if ( !cfgBool(doc, TidyMakeClean) ||
+                             ( !nodeIsNOBR(curr) && !nodeIsWBR(curr) ) )
+                        {
+                            ReportWarning( doc, null, curr, PROPRIETARY_ELEMENT );
+
+                            if ( nodeIsLAYER(curr) )
+                                doc->badLayout |= USING_LAYER;
+                            else if ( nodeIsSPACER(curr) )
+                                doc->badLayout |= USING_SPACER;
+                            else if ( nodeIsNOBR(curr) )
+                                doc->badLayout |= USING_NOBR;
+                        }
                     }
 
-                    if (lexer->token->tag->chkattrs)
-                        lexer->token->tag->chkattrs(lexer, lexer->token);
+                    if ( curr->tag->chkattrs )
+                        curr->tag->chkattrs( doc, curr );
                     else
-                        CheckAttributes(lexer, lexer->token);
+                        CheckAttributes( doc, curr );
 
                     /* should this be called before attribute checks? */
-                    RepairDuplicateAttributes(lexer, lexer->token);
+                    RepairDuplicateAttributes( doc, curr );
                 }
-
-                 return lexer->token;  /* return start tag */
+                return lexer->token;  /* return start tag */
 
             case LEX_COMMENT:  /* seen <!-- so look for --> */
 
                 if (c != '-')
                     continue;
 
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
                 AddCharToLexer(lexer, c);
 
                 if (c != '-')
                     continue;
 
             end_comment:
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c == '>')
                 {
                     if (badcomment)
-                        ReportWarning(lexer, null, null, MALFORMED_COMMENT);
+                        ReportWarning( doc, null, null, MALFORMED_COMMENT );
 
                     lexer->txtend = lexer->lexsize;
                     lexer->lexbuf[lexer->lexsize] = '\0';
@@ -2729,11 +2550,11 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                     /* now look for a line break */
 
-                    c = ReadChar(lexer->in);
+                    c = ReadChar(doc->docIn);
 
                     if (c == '\r')
                     {
-                        c = ReadChar(lexer->in);
+                        c = ReadChar(doc->docIn);
 
                         if (c != '\n')
                             lexer->token->linebreak = yes;
@@ -2742,7 +2563,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     if (c == '\n')
                         lexer->token->linebreak = yes;
                     else
-                        UngetChar(c, lexer->in);
+                        UngetChar(c, doc->docIn);
 
                     return lexer->token;
                 }
@@ -2750,13 +2571,13 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* note position of first such error in the comment */
                 if (!badcomment)
                 {
-                    lexer->lines = lexer->in->curline;
-                    lexer->columns = lexer->in->curcol - 3;
+                    lexer->lines = doc->docIn->curline;
+                    lexer->columns = doc->docIn->curcol - 3;
                 }
 
                 badcomment++;
 
-                if (FixComments)
+                if ( cfgBool(doc, TidyFixComments) )
                     lexer->lexbuf[lexer->lexsize - 2] = '=';
 
                 AddCharToLexer(lexer, c);
@@ -2797,8 +2618,9 @@ Node *GetToken(Lexer *lexer, uint mode)
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
                 lexer->token = DocTypeToken(lexer);
-                /* make a note of the version named by the doctype */
-                lexer->doctype = FindGivenVersion(lexer, lexer->token);
+                /* make a note of the version named by the 1st doctype */
+                if ( lexer->doctype == VERS_UNKNOWN )
+                    lexer->doctype = FindGivenVersion( doc, lexer->token );
                 return lexer->token;
 
             case LEX_PROCINSTR:  /* seen <? so look for '>' */
@@ -2806,7 +2628,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                 if  (lexer->lexsize - lexer->txtstart == 3)
                 {
-                    if (wstrncmp(lexer->lexbuf + lexer->txtstart, "php", 3) == 0)
+                    if (tmbstrncmp(lexer->lexbuf + lexer->txtstart, "php", 3) == 0)
                     {
                         lexer->state = LEX_PHP;
                         continue;
@@ -2815,7 +2637,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 
                 if  (lexer->lexsize - lexer->txtstart == 4)
                 {
-                    if (wstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0 &&
+                    if (tmbstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0 &&
                         IsWhite(lexer->lexbuf[lexer->txtstart + 3]))
                     {
                         lexer->state = LEX_XMLDECL;
@@ -2824,18 +2646,18 @@ Node *GetToken(Lexer *lexer, uint mode)
                     }
                 }
 
-                if (XmlPIs)  /* insist on ?> as terminator */
+                if ( cfgBool(doc, TidyXmlPIs) )  /* insist on ?> as terminator */
                 {
                     if (c != '?')
                         continue;
 
                     /* now look for '>' */
-                    c = ReadChar(lexer->in);
+                    c = ReadChar(doc->docIn);
 
                     if (c == EndOfStream)
                     {
-                        ReportWarning(lexer, null, null, UNEXPECTED_END_OF_FILE);
-                        UngetChar(c, lexer->in);
+                        ReportWarning( doc, null, null, UNEXPECTED_END_OF_FILE );
+                        UngetChar(c, doc->docIn);
                         continue;
                     }
 
@@ -2858,12 +2680,12 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -2879,12 +2701,12 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -2900,11 +2722,11 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -2923,31 +2745,32 @@ Node *GetToken(Lexer *lexer, uint mode)
                 /* get pseudo-attribute */
                 if (c != '?')
                 {
-                    char *name;
+                    tmbstr name;
                     Node *asp, *php;
-                    AttVal *av = NewAttribute();
-                    int pdelim;
+                    AttVal *av = null;
+                    int pdelim = 0;
                     isempty = no;
 
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
 
-                    name = ParseAttribute(lexer, &isempty, &asp, &php);
+                    name = ParseAttribute( doc, &isempty, &asp, &php );
 
+                    av = NewAttribute();
                     av->attribute = name;
-                    av->value = ParseValue(lexer, name, yes, &isempty, &pdelim);
+                    av->value = ParseValue( doc, name, yes, &isempty, &pdelim );
                     av->delim = pdelim;
-                    av->next = attributes;
+                    av->dict = FindAttribute( doc, av );
 
-                    attributes = av;
+                    AddAttrToList( &attributes, av );
                     /* continue; */
                 }
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
                 lexer->lexsize -= 1;
@@ -2963,7 +2786,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                 if (c == '[')
                 {
                     if (lexer->lexsize == (lexer->txtstart + 6) &&
-                        wstrncmp(lexer->lexbuf+lexer->txtstart, "CDATA[", 6) == 0)
+                        tmbstrncmp(lexer->lexbuf+lexer->txtstart, "CDATA[", 6) == 0)
                     {
                         lexer->state = LEX_CDATA;
                         lexer->lexsize -= 6;
@@ -2975,11 +2798,11 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -2995,20 +2818,20 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
 
                 /* now look for ']' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != ']')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
                 /* now look for '>' */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
                 if (c != '>')
                 {
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     continue;
                 }
 
@@ -3027,7 +2850,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 
         if (lexer->txtend > lexer->txtstart)
         {
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
 
             if (lexer->lexbuf[lexer->lexsize - 1] == ' ')
             {
@@ -3041,7 +2864,7 @@ Node *GetToken(Lexer *lexer, uint mode)
     else if (lexer->state == LEX_COMMENT) /* comment */
     {
         if (c == EndOfStream)
-            ReportWarning(lexer, null, null, MALFORMED_COMMENT);
+            ReportWarning( doc, null, null, MALFORMED_COMMENT );
 
         lexer->txtend = lexer->lexsize;
         lexer->lexbuf[lexer->lexsize] = '\0';
@@ -3053,13 +2876,11 @@ Node *GetToken(Lexer *lexer, uint mode)
     return 0;
 }
 
-static void MapStr(char *str, uint code)
+static void MapStr( ctmbstr str, uint code )
 {
-    uint i;
-
-    while (*str)
+    while ( *str )
     {
-        i = (uint)(*str++);
+        uint i = (byte) *str++;
         lexmap[i] |= code;
     }
 }
@@ -3091,8 +2912,9 @@ void InitMap(void)
 
 */
 
-static Node *ParseAsp(Lexer *lexer)
+static Node *ParseAsp( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     uint c;
     Node *asp = null;
 
@@ -3100,7 +2922,7 @@ static Node *ParseAsp(Lexer *lexer)
 
     for (;;)
     {
-        if ((c = ReadChar(lexer->in)) == EndOfStream)
+        if ((c = ReadChar(doc->docIn)) == EndOfStream)
             break;
 
         AddCharToLexer(lexer, c);
@@ -3109,7 +2931,7 @@ static Node *ParseAsp(Lexer *lexer)
         if (c != '%')
             continue;
 
-        if ((c = ReadChar(lexer->in)) == EndOfStream)
+        if ((c = ReadChar(doc->docIn)) == EndOfStream)
             break;
 
         AddCharToLexer(lexer, c);
@@ -3133,8 +2955,9 @@ static Node *ParseAsp(Lexer *lexer)
  PHP is like ASP but is based upon XML
  processing instructions, e.g. <?php ... ?>
 */
-static Node *ParsePhp(Lexer *lexer)
+static Node *ParsePhp( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     uint c;
     Node *php = null;
 
@@ -3142,7 +2965,7 @@ static Node *ParsePhp(Lexer *lexer)
 
     for (;;)
     {
-        if ((c = ReadChar(lexer->in)) == EndOfStream)
+        if ((c = ReadChar(doc->docIn)) == EndOfStream)
             break;
 
         AddCharToLexer(lexer, c);
@@ -3151,7 +2974,7 @@ static Node *ParsePhp(Lexer *lexer)
         if (c != '?')
             continue;
 
-        if ((c = ReadChar(lexer->in)) == EndOfStream)
+        if ((c = ReadChar(doc->docIn)) == EndOfStream)
             break;
 
         AddCharToLexer(lexer, c);
@@ -3171,11 +2994,12 @@ static Node *ParsePhp(Lexer *lexer)
 }   
 
 /* consumes the '>' terminating start tags */
-static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
-                             Node **asp, Node **php)
+static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
+                              Node **asp, Node **php)
 {
+    Lexer* lexer = doc->lexer;
     int start, len = 0;
-    char *attr;
+    tmbstr attr = null;
     uint c, lastc;
 
     *asp = null;  /* clear asp pointer */
@@ -3185,12 +3009,12 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        c = ReadChar( doc->docIn );
 
 
         if (c == '/')
         {
-            c = ReadChar(lexer->in);
+            c = ReadChar( doc->docIn );
 
             if (c == '>')
             {
@@ -3198,7 +3022,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
                 return null;
             }
 
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             c = '/';
             break;
         }
@@ -3208,41 +3032,41 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
 
         if (c =='<')
         {
-            c = ReadChar(lexer->in);
+            c = ReadChar(doc->docIn);
 
             if (c == '%')
             {
-                *asp = ParseAsp(lexer);
+                *asp = ParseAsp( doc );
                 return null;
             }
             else if (c == '?')
             {
-                *php = ParsePhp(lexer);
+                *php = ParsePhp( doc );
                 return null;
             }
 
-            UngetChar(c, lexer->in);
-            UngetChar('<', lexer->in);
-            ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+            UngetChar(c, doc->docIn);
+            UngetChar('<', doc->docIn);
+            ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
             return null;
         }
 
         if (c == '=')
         {
-            ReportAttrError(lexer, lexer->token, null, UNEXPECTED_EQUALSIGN);
+            ReportAttrError( doc, lexer->token, null, UNEXPECTED_EQUALSIGN );
             continue;
         }
 
         if (c == '"' || c == '\'')
         {
-            ReportAttrError(lexer, lexer->token, null, UNEXPECTED_QUOTEMARK);
+            ReportAttrError( doc, lexer->token, null, UNEXPECTED_QUOTEMARK );
             continue;
         }
 
         if (c == EndOfStream)
         {
-            ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
-            UngetChar(c, lexer->in);
+            ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+            UngetChar(c, doc->docIn);
             return null;
         }
 
@@ -3259,13 +3083,13 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
      /* but push back '=' for parseValue() */
         if (c == '=' || c == '>')
         {
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             break;
         }
 
         if (c == '<' || c == EndOfStream)
         {
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             break;
         }
 
@@ -3273,30 +3097,28 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
         {
             lexer->lexsize--;
             --len;
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             break;
         }
 
         if (IsWhite(c))
             break;
 
-     /* what should be done about non-namechar characters? */
-     /* currently these are incorporated into the attr name */
+        /* what should be done about non-namechar characters? */
+        /* currently these are incorporated into the attr name */
 
-        if (!XmlTags && IsUpper(c))
+        if ( !cfgBool(doc, TidyXmlTags) && IsUpper(c) )
             c = ToLower(c);
 
-        /* ++len; */ /* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
-        AddCharToLexer(lexer, c);
-
+        AddCharToLexer( lexer, c );
         lastc = c;
-        c = ReadChar(lexer->in);
+        c = ReadChar(doc->docIn);
     }
 
-    len = lexer->lexsize - start; /* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
-    attr = (len > 0 ? wstrndup(lexer->lexbuf+start, len) : null);
+    /* handle attribute names with multibyte chars */
+    len = lexer->lexsize - start;
+    attr = (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : null);
     lexer->lexsize = start;
-
     return attr;
 }
 
@@ -3305,12 +3127,13 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
  but terminates on whitespace if not ASP, PHP or Tango
  this routine recognizes ' and " quoted strings
 */
-static int ParseServerInstruction(Lexer *lexer)
+static int ParseServerInstruction( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     int c, delim = '"';
     Bool isrule = no;
 
-    c = ReadChar(lexer->in);
+    c = ReadChar(doc->docIn);
     AddCharToLexer(lexer, c);
 
     /* check for ASP, PHP or Tango */
@@ -3319,7 +3142,7 @@ static int ParseServerInstruction(Lexer *lexer)
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        c = ReadChar(doc->docIn);
 
         if (c == EndOfStream)
             break;
@@ -3329,7 +3152,7 @@ static int ParseServerInstruction(Lexer *lexer)
             if (isrule)
                 AddCharToLexer(lexer, c);
             else
-                UngetChar(c, lexer->in);
+                UngetChar(c, doc->docIn);
 
             break;
         }
@@ -3348,17 +3171,17 @@ static int ParseServerInstruction(Lexer *lexer)
         {
             do
             {
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
-                    UngetChar(c, lexer->in);
+                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+                    UngetChar(c, doc->docIn);
                     return null;
                 }
                 if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    UngetChar(c, lexer->in);
-                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+                    UngetChar(c, doc->docIn);
+                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
                     return null;
                 }
                 AddCharToLexer(lexer, c);
@@ -3372,17 +3195,17 @@ static int ParseServerInstruction(Lexer *lexer)
         {
             do
             {
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
-                    UngetChar(c, lexer->in);
+                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+                    UngetChar(c, doc->docIn);
                     return null;
                 }
                 if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    UngetChar(c, lexer->in);
-                    ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+                    UngetChar(c, doc->docIn);
+                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
                     return null;
                 }
                 AddCharToLexer(lexer, c);
@@ -3397,16 +3220,17 @@ static int ParseServerInstruction(Lexer *lexer)
 /* values start with "=" or " = " etc. */
 /* doesn't consume the ">" at end of start tag */
 
-static char *ParseValue(Lexer *lexer, char *name,
-                        Bool foldCase, Bool *isempty, int *pdelim)
+static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
+                    Bool foldCase, Bool *isempty, int *pdelim)
 {
+    Lexer* lexer = doc->lexer;
     int len = 0, start;
     Bool seen_gt = no;
     Bool munge = yes;
     uint c, lastc, delim, quotewarning;
-    char *value;
+    tmbstr value;
 
-    delim = (char) 0;
+    delim = (tmbchar) 0;
     *pdelim = '"';
 
     /*
@@ -3414,18 +3238,18 @@ static char *ParseValue(Lexer *lexer, char *name,
      embed element with script attributes where newlines
      are significant and must be preserved
     */
-    if (LiteralAttribs)
+    if ( cfgBool(doc, TidyLiteralAttribs) )
         munge = no;
 
  /* skip white space before the '=' */
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        c = ReadChar(doc->docIn);
 
         if (c == EndOfStream)
         {
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             break;
         }
 
@@ -3441,7 +3265,7 @@ static char *ParseValue(Lexer *lexer, char *name,
 
     if (c != '=' && c != '"' && c != '\'')
     {
-        UngetChar(c, lexer->in);
+        UngetChar(c, doc->docIn);
         return null;
     }
 
@@ -3449,11 +3273,11 @@ static char *ParseValue(Lexer *lexer, char *name,
 
     for (;;)
     {
-        c = ReadChar(lexer->in);
+        c = ReadChar(doc->docIn);
 
         if (c == EndOfStream)
         {
-            UngetChar(c, lexer->in);
+            UngetChar(c, doc->docIn);
             break;
         }
 
@@ -3469,13 +3293,13 @@ static char *ParseValue(Lexer *lexer, char *name,
     {
         start = lexer->lexsize;
         AddCharToLexer(lexer, c);
-        *pdelim = ParseServerInstruction(lexer);
+        *pdelim = ParseServerInstruction( doc );
         len = lexer->lexsize - start;
         lexer->lexsize = start;
-        return (len > 0 ? wstrndup(lexer->lexbuf+start, len) : null);
+        return (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : null);
     }
     else
-        UngetChar(c, lexer->in);
+        UngetChar(c, doc->docIn);
 
  /*
    and read the value string
@@ -3489,35 +3313,35 @@ static char *ParseValue(Lexer *lexer, char *name,
     for (;;)
     {
         lastc = c;  /* track last character */
-        c = ReadChar(lexer->in);
+        c = ReadChar(doc->docIn);
 
         if (c == EndOfStream)
         {
-            ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
-            UngetChar(c, lexer->in);
+            ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+            UngetChar(c, doc->docIn);
             break;
         }
 
-        if (delim == (char)0)
+        if (delim == (tmbchar)0)
         {
             if (c == '>')
             {
-                UngetChar(c, lexer->in);
+                UngetChar(c, doc->docIn);
                 break;
             }
 
             if (c == '"' || c == '\'')
             {
-                ReportAttrError(lexer, lexer->token, null, UNEXPECTED_QUOTEMARK);
+                ReportAttrError( doc, lexer->token, null, UNEXPECTED_QUOTEMARK );
                 break;
             }
 
             if (c == '<')
             {
-                UngetChar(c, lexer->in);
+                UngetChar(c, doc->docIn);
                 c = '>';
-                UngetChar(c, lexer->in);
-                ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
+                UngetChar(c, doc->docIn);
+                ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
                 break;
             }
 
@@ -3530,17 +3354,17 @@ static char *ParseValue(Lexer *lexer, char *name,
             if (c == '/')
             {
                 /* peek ahead in case of /> */
-                c = ReadChar(lexer->in);
+                c = ReadChar(doc->docIn);
 
-                if (c == '>' && !IsUrl(name))
+                if ( c == '>' && !IsUrl(doc, name) )
                 {
                     *isempty = yes;
-                    UngetChar(c, lexer->in);
+                    UngetChar(c, doc->docIn);
                     break;
                 }
 
-                /* unget peeked char */
-                UngetChar(c, lexer->in);
+                /* unget peeked character */
+                UngetChar(c, doc->docIn);
                 c = '/';
             }
         }
@@ -3553,8 +3377,8 @@ static char *ParseValue(Lexer *lexer, char *name,
 
             if (c == '\r')
             {
-                if ((c = ReadChar(lexer->in)) != '\n')
-                    UngetChar(c, lexer->in);
+                if ((c = ReadChar(doc->docIn)) != '\n')
+                    UngetChar(c, doc->docIn);
 
                 c = '\n';
             }
@@ -3569,15 +3393,15 @@ static char *ParseValue(Lexer *lexer, char *name,
         if (c == '&')
         {
             /* no entities in ID attributes */
-            if (wstrcasecmp(name, "id") == 0)
+            if (tmbstrcasecmp(name, "id") == 0)
             {
-                ReportAttrError(lexer, null, null, ENTITY_IN_ID);
+                ReportAttrError( doc, null, null, ENTITY_IN_ID );
                 continue;
             }
             else
             {
                 AddCharToLexer(lexer, c);
-                ParseEntity(lexer, null);
+                ParseEntity( doc, null );
                 continue;
             }
         }
@@ -3588,28 +3412,28 @@ static char *ParseValue(Lexer *lexer, char *name,
         */
         if (c == '\\')
         {
-            c = ReadChar(lexer->in);
+            c = ReadChar(doc->docIn);
 
             if (c != '\n')
             {
-                UngetChar(c, lexer->in);
+                UngetChar(c, doc->docIn);
                 c = '\\';
             }
         }
 
         if (IsWhite(c))
         {
-            if (delim == (char)0)
+            if ( delim == 0 )
                 break;
 
             if (munge)
             {
                 /* discard line breaks in quoted URLs */ 
                 /* #438650 - fix by Randy Waki */
-                if (c == '\n' && IsUrl(name)) 
+                if ( c == '\n' && IsUrl(doc, name) )
                 {
                     /* warn that we discard this newline */
-                    ReportAttrError(lexer, lexer->token, null, NEWLINE_IN_URI);
+                    ReportAttrError( doc, lexer->token, null, NEWLINE_IN_URI);
                     continue;
                 }
                 
@@ -3636,10 +3460,11 @@ static char *ParseValue(Lexer *lexer, char *name,
            and for attributes starting with "<xml " as generated by
            Microsoft Office.
         */
-        if (!IsScript(name) &&
-            !(IsUrl(name) && wstrncmp(lexer->lexbuf+start, "javascript:", 11) == 0) &&
-            !(wstrncmp(lexer->lexbuf+start, "<xml ", 5) == 0)) /* #500236 - fix by Klaus Johannes Rusch 06 Jan 02 */
-                ReportError(lexer, null, null, SUSPECTED_MISSING_QUOTE); 
+        if ( !IsScript(doc, name) &&
+             !(IsUrl(doc, name) && tmbstrncmp(lexer->lexbuf+start, "javascript:", 11) == 0) &&
+             !(tmbstrncmp(lexer->lexbuf+start, "<xml ", 5) == 0)
+           )
+            ReportError( doc, null, null, SUSPECTED_MISSING_QUOTE ); 
     }
 
     len = lexer->lexsize - start;
@@ -3651,7 +3476,7 @@ static char *ParseValue(Lexer *lexer, char *name,
         /* ignore leading and trailing white space for all but title and */
         /* alt attributes unless --literal-attributes is set to yes      */
 
-        if (munge && wstrcasecmp(name, "alt") && wstrcasecmp(name, "title"))
+        if (munge && tmbstrcasecmp(name, "alt") && tmbstrcasecmp(name, "title"))
         {
             while (IsWhite(lexer->lexbuf[start+len-1]))
                 --len;
@@ -3663,7 +3488,7 @@ static char *ParseValue(Lexer *lexer, char *name,
             }
         }
 
-        value = wstrndup(lexer->lexbuf + start, len);
+        value = tmbstrndup(lexer->lexbuf + start, len);
     }
     else
         value = null;
@@ -3675,19 +3500,16 @@ static char *ParseValue(Lexer *lexer, char *name,
 }
 
 /* attr must be non-null */
-Bool IsValidAttrName( char *attr)
+Bool IsValidAttrName( ctmbstr attr )
 {
-    uint c;
-    int i;
+    uint i, c = attr[0];
 
     /* first character should be a letter */
-    c = attr[0];
-
     if (!IsLetter(c))
         return no;
 
     /* remaining characters should be namechars */
-    for( i = 1; i < wstrlen(attr); i++)
+    for( i = 1; i < tmbstrlen(attr); i++)
     {
         c = attr[i];
 
@@ -3704,45 +3526,49 @@ Bool IsValidAttrName( char *attr)
 /* create a new attribute */
 AttVal *NewAttribute()
 {
-    AttVal *av;
-
-    av = (AttVal *)MemAlloc(sizeof(AttVal));
-    av->next = null; 
-    av->delim = '\0';
-    av->asp = null;
-    av->php = null;
-    av->attribute = null;
-    av->value = null;
-    av->dict = null;
+    AttVal *av = (AttVal*) MemAlloc( sizeof(AttVal) );
+    ClearMemory( av, sizeof(AttVal) );
     return av;
 }
 
 /* create a new attribute with given name and value */
-AttVal *NewAttributeEx(char *name, char *value)
+AttVal* NewAttributeEx( ctmbstr name, ctmbstr value )
 {
     AttVal *av = NewAttribute();
-
-    av->attribute = wstrdup(name);
-    av->value = wstrdup(value);
-
+    av->attribute = tmbstrdup(name);
+    av->value = tmbstrdup(value);
     return av;
 }
 
 
 /* swallows closing '>' */
 
-AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
+static void AddAttrToList( AttVal** list, AttVal* av )
 {
+  if ( *list == null )
+    *list = av;
+  else
+  {
+    AttVal* here = *list;
+    while ( here->next )
+      here = here->next;
+    here->next = av;
+  }
+}
+
+AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
+{
+    Lexer* lexer = doc->lexer;
     AttVal *av, *list;
-    char *attribute, *value;
+    tmbstr value;
     int delim;
     Node *asp, *php;
 
     list = null;
 
-    for (; !EndOfInput(lexer);)
+    while ( !EndOfInput(doc) )
     {
-        attribute = ParseAttribute(lexer, isempty, &asp, &php);
+        tmbstr attribute = ParseAttribute( doc, isempty, &asp, &php );
 
         if (attribute == null)
         {
@@ -3750,9 +3576,8 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             if (asp)
             {
                 av = NewAttribute();
-                av->next = list; 
                 av->asp = asp;
-                list = av;
+                AddAttrToList( &list, av ); 
                 continue;
             }
 
@@ -3760,26 +3585,24 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             if (php)
             {
                 av = NewAttribute();
-                av->next = list; 
                 av->php = php;
-                list = av;
+                AddAttrToList( &list, av ); 
                 continue;
             }
 
             break;
         }
 
-        value = ParseValue(lexer, attribute, no, isempty, &delim);
+        value = ParseValue( doc, attribute, no, isempty, &delim );
 
-        if (attribute && IsValidAttrName(attribute))
+        if ( attribute && IsValidAttrName(attribute) )
         {
             av = NewAttribute();
-            av->next = list; 
             av->delim = delim;
             av->attribute = attribute;
             av->value = value;
-            av->dict = FindAttribute(av);
-            list = av;
+            av->dict = FindAttribute( doc, av );
+            AddAttrToList( &list, av ); 
         }
         else
         {
@@ -3792,13 +3615,19 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
                 ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
             else
                 ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
-            */
             if (value != null)
-                ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
+                ReportAttrError( doc, lexer->token, av, BAD_ATTRIBUTE_VALUE);
             else if (LastChar(attribute) == '"')
-                ReportAttrError(lexer, lexer->token, av, MISSING_QUOTEMARK);
+                ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
             else
-                ReportAttrError(lexer, lexer->token, av, UNKNOWN_ATTRIBUTE);
+                ReportAttrError( doc, lexer->token, av, UNKNOWN_ATTRIBUTE);
+            */
+            if (LastChar(attribute) == '"')
+                ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
+            else if (value == null)
+                ReportAttrError(doc, lexer->token, av, MISSING_ATTR_VALUE);
+            else
+                ReportAttrError(doc, lexer->token, av, INVALID_ATTRIBUTE);
 
             FreeAttribute(av);
         }

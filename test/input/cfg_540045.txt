@@ -8,4 +8,4 @@ break-before-br: yes
 clean: yes
 logical-emphasis: yes
 enclose-text: yes
-enclose-block-test: yes
+enclose-block-text: yes

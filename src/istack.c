@@ -1,26 +1,28 @@
-/*
-  ilstack.c - inline stack for compatibility with Mosaic
+/* istack.c -- inline stack for compatibility with Mosaic
 
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
-  See tidy.c for the copyright notice.
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
+  See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/05/31 21:57:35 $ 
-    $Revision: 1.7 $ 
+    $Author: creitzel $ 
+    $Date: 2003/02/16 19:33:10 $ 
+    $Revision: 1.8 $ 
 
 */
 
-#include "platform.h"
-#include "html.h"
+#include "tidy-int.h"
+#include "lexer.h"
+#include "attrs.h"
+#include "streamio.h"
+#include "tmbstr.h"
 
 extern Bool   debug_flag;
 extern Node  *debug_element;
 extern Lexer *debug_lexer;
 
 /* duplicate attributes */
-AttVal *DupAttrs(AttVal *attrs)
+AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
 {
     AttVal *newattrs;
 
@@ -29,10 +31,10 @@ AttVal *DupAttrs(AttVal *attrs)
 
     newattrs = NewAttribute();
     *newattrs = *attrs;
-    newattrs->next = DupAttrs(attrs->next);
-    newattrs->attribute = wstrdup(attrs->attribute);
-    newattrs->value = wstrdup(attrs->value);
-    newattrs->dict = FindAttribute(newattrs);
+    newattrs->next = DupAttrs( doc, attrs->next );
+    newattrs->attribute = tmbstrdup(attrs->attribute);
+    newattrs->value = tmbstrdup(attrs->value);
+    newattrs->dict = FindAttribute(doc, newattrs);
     return newattrs;
 }
 
@@ -52,8 +54,9 @@ AttVal *DupAttrs(AttVal *attrs)
       <p><em>text</em></p>
       <p><em><em>more text</em></em>
 */
-void PushInline(Lexer *lexer, Node *node)
+void PushInline( TidyDocImpl* doc, Node *node)
 {
+    Lexer* lexer = doc->lexer;
     IStack *istack;
 
     if (node->implicit)
@@ -68,7 +71,7 @@ void PushInline(Lexer *lexer, Node *node)
     if (node->tag->model & CM_OBJECT)
         return;
 
-    if (node->tag != tag_font && IsPushed(lexer, node))
+    if ( !nodeIsFONT(node) && IsPushed(doc, node) )
         return;
 
     /* make sure there is enough space for the stack */
@@ -85,14 +88,15 @@ void PushInline(Lexer *lexer, Node *node)
     istack = &(lexer->istack[lexer->istacksize]);
     istack->tag = node->tag;
 
-    istack->element = wstrdup(node->element);
-    istack->attributes = DupAttrs(node->attributes);
+    istack->element = tmbstrdup(node->element);
+    istack->attributes = DupAttrs( doc, node->attributes );
     ++(lexer->istacksize);
 }
 
 /* pop inline stack */
-void PopInline(Lexer *lexer, Node *node)
+void PopInline( TidyDocImpl* doc, Node *node )
 {
+    Lexer* lexer = doc->lexer;
     AttVal *av;
     IStack *istack;
 
@@ -108,7 +112,7 @@ void PopInline(Lexer *lexer, Node *node)
             return;
 
         /* if node is </a> then pop until we find an <a> */
-        if (node->tag == tag_a)
+        if ( nodeIsA(node) )
         {
             while (lexer->istacksize > 0)
             {
@@ -128,7 +132,7 @@ void PopInline(Lexer *lexer, Node *node)
                     MemFree(av);
                 }
 
-                if (istack->tag == tag_a)
+                if ( istack->tag->id == TidyTag_A )
                 {
                     MemFree(istack->element);
                     break;
@@ -167,8 +171,9 @@ void PopInline(Lexer *lexer, Node *node)
     }
 }
 
-Bool IsPushed(Lexer *lexer, Node *node)
+Bool IsPushed( TidyDocImpl* doc, Node *node)
 {
+    Lexer* lexer = doc->lexer;
     int i;
 
     for (i = lexer->istacksize - 1; i >= 0; --i)
@@ -197,8 +202,9 @@ Bool IsPushed(Lexer *lexer, Node *node)
   where it gets tokens from the inline stack rather than
   from the input stream.
 */
-int InlineDup(Lexer *lexer, Node *node)
+int InlineDup( TidyDocImpl* doc, Node* node )
 {
+    Lexer* lexer = doc->lexer;
     int n;
 
     if ((n = lexer->istacksize - lexer->istackbase) > 0)
@@ -214,14 +220,15 @@ int InlineDup(Lexer *lexer, Node *node)
  defer duplicates when entering a table or other
  element where the inlines shouldn't be duplicated
 */
-void DeferDup(Lexer *lexer)
+void DeferDup( TidyDocImpl* doc )
 {
-    lexer->insert = null;
-    lexer->inode = null;
+    doc->lexer->insert = null;
+    doc->lexer->inode = null;
 }
 
-Node *InsertedToken(Lexer *lexer)
+Node *InsertedToken( TidyDocImpl* doc )
 {
+    Lexer* lexer = doc->lexer;
     Node *node;
     IStack *istack;
     uint n;
@@ -242,27 +249,26 @@ Node *InsertedToken(Lexer *lexer)
 
     if (lexer->inode == null)
     {
-        lexer->lines = lexer->in->curline;
-        lexer->columns = lexer->in->curcol;
+        lexer->lines = doc->docIn->curline;
+        lexer->columns = doc->docIn->curcol;
     }
 
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
     node = NewNode(lexer);
-#else
-    node = NewNode();
-#endif
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;
     /* #431734 [JTidy bug #226261 (was 126261)] - fix by Gary Peskin 20 Dec 00 */ 
     node->end = lexer->txtend; /* was : lexer->txtstart; */
     istack = lexer->insert;
-    if (lexer->istacksize == 0) /* Andy Quick 13 Jun 99 */
-        tidy_out(lexer->errout, "0-size istack!\n");
-    node->element = wstrdup(istack->element);
+
+#if 0 && defined(_DEBUG)
+    if ( lexer->istacksize == 0 )
+        fprintf( stderr, "0-size istack!\n" );
+#endif
+
+    node->element = tmbstrdup(istack->element);
     node->tag = istack->tag;
-    node->attributes = DupAttrs(istack->attributes);
+    node->attributes = DupAttrs( doc, istack->attributes );
 
     /* advance lexer to next item on the stack */
     n = lexer->insert - &(lexer->istack[0]);

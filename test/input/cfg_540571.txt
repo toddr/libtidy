@@ -1,4 +1,5 @@
-// Tidy configuration file for bug #540571 Inconsistent behaviour with span inline element
-output-xml: yes
+// Config for bug #540571 Inconsistent behaviour with span inline element
+output-xhtml: yes
 wrap: 255
 clean: no
+indent: auto
