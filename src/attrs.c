@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:11:25 $ 
-    $Revision: 1.100 $ 
+    $Date: 2004/12/06 14:44:08 $ 
+    $Revision: 1.101 $ 
 
 */
 
@@ -199,7 +199,7 @@ static uint AttributeVersions(Node* node, AttVal* attval)
         return attval->dict->versions;
 
     for (i = 0; node->tag->attrvers[i].attribute; ++i)
-        if (node->tag->attrvers[i].attribute == (uint)attval->dict->id)
+        if (node->tag->attrvers[i].attribute == attval->dict->id)
             return node->tag->attrvers[i].versions;
 
     return attval->dict->versions & VERS_ALL
