@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:02 $ 
-    $Revision: 1.132 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/01/05 05:12:16 $ 
+    $Revision: 1.133 $ 
 
 */
 
@@ -68,6 +68,7 @@ static void AddAttrToList( AttVal** list, AttVal* av );
 uint lexmap[128];
 
 #define IsValidXMLAttrName(name) IsValidXMLID(name)
+#define IsValidXMLElemName(name) IsValidXMLID(name)
 
 struct _doctypes
 {
@@ -2149,6 +2150,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     }
                     else if (c == 'd' || c == 'D')
                     {
+                        /* todo: check for complete "<!DOCTYPE" not just <!D */
+
                         lexer->state = LEX_DOCTYPE; /* doctype */
                         lexer->lexsize -= 2;
                         lexer->txtend = lexer->lexsize;
@@ -2477,8 +2480,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->waswhite = no;
 
                 /* make a note of the version named by the 1st doctype */
-                if ( lexer->doctype == VERS_UNKNOWN )
-                    lexer->doctype = FindGivenVersion( doc, lexer->token );
+                if (lexer->doctype == VERS_UNKNOWN && lexer->token)
+                    lexer->doctype = FindGivenVersion(doc, lexer->token);
                 return lexer->token;
 
             case LEX_PROCINSTR:  /* seen <? so look for '>' */
@@ -3599,6 +3602,13 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
                 si = GetAttrByName(node, "SYSTEM");
                 if (si)
                     CheckUrl(doc, node, si);
+
+                if (!node->element || !IsValidXMLElemName(node->element))
+                {
+                    ReportError(doc, NULL, NULL, MALFORMED_DOCTYPE);
+                    FreeNode(doc, node);
+                    return NULL;
+                }
 
                 return node;
             }
