@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/31 04:11:30 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/08/04 04:03:17 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -47,6 +47,7 @@ ParseProperty ParseTagNames; /* a space separated list of tag names */
 ParseProperty ParseCharEncoding; /* RAW, ASCII, LATIN1, UTF8 or ISO2022 */
 ParseProperty ParseIndent;   /* specific to the indent option */
 ParseProperty ParseDocType;  /* omit | auto | strict | loose | <fpi> */
+ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
 
 uint spaces =  2;           /* default indentation */
 uint wraplen = 68;          /* default wrap margin */
@@ -219,6 +220,8 @@ static struct Flag
     {"join-classes",    {(int *)&JoinClasses},      ParseBool},
     {"join-styles",     {(int *)&JoinStyles},       ParseBool},
     {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
+    {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
+    
 
   /* this must be the final entry */
     {0,          0,             0}
@@ -912,6 +915,31 @@ void ParseDocType(Location location, char *option)
              wstrcasecmp(buf, "transitional") == 0)
         doctype_mode = doctype_loose;
     else /* if (i == 0) */
+        ReportBadArgument(option);
+
+    NextProperty();
+}
+
+void ParseRepeatedAttribute(Location location, char *option)
+{
+    char buf[64];
+    int i = 0;
+
+    SkipWhite();
+
+    while (i < 62 && c != EOF && !IsWhite(c))
+    {
+        buf[i++] = c;
+        AdvanceChar();
+    }
+
+    buf[i] = '\0';
+
+    if (wstrcasecmp(buf, "keep-first") == 0)
+        DuplicateAttrs = keep_first;
+    else if (wstrcasecmp(buf, "keep-last") == 0)
+        DuplicateAttrs = keep_last;
+    else
         ReportBadArgument(option);
 
     NextProperty();
