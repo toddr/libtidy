@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 03:25:25 $ 
-    $Revision: 1.14 $ 
+    $Date: 2003/05/25 02:48:59 $ 
+    $Revision: 1.15 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -261,10 +261,11 @@ uint ReadChar( StreamIn *in )
             break;
         }
 
+#ifndef NO_NATIVE_ISO2022_SUPPORT
         /* strip control characters, except for Esc */
-
         if (c == '\033')
             break;
+#endif
 
         /* Form Feed is allowed in HTML */
         if ( c == '\015' && !cfgBool(in->doc, TidyXmlTags) )

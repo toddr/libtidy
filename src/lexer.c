@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 00:54:17 $ 
-    $Revision: 1.127 $ 
+    $Date: 2003/05/25 02:48:59 $ 
+    $Revision: 1.128 $ 
 
 */
 
@@ -1789,17 +1789,6 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     /* seen start tag, look for matching end tag */
     while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
-        /* treat \r\n as \n and \r as \n */
-        if (c == '\r')
-        {
-            c = ReadChar(doc->docIn);
-
-            if (c != '\n')
-                UngetChar(c, doc->docIn);
-
-            c = '\n';
-        }
-
         AddCharToLexer(lexer, (uint)c);
         lexer->txtend = lexer->lexsize;
 
@@ -2024,18 +2013,6 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
         if (c == 160 && (mode & Preformatted))
             c = ' ';
-
-        /* treat \r\n as \n and \r as \n */
-
-        if (c == '\r')
-        {
-            c = ReadChar(doc->docIn);
-
-            if (c != '\n')
-                UngetChar(c, doc->docIn);
-
-            c = '\n';
-        }
 
         AddCharToLexer(lexer, (uint)c);
 
@@ -2393,14 +2370,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 {
                     c = ReadChar(doc->docIn);
 
-                    if (c == '\r')
-                    {
-                        c = ReadChar(doc->docIn);
-
-                        if (c != '\n')
-                            UngetChar(c, doc->docIn);
-                    }
-                    else if (c != '\n' && c != '\f')
+                    if (c != '\n' && c != '\f')
                         UngetChar(c, doc->docIn);
 
                     lexer->waswhite = yes;  /* to swallow leading whitespace */
@@ -2466,14 +2436,6 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     /* now look for a line break */
 
                     c = ReadChar(doc->docIn);
-
-                    if (c == '\r')
-                    {
-                        c = ReadChar(doc->docIn);
-
-                        if (c != '\n')
-                            lexer->token->linebreak = yes;
-                    }
 
                     if (c == '\n')
                         lexer->token->linebreak = yes;
@@ -3318,16 +3280,6 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
         {
             if (c == delim)
                 break;
-
-            /* treat CRLF, CR and LF as single line break */
-
-            if (c == '\r')
-            {
-                if ((c = ReadChar(doc->docIn)) != '\n')
-                    UngetChar(c, doc->docIn);
-
-                c = '\n';
-            }
 
             if (c == '\n' || c == '<' || c == '>')
                 ++quotewarning;
