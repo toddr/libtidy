@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/08/06 01:12:33 $ 
-    $Revision: 1.33 $ 
+    $Date: 2002/10/06 19:06:26 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -322,7 +322,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(CYGWIN_OS) || defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__) || defined(IRIX_OS) || defined(AIX_OS)
+#if defined(CYGWIN_OS) || defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__) || defined(IRIX_OS) || defined(AIX_OS) || defined(__BORLANDC__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
@@ -359,7 +359,7 @@
   WINDOWS automatically set by Win16 compilers.
   _WIN32 automatically set by Win32 compilers.
 */
-#if defined(_WIN32) && !defined(__MSL__)
+#if defined(_WIN32) && !defined(__MSL__) && !defined(__BORLANDC__)
 #define futime _futime
 #define fstat _fstat
 #define utimbuf _utimbuf
