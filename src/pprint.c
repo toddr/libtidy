@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/03/31 18:26:01 $ 
-    $Revision: 1.38 $ 
+    $Date: 2002/03/31 18:35:07 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -1814,12 +1814,12 @@ void PPrintTree(Out *fout, uint mode, uint indent,
     }
     else /* some kind of container element */
     {
+        if (node->type == StartEndTag)
+            node->type = StartTag;
+
         if (node->tag && node->tag->parser == ParsePre)
         {
             PCondFlushLine(fout, indent);
-
-            if (node->type == StartEndTag)
-                node->type = StartTag;
 
             indent = 0;
             PCondFlushLine(fout, indent);
