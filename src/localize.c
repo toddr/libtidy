@@ -1,7 +1,7 @@
 /*
   localize.c
 
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
   You should only need to edit this file and tidy.c
@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/01/02 02:15:18 $ 
-    $Revision: 1.51 $ 
+    $Date: 2002/02/01 09:20:15 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -21,7 +21,7 @@
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
 
-char *release_date = "1st January 2002";
+char *release_date = "1st February 2002";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
