@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/07/07 01:10:30 $ 
-    $Revision: 1.45 $ 
+    $Date: 2004/08/03 07:20:12 $ 
+    $Revision: 1.46 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -952,7 +952,14 @@ int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
 
 int         tidyDocSaveStdout( TidyDocImpl* doc )
 {
-    int oldstdoutmode = -1, oldstderrmode = -1, status = 0;
+#if !defined(NO_SETMODE_SUPPORT)
+
+#if defined(_WIN32) || defined(OS2_OS)
+    int oldstdoutmode = -1, oldstderrmode = -1;
+#endif
+
+#endif
+    int status = 0;
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
     StreamOut* out = FileOutput( stdout, outenc, nl );

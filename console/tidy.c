@@ -9,14 +9,14 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:18:11 $ 
-    $Revision: 1.19 $ 
+    $Date: 2004/08/03 07:15:33 $ 
+    $Revision: 1.20 $ 
 */
 
 #include "tidy.h"
 
 static FILE* errout = NULL;  /* set to stderr */
-static FILE* txtout = NULL;  /* set to stdout */
+/* static FILE* txtout = NULL; */  /* set to stdout */
 
 static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 {
@@ -123,7 +123,7 @@ static const char* valfmt = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
 static const char* ul 
         = "=================================================================";
 
-void optionhelp( TidyDoc tdoc, ctmbstr prog )
+static void optionhelp( TidyDoc tdoc, ctmbstr prog )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
@@ -259,7 +259,6 @@ static void optionvalues( TidyDoc tdoc, ctmbstr prog )
         TidyOptionType optTyp = tidyOptGetType( topt );
         Bool isReadOnly = tidyOptIsReadOnly( topt );
 
-        Bool bval = no;
         ctmbstr sval = NULL;
         uint ival = 0;
 
@@ -385,7 +384,7 @@ static void version( TidyDoc tdoc, ctmbstr prog )
 
 static void unknownOption( TidyDoc tdoc, uint c )
 {
-    fprintf( errout, "HTML Tidy: unknown option: %c\n", c );
+    fprintf( errout, "HTML Tidy: unknown option: %c\n", (char)c );
 }
 
 int main( int argc, char** argv )

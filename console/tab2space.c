@@ -122,7 +122,7 @@ void AddByte(Stream *in, uint c)
 */
 static int ReadChar(Stream *in)
 {
-    uint c;
+    int c;
 
     if (in->pushed)
     {

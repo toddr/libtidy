@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:28:52 $ 
-    $Revision: 1.122 $ 
+    $Date: 2004/08/03 07:18:36 $ 
+    $Revision: 1.123 $ 
 
 */
 
@@ -808,8 +808,11 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
 static void MoveNodeToBody( TidyDocImpl* doc, Node* node )
 {
     Node* body = FindBody( doc );
-    RemoveNode( node );
-    InsertNodeAtEnd( body, node );
+    if ( body )
+    {
+        RemoveNode( node );
+        InsertNodeAtEnd( body, node );
+    }
 }
 
 /*
@@ -873,8 +876,9 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 
         if ( nodeIsBODY( node ) && DescendantOf( element, TidyTag_HEAD ))
         {
-            //  If we're in the HEAD, close it before proceeding.
-            //  This is an extremely rare occurance, but has been observed.
+            /*  If we're in the HEAD, close it before proceeding.
+                This is an extremely rare occurance, but has been observed.
+            */
             UngetToken( doc );
             break;
         }
@@ -900,11 +904,12 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
-                // Cannot have a block inside a paragraph, so no checking
-                // for an ancestor is necessary -- but we _can_ have
-                // paragraphs inside a block, so change it to an implicit
-                // empty paragraph, to be dealt with according to the user's
-                // options
+                /* Cannot have a block inside a paragraph, so no checking
+                   for an ancestor is necessary -- but we _can_ have
+                   paragraphs inside a block, so change it to an implicit
+                   empty paragraph, to be dealt with according to the user's
+                   options
+                */
                 node->type = StartEndTag;
                 node->implicit = yes;
 #if OBSOLETE

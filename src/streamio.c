@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:30:49 $ 
-    $Revision: 1.24 $ 
+    $Date: 2004/08/03 07:19:32 $ 
+    $Revision: 1.25 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -46,7 +46,6 @@ static void EncodeMacRoman( uint c, StreamOut* out );
 static void EncodeIbm858( uint c, StreamOut* out );
 static void EncodeLatin0( uint c, StreamOut* out );
 
-void outcUTF8Bytes( StreamOut *out, byte* buf, int* count );
 void outBOM( StreamOut *out );
 
 /******************************

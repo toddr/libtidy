@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:26:04 $ 
-    $Revision: 1.156 $ 
+    $Date: 2004/08/03 07:17:16 $ 
+    $Revision: 1.157 $ 
 
 */
 
@@ -49,7 +49,7 @@
 /* Forward references
 */
 /* swallows closing '>' */
-AttVal *ParseAttrs( TidyDocImpl* doc, Bool *isempty );
+static AttVal *ParseAttrs( TidyDocImpl* doc, Bool *isempty );
 
 static tmbstr ParseAttribute( TidyDocImpl* doc, Bool* isempty, 
                              Node **asp, Node **php );
@@ -2482,7 +2482,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     uint i;
                     Bool closed;
 
-                    for (i = 0; i <= lexer->lexsize - lexer->txtstart &&
+                    for (i = 0; i < lexer->lexsize - lexer->txtstart &&
                         !IsWhite(lexer->lexbuf[i + lexer->txtstart]); ++i)
                         /**/;
 

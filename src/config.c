@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:24:38 $ 
-    $Revision: 1.74 $ 
+    $Date: 2004/08/03 07:16:05 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -62,13 +62,6 @@ static const ctmbstr boolPicks[] =
 {
   "no",
   "yes",
-  NULL
-};
-
-static const ctmbstr invBoolPicks[] = 
-{
-  "yes",
-  "no",
   NULL
 };
 
@@ -1026,7 +1019,7 @@ Bool ParseName( TidyDocImpl* doc, const TidyOptionImpl* option )
 Bool ParseCSS1Selector( TidyDocImpl* doc, const TidyOptionImpl* option )
 {
     char buf[256] = {0};
-    int i = 0;
+    uint i = 0;
     uint c = SkipWhite( &doc->config );
 
     while ( i < sizeof(buf)-2 && c != EndOfStream && !IsWhite(c) )
