@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/04/26 16:57:32 $ 
-    $Revision: 1.44 $ 
+    $Date: 2002/05/06 20:45:57 $ 
+    $Revision: 1.45 $ 
 
 */
 
@@ -1692,7 +1692,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             /* Add spaces to last text node to align w/ indent */
             if ( contentIndent > 0 && linelen < (uint)contentIndent )
               linelen = contentIndent;
-            for (ix=0; contentIndent<indent && ix < indent-contentIndent; ++ix)
+            for (ix=0; contentIndent<(int)indent && ix < indent-contentIndent; ++ix)
               AddC( ' ', linelen++ );
 
             linelen = AddAsciiString( commentStart, linelen );
