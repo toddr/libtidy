@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/03/31 18:26:01 $ 
-    $Revision: 1.38 $ 
+    $Author: krusch $ 
+    $Date: 2002/04/07 12:55:33 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -252,6 +252,10 @@ static Bool CanPrune(Node *element)
         return no;
 
     if (element->tag == tag_object)
+        return no;
+
+    /* #540555 Empty title tag is trimmed */
+    if (element->tag == tag_title)
         return no;
 
     /* #433359 - fix by Randy Waki 12 Mar 01 */
