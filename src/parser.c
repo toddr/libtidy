@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/05/31 22:18:49 $ 
-    $Revision: 1.53 $ 
+    $Date: 2002/07/08 03:27:35 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -652,7 +652,7 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
 {
     Node *node, *parent;
     Bool checkstack;
-    uint istackbase;
+    uint istackbase = 0; /* #578005 - fix by Anonymous 05 Jul 02 */
 
     checkstack = yes;
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/05/31 21:57:15 $ 
-    $Revision: 1.43 $ 
+    $Date: 2002/07/08 03:24:52 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -279,7 +279,7 @@ static struct Flag
 #endif
 
   /* this must be the final entry */
-    {0,          0,             0}
+    {NULL,              {NULL},                     NULL} /* #578005 - fix by Anonymous 05 Jul 02 */
 };
 
 static unsigned hash(char *s)

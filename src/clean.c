@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/06/23 18:14:20 $ 
-    $Revision: 1.18 $ 
+    $Date: 2002/07/08 03:24:14 $ 
+    $Revision: 1.19 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -128,7 +128,7 @@ static StyleProp *InsertProperty(StyleProp *props, char *name, char *value)
 */
 static StyleProp *CreateProps(StyleProp *prop, char *style)
 {
-    char *name, *value, *name_end, *value_end;
+    char *name, *value = NULL, *name_end, *value_end; /* #578005 - fix by Anonymous 05 Jul 02 */
     Bool more;
 
     style = wstrdup(style);
