@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/11 05:43:26 $ 
-    $Revision: 1.114 $ 
+    $Date: 2003/05/12 16:34:49 $ 
+    $Revision: 1.115 $ 
 
 */
 
@@ -1293,6 +1293,19 @@ Node *FindHTML( TidyDocImpl* doc )
 
     return node;
 }
+
+/* find XML Declaration */
+Node *FindXmlDecl(TidyDocImpl* doc)
+{
+    Node *node;
+    for ( node = (doc ? doc->root.content : NULL);
+          node && !(node->type == XmlDecl);
+          node = node->next )
+        /**/;
+
+    return node;
+}
+
 
 Node *FindHEAD( TidyDocImpl* doc )
 {

@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.11 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/12 16:34:50 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -448,6 +448,7 @@ Node* FindHTML( TidyDocImpl* doc );
 Node* FindHEAD( TidyDocImpl* doc );
 Node* FindTITLE(TidyDocImpl* doc);
 Node* FindBody( TidyDocImpl* doc );
+Node* FindXmlDecl(TidyDocImpl* doc);
 
 /* Returns containing block element, if any */
 Node* FindContainer( Node* node );
