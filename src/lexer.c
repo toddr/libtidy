@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/21 04:05:51 $ 
-    $Revision: 1.46 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/23 08:41:52 $ 
+    $Revision: 1.47 $ 
 
 */
 
@@ -333,7 +333,7 @@ void AddCharToLexer(Lexer *lexer, uint c)
     int i, err, count = 0;
     unsigned char buf[10];
     
-    err = EncodeCharToUTF8Bytes(c, buf, NULL, NULL, &count);
+    err = EncodeCharToUTF8Bytes(c, buf, null, null, &count);
     if (err)
     {
 #if 0

@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/21 04:06:42 $ 
-    $Revision: 1.27 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/23 08:43:13 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -139,7 +139,7 @@ uint GetUTF8(unsigned char *str, uint *ch)
     
     /* first byte "str[0]" is passed in separately from the */
     /* rest of the UTF-8 byte sequence starting at "str[1]" */
-    err = DecodeUTF8BytesToChar(&n, str[0], (unsigned char *)&str[1], NULL, NULL, &bytes);
+    err = DecodeUTF8BytesToChar(&n, str[0], (unsigned char *)&str[1], null, null, &bytes);
     if (err)
     {
 #if 0
@@ -190,7 +190,7 @@ char *PutUTF8(char *buf, uint c)
 #else
     int err, count = 0;
         
-    err = EncodeCharToUTF8Bytes(c, (unsigned char *)buf, NULL, NULL, &count);
+    err = EncodeCharToUTF8Bytes(c, (unsigned char *)buf, null, null, &count);
     if (err)
     {
 #if 0
