@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/29 07:47:21 $ 
-    $Revision: 1.31 $ 
+    $Author: creitzel $ 
+    $Date: 2001/10/17 15:20:24 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -1582,7 +1582,7 @@ void ParseEmpty(Lexer *lexer, Node *element, uint mode)
 {
     if (lexer->isvoyager)
     {
-        Node *node = GetToken(lexer, MixedContent);
+        Node *node = GetToken(lexer, mode);
         if (!(node->type == EndTag && node->tag == element->tag))
         {
             ReportWarning(lexer, element, node, ELEMENT_NOT_EMPTY);
