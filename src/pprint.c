@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/04/18 20:39:35 $ 
-    $Revision: 1.43 $ 
+    $Author: creitzel $ 
+    $Date: 2002/04/26 16:57:32 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -1692,7 +1692,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             /* Add spaces to last text node to align w/ indent */
             if ( contentIndent > 0 && linelen < (uint)contentIndent )
               linelen = contentIndent;
-            for ( ix=0; ix < (indent-contentIndent); ++ix )
+            for (ix=0; contentIndent<indent && ix < indent-contentIndent; ++ix)
               AddC( ' ', linelen++ );
 
             linelen = AddAsciiString( commentStart, linelen );
