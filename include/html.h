@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/19 19:14:08 $ 
-    $Revision: 1.47 $ 
+    $Date: 2001/08/23 08:40:16 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -302,8 +302,6 @@ struct _inode
 typedef struct _inode IStack;
 typedef struct _lexer Lexer;
 
-/* tidy.c */
-#define EndOfStream EOF
 #define CHARBUF_SIZE 5
 
 /* non-raw input is cleaned up*/
@@ -636,7 +634,7 @@ Node *FindBody(Node *root);
 typedef void (GetBytes)(StreamIn *in, unsigned char *buf, int *count, Bool unget);
 typedef void (PutBytes)(Out *out, unsigned char *buf, int *count);
 
-/* Pass in NULL for the buf, in, out, getter and putter parameters respectively if not appropriate */
+/* Pass in null for the buf, in, out, getter and putter parameters respectively if not appropriate */
 /* Return < 0 if error or EOF */
 
 int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes,
