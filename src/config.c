@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/03 07:16:05 $ 
-    $Revision: 1.75 $ 
+    $Date: 2004/09/12 02:33:23 $ 
+    $Revision: 1.76 $ 
 
 */
 
@@ -36,6 +36,15 @@
 #ifdef WINDOWS_OS
 #include <io.h>
 #else
+#ifdef DMALLOC
+/*
+   macro for valloc() in dmalloc.h may conflict with declaration for valloc() in unistd.h -
+   we don't need (debugging for) valloc() here. dmalloc.h should come last but it doesn't.
+*/
+#ifdef valloc
+#undef valloc
+#endif
+#endif
 #include <unistd.h>
 #endif
 
