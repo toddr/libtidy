@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/06/02 17:04:30 $ 
-    $Revision: 1.35 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/06/09 08:09:10 $ 
+    $Revision: 1.36 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -900,9 +900,13 @@ int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
 ** the entire document.
 */
 
+#if !defined(NO_SETMODE_SUPPORT)
+
 #if defined(_WIN32) || defined(OS2_OS)
 #include <fcntl.h>
 #include <io.h>
+#endif
+
 #endif
 
 int         tidyDocSaveStdout( TidyDocImpl* doc )
@@ -911,6 +915,8 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
     StreamOut* out = FileOutput( stdout, outenc, nl );
+
+#if !defined(NO_SETMODE_SUPPORT)
 
 #if defined(_WIN32) || defined(OS2_OS)
     oldstdoutmode = setmode( fileno(stdout), _O_BINARY );
@@ -921,8 +927,10 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
          out->encoding == UTF16LE ||
          out->encoding == UTF16BE )
     {
-      ReportWarning( doc, NULL, &doc->root, ENCODING_IO_CONFLICT );
+      ReportError(doc, NULL, doc->root, ENCODING_IO_CONFLICT );
     }
+#endif
+
 #endif
 
 #endif
@@ -933,12 +941,17 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
     fflush(stdout);
     fflush(stderr);
 
+#if !defined(NO_SETMODE_SUPPORT)
+
 #if defined(_WIN32) || defined(OS2_OS)
     if ( oldstdoutmode != -1 )
         oldstdoutmode = setmode( fileno(stdout), oldstdoutmode );
     if ( oldstderrmode != -1 )
         oldstderrmode = setmode( fileno(stderr), oldstderrmode );
 #endif
+
+#endif
+
     MemFree( out );
     return status;
 }
