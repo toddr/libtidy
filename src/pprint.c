@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/13 22:03:28 $ 
-    $Revision: 1.60 $ 
+    $Date: 2003/04/15 15:48:33 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -1275,7 +1275,7 @@ static void PPrintComment( TidyDocImpl* doc, uint indent, Node* node )
 
     AddString(pprint, "--");
     AddChar( pprint, '>' );
-    if ( node->linebreak )
+    if ( node->linebreak && node->next )
         PFlushLine( doc, indent );
 }
 
