@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 15:58:30 $ 
-    $Revision: 1.9 $ 
+    $Date: 2001/07/14 19:40:23 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -105,6 +105,7 @@ Bool LiteralAttribs = no;   /* if true attributes may use newlines */
 Bool BodyOnly = no;         /* #434940 - output BODY content only */
 Bool FixUri = yes;          /* applies URI encoding if necessary */
 Bool LowerLiterals = yes;   /* folds known attribute values to lower case */
+Bool HideComments = no;     /* hides all (real) comments in output */
 
 typedef struct _lex PLex;
 
@@ -201,6 +202,7 @@ static struct Flag
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
     {"fix-uri",         {(int *)&FixUri},           ParseBool},
     {"lower-literals",  {(int *)&LowerLiterals},    ParseBool},
+    {"hide-comments",   {(int *)&HideComments},     ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}
@@ -449,7 +451,8 @@ void ParseConfigFile(char *file)
         while (c != EOF)
         {
             /* // starts a comment */
-            while (c == '/')
+            /* also # starts a comment */
+            while (c == '/' || c == '#')
                 NextProperty();
 
             i = 0;
