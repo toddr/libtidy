@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/04/09 04:20:59 $ 
-    $Revision: 1.43 $ 
+    $Date: 2002/04/10 18:00:10 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -3355,6 +3355,7 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
                 continue;
             }
 
+            ConstrainVersion(lexer, ~VERS_FRAMESET);
             break;  /* to parse body */
         }
 
@@ -3449,11 +3450,13 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
             else
                 ReportWarning(lexer, html, node, NOFRAMES_CONTENT);
 
+            ConstrainVersion(lexer, VERS_FRAMESET);
             ParseTag(lexer, noframes, mode);
             continue;
         }
 
         node = InferredTag(lexer, "body");
+        ConstrainVersion(lexer, ~VERS_FRAMESET);
         break;
     }
 
