@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/06/09 08:09:10 $ 
-    $Revision: 1.36 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/08/16 01:41:24 $ 
+    $Revision: 1.37 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1462,13 +1462,15 @@ Bool tidyNodeIsProp( TidyDoc tdoc, TidyNode tnod )
   return isProprietary;
 }
 
-TidyTagId tidyNodeGetId( TidyNode tnod )
+TidyTagId tidyNodeGetId(TidyNode tnod)
 {
-  Node* nimp = tidyNodeToImpl( tnod );
-  TidyTagId tagId = TidyTag_UNKNOWN;
-  if ( nimp )
-    tagId = nimp->tag->id;
-  return tagId;
+    Node* nimp = tidyNodeToImpl(tnod);
+
+    TidyTagId tagId = TidyTag_UNKNOWN;
+    if (nimp && nimp->tag)
+        tagId = nimp->tag->id;
+
+    return tagId;
 }
 
 
