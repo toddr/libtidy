@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 19:34:24 $ 
-    $Revision: 1.95 $ 
+    $Date: 2003/04/30 04:21:51 $ 
+    $Revision: 1.96 $ 
 
 */
 
@@ -1314,8 +1314,8 @@ Bool AddGenerator( TidyDocImpl* doc )
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
             node = InferredTag( doc, "meta" );
-            AddAttribute( doc, node, "content", buf );
             AddAttribute( doc, node, "name", "generator" );
+            AddAttribute( doc, node, "content", buf );
             InsertNodeAtStart( head, node );
             return yes;
         }
