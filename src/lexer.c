@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/17 20:26:57 $ 
-    $Revision: 1.120 $ 
+    $Date: 2003/05/22 03:31:32 $ 
+    $Revision: 1.121 $ 
 
 */
 
@@ -2431,7 +2431,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                                 doc->badLayout |= USING_NOBR;
                         }
                     }
-
+#if 0
                     if ( curr->tag->chkattrs )
                         curr->tag->chkattrs( doc, curr );
                     else
@@ -2439,6 +2439,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                     if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
                         FixXmlLang(doc, curr);
+#endif
 
                     /* should this be called before attribute checks? */
                     RepairDuplicateAttributes( doc, curr );

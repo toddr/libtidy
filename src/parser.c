@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/22 02:51:02 $ 
-    $Revision: 1.96 $ 
+    $Date: 2003/05/22 03:31:32 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -3969,6 +3969,32 @@ void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
     }
 }
 
+void AttributeChecks(TidyDocImpl* doc, Node* node)
+{
+    Node *next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (nodeIsElement(node))
+        {
+            if (node->tag->chkattrs)
+                node->tag->chkattrs(doc, node);
+            else
+                CheckAttributes(doc, node);
+
+            if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
+                FixXmlLang(doc, node);
+        }
+
+        if (node->content)
+            AttributeChecks(doc, node->content);
+
+        node = next;
+    }
+}
+
 /*
   HTML is the top level element
 */
@@ -4065,6 +4091,7 @@ void ParseDocument(TidyDocImpl* doc)
         InsertNodeAtEnd(head, InferredTag(doc, "title"));
     }
 
+    AttributeChecks(doc, &doc->root);
     ReplaceObsoleteElements(doc, &doc->root);
     DropEmptyElements(doc, &doc->root);
     CleanSpaces(doc, &doc->root);
