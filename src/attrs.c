@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/10/26 13:57:03 $ 
-    $Revision: 1.39 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/12/28 23:42:51 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -790,6 +790,36 @@ Bool IsBoolAttribute(AttVal *attval)
     return no;
 }
 
+static void CheckLowerCaseAttrValue(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *p;
+    Bool hasUpper = no;
+    
+    if (attval == null || attval->value == null)
+        return;
+
+    p = attval->value;
+    
+    while (*p)
+    {
+        if (!IsLower(*p))
+        {
+            hasUpper = yes;
+            break;
+        }
+        p++;
+    }
+
+    if (hasUpper)
+    {
+        if (lexer->isvoyager)
+            ReportAttrError(lexer, node, attval, ATTR_VALUE_NOT_LCASE);
+  
+        if (lexer->isvoyager || LowerLiterals)
+            attval->value = wstrtolower(attval->value);
+    }
+}
+
 /* methods for checking value of a specific attribute */
 
 void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
@@ -922,8 +952,7 @@ void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
     if (attval == null || attval->value == null)
         return;
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 }
 
 void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
@@ -943,8 +972,7 @@ void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
 
@@ -965,8 +993,7 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
 
@@ -1063,8 +1090,7 @@ void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
 
     value = attval->value;
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     if (! (wstrcasecmp(value,  "get") == 0 ||
            wstrcasecmp(value, "post") == 0))
@@ -1081,8 +1107,7 @@ void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
         
     value = attval->value;
     
@@ -1103,8 +1128,7 @@ void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
     
@@ -1125,8 +1149,7 @@ void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
     
@@ -1272,8 +1295,7 @@ void CheckVType(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
 
@@ -1294,8 +1316,7 @@ void CheckScroll(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
 
@@ -1316,8 +1337,7 @@ void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
         return;
     }
 
-    if (LowerLiterals)
-        attval->value = wstrtolower(attval->value);
+    CheckLowerCaseAttrValue(lexer, node, attval);
 
     value = attval->value;
 
