@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/07 03:54:17 $ 
-    $Revision: 1.81 $ 
+    $Date: 2003/05/09 05:01:26 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -619,6 +619,23 @@ void FixId( TidyDocImpl* doc, Node *node )
         else if ( cfgBool(doc, TidyXmlOut) )
             AddAttribute( doc, node, "id", name->value );
     }
+}
+
+void FixXmlLang(TidyDocImpl* doc, Node* node)
+{
+    AttVal* lang = AttrGetById(node, TidyAttr_LANG);
+    AttVal* xmllang;
+
+    if (!lang)
+        return;
+
+    xmllang = AttrGetById(node, TidyAttr_XML_LANG);
+
+    /* todo: check whether lang="" and xml:lang="" mismatch */
+    if (xmllang)
+        return;
+
+    AddAttribute(doc, node, "xml:lang", lang->value);
 }
 
 /*

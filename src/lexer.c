@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 05:58:06 $ 
-    $Revision: 1.107 $ 
+    $Date: 2003/05/09 05:01:25 $ 
+    $Revision: 1.108 $ 
 
 */
 
@@ -2411,6 +2411,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         curr->tag->chkattrs( doc, curr );
                     else
                         CheckAttributes( doc, curr );
+
+                    if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
+                        FixXmlLang(doc, curr);
 
                     /* should this be called before attribute checks? */
                     RepairDuplicateAttributes( doc, curr );
