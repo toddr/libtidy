@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/10 18:25:32 $ 
-    $Revision: 1.101 $ 
+    $Date: 2005/03/15 17:48:05 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -1278,7 +1278,7 @@ static Bool AfterSpaceImp(Lexer *lexer, Node *node, Bool isEmpty)
     prev = node->prev;
     if (prev)
     {
-        if (prev->type == TextNode && prev->end > prev->start)
+        if (nodeIsText(prev) && prev->end > prev->start)
         {
             uint i, c = '\0'; /* initialised to avoid warnings */
             for (i = prev->start; i < prev->end; ++i)
@@ -1717,7 +1717,7 @@ static Bool InsideHead( TidyDocImpl* doc, Node *node )
 */
 static int TextEndsWithNewline(Lexer *lexer, Node *node, uint mode )
 {
-    if ( (mode & (CDATA|COMMENT)) && node->type == TextNode && node->end > node->start )
+    if ( (mode & (CDATA|COMMENT)) && nodeIsText(node) && node->end > node->start )
     {
         uint ch, ix = node->end - 1;
         /* Skip non-newline whitespace. */
@@ -1734,7 +1734,7 @@ static int TextEndsWithNewline(Lexer *lexer, Node *node, uint mode )
 static int TextStartsWithWhitespace( Lexer *lexer, Node *node, uint start, uint mode )
 {
     assert( node != NULL );
-    if ( (mode & (CDATA|COMMENT)) && node->type == TextNode && node->end > node->start && start >= node->start )
+    if ( (mode & (CDATA|COMMENT)) && nodeIsText(node) && node->end > node->start && start >= node->start )
     {
         uint ch, ix = start;
         /* Skip whitespace. */

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 17:25:01 $ 
-    $Revision: 1.141 $ 
+    $Date: 2005/03/15 17:48:04 $ 
+    $Revision: 1.142 $ 
 
 */
 
@@ -247,7 +247,7 @@ void InsertNodeAfterElement(Node *element, Node *node)
 
 static Bool CanPrune( TidyDocImpl* doc, Node *element )
 {
-    if ( element->type == TextNode )
+    if ( nodeIsText(element) )
         return yes;
 
     if ( element->content )
@@ -344,7 +344,8 @@ static Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
         if (node->content)
             DropEmptyElements(doc, node->content);
 
-        if (!nodeIsElement(node) && !(node->type == TextNode && !(node->start < node->end)))
+        if (!nodeIsElement(node) &&
+            !(nodeIsText(node) && !(node->start < node->end)))
         {
             node = next;
             continue;
@@ -382,7 +383,7 @@ static void TrimTrailingSpace( TidyDocImpl* doc, Node *element, Node *last )
     Lexer* lexer = doc->lexer;
     byte c;
 
-    if (last != NULL && last->type == TextNode)
+    if (nodeIsText(last))
     {
         if (last->end > last->start)
         {
@@ -455,7 +456,7 @@ static Node *EscapeTag(Lexer *lexer, Node *element)
 /* Only true for text nodes. */
 Bool IsBlank(Lexer *lexer, Node *node)
 {
-    Bool isBlank = ( node->type == TextNode );
+    Bool isBlank = nodeIsText(node);
     if ( isBlank )
         isBlank = ( node->end == node->start ||       /* Zero length */
                     ( node->end == node->start+1      /* or one blank. */
@@ -478,7 +479,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
     Lexer* lexer = doc->lexer;
     Node *prev, *node;
 
-    if ( text->type == TextNode && 
+    if ( nodeIsText(text) && 
          lexer->lexbuf[text->start] == ' ' && 
          text->start < text->end )
     {
@@ -487,7 +488,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
         {
             prev = element->prev;
 
-            if (prev && prev->type == TextNode)
+            if (nodeIsText(prev))
             {
                 if (prev->end == 0 || lexer->lexbuf[prev->end - 1] != ' ')
                     lexer->lexbuf[(prev->end)++] = ' ';
@@ -568,7 +569,7 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
         return yes;
 
     /* evil adjacent text nodes, Tidy should not generate these :-( */
-    if (next->type == TextNode && next->start < next->end
+    if (nodeIsText(next) && next->start < next->end
         && IsWhite(doc->lexer->lexbuf[next->start]))
         return yes;
 
@@ -967,7 +968,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         }
 
         /* mixed content model permits text */
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             if ( checkstack )
             {
@@ -1403,7 +1404,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             ReportWarning(doc, element, node, NESTED_QUOTATION);
         }
 
-        if ( node->type == TextNode )
+        if ( nodeIsText(node) )
         {
             /* only called for 1st child */
             if ( element->content == NULL && !(mode & Preformatted) )
@@ -1820,7 +1821,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         if (InsertMisc(list, node))
             continue;
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             UngetToken( doc );
             node = InferredTag(doc, TidyTag_DT);
@@ -2420,7 +2421,7 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
             }
         }
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             UngetToken( doc );
             return;
@@ -2634,7 +2635,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             return;
         }
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             InsertNodeAtEnd(pre, node);
             continue;
@@ -2862,7 +2863,7 @@ void ParseText(TidyDocImpl* doc, Node *field, uint mode)
         if (InsertMisc(field, node))
             continue;
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             /* only called for 1st child */
             if (field->content == NULL && !(mode & Preformatted))
@@ -2926,7 +2927,7 @@ void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
             return;
         }
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             /* only called for 1st child */
             if (title->content == NULL)
@@ -3056,7 +3057,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
             continue;
         }
 
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             ReportError(doc, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken( doc );
@@ -3266,7 +3267,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         
         iswhitenode = no;
 
-        if ( node->type == TextNode &&
+        if ( nodeIsText(node) &&
              node->end <= node->start + 1 &&
              lexer->lexbuf[node->start] == ' ' )
             iswhitenode = yes;
@@ -3285,7 +3286,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
 #endif
 
         /* mixed content model permits text */
-        if (node->type == TextNode)
+        if (nodeIsText(node))
         {
             if (iswhitenode && mode == IgnoreWhitespace)
             {
@@ -3523,7 +3524,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
         }
 
         /* implicit body element inferred */
-        if (node->type == TextNode || (node->tag && node->type != EndTag))
+        if (nodeIsText(node) || (node->tag && node->type != EndTag))
         {
             if ( lexer->seenEndBody )
             {
@@ -3534,7 +3535,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
                     FreeNode( doc, node);
                     continue;
                 }
-                if ( node->type == TextNode )
+                if ( nodeIsText(node) )
                 {
                     UngetToken( doc );
                     node = InferredTag(doc, TidyTag_P);
@@ -3869,7 +3870,7 @@ static void EncloseBodyText(TidyDocImpl* doc)
 
     while (node)
     {
-        if ((node->type == TextNode && !IsBlank(doc->lexer, node)) ||
+        if ((nodeIsText(node) && !IsBlank(doc->lexer, node)) ||
             (nodeIsElement(node) && nodeCMIsOnlyInline(node)))
         {
             Node* p = InferredTag(doc, TidyTag_P);
@@ -3913,7 +3914,7 @@ static void EncloseBlockText(TidyDocImpl* doc, Node* node)
 
         block = node->content;
 
-        if ((block->type == TextNode && !IsBlank(doc->lexer, block)) ||
+        if ((nodeIsText(block) && !IsBlank(doc->lexer, block)) ||
             (nodeIsElement(block) && nodeCMIsOnlyInline(block)))
         {
             Node* p = InferredTag(doc, TidyTag_P);
@@ -4191,7 +4192,7 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
 
     node = element->content;
 
-    if (node && node->type == TextNode && mode != Preformatted)
+    if (nodeIsText(node) && mode != Preformatted)
     {
         if ( lexer->lexbuf[node->start] == ' ' )
         {
@@ -4209,7 +4210,7 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
 
     node = element->last;
 
-    if (node && node->type == TextNode && mode != Preformatted)
+    if (nodeIsText(node) && mode != Preformatted)
     {
         if ( lexer->lexbuf[node->end - 1] == ' ' )
         {
