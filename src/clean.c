@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 13:09:37 $ 
-    $Revision: 1.81 $ 
+    $Date: 2005/02/22 13:45:03 $ 
+    $Revision: 1.82 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2542,11 +2542,12 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
 
             if (name && id)
             {
-                /*
-                  todo: check whether both attributes are in sync,
-                  here or elsewhere, where elsewhere is probably
-                  preferable.
-                */
+                Bool NameHasValue = AttrHasValue(name);
+                Bool IdHasValue = AttrHasValue(id);
+                if ( (NameHasValue != IdHasValue) ||
+                     (NameHasValue && IdHasValue &&
+                     tmbstrcmp(name->value, id->value) != 0 ) )
+                    ReportAttrError( doc, node, name, ID_NAME_MISMATCH);
             }
             else if (name && wantId)
             {
