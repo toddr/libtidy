@@ -33,7 +33,7 @@ then
   CFGFILE=./input/cfg_default.txt
 fi
 
-../tidy -config $CFGFILE "$@" $INHTML > $TIDYHTML 2> $MSGFILE
+../tidy -f $MSGFILE -config $CFGFILE "$@" $INHTML > $TIDYHTML
 STATUS=$?
 
 if [ $STATUS -gt 1 ]
@@ -54,7 +54,7 @@ fi
 
 if [ ! -s $TIDYHTML ]
 then
-  cat err.txt
+  cat $MSGFILE
   exit 1
 fi
 
@@ -65,8 +65,8 @@ then
   # Not a valid shell test
   if [ -s diff.txt ]
   then
-    cat err.txt
-    cat diff.txt
+    cat $MSGFILE
+    cat $DIFFOUT
     exit 1
   fi
 fi
