@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/03/31 18:35:07 $ 
-    $Revision: 1.39 $ 
+    $Date: 2002/04/01 01:30:43 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -1011,6 +1011,17 @@ static void PPrintAttrs(Out *fout, uint indent,
 {
     Attribute *attribute;
 
+    /* add xml:space attribute to pre and other elements */
+    if (XmlOut && XmlSpace &&
+        !GetAttrByName(node, "xml:space") &&
+        XMLPreserveWhiteSpace(node))
+    {
+        AddAttribute(node, "xml:space", "preserve");
+
+        if (!attr)
+            attr = node->attributes;
+    }
+
     if (attr)
     {
         if (attr->next)
@@ -1036,13 +1047,6 @@ static void PPrintAttrs(Out *fout, uint indent,
             PPrintPhp(fout, indent, lexer, attr->php);
         }
     }
-
-    /* add xml:space attribute to pre and other elements */
-    if (XmlOut == yes &&
-            XmlSpace &&
-            XMLPreserveWhiteSpace (node) &&
-            !GetAttrByName(node, "xml:space"))
-        PPrintString(fout, indent, " xml:space=\"preserve\"");
 }
 
 /*
