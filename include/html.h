@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 23:08:53 $ 
-    $Revision: 1.28 $ 
+    $Date: 2001/07/17 10:56:56 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -635,6 +635,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define MISSING_SEMICOLON       1
 #define UNKNOWN_ENTITY          2
 #define UNESCAPED_AMPERSAND     3
+#define APOS_UNDEFINED          4
 
 /* error codes for element messages */
 

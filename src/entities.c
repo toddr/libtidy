@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:47:46 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/17 10:56:56 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -254,6 +254,7 @@ struct entity
     {"diams",    9830},
     {"quot",    34},
     {"amp",     38},
+    {"apos",    39},
     {"lt",      60},
     {"gt",      62},
     {"OElig",   338},

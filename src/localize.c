@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 23:08:53 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/17 10:56:56 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -176,6 +176,10 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
         else if (code == UNESCAPED_AMPERSAND)
         {
             tidy_out(lexer->errout, "Warning: unescaped & which should be written as &amp;");
+        }
+        else if (code == APOS_UNDEFINED)
+        {
+            tidy_out(lexer->errout, "Warning: Named Entity &apos; only defined in XML/XHTML");
         }
 
         tidy_out(lexer->errout, "\n");
