@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 02:24:47 $ 
-    $Revision: 1.11 $ 
+    $Date: 2003/05/24 15:55:01 $ 
+    $Revision: 1.12 $ 
 */
 
 #include "tidy.h"
@@ -130,9 +130,9 @@ void optionhelp( TidyDoc tdoc, ctmbstr prog )
     printf( "\nHTML Tidy Configuration Settings\n\n" );
     printf( "Within a file, use the form:\n\n" ); 
     printf( "wrap: 72\n" );
-    printf( "split: no\n\n" );
+    printf( "indent: no\n\n" );
     printf( "When specified on the command line, use the form:\n\n" );
-    printf( "--wrap 72 --split no\n\n");
+    printf( "--wrap 72 --indent no\n\n");
 
     printf( fmt, "Name", "Type", "Allowable values" );
     printf( fmt, ul, ul, ul );

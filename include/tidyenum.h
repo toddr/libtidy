@@ -14,8 +14,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/21 21:51:27 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/05/24 15:55:01 $ 
+    $Revision: 1.9 $ 
 
   Contributing Author(s):
 
@@ -102,7 +102,10 @@ typedef enum
 
   TidyDuplicateAttrs,  /**< Keep first or last duplicate attribute */
   TidyAltText,         /**< Default text for alt attribute */
+  
+  /* obsolte */
   TidySlideStyle,      /**< Style sheet for slides: not used for anything yet */
+
   TidyErrFile,         /**< File name to write errors to */
   TidyOutFile,         /**< File name to write markup to */
   TidyWriteBack,       /**< If true then output tidied markup */
@@ -128,7 +131,10 @@ typedef enum
   TidyDropEmptyParas,  /**< Discard empty p elements */
   TidyFixComments,     /**< Fix comments with adjacent hyphens */
   TidyBreakBeforeBR,   /**< Output newline before <br> or not? */
+
+  /* obsolete */
   TidyBurstSlides,     /**< Create slides on each h2 element */
+
   TidyNumEntities,     /**< Use numeric entities */
   TidyQuoteMarks,      /**< Output " marks as &quot; */
   TidyQuoteNbsp,       /**< Output non-breaking space as entity */

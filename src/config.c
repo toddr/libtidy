@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/11 05:43:26 $ 
-    $Revision: 1.65 $ 
+    $Date: 2003/05/24 15:55:01 $ 
+    $Revision: 1.66 $ 
 
 */
 
@@ -177,7 +177,10 @@ static const TidyOptionImpl option_defs[] =
   { TidyDoctype,                 MU, "doctype",                     ST, 0,               ParseDocType,      doctypePicks    },
   { TidyDuplicateAttrs,          MU, "repeated-attributes",         IN, TidyKeepLast,    ParseRepeatAttr,   repeatAttrPicks },
   { TidyAltText,                 MU, "alt-text",                    ST, 0,               ParseString,       NULL            },
+
+  /* obsolte */
   { TidySlideStyle,              MS, "slide-style",                 ST, 0,               ParseName,         NULL            },
+
   { TidyErrFile,                 MS, "error-file",                  ST, 0,               ParseString,       NULL            },
   { TidyOutFile,                 MS, "output-file",                 ST, 0,               ParseString,       NULL            },
   { TidyWriteBack,               MS, "write-back",                  BL, no,              ParseBool,         boolPicks       },
@@ -201,7 +204,10 @@ static const TidyOptionImpl option_defs[] =
   { TidyDropEmptyParas,          MU, "drop-empty-paras",            BL, yes,             ParseBool,         boolPicks       },
   { TidyFixComments,             MU, "fix-bad-comments",            BL, yes,             ParseBool,         boolPicks       },
   { TidyBreakBeforeBR,           PP, "break-before-br",             BL, no,              ParseBool,         boolPicks       },
+
+  /* obsolete */
   { TidyBurstSlides,             PP, "split",                       BL, no,              ParseBool,         boolPicks       },
+
   { TidyNumEntities,             MU, "numeric-entities",            BL, no,              ParseBool,         boolPicks       },
   { TidyQuoteMarks,              MU, "quote-marks",                 BL, no,              ParseBool,         boolPicks       },
   { TidyQuoteNbsp,               MU, "quote-nbsp",                  BL, yes,             ParseBool,         boolPicks       },

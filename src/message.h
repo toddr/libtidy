@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 20:13:54 $ 
-    $Revision: 1.15 $ 
+    $Date: 2003/05/24 15:55:02 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -51,8 +51,6 @@ void ShowVersion( TidyDocImpl* doc );
 void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option );
 void ReportBadArgument( TidyDocImpl* doc, ctmbstr option );
 void NeedsAuthorIntervention( TidyDocImpl* doc );
-void MissingBody( TidyDocImpl* doc );
-void ReportNumberOfSlides( TidyDocImpl* doc, int count );
 
 void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename );
 void ReportMarkupVersion( TidyDocImpl* doc );

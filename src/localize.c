@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:40:40 $ 
-    $Revision: 1.93 $ 
+    $Date: 2003/05/24 15:55:02 $ 
+    $Revision: 1.94 $ 
 
 */
 
@@ -904,16 +904,6 @@ void NeedsAuthorIntervention( TidyDocImpl* doc )
 {
     tidy_out(doc, "This document has errors that must be fixed before\n");
     tidy_out(doc, "using HTML Tidy to generate a tidied up version.\n\n");
-}
-
-void MissingBody( TidyDocImpl* doc )
-{
-    tidy_out( doc, "Can't create slides - document is missing a body element.\n" );
-}
-
-void ReportNumberOfSlides( TidyDocImpl* doc, int count)
-{
-    tidy_out( doc, "%d Slides found", count );
 }
 
 void GeneralInfo( TidyDocImpl* doc )

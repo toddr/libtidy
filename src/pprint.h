@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-     $Author: creitzel $ 
-     $Date: 2003/03/19 18:37:47 $ 
-     $Revision: 1.3 $ 
+     $Author: hoehrmann $ 
+     $Date: 2003/05/24 15:55:02 $ 
+     $Revision: 1.4 $ 
 
 */
 
@@ -60,11 +60,6 @@ typedef struct _TidyPrintImpl
   
     uint ixInd;
     TidyIndent indent[2];  /* Two lines worth of indent state */
-
-    /* Defunct
-    int     slide, count;
-    Node    *slidecontent;
-    */
 
 } TidyPrintImpl;
 
