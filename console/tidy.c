@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/06/09 08:03:06 $ 
-    $Revision: 1.13 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/05 14:47:03 $ 
+    $Revision: 1.14 $ 
 */
 
 #include "tidy.h"
@@ -357,7 +357,8 @@ void optionvalues( TidyDoc tdoc, ctmbstr prog )
             }
         }
 
-        if ( *name || *type || *vals )
+        /* fix for http://tidy.sf.net/bug/873921 */
+        if ( *name || *type || (vals && *vals) )
         {
             if ( ! vals )
                 vals = "";
