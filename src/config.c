@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 20:53:57 $ 
-    $Revision: 1.58 $ 
+    $Date: 2003/04/21 21:51:27 $ 
+    $Revision: 1.59 $ 
 
 */
 
@@ -251,6 +251,9 @@ static const TidyOptionImpl option_defs[] =
 
   { TidyAccessibilityCheckLevel, DG, "accessibility-check", IN, 0, ParseAcc, accessPicks },
   { TidyVertSpace,      PP, "vertical-space",       BL,   no, ParseBool,     boolPicks },
+#if SUPPORT_ASIAN_ENCODINGS
+  { TidyPunctWrap,      PP, "punctuation-wrap",     BL,   no, ParseBool,     boolPicks },
+#endif /* SUPPORT_ASIAN_ENCODINGS */
   { N_TIDY_OPTIONS,  0 }
 };
 

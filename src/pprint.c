@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/19 16:16:11 $ 
-    $Revision: 1.66 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/21 21:51:28 $ 
+    $Revision: 1.67 $ 
 
 */
 
@@ -65,96 +65,214 @@ uint CWrapLen( TidyDocImpl* doc, uint ind )
     return wraplen;
 }
 
-/* Return if Tidy should break on Chinese char.
+#define UCPC  1 /* Punctuation, Connector     */
+#define UCPD  2 /* Punctuation, Dash          */
+#define UCPE  3 /* Punctuation, Close         */
+#define UCPS  4 /* Punctuation, Open          */
+#define UCPI  5 /* Punctuation, Initial quote */
+#define UCPF  6 /* Punctuation, Final quote   */
+#define UCPO  7 /* Punctuation, Other         */
+#define UCZS  8 /* Separator, Space           */
+#define UCZL  9 /* Separator, Line            */
+#define UCZP 10 /* Separator, Paragraph       */
+
+/*
+  From the original code, the following characters are removed:
+
+    U+2011 (non-breaking hyphen)
+    U+202F (narrow non-break space)
+    U+2044 (fraction slash) 
+    U+200B (zero width space)
+    ...... (bidi formatting control characters)
+
+  U+2011 and U+202F are non-breaking, U+2044 is a Sm character,
+  U+200B is a non-visible space, wrapping after it would make
+  this space visible, bidi should be done using HTML features
+  and the characters are neither Px or Zx.
+
+  The following Unicode 3.0 punctuation characters are added:
+
+    U+2048 (question exclamation mark)
+    U+2049 (exclamation question mark)
+    U+204A (tironian sign et)
+    U+204B (reversed pilcrow sign)
+    U+204C (black leftwards bullet)
+    U+204D (black rightwards bullet)
+    U+3030 (wavy dash)
+    U+30FB (katakana middle dot)
+    U+FE63 (small hyphen-minus)
+    U+FE68 (small reverse solidus)
+    U+FF3F (fullwidth low line)
+    U+FF5B (fullwidth left curly bracket)
+    U+FF5D (fullwidth right curly bracket)
+
+  Other additional characters were not included in Unicode 3.0.
+  The table is based on Unicode 4.0. It must include only those
+  characters marking a wrapping point, "before" if the general
+  category is UCPS or UCPI, otherwise "after".
 */
+static struct _unicode4cat
+{
+  unsigned long code;
+  char category;
+} unicode4cat[] =
+{
+#if 0
+  { 0x037E, UCPO }, { 0x0387, UCPO }, { 0x055A, UCPO }, { 0x055B, UCPO },
+  { 0x055C, UCPO }, { 0x055D, UCPO }, { 0x055E, UCPO }, { 0x055F, UCPO },
+  { 0x0589, UCPO }, { 0x058A, UCPD }, { 0x05BE, UCPO }, { 0x05C0, UCPO },
+  { 0x05C3, UCPO }, { 0x05F3, UCPO }, { 0x05F4, UCPO }, { 0x060C, UCPO },
+  { 0x060D, UCPO }, { 0x061B, UCPO }, { 0x061F, UCPO }, { 0x066A, UCPO },
+  { 0x066B, UCPO }, { 0x066C, UCPO }, { 0x066D, UCPO }, { 0x06D4, UCPO },
+  { 0x0700, UCPO }, { 0x0701, UCPO }, { 0x0702, UCPO }, { 0x0703, UCPO },
+  { 0x0704, UCPO }, { 0x0705, UCPO }, { 0x0706, UCPO }, { 0x0707, UCPO },
+  { 0x0708, UCPO }, { 0x0709, UCPO }, { 0x070A, UCPO }, { 0x070B, UCPO },
+  { 0x070C, UCPO }, { 0x070D, UCPO }, { 0x0964, UCPO }, { 0x0965, UCPO },
+  { 0x0970, UCPO }, { 0x0DF4, UCPO }, { 0x0E4F, UCPO }, { 0x0E5A, UCPO },
+  { 0x0E5B, UCPO }, { 0x0F04, UCPO }, { 0x0F05, UCPO }, { 0x0F06, UCPO },
+  { 0x0F07, UCPO }, { 0x0F08, UCPO }, { 0x0F09, UCPO }, { 0x0F0A, UCPO },
+  { 0x0F0B, UCPO }, { 0x0F0D, UCPO }, { 0x0F0E, UCPO }, { 0x0F0F, UCPO },
+  { 0x0F10, UCPO }, { 0x0F11, UCPO }, { 0x0F12, UCPO }, { 0x0F3A, UCPS },
+  { 0x0F3B, UCPE }, { 0x0F3C, UCPS }, { 0x0F3D, UCPE }, { 0x0F85, UCPO },
+  { 0x104A, UCPO }, { 0x104B, UCPO }, { 0x104C, UCPO }, { 0x104D, UCPO },
+  { 0x104E, UCPO }, { 0x104F, UCPO }, { 0x10FB, UCPO }, { 0x1361, UCPO },
+  { 0x1362, UCPO }, { 0x1363, UCPO }, { 0x1364, UCPO }, { 0x1365, UCPO },
+  { 0x1366, UCPO }, { 0x1367, UCPO }, { 0x1368, UCPO }, { 0x166D, UCPO },
+  { 0x166E, UCPO }, { 0x1680, UCZS }, { 0x169B, UCPS }, { 0x169C, UCPE },
+  { 0x16EB, UCPO }, { 0x16EC, UCPO }, { 0x16ED, UCPO }, { 0x1735, UCPO },
+  { 0x1736, UCPO }, { 0x17D4, UCPO }, { 0x17D5, UCPO }, { 0x17D6, UCPO },
+  { 0x17D8, UCPO }, { 0x17D9, UCPO }, { 0x17DA, UCPO }, { 0x1800, UCPO },
+  { 0x1801, UCPO }, { 0x1802, UCPO }, { 0x1803, UCPO }, { 0x1804, UCPO },
+  { 0x1805, UCPO }, { 0x1806, UCPD }, { 0x1807, UCPO }, { 0x1808, UCPO },
+  { 0x1809, UCPO }, { 0x180A, UCPO }, { 0x180E, UCZS }, { 0x1944, UCPO },
+  { 0x1945, UCPO }, 
+#endif
+  { 0x2000, UCZS }, { 0x2001, UCZS }, { 0x2002, UCZS }, { 0x2003, UCZS },
+  { 0x2004, UCZS }, { 0x2005, UCZS }, { 0x2006, UCZS }, { 0x2008, UCZS },
+  { 0x2009, UCZS }, { 0x200A, UCZS }, { 0x2010, UCPD }, { 0x2012, UCPD },
+  { 0x2013, UCPD }, { 0x2014, UCPD }, { 0x2015, UCPD }, { 0x2016, UCPO },
+  { 0x2017, UCPO }, { 0x2018, UCPI }, { 0x2019, UCPF }, { 0x201A, UCPS },
+  { 0x201B, UCPI }, { 0x201C, UCPI }, { 0x201D, UCPF }, { 0x201E, UCPS },
+  { 0x201F, UCPI }, { 0x2020, UCPO }, { 0x2021, UCPO }, { 0x2022, UCPO },
+  { 0x2023, UCPO }, { 0x2024, UCPO }, { 0x2025, UCPO }, { 0x2026, UCPO },
+  { 0x2027, UCPO }, { 0x2028, UCZL }, { 0x2029, UCZP }, { 0x2030, UCPO },
+  { 0x2031, UCPO }, { 0x2032, UCPO }, { 0x2033, UCPO }, { 0x2034, UCPO },
+  { 0x2035, UCPO }, { 0x2036, UCPO }, { 0x2037, UCPO }, { 0x2038, UCPO },
+  { 0x2039, UCPI }, { 0x203A, UCPF }, { 0x203B, UCPO }, { 0x203C, UCPO },
+  { 0x203D, UCPO }, { 0x203E, UCPO }, { 0x203F, UCPC }, { 0x2040, UCPC },
+  { 0x2041, UCPO }, { 0x2042, UCPO }, { 0x2043, UCPO }, { 0x2045, UCPS },
+  { 0x2046, UCPE }, { 0x2047, UCPO }, { 0x2048, UCPO }, { 0x2049, UCPO },
+  { 0x204A, UCPO }, { 0x204B, UCPO }, { 0x204C, UCPO }, { 0x204D, UCPO },
+  { 0x204E, UCPO }, { 0x204F, UCPO }, { 0x2050, UCPO }, { 0x2051, UCPO },
+  { 0x2053, UCPO }, { 0x2054, UCPC }, { 0x2057, UCPO }, { 0x205F, UCZS },
+  { 0x207D, UCPS }, { 0x207E, UCPE }, { 0x208D, UCPS }, { 0x208E, UCPE },
+  { 0x2329, UCPS }, { 0x232A, UCPE }, { 0x23B4, UCPS }, { 0x23B5, UCPE },
+  { 0x23B6, UCPO }, { 0x2768, UCPS }, { 0x2769, UCPE }, { 0x276A, UCPS },
+  { 0x276B, UCPE }, { 0x276C, UCPS }, { 0x276D, UCPE }, { 0x276E, UCPS },
+  { 0x276F, UCPE }, { 0x2770, UCPS }, { 0x2771, UCPE }, { 0x2772, UCPS },
+  { 0x2773, UCPE }, { 0x2774, UCPS }, { 0x2775, UCPE }, { 0x27E6, UCPS },
+  { 0x27E7, UCPE }, { 0x27E8, UCPS }, { 0x27E9, UCPE }, { 0x27EA, UCPS },
+  { 0x27EB, UCPE }, { 0x2983, UCPS }, { 0x2984, UCPE }, { 0x2985, UCPS },
+  { 0x2986, UCPE }, { 0x2987, UCPS }, { 0x2988, UCPE }, { 0x2989, UCPS },
+  { 0x298A, UCPE }, { 0x298B, UCPS }, { 0x298C, UCPE }, { 0x298D, UCPS },
+  { 0x298E, UCPE }, { 0x298F, UCPS }, { 0x2990, UCPE }, { 0x2991, UCPS },
+  { 0x2992, UCPE }, { 0x2993, UCPS }, { 0x2994, UCPE }, { 0x2995, UCPS },
+  { 0x2996, UCPE }, { 0x2997, UCPS }, { 0x2998, UCPE }, { 0x29D8, UCPS },
+  { 0x29D9, UCPE }, { 0x29DA, UCPS }, { 0x29DB, UCPE }, { 0x29FC, UCPS },
+  { 0x29FD, UCPE }, { 0x3001, UCPO }, { 0x3002, UCPO }, { 0x3003, UCPO },
+  { 0x3008, UCPS }, { 0x3009, UCPE }, { 0x300A, UCPS }, { 0x300B, UCPE },
+  { 0x300C, UCPS }, { 0x300D, UCPE }, { 0x300E, UCPS }, { 0x300F, UCPE },
+  { 0x3010, UCPS }, { 0x3011, UCPE }, { 0x3014, UCPS }, { 0x3015, UCPE },
+  { 0x3016, UCPS }, { 0x3017, UCPE }, { 0x3018, UCPS }, { 0x3019, UCPE },
+  { 0x301A, UCPS }, { 0x301B, UCPE }, { 0x301C, UCPD }, { 0x301D, UCPS },
+  { 0x301E, UCPE }, { 0x301F, UCPE }, { 0x3030, UCPD }, { 0x303D, UCPO },
+  { 0x30A0, UCPD }, { 0x30FB, UCPC }, { 0xFD3E, UCPS }, { 0xFD3F, UCPE },
+  { 0xFE30, UCPO }, { 0xFE31, UCPD }, { 0xFE32, UCPD }, { 0xFE33, UCPC },
+  { 0xFE34, UCPC }, { 0xFE35, UCPS }, { 0xFE36, UCPE }, { 0xFE37, UCPS },
+  { 0xFE38, UCPE }, { 0xFE39, UCPS }, { 0xFE3A, UCPE }, { 0xFE3B, UCPS },
+  { 0xFE3C, UCPE }, { 0xFE3D, UCPS }, { 0xFE3E, UCPE }, { 0xFE3F, UCPS },
+  { 0xFE40, UCPE }, { 0xFE41, UCPS }, { 0xFE42, UCPE }, { 0xFE43, UCPS },
+  { 0xFE44, UCPE }, { 0xFE45, UCPO }, { 0xFE46, UCPO }, { 0xFE47, UCPS },
+  { 0xFE48, UCPE }, { 0xFE49, UCPO }, { 0xFE4A, UCPO }, { 0xFE4B, UCPO },
+  { 0xFE4C, UCPO }, { 0xFE4D, UCPC }, { 0xFE4E, UCPC }, { 0xFE4F, UCPC },
+  { 0xFE50, UCPO }, { 0xFE51, UCPO }, { 0xFE52, UCPO }, { 0xFE54, UCPO },
+  { 0xFE55, UCPO }, { 0xFE56, UCPO }, { 0xFE57, UCPO }, { 0xFE58, UCPD },
+  { 0xFE59, UCPS }, { 0xFE5A, UCPE }, { 0xFE5B, UCPS }, { 0xFE5C, UCPE },
+  { 0xFE5D, UCPS }, { 0xFE5E, UCPE }, { 0xFE5F, UCPO }, { 0xFE60, UCPO },
+  { 0xFE61, UCPO }, { 0xFE63, UCPD }, { 0xFE68, UCPO }, { 0xFE6A, UCPO },
+  { 0xFE6B, UCPO }, { 0xFF01, UCPO }, { 0xFF02, UCPO }, { 0xFF03, UCPO },
+  { 0xFF05, UCPO }, { 0xFF06, UCPO }, { 0xFF07, UCPO }, { 0xFF08, UCPS },
+  { 0xFF09, UCPE }, { 0xFF0A, UCPO }, { 0xFF0C, UCPO }, { 0xFF0D, UCPD },
+  { 0xFF0E, UCPO }, { 0xFF0F, UCPO }, { 0xFF1A, UCPO }, { 0xFF1B, UCPO },
+  { 0xFF1F, UCPO }, { 0xFF20, UCPO }, { 0xFF3B, UCPS }, { 0xFF3C, UCPO },
+  { 0xFF3D, UCPE }, { 0xFF3F, UCPC }, { 0xFF5B, UCPS }, { 0xFF5D, UCPE },
+  { 0xFF5F, UCPS }, { 0xFF60, UCPE }, { 0xFF61, UCPO }, { 0xFF62, UCPS },
+  { 0xFF63, UCPE }, { 0xFF64, UCPO }, { 0xFF65, UCPC }, { 0x10100,UCPO },
+  { 0x10101,UCPO }, { 0x1039F,UCPO },
+
+  /* final entry */
+  { 0x0000,    0 }
+};
+
 typedef enum
 {
-  NoBreak,
-  BreakAfter,
-  BreakBefore
-} BreakChar;
+    NoWrapPoint,
+    WrapBefore,
+    WrapAfter
+} WrapPoint;
 
-BreakChar isBreakableUnicode( tchar c, uint mode )
+/*
+  If long lines of text have no white space as defined in HTML 4
+  (U+0009, U+000A, U+000D, U+000C, U+0020) other characters could
+  be used to determine a wrap point. Since user agents would
+  normalize the inserted newline character to a space character,
+  this wrapping behaivour would insert visual whitespace into the
+  document.
+
+  Characters of the General Category Pi and Ps in the Unicode
+  character database (opening punctuation and intial quote
+  characters) mark a wrapping point before the character, other
+  punctuation characters (Pc, Pd, Pe, Pf, and Po), breakable
+  space characters (Zs), and paragraph and line separators
+  (Zl, Zp) mark a wrap point after the character. Using this
+  function Tidy can for example pretty print
+
+    <p>....................&ldquo;...quote...&rdquo;...</p>
+  as
+    <p>....................\n&ldquo;...quote...&rdquo;...</p>
+  or
+    <p>....................&ldquo;...quote...&rdquo;\n...</p>
+
+  if the next normal wrapping point would exceed the user
+  chosen wrapping column.
+*/
+WrapPoint CharacterWrapPoint(tchar c)
 {
-  Bool breakable = no; 
-
-  /* Break after any punctuation or spaces characters */ 
-  if ( c >= 0x2000 && !(mode & PREFORMATTED) )
-  {
-    if ( (c >= 0x2000 && c<= 0x2006) ||
-         (c >= 0x2008 && c<= 0x2010) ||
-         (c >= 0x2011 && c<= 0x2046) ||
-         (c >= 0x207D && c<= 0x207E) ||
-         (c >= 0x208D && c<= 0x208E) ||
-         (c >= 0x2329 && c<= 0x232A) ||
-         (c >= 0x3001 && c<= 0x3003) ||
-         (c >= 0x3008 && c<= 0x3011) ||
-         (c >= 0x3014 && c<= 0x301F) ||
-         (c >= 0xFD3E && c<= 0xFD3F) ||
-         (c >= 0xFE30 && c<= 0xFE44) ||
-         (c >= 0xFE49 && c<= 0xFE52) ||
-         (c >= 0xFE54 && c<= 0xFE61) ||
-         (c >= 0xFE6A && c<= 0xFE6B) ||
-         (c >= 0xFF01 && c<= 0xFF03) ||
-         (c >= 0xFF05 && c<= 0xFF0A) ||
-         (c >= 0xFF0C && c<= 0xFF0F) ||
-         (c >= 0xFF1A && c<= 0xFF1B) ||
-         (c >= 0xFF1F && c<= 0xFF20) ||
-         (c >= 0xFF3B && c<= 0xFF3D) ||
-         (c >= 0xFF61 && c<= 0xFF65) )
-    { 
-      breakable =  yes; 
-    } 
-    else switch (c)
-    { 
-      case 0xFE63: case 0xFE68: case 0x3030: 
-      case 0x30FB: case 0xFF3F: case 0xFF5B: 
-      case 0xFF5D: 
-        breakable = yes; 
-        break;
-    } 
-
-    /* but break before a left punctuation */ 
-    if ( breakable )
-    { 
-      if ( (c >= 0x201A && c <= 0x201C) || 
-           (c >= 0x201E && c <= 0x201F) )
-      { 
-        return BreakBefore; 
-      } 
-      else switch ( c )
-      { 
-        case 0x2018: case 0x2039: case 0x2045: 
-        case 0x207D: case 0x208D: case 0x2329: 
-        case 0x3008: case 0x300A: case 0x300C: 
-        case 0x300E: case 0x3010: case 0x3014: 
-        case 0x3016: case 0x3018: case 0x301A: 
-        case 0x301D: case 0xFD3E: case 0xFE35: 
-        case 0xFE37: case 0xFE39: case 0xFE3B: 
-        case 0xFE3D: case 0xFE3F: case 0xFE41: 
-        case 0xFE43: case 0xFE59: case 0xFE5B: 
-        case 0xFE5D: case 0xFF08: case 0xFF3B: 
-        case 0xFF5B: case 0xFF62: 
-          return BreakBefore; 
-      } 
-      return BreakAfter;
-    } 
-  } 
-  return NoBreak;
+    int i;
+    for (i = 0; unicode4cat[i].code && unicode4cat[i].code <= c; ++i)
+        if (unicode4cat[i].code == c)
+            /* wrapping before opening punctuation and initial quotes */
+            if (unicode4cat[i].category == UCPS ||
+                unicode4cat[i].category == UCPI)
+                return WrapBefore;
+            /* else wrapping after this character */
+            else
+                return WrapAfter;
+    /* character has no effect on line wrapping */
+    return NoWrapPoint;
 }
 
-BreakChar isBreakableBig5( tchar c, uint mode )
+WrapPoint Big5WrapPoint(tchar c)
 {
-  if ( (c & 0xFF00) == 0xA100 && !(mode & PREFORMATTED) )
-  { 
-    /* opening brackets have odd codes: break before them */ 
-    if ( c > 0x5C && c < 0xAD && (c & 1) == 1 ) 
-      return BreakBefore;
-    return BreakAfter;
-  }
-  return NoBreak;
+    if ((c & 0xFF00) == 0xA100)
+    { 
+        /* opening brackets have odd codes: break before them */ 
+        if ( c > 0x5C && c < 0xAD && (c & 1) == 1 ) 
+            return WrapBefore;
+        return WrapAfter;
+    }
+    return NoWrapPoint;
 }
-
 
 #endif /* SUPPORT_ASIAN_ENCODINGS */
 
@@ -685,14 +803,12 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     case UTF16:
     case UTF16LE:
     case UTF16BE:
-        /* Chinese doesn't have spaces, so it needs other kinds of breaks */
-        /* This will also help documents using nice Unicode punctuation */
-        /* But we leave the ASCII range punctuation untouched */
+        if (!(mode & PREFORMATTED) && cfg(doc, TidyPunctWrap))
         {
-            BreakChar brk = isBreakableUnicode( c, mode );
-            if ( brk == BreakBefore )
+            WrapPoint wp = CharacterWrapPoint(c);
+            if (wp == WrapBefore)
                 pprint->wraphere = pprint->linelen;
-            else if ( brk == BreakAfter )
+            else if (wp == WrapAfter)
                 pprint->wraphere = pprint->linelen + 1;
         }
         break;
@@ -701,11 +817,12 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         /* Allow linebreak at Chinese punctuation characters */
         /* There are not many spaces in Chinese */
         AddChar( pprint, c );
+        if (!(mode & PREFORMATTED)  && cfg(doc, TidyPunctWrap))
         {
-            BreakChar brk = isBreakableBig5( c, mode );
-            if ( brk == BreakBefore )
+            WrapPoint wp = Big5WrapPoint(c);
+            if (wp == WrapBefore)
                 pprint->wraphere = pprint->linelen;
-            else if ( brk == BreakAfter )
+            else if (wp == WrapAfter)
                 pprint->wraphere = pprint->linelen + 1;
         }
         return;
@@ -718,7 +835,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     }
     /* #431953 - end RJ */
 
-#else
+#else /* SUPPORT_ASIAN_ENCODINGS */
 
     /* otherwise ISO 2022 characters are passed raw */
     if ( outenc == ISO2022 || outenc == RAW )
@@ -727,7 +844,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         return;
     }
 
-#endif
+#endif /* SUPPORT_ASIAN_ENCODINGS */
 
     /* if preformatted text, map &nbsp; to space */
     if ( c == 160 && (mode & PREFORMATTED) )
