@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 16:55:15 $ 
-    $Revision: 1.70 $ 
+    $Date: 2003/04/10 15:14:57 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -2931,9 +2931,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
     {
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
-            if ( !cfgBool(doc, TidyBodyOnly) )
-                ReportWarning( doc, head, NULL, MISSING_TITLE_ELEMENT);
- 
+            ReportWarning( doc, head, NULL, MISSING_TITLE_ELEMENT);
             InsertNodeAtEnd(head, InferredTag(doc, "title"));
         }
     }
