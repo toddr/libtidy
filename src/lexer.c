@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/30 22:54:15 $ 
-    $Revision: 1.40 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/15 03:49:26 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -788,6 +788,15 @@ void AddStringLiteral(Lexer *lexer, char *str)
         AddCharToLexer(lexer, c);
 }
 
+void AddStringLiteralLen(Lexer *lexer, char *str, int len )
+{
+    unsigned char c;
+    int ix;
+
+    for ( ix=0; ix < len && (c = *str++) != '\0'; ++ix )
+        AddCharToLexer(lexer, c);
+}
+
 /* find doctype element */
 Node *FindDocType(Node *root)
 {
@@ -1075,8 +1084,9 @@ static Node* NewXhtmlDocTypeNode( Node* root )
 
 Bool SetXHTMLDocType(Lexer *lexer, Node *root)
 {
-    char *fpi, *sysid, *name_space = XHTML_NAMESPACE;
+    char *fpi, *sysid, *dtdsub, *name_space = XHTML_NAMESPACE;
     Node *doctype;
+    int dtdlen = 0;
 
     doctype = FindDocType(root);
 
@@ -1134,7 +1144,26 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
     if (!fpi)
         return no;
 
-    if (!doctype)
+    if (doctype)
+    {
+      /* Look for internal DTD subset */
+      if ( xHTML || XmlOut )
+      {
+        char* start = lexer->lexbuf + doctype->start;
+        int len = doctype->end - doctype->start + 1;
+        int dtdbeg = wstrnchr( start, len, '[' );
+        if ( dtdbeg >= 0 )
+        {
+          int dtdend = wstrnchr( start+dtdbeg, len-dtdbeg, ']' );
+          if ( dtdend >= 0 )
+          {
+            dtdlen = dtdend + 1;
+            dtdsub = start + dtdbeg;
+          }
+        }
+      }
+    }
+    else
     {
         if ( !(doctype = NewXhtmlDocTypeNode( root )) )
             return no;
@@ -1163,6 +1192,12 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
     /* add system identifier */
     AddStringLiteral(lexer, sysid);
     AddStringLiteral(lexer, "\"");
+
+    if ( dtdlen > 0 && dtdsub )
+    {
+      AddCharToLexer( lexer, ' ' );
+      AddStringLiteralLen( lexer, dtdsub, dtdlen );
+    }
 
     lexer->txtend = lexer->lexsize;
 

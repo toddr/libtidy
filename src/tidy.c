@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/08/15 02:15:06 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/08/15 03:49:26 $ 
+    $Revision: 1.18 $ 
 
   Contributing Author(s):
 
@@ -698,7 +698,24 @@ int wstrncasecmp(char *s1, char *s2, int n)
     return (*s1 > *s2 ? 1 : -1);
 }
 
-Bool wsubstrn(char *s1, int len1, char *s2 )
+/* return offset of cc from beginning of s1,
+** -1 if not found.
+*/
+int wstrnchr( char *s1, int len1, char cc )
+{
+    int i;
+    char* cp = s1;
+
+    for ( i = 0; i < len1; ++i, ++cp )
+    {
+        if ( *cp == cc )
+            return i;
+    }
+
+    return -1;
+}
+
+Bool wsubstrn( char *s1, int len1, char *s2 )
 {
     int i, len2 = wstrlen(s2);
 
