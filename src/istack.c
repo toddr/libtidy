@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/03 07:16:29 $ 
-    $Revision: 1.15 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 12:53:25 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -31,6 +31,8 @@ AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
     newattrs->attribute = tmbstrdup(attrs->attribute);
     newattrs->value = tmbstrdup(attrs->value);
     newattrs->dict = FindAttribute(doc, newattrs);
+    newattrs->asp = attrs->asp ? CloneNode(doc, attrs->asp) : NULL;
+    newattrs->php = attrs->php ? CloneNode(doc, attrs->php) : NULL;
     return newattrs;
 }
 
