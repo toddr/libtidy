@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 19:17:06 $ 
-    $Revision: 1.8 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:56:08 $ 
+    $Revision: 1.9 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -552,7 +552,7 @@ static void CreateStyleElement(Lexer *lexer, Node *doc)
      the head node should be first child of html node
     */
 
-    head = FindHead(doc);
+    head = FindHEAD(doc);
     
     if (head)
         InsertNodeAtEnd(head, node);
@@ -1636,11 +1636,36 @@ void BQ2Div(Node *node)
     }
 }
 
+
+Node *FindEnclosingCell(Node *node)
+{
+    Node *check;
+
+    for ( check=node; check; check = check->parent )
+    {
+      if ( check->tag == tag_td )
+        return check;
+    }
+    return null;
+}
+
 /* node is <![if ...]> prune up to <![endif]> */
 static Node *PruneSection(Lexer *lexer, Node *node)
 {
     for (;;)
     {
+        if (wstrncmp(lexer->lexbuf + node->start, "if !supportEmptyParas", 21) == 0)
+        {
+          Node* cell = FindEnclosingCell( node );
+          if ( cell )
+          {
+            /* Need to put &nbsp; into cell so it doesn't look weird */
+            char onesixty[2] = { (char) 160, (char)0 };
+            Node* nbsp = NewLiteralTextNode( lexer, onesixty );
+            InsertNodeBeforeElement( node, nbsp );
+          }
+        }
+
         /* discard node and returns next */
         node = DiscardElement(node);
 
@@ -1691,29 +1716,36 @@ void DropSections(Lexer *lexer, Node *node)
     }
 }
 
-static void PurgeAttributes(Node *node)
+static void PurgeWord2000Attributes(Node *node)
 {
-    AttVal *attr = node->attributes, *next, *prev = null;
+    AttVal *attr, *next, *prev = null;
 
-    while (attr)
+    for ( attr = node->attributes; attr; attr = next )
     {
         next = attr->next;
 
         /* special check for class="Code" denoting pre text */
-        if (wstrcmp(attr->attribute, "class") == 0 &&
-            wstrcmp(attr->value, "Code") == 0)
+        /* Pass thru user defined styles as HTML class names */
+        if (wstrcmp(attr->attribute, "class") == 0)
         {
-            prev = attr;
+            if ( wstrcmp(attr->value, "Code") == 0 ||
+                 wstrncmp(attr->value, "Mso", 3) != 0 )
+            {
+                prev = attr;
+                continue;
+            }
         }
-        else if (wstrcmp(attr->attribute, "class") == 0 ||
-            wstrcmp(attr->attribute, "style") == 0 ||
-            wstrcmp(attr->attribute, "lang") == 0 ||
-            wstrncmp(attr->attribute, "x:", 2) == 0 ||
-            ((wstrcmp(attr->attribute, "height") == 0 || /* #427669 - fix by skark 08 Aug 00 */
-              wstrcmp(attr->attribute, "width") == 0) &&
-                (node->tag == tag_td ||
-                 node->tag == tag_tr ||
-                 node->tag == tag_th)))
+
+        if ( wstrcmp(attr->attribute, "class") == 0 ||
+             wstrcmp(attr->attribute, "style") == 0 ||
+             wstrcmp(attr->attribute, "lang") == 0 ||
+             wstrncmp(attr->attribute, "x:", 2) == 0 ||
+             ( ( wstrcmp(attr->attribute, "height") == 0 ||
+                 wstrcmp(attr->attribute, "width") == 0 ) &&
+               ( node->tag == tag_td || 
+                 node->tag == tag_tr || 
+                 node->tag == tag_th ) )
+           )
         {
             if (prev)
                 prev->next = next;
@@ -1724,8 +1756,6 @@ static void PurgeAttributes(Node *node)
         }
         else
             prev = attr;
-
-        attr = next;
     }
 }
 
@@ -1804,6 +1834,57 @@ static void NormalizeSpaces(Lexer *lexer, Node *node)
     }
 }
 
+/* used to hunt for hidden preformatted sections */
+Bool NoMargins(Node *node)
+{
+    AttVal *attval = GetAttrByName(node, "style");
+
+    if (attval == null)
+        return no;
+
+    /* search for substring "margin-top: 0" */
+
+    if (!wsubstr(attval->value, "margin-top: 0"))
+        return no;
+    /* search for substring "margin-top: 0" */
+
+    if (!wsubstr(attval->value, "margin-bottom: 0"))
+        return no;
+
+    return yes;
+}
+
+/* does element have a single space as its content? */
+Bool SingleSpace(Lexer *lexer, Node *node)
+{
+    if (node->content)
+    {
+        node = node->content;
+
+        if (node->next != null)
+            return no;
+
+        if (node->type != TextNode)
+            return no;
+
+        if (((node->end - node->start) == 1) &&
+                lexer->lexbuf[node->start] == ' ')
+            return yes;
+
+        if ((node->end - node->start) == 2)
+        {
+            unsigned int c;
+
+            GetUTF8(lexer->lexbuf + node->start, &c);
+
+            if (c == 160)
+                return yes;
+        }
+    }
+
+    return no;
+}
+
 /*
  This is a major clean up to strip out all the extra stuff you get
  when you save as web page from Word 2000. It doesn't yet know what
@@ -1818,6 +1899,57 @@ void CleanWord2000(Lexer *lexer, Node *node)
 
     while (node)
     {
+        /* get rid of Word's xmlns attributes */
+        if (node->tag == tag_html)
+        {
+            /* check that it's a Word 2000 document */
+            if (!GetAttrByName(node, "xmlns:o") && !MakeBare)
+                return;
+
+            FreeAttrs(node);
+        }
+
+        /* fix up preformatted sections by looking for a
+        ** sequence of paragraphs with zero top/bottom margin
+        */
+        if (node->tag == tag_p)
+        {
+            if (NoMargins(node))
+            {
+                Node *pre, *next;
+                CoerceNode(lexer, node, tag_pre);
+
+                PurgeWord2000Attributes(node);
+
+                if (node->content)
+                    CleanWord2000(lexer, node->content);
+
+                pre = node;
+                node = node->next;
+
+                /* continue to strip p's */
+
+                while (node->tag == tag_p && NoMargins(node))
+                {
+                    next = node->next;
+                    RemoveNode(node);
+                    InsertNodeAtEnd(pre, NewLineNode(lexer));
+                    InsertNodeAtEnd(pre, node);
+                    StripSpan(lexer, node);
+                    node = next;
+                }
+
+                if (node == null)
+                    break;
+            }
+        }
+
+        if (node->tag && (node->tag->model & CM_BLOCK)
+            && SingleSpace(lexer, node))
+        {
+            node = StripSpan(lexer, node);
+            continue;
+        }
         /* discard Word's style verbiage */
         if (node->tag == tag_style || node->tag == tag_meta || node->type == CommentTag)
         {
@@ -1825,21 +1957,11 @@ void CleanWord2000(Lexer *lexer, Node *node)
             continue;
         }
 
-        /* strip out all span tags Word scatters so liberally! */
-        if (node->tag == tag_span)
+        /* strip out all span and font tags Word scatters so liberally! */
+        if (node->tag == tag_span || node->tag == tag_font)
         {
             node = StripSpan(lexer, node);
             continue;
-        }
-
-        /* get rid of Word's xmlns attributes */
-        if (node->tag == tag_html)
-        {
-            /* check that it's a Word 2000 document */
-            if (!GetAttrByName(node, "xmlns:o"))
-                return;
-
-            FreeAttrs(node);
         }
 
         if (node->tag == tag_link)
@@ -1865,17 +1987,24 @@ void CleanWord2000(Lexer *lexer, Node *node)
             AttVal *attr = GetAttrByName(node, "class");
 
             /* map sequence of <p class="MsoListBullet"> to <ul>...</ul> */
-            if (attr && wstrcmp(attr->value, "MsoListBullet") == 0)
+            /* map <p class="MsoListNumber"> to <ol>...</ol> */
+            if (attr && 
+                ( wstrcmp(attr->value, "MsoListBullet") == 0 ||
+                  wstrcmp(attr->value, "MsoListNumber") == 0 ) )
             {
+                Dict* listType = tag_ul;
+                if ( wstrcmp(attr->value, "MsoListNumber") == 0 )
+                    listType = tag_ol;
+
                 CoerceNode(lexer, node, tag_li);
 
-                if (!list || list->tag != tag_ul)
+                if (!list || list->tag != listType)
                 {
-                    list = InferredTag(lexer, "ul");
+                    list = InferredTag(lexer, listType->name);
                     InsertNodeBeforeElement(node, list);
                 }
 
-                PurgeAttributes(node);
+                PurgeWord2000Attributes(node);
 
                 if (node->content)
                     CleanWord2000(lexer, node->content);
@@ -1912,7 +2041,7 @@ void CleanWord2000(Lexer *lexer, Node *node)
 
         /* strip out style and class attributes */
         if (node->type == StartTag || node->type == StartEndTag)
-            PurgeAttributes(node);
+            PurgeWord2000Attributes(node);
 
         if (node->content)
             CleanWord2000(lexer, node->content);
@@ -1923,9 +2052,42 @@ void CleanWord2000(Lexer *lexer, Node *node)
 
 Bool IsWord2000(Node *root)
 {
+    AttVal *attval;
+    Node *node, *head;
     Node *html = FindHTML(root);
 
-    return (html && GetAttrByName(html, "xmlns:o"));
+    if (html && GetAttrByName(html, "xmlns:o"))
+        return yes;
+    
+    /* search for <meta name="GENERATOR" content="Microsoft ..."> */
+    head = FindHEAD(root);
+
+    if (head)
+    {
+        for (node = head->content; node; node = node->next)
+        {
+            if (node->tag != tag_meta)
+                continue;
+
+            attval = GetAttrByName(node, "name");
+
+            if (attval == null || attval->value == null)
+                continue;
+
+            if (wstrcasecmp(attval->value, "generator") != 0)
+                continue;
+
+            attval =  GetAttrByName(node, "content");
+
+            if (attval == null || attval->value == null)
+                continue;
+
+            if (wsubstr(attval->value, "Microsoft"))
+                return yes;
+        }
+    }
+
+    return no;
 }
 
 /* where appropriate move object elements from head to body */
