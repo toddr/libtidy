@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:40:46 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/09/04 02:42:42 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -40,19 +40,28 @@
 #define SUPPORT_UTF16_ENCODINGS 0
 #endif
 
-/* Convenience defines for Mac platform */
+/* Convenience defines for Mac platforms */
 
 #if defined(macintosh)
 /* Mac OS 6.x/7.x/8.x/9.x, with or without CarbonLib - MPW or Metrowerks 68K/PPC compilers */
 #define MAC_OS_CLASSIC
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Mac OS"
+#endif
 #endif
 #if defined(linux) && defined(powerpc)
 /* MkLinux on PPC  - gcc (egcs) compiler */
 #define MAC_OS_MKLINUX
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "MkLinux"
+#endif
 #endif
 #if defined(__APPLE__) && defined(__MACH__)
 /* Mac OS X (client) 10.x (or server 1.x/10.x) - gcc or Metrowerks MachO compilers */
 #define MAC_OS_X
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Mac OS X"
+#endif
 #endif
 #if defined(MAC_OS_CLASSIC) || defined(MAC_OS_MKLINUX) || defined(MAC_OS_X)
 /* Any OS on Mac platform */
@@ -61,14 +70,48 @@
 
 /* Convenience defines for BSD like platforms */
  
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__FreeBSD__)
 #define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "FreeBSD"
+#endif
+#endif
+#if defined(__NetBSD__)
+#define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "NetBSD"
+#endif
+#endif
+#if defined(__OpenBSD__)
+#define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "OpenBSD"
+#endif
 #endif
 
 /* Convenience defines for Windows platforms */
  
 #if defined(WINDOWS) || defined(_WIN32)
 #define WINDOWS_OS
+#define PLATFORM_NAME "Windows"
+#endif
+
+/* Convenience defines for Linux platforms */
+ 
+#if defined(__linux__)
+#define LINUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Linux"
+#endif
+#endif
+
+/* Convenience defines for Solaris platforms */
+ 
+#if defined(sun)
+#define SOLARIS_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Solaris"
+#endif
 #endif
 
 #include <ctype.h>
@@ -122,7 +165,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(sun) || defined(__linux__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
@@ -130,7 +173,7 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(sun) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(SOLARIS_OS) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
@@ -173,7 +216,7 @@
 /* you may need to delete the #ifndef and #endif on your system */
 
 #ifndef __USE_MISC
-#if defined(sun) || defined(BSD_BASED_OS) || defined(MAC_OS_X)
+#if defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X)
 #include <sys/types.h>
 #else
 #ifndef _INCLUDE_HPUX_SOURCE
