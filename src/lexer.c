@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 03:15:45 $ 
-    $Revision: 1.100 $ 
+    $Date: 2003/05/06 03:32:36 $ 
+    $Revision: 1.101 $ 
 
 */
 
@@ -1588,10 +1588,11 @@ Bool FixDocType( TidyDocImpl* doc )
     Node* doctype = FindDocType( doc );
     uint dtmode = cfg( doc, TidyDoctypeMode );
     uint guessed = VERS_UNKNOWN;
-    AttVal* sys;
+    Bool hadSI = no;
 
     if (dtmode == TidyDoctypeAuto &&
-        lexer->versions & lexer->doctype)
+        lexer->versions & lexer->doctype &&
+        !(VERS_XHTML & lexer->doctype && !lexer->isvoyager))
         return yes;
 
     if (dtmode == TidyDoctypeOmit)
@@ -1603,6 +1604,9 @@ Bool FixDocType( TidyDocImpl* doc )
 
     if (cfgBool(doc, TidyXmlOut))
         return yes;
+
+    if (doctype)
+        hadSI = GetAttrByName(doctype, "SYSTEM") != NULL;
 
     if ((dtmode == TidyDoctypeStrict ||
          dtmode == TidyDoctypeLoose) && doctype)
@@ -1639,8 +1643,8 @@ Bool FixDocType( TidyDocImpl* doc )
 
     RepairAttrValue(doc, doctype, "PUBLIC", GetFPIFromVers(guessed));
 
-    if (sys = GetAttrByName(doctype, "SYSTEM"))
-        RemoveAttribute(doctype, sys);
+    if (hadSI)
+        RepairAttrValue(doc, doctype, "SYSTEM", GetSIFromVers(guessed));
 
     return yes;
 }
