@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 00:28:36 $ 
-    $Revision: 1.129 $ 
+    $Date: 2003/07/14 12:01:14 $ 
+    $Revision: 1.130 $ 
 
 */
 
@@ -2303,6 +2303,13 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         return lexer->token = TextToken(lexer);
 
                     continue;       /* no text so keep going */
+                }
+
+                /* fix for bug 762102 */
+                if (c == '&')
+                {
+                    UngetChar(c, doc->docIn);
+                    --(lexer->lexsize);
                 }
 
                 /* otherwise treat as CDATA */
