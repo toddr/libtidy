@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/10 09:37:00 $ 
-    $Revision: 1.110 $ 
+    $Date: 2003/05/10 20:46:45 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -2297,17 +2297,15 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 if (IsLetter(c))
                 {
                     UngetChar(c, doc->docIn);     /* push back letter */
+                    UngetChar('<', doc->docIn);
+                    --(doc->docIn->curcol);
                     lexer->lexsize -= 2;      /* discard "<" + letter */
                     lexer->txtend = lexer->lexsize;
                     lexer->state = LEX_STARTTAG;         /* ready to read tag name */
 
                     /* if some text before < return it now */
                     if (lexer->txtend > lexer->txtstart)
-                    {
-                        lexer->token = TextToken(lexer);
-                        --(doc->docIn->curcol);
-                        return lexer->token;
-                    }
+                        return lexer->token = TextToken(lexer);
 
                     continue;       /* no text so keep going */
                 }
@@ -2344,6 +2342,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 return lexer->token;  /* the endtag token */
 
             case LEX_STARTTAG: /* first letter of tagname */
+                c = ReadChar(doc->docIn);
+                ChangeChar(lexer, c);
                 lexer->txtstart = lexer->lexsize - 1; /* set txtstart to first letter */
                 c = ParseTagName( doc );
                 isempty = no;
