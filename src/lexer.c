@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.109 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/10 09:37:00 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -2303,7 +2303,11 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                     /* if some text before < return it now */
                     if (lexer->txtend > lexer->txtstart)
-                        return lexer->token = TextToken(lexer);
+                    {
+                        lexer->token = TextToken(lexer);
+                        --(doc->docIn->curcol);
+                        return lexer->token;
+                    }
 
                     continue;       /* no text so keep going */
                 }
