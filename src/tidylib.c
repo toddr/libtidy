@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/03/02 04:31:13 $ 
-    $Revision: 1.4 $ 
+    $Author: creitzel $ 
+    $Date: 2003/03/18 19:46:15 $ 
+    $Revision: 1.5 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -595,6 +595,8 @@ FILE*   tidySetErrorFile( TidyDoc tdoc, ctmbstr errfilnam )
             impl->errout = FileOutput( errout, outenc, nl );
             return errout;
         }
+        else /* Emit message to current error sink */
+            FileError( impl, errfilnam, TidyError );
     }
     return null;
 }
@@ -764,6 +766,8 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
         MemFree( in );
         fclose( fin );
     }
+    else /* Error message! */
+        FileError( doc, filnam, TidyError );
     return status;
 }
 
@@ -878,6 +882,8 @@ int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
         }
 #endif /* PRESERVFILETIMES */
     }
+    if ( status < 0 ) /* Error message! */
+        FileError( doc, filnam, TidyError );
     return status;
 }
 

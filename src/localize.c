@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/03/09 19:34:17 $ 
-    $Revision: 1.70 $ 
+    $Author: creitzel $ 
+    $Date: 2003/03/18 19:46:14 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -230,9 +230,9 @@ void ShowVersion( TidyDocImpl* doc )
               helper, platform, release_date, __DATE__, __TIME__ );
 }
 
-void FileError( TidyDocImpl* doc, ctmbstr file )
+void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level )
 {
-    message( doc, TidyConfig, "Can't open \"%s\"\n", file );
+    message( doc, level, "Can't open \"%s\"\n", file );
 }
 
 static char* TagToString( Node* tag, char* buf )

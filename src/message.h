@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 19:46:15 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -62,7 +62,7 @@ void HelpText( TidyDocImpl* doc, ctmbstr prog );
 void GeneralInfo( TidyDocImpl* doc );
 void UnknownOption( TidyDocImpl* doc, char c );
 void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file );
-void FileError( TidyDocImpl* doc, ctmbstr file );
+void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level );
 
 void ErrorSummary( TidyDocImpl* doc );
 void ReportEncodingError( TidyDocImpl* doc, uint code, uint c );

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 18:59:15 $ 
-    $Revision: 1.50 $ 
+    $Date: 2003/03/18 19:46:12 $ 
+    $Revision: 1.51 $ 
 
 */
 
@@ -624,7 +624,7 @@ int ParseConfigFileEnc( TidyDocImpl* doc, ctmbstr file, ctmbstr charenc )
     int enc = CharEncodingId( charenc );
 
     if ( fin == null || enc < 0 )
-        FileError( doc, fname );
+        FileError( doc, fname, TidyConfig );
     else
     {
         tchar c;
