@@ -4,8 +4,8 @@
 #  CVS Info :
 #
 #     $Author: creitzel $
-#     $Date: 2003/04/17 14:33:52 $
-#     $Revision: 1.4 $
+#     $Date: 2003/04/17 15:47:21 $
+#     $Revision: 1.5 $
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -156,6 +156,8 @@ LIBHFILES= \
         $(SRCDIR)tags.h \
         $(SRCDIR)tmbstr.h       $(SRCDIR)utf8.h         $(SRCDIR)tidy-int.h
 
+all:	$(OBJDIR)\libtidy.lib $(BINDIR)\tidy.exe $(BINDIR)\tab2space.exe
+
 $(OBJDIR) :
 		if not exist $(OBJDIR) mkdir $(OBJDIR)
 
@@ -181,5 +183,4 @@ clean:
 	-rd $(OBJDIR)
 	-rd $(BINDIR)
 
-all:	$(OBJDIR)\libtidy.lib $(BINDIR)\tidy.exe $(BINDIR)\tab2space.exe
 
