@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 00:50:48 $ 
-    $Revision: 1.90 $ 
+    $Date: 2003/04/11 01:49:50 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -1948,6 +1948,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     Bool isEmpty = yes;
     Bool matches = no;
     uint c;
+    Bool hasSrc = GetAttrByName(container, "src") != NULL;
 
     lexer->lines = doc->docIn->curline;
     lexer->columns = doc->docIn->curcol;
@@ -1984,6 +1985,15 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
 
             if (IsLetter(c))
             {
+                /* <head><script src=foo><meta name=foo content=bar>*/
+                if (hasSrc && isEmpty && nodeIsSCRIPT(container))
+                {
+                    ReportWarning(doc, container, NULL, MISSING_ENDTAG_FOR);
+                    lexer->lexsize = lexer->txtstart;
+                    UngetChar(c, doc->docIn);
+                    UngetChar('<', doc->docIn);
+                    return NULL;
+                }
                 AddCharToLexer(lexer, (uint)c);
                 start = lexer->lexsize - 1;
                 state = CDATA_STARTTAG;
