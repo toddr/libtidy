@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/17 16:53:46 $ 
-    $Revision: 1.34 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/17 19:04:56 $ 
+    $Revision: 1.35 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -364,14 +364,14 @@ Bool FindTag( TidyDocImpl* doc, Node *node )
 
 const Dict* LookupTagDef( TidyTagId tid )
 {
-    if ( tid > TidyTag_UNKNOWN && tid < N_TIDY_TAGS )
-    {
-        assert( tag_defs[ tid ].id == tid );
-        return tag_defs + tid;
-    }
-    return NULL;
-}
+    const Dict *np;
 
+    for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np )
+        if (np->id == tid)
+            return np;
+
+    return NULL;    
+}
 
 Parser* FindParser( TidyDocImpl* doc, Node *node )
 {
@@ -459,6 +459,7 @@ void InitTags( TidyDocImpl* doc )
     Dict* xml;
     TidyTagImpl* tags = &doc->tags;
 
+#if 0
 #ifdef _DEBUG
     {
         /* Tag ID is index position in element type lookup table */
@@ -469,6 +470,7 @@ void InitTags( TidyDocImpl* doc )
           assert( (uint) dict->id == ix );
         }
     }
+#endif
 #endif
 
     ClearMemory( tags, sizeof(TidyTagImpl) );
