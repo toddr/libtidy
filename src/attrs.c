@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 05:16:51 $ 
-    $Revision: 1.6 $ 
+    $Date: 2001/07/11 05:49:43 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -40,6 +40,7 @@ AttrCheck CheckId;
 AttrCheck CheckAlign;
 AttrCheck CheckValign;
 AttrCheck CheckBool;
+AttrCheck CheckLength;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -78,13 +79,12 @@ static Attribute *hashtab[HASHSIZE];
 #define COLOR       null
 #define CLEAR       null
 #define BORDER      CheckBool     /* kludge */
-#define LENGTH      null
 #define CHARSET     null
 #define LANG        null
 #define BOOL        CheckBool
 #define COLS        null
 #define NUMBER      null
-#define LENGTH      null
+#define LENGTH      CheckLength
 #define COORDS      null
 #define DATE        null
 #define TEXTDIR     null
@@ -423,7 +423,7 @@ void DeclareLiteralAttrib(char *name)
 {
     Attribute *attrib = lookup(name);
 
-    if (attrib == null)	/* #431337 - fix by Terry Teague 07 Jun 01 */
+    if (attrib == null) /* #431337 - fix by Terry Teague 07 Jun 01 */
         attrib = install(name, VERS_PROPRIETARY, null);
 
     attrib->literal = yes;
@@ -638,7 +638,34 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
         ReportAttrError(lexer, node, value, PROPRIETARY_ATTR_VALUE);
     }
     else
-          ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+}
+
+void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *p = attval->value;
+    
+    if (p == null)
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+    
+    if (!IsDigit(*p++))
+    {
+        /* shout: bad length */
+    } else {
+
+        while (*p)
+        {
+            /* elements th and td must not use percentages */
+
+            if ((!IsDigit(*p) && (node->tag == tag_td ||
+                node->tag == tag_th)) || (!IsDigit(*p) && *p != '%'))
+            {
+                /* shout: bad length */
+                break;
+            }
+            ++p;
+        }
+    }
 }
 
 
