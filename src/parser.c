@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/15 13:48:24 $ 
-    $Revision: 1.136 $ 
+    $Date: 2005/02/16 16:43:34 $ 
+    $Revision: 1.137 $ 
 
 */
 
@@ -1357,8 +1357,8 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                     element->last = child->last;
                     child->content = element;
 
-		    FixNodeLinks(child);
-		    FixNodeLinks(element);
+                    FixNodeLinks(child);
+                    FixNodeLinks(element);
                 }
             }
 
