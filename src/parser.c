@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 11:17:29 $ 
-    $Revision: 1.21 $ 
+    $Date: 2001/07/16 23:08:53 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -1145,7 +1145,8 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
                 && node->tag != tag_a
                 && node->tag != tag_font
                 && node->tag != tag_big
-                && node->tag != tag_small)
+                && node->tag != tag_small
+                && node->tag != tag_q)
         {
             if (element->content != null && node->attributes == null)
             {
@@ -1156,6 +1157,10 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
             }
 
             ReportWarning(lexer, element, node, NESTED_EMPHASIS);
+        }
+        else if (IsPushed(lexer, node) && node->type == StartTag && node->tag == tag_q)
+        {
+            ReportWarning(lexer, element, node, NESTED_QUOTATION);
         }
 
         if (node->type == TextNode)

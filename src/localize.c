@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 18:36:04 $ 
-    $Revision: 1.16 $ 
+    $Date: 2001/07/16 23:08:53 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -523,6 +523,10 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
         {
             tidy_out(lexer->errout, "Warning: unexpected end of file");
             ReportTag(lexer, element);
+        }
+        else if (code == NESTED_QUOTATION)
+        {
+            tidy_out(lexer->errout, "Warning: nested q elements, possible typo.");
         }
 
         tidy_out(lexer->errout, "\n");

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 21:21:36 $ 
-    $Revision: 1.27 $ 
+    $Date: 2001/07/16 23:08:53 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -672,6 +672,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define DTYPE_NOT_UPPER_CASE    32
 #define TOO_MANY_ELEMENTS       33
 #define UNESCAPED_ELEMENT       34
+#define NESTED_QUOTATION        35
 
 /* error codes used for attribute messages */
 
@@ -941,3 +942,4 @@ extern Dict *tag_object;
 extern Dict *tag_div;
 extern Dict *tag_span;
 extern Dict *tag_input;
+extern Dict *tag_q;

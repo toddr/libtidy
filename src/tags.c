@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 21:21:36 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/16 23:08:53 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -84,6 +84,7 @@ Dict *tag_object;
 Dict *tag_div;
 Dict *tag_span;
 Dict *tag_input;
+Dict *tag_q;
 
 Dict *xml_tags;  /* dummy for xml tags */
 
@@ -427,6 +428,7 @@ void InitTags(void)
     tag_div = lookup("div");
     tag_span = lookup("span");
     tag_input = lookup("input");
+    tag_q = lookup("q");
 
     /* create dummy entry for all xml tags */
     xml_tags = (Dict *)MemAlloc(sizeof(*xml_tags));
