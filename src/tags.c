@@ -323,7 +323,7 @@ void DefineEmptyTag(char *name)
 
 void DefineInlineTag(char *name)
 {
-    install(name, VERS_PROPRIETARY, (CM_INLINE|CM_NO_INDENT|CM_NEW), ParseBlock, null);
+    install(name, VERS_PROPRIETARY, (CM_INLINE|CM_NO_INDENT|CM_NEW), ParseInline, null);
 }
 
 void DefineBlockTag(char *name)
