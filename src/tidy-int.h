@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.3 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/10 16:08:35 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -70,7 +70,7 @@ struct _TidyDocImpl
     uint                badForm;     /* for badly placed form tags */
 
     /* Miscellaneous */
-    uint                appData;
+    ulong               appData;
     uint                nClassId;
     Bool                inputHadBOM;
 
