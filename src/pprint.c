@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 00:08:32 $ 
-    $Revision: 1.19 $ 
+    $Date: 2001/07/31 04:11:30 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -1268,7 +1268,8 @@ void PPrintTree(Out *fout, uint mode, uint indent,
     if (node == null)
         return;
 
-    if (node->type == TextNode)
+    if (node->type == TextNode ||
+        (node->type == CDATATag && EscapeCdata))
         PPrintText(fout, mode, indent,
                     lexer, node->start, node->end);
     else if (node->type == CommentTag)
@@ -1500,7 +1501,8 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
     if (node == null)
         return;
 
-    if (node->type == TextNode)
+    if (node->type == TextNode  ||
+        (node->type == CDATATag && EscapeCdata))
     {
         PPrintText(fout, mode, indent,
                     lexer, node->start, node->end);

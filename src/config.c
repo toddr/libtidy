@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 22:54:15 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/31 04:11:30 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -114,6 +114,7 @@ uint ShowErrors = 6;        /* number of errors to put out */
 Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char */
 Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
+Bool EscapeCdata = no;     /* replace <![CDATA[]]> sections with escaped text */
 
 typedef struct _lex PLex;
 
@@ -217,6 +218,7 @@ static struct Flag
     {"ascii-chars",     {(int *)&AsciiChars},       ParseBool},
     {"join-classes",    {(int *)&JoinClasses},      ParseBool},
     {"join-styles",     {(int *)&JoinStyles},       ParseBool},
+    {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}

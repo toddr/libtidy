@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 00:07:54 $ 
-    $Revision: 1.14 $ 
+    $Date: 2001/07/31 04:11:30 $ 
+    $Revision: 1.15 $ 
 
   Contributing Author(s):
 
@@ -1226,7 +1226,9 @@ int main(int argc, char **argv)
 
             }
 
-            ErrorSummary(lexer);
+            if (!Quiet)
+                ErrorSummary(lexer);
+
             FreeNode(document);
             FreeLexer(lexer);
         }
