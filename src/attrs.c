@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/03/31 23:59:54 $ 
-    $Revision: 1.46 $ 
+    $Date: 2002/04/01 00:07:52 $ 
+    $Revision: 1.47 $ 
 
 */
 
@@ -806,7 +806,7 @@ Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
         /* if attribute looks like <foo/> check XML is ok */
         if (attribute->versions & VERS_XML)
         {
-            if (!(XmlTags || XmlOut || xHTML)) /* added xHTML to fix bug 517528 */
+            if (!(XmlTags || XmlOut))
                 ReportAttrError(lexer, node, attval, XML_ATTRIBUTE_VALUE);
         } /* title first appeared in HTML 4.0 except for a/link */
         else if (attribute != attr_title ||
@@ -1540,6 +1540,11 @@ void CheckHTML(Lexer *lexer, Node *node)
         lexer->isvoyager = yes;
         if (!HtmlOut)    /* Unless user has specified plain HTML output, */
             xHTML = yes; /* output format will be XHTML. */
+
+            /* adjust other config options, just as in config.c */
+            XmlOut = yes;
+            UpperCaseTags = no;
+            UpperCaseAttrs = no;
     }
 
     for (attval = node->attributes; attval != null; attval = attval->next)
