@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 10:22:58 $ 
-    $Revision: 1.42 $ 
+    $Date: 2003/05/14 13:55:07 $ 
+    $Revision: 1.43 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2190,5 +2190,6 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         }
         /* #718127, prevent memory leakage */
         FreeStyleProps(pFirstProp);
+        pLastProp = NULL;
     }
 }
