@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/03 08:57:40 $ 
-    $Revision: 1.12 $ 
+    $Author: uid54069 $ 
+    $Date: 2001/07/04 19:03:38 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -1428,16 +1428,28 @@ Node *GetCDATA(Lexer *lexer, Node *container)
 
             start = -1;
         }
+        /* #427844 - fix by Markus Hoenicka 21 Oct 00 */
         else if (c == '\r')
         {
-            c = ReadChar(lexer->in);
+            if (endtag) 
+            { 
+                continue; /* discard whitespace in endtag */ 
+            } 
+            else 
+            { 
+                c = ReadChar(lexer->in);
 
-            if (c != '\n')
-                UngetChar(c, lexer->in);
+                if (c != '\n')
+                    UngetChar(c, lexer->in);
 
-            c = '\n';
+                c = '\n';
+            }
+        } 
+        else if ((c == '\n' || c == '\t' || c == ' ') && endtag) 
+        { 
+            continue; /* discard whitespace in endtag */ 
         }
-
+        
         AddCharToLexer(lexer, (uint)c);
         lexer->txtend = lexer->lexsize;
         lastc = c;
