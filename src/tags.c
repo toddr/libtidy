@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 01:14:42 $ 
-    $Revision: 1.5 $ 
+    $Date: 2001/07/10 07:49:45 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -171,9 +171,9 @@ static struct tag
     {"embed",      VERS_NETSCAPE, (CM_INLINE|CM_IMG|CM_EMPTY), null, null},
     {"noembed",    VERS_NETSCAPE, CM_INLINE, ParseInline, null},
     {"iframe",     VERS_HTML40_LOOSE, CM_INLINE, ParseBlock, null},
-    {"frame",      VERS_FRAMESET,  (CM_FRAMES|CM_EMPTY), null, null},
-    {"noframes",   VERS_IFRAME, (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
-    {"noscript",   (VERS_FRAMESET|VERS_HTML40),  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
+    {"frame",      VERS_FRAMESET, (CM_FRAMES|CM_EMPTY), null, null},
+    {"noframes",   VERS_IFRAME,  (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
+    {"noscript",   VERS_HTML40,  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"b",          VERS_ALL,     CM_INLINE, ParseInline, null},
     {"i",          VERS_ALL,     CM_INLINE, ParseInline, null},
     {"u",          VERS_LOOSE,   CM_INLINE, ParseInline, null},
