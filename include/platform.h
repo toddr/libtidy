@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/14 21:35:05 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/07/23 00:38:34 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -35,6 +35,10 @@
 #include <stdarg.h>  /* may need <varargs.h> for Unix V */
 #include <string.h>
 #include <assert.h>
+
+#ifdef NEEDS_MALLOC_H
+#include <malloc.h>
+#endif
 
 #ifdef SUPPORT_GETPWNAM
 #include <pwd.h>
@@ -74,14 +78,14 @@
 /* you may need to delete the #ifndef and #endif on your system */
 
 #ifndef __USE_MISC
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__MACH__)
 #include <sys/types.h>
 #else
 #ifndef _INCLUDE_HPUX_SOURCE
 typedef unsigned int uint;
 #endif /* _INCLUDE_HPUX_SOURCE */
-#endif /* __FreeBSD__ */
 typedef unsigned long ulong;
+#endif /* BSDs */
 #endif  /* __USE_MISC */
 typedef unsigned char byte;
 
