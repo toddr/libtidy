@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/08/01 01:04:17 $ 
-    $Revision: 1.41 $ 
+    $Date: 2001/08/06 00:07:38 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -25,6 +25,9 @@
 #define UTF8        3
 #define ISO2022     4
 #define MACROMAN    5
+#define UTF16LE     6
+#define UTF16BE     7
+#define WIN1252     8
 
 typedef struct
 {
