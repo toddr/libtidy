@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:23:49 $ 
-    $Revision: 1.65 $ 
+    $Date: 2004/08/07 03:29:13 $ 
+    $Revision: 1.66 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2270,7 +2270,11 @@ void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode)
         next = node->next;
 
         if (nodeIsFONT(node))
+        {
             DiscardContainer(doc, node, &next);
+            node = next;
+            continue;
+        }
 
         if (node->content)
             DropFontElements(doc, node->content, &next);
