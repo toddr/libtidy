@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/29 02:13:31 $ 
-    $Revision: 1.30 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/09/04 07:38:45 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -45,6 +45,8 @@ static void PPrintPhp(Out *fout, uint indent,
 #define CDATA         16
 
 extern int CharEncoding;
+extern int inCharEncoding;
+extern int outCharEncoding;
 
 static uint *linebuf;
 static uint lbufsize;
@@ -468,7 +470,7 @@ static void PPrintChar(uint c, uint mode)
             return;
         }
 
-        if (c == 160 && CharEncoding != RAW)
+        if (c == 160 && outCharEncoding != RAW)
         {
             if (MakeBare)
                 AddC(' ', linelen++);
@@ -502,7 +504,7 @@ static void PPrintChar(uint c, uint mode)
 
     /* #431953 - start RJ */
     /* Handle encoding-specific issues */
-    switch (CharEncoding)
+    switch (outCharEncoding)
     {
     case UTF8:
     /* Chinese doesn't have spaces, so it needs other kinds of breaks */
@@ -657,7 +659,7 @@ static void PPrintChar(uint c, uint mode)
     }
 
     /* don't map latin-1 chars to entities */
-    if (CharEncoding == LATIN1)
+    if (outCharEncoding == LATIN1)
     {
         if (c > 255)  /* multi byte chars */
         {
@@ -686,8 +688,15 @@ static void PPrintChar(uint c, uint mode)
         return;
     }
 
-    /* don't map utf8 chars to entities */
-    if (CharEncoding == UTF8)
+    /* don't map UTF-8 chars to entities */
+    if (outCharEncoding == UTF8)
+    {
+        AddC(c, linelen++);
+        return;
+    }
+
+    /* don't map UTF-16 chars to entities */
+    if (outCharEncoding == UTF16 || outCharEncoding == UTF16LE || outCharEncoding == UTF16BE)
     {
         AddC(c, linelen++);
         return;
@@ -697,7 +706,7 @@ static void PPrintChar(uint c, uint mode)
     if (XmlTags)
     {
         /* if ASCII use numeric entities for chars > 127 */
-        if (c > 127 && CharEncoding == ASCII)
+        if (c > 127 && outCharEncoding == ASCII)
         {
             sprintf(entity, "&#%u;", c);
 
@@ -2188,7 +2197,7 @@ void CreateSlides(Lexer *lexer, Node *root)
     {
         sprintf(buf, "slide%03d.html", slide); /* #427666 - fix by Eric Rossen 02 Aug 00 */
         out.state = FSM_ASCII;
-        out.encoding = CharEncoding;
+        out.encoding = outCharEncoding;
 
         if ((fp = fopen(buf, "w")))
         {

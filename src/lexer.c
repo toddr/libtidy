@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:03:50 $ 
-    $Revision: 1.53 $ 
+    $Date: 2001/09/04 07:36:21 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -378,7 +378,7 @@ static void ParseEntity(Lexer *lexer, int mode)
         if (first && c == '#')
         {
             /* #431953 - start RJ */
-            if ( NCR == no || CharEncoding == BIG5 || CharEncoding == SHIFTJIS )
+            if ( NCR == no || inCharEncoding == BIG5 || inCharEncoding == SHIFTJIS )
             {
                 UngetChar('#', lexer->in);
                 return;
@@ -1500,7 +1500,7 @@ Bool FixDocType(Lexer *lexer, Node *root)
 }
 
 /* ensure XML document starts with <?XML version="1.0"?> */
-/* add encoding attribute if not using ASCII or UTF-8 */
+/* add encoding attribute if not using ASCII or UTF-8 output */
 Bool FixXmlDecl(Lexer *lexer, Node *root)
 {
     Node *xml;
@@ -1530,15 +1530,15 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
 
     /*
       We need to insert a check if declared encoding 
-      and output encoding mismatch and fix the Xml
+      and output encoding mismatch and fix the XML
       declaration accordingly!!!
     */
 
-    if (encoding == null && CharEncoding != UTF8)
+    if (encoding == null && outCharEncoding != UTF8)
     {
-        if (CharEncoding == LATIN1)
+        if (outCharEncoding == LATIN1)
             AddAttribute(xml, "encoding", "iso-8859-1");
-        else if (CharEncoding == ISO2022)
+        else if (outCharEncoding == ISO2022)
             AddAttribute(xml, "encoding", "iso-2022");
     }
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/01 04:14:02 $ 
-    $Revision: 1.27 $ 
+    $Date: 2001/09/04 07:35:04 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -53,8 +53,11 @@ ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
 
 uint spaces =  2;           /* default indentation */
 uint wraplen = 68;          /* default wrap margin */
-int CharEncoding = ASCII;
 int tabsize = 4;
+
+int CharEncoding = ASCII;
+int inCharEncoding = LATIN1;
+int outCharEncoding = ASCII;
 
 DocTypeMode doctype_mode = doctype_auto; /* see doctype property */
 DupAttrMode DuplicateAttrs = keep_last; /* Keep first or last duplicate attribute */
@@ -76,7 +79,7 @@ Bool XmlTags = no;          /* treat input as XML */
 Bool XmlOut = no;           /* create output as XML */
 Bool xHTML = no;            /* output extensible HTML */
 Bool XmlPi = no;            /* add <?xml?> for XML docs */
-Bool RawOut = no;           /* avoid mapping values > 127 to entities */
+Bool RawOut = no;           /* avoid mapping values > 127 to entities: not used for anything yet */
 Bool UpperCaseTags = no;    /* output tags in upper not lower case */
 Bool UpperCaseAttrs = no;   /* output attributes in upper not lower case */
 Bool MakeBare = no;         /* Make bare HTML: remove Microsoft cruft */
@@ -212,6 +215,8 @@ static struct Flag
     {"new-empty-tags",  {(int *)&empty_tags},       ParseTagNames},
     {"new-pre-tags",    {(int *)&pre_tags},         ParseTagNames},
     {"char-encoding",   {(int *)&CharEncoding},     ParseCharEncoding},
+    {"input-encoding",  {(int *)&inCharEncoding},   ParseCharEncoding},
+    {"output-encoding", {(int *)&outCharEncoding},  ParseCharEncoding},
     {"language",        {(void *)&Language},        ParseName},  /* #431953 - RJ */
     {"ncr",             {(void *)&NCR},             ParseBool},  /* #431953 - RJ */
     {"doctype",         {(int *)&doctype_str},      ParseDocType},
@@ -542,6 +547,73 @@ Bool ParseConfig(char *option, char *parameter)
     return yes;
 }
 
+/* ensure that char encodings are self consistent */
+void AdjustCharEncoding(int encoding)
+{
+    CharEncoding = encoding;
+    
+    if (CharEncoding == RAW)
+    {
+        inCharEncoding = RAW;
+        outCharEncoding = RAW;
+    }
+    else if (CharEncoding == ASCII)
+    {
+        inCharEncoding = LATIN1;
+        outCharEncoding = ASCII;
+    }
+    else if (CharEncoding == LATIN1)
+    {
+        inCharEncoding = LATIN1;
+        outCharEncoding = LATIN1;
+    }
+    else if (CharEncoding == UTF8)
+    {
+        inCharEncoding = UTF8;
+        outCharEncoding = UTF8;
+    }
+    else if (CharEncoding == ISO2022)
+    {
+        inCharEncoding = ISO2022;
+        outCharEncoding = ISO2022;
+    }
+    else if (CharEncoding == MACROMAN)
+    {
+        inCharEncoding = MACROMAN;
+        outCharEncoding = ASCII;
+    }
+    else if (CharEncoding == UTF16LE)
+    {
+        inCharEncoding = UTF16LE;
+        outCharEncoding = UTF16LE;
+    }
+    else if (CharEncoding == UTF16BE)
+    {
+        inCharEncoding = UTF16BE;
+        outCharEncoding = UTF16BE;
+    }
+    else if (CharEncoding == UTF16)
+    {
+        inCharEncoding = UTF16;
+        outCharEncoding = UTF16;
+    }
+    else if (CharEncoding == WIN1252)
+    {
+        inCharEncoding = WIN1252;
+        outCharEncoding = ASCII;
+    }
+    else if (CharEncoding == SHIFTJIS) /* #431953 - RJ */
+    {
+        inCharEncoding = SHIFTJIS;
+        outCharEncoding = SHIFTJIS;
+    }
+    else if (CharEncoding == BIG5) /* #431953 - RJ */
+    {
+        inCharEncoding = BIG5;
+        outCharEncoding = BIG5;
+    }
+}
+
 /* ensure that config is self consistent */
 void AdjustConfig(void)
 {
@@ -582,9 +654,9 @@ void AdjustConfig(void)
  /*
    #427837 - fix by Dave Raggett 02 Jun 01
    generate <?xml version="1.0" encoding="iso-8859-1"?>
-   if the character encoding is Latin-1 etc.
+   if the output character encoding is Latin-1 etc.
  */
-    if (CharEncoding == LATIN1 || CharEncoding == ISO2022)
+    if (outCharEncoding == LATIN1 || outCharEncoding == ISO2022)
     {
         if (XmlOut)
             XmlPi = yes;
@@ -823,7 +895,8 @@ void ParseCharEncoding(Location location, char *option)
 {
     char buf[64];
     int i = 0;
-
+    Bool validEncoding = yes;
+    
     SkipWhite();
 
     while (i < 62 && c != EOF && !IsWhite(c))
@@ -859,12 +932,41 @@ void ParseCharEncoding(Location location, char *option)
     else if (wstrcasecmp(buf, "shiftjis") == 0) /* #431953 - RJ */
         *location.number = SHIFTJIS; /* #431953 - RJ */
     else
+    {
+        validEncoding = no;
         ReportBadArgument(option);
+    }
 
+    if (validEncoding && (location.number == &CharEncoding))
+        AdjustCharEncoding(*location.number);
+    
     NextProperty();
 }
 
-/* slight hack to avoid changes to pprint.c */
+char *CharEncodingName(int encoding)
+{
+    char *encodingName;
+    
+    switch(encoding)
+    {
+        case ASCII    : encodingName = "ascii"; break;
+        case LATIN1   : encodingName = "latin1"; break;
+        case RAW      : encodingName = "raw"; break;
+        case UTF8     : encodingName = "utf8"; break;
+        case ISO2022  : encodingName = "iso2022"; break;
+        case MACROMAN : encodingName = "mac"; break;
+        case UTF16LE  : encodingName = "utf16le"; break;
+        case UTF16BE  : encodingName = "utf16be"; break;
+        case UTF16    : encodingName = "utf16"; break;
+        case WIN1252  : encodingName = "win1252"; break;
+        case BIG5     : encodingName = "big5"; break;
+        case SHIFTJIS : encodingName = "shiftjis"; break;
+        default       : encodingName = "unknown"; break;
+    }
+    
+    return encodingName;
+}
+
 void ParseIndent(Location location, char *option)
 {
     char buf[64];
@@ -1125,24 +1227,8 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
             type = "Encoding";
             
             if (showCurrent)
-            {
-                switch(CharEncoding)
-                {
-                    case ASCII    : vals = "ascii"; break;
-                    case LATIN1   : vals = "latin1"; break;
-                    case RAW      : vals = "raw"; break;
-                    case UTF8     : vals = "utf8"; break;
-                    case ISO2022  : vals = "iso2022"; break;
-                    case MACROMAN : vals = "mac"; break;
-                    case UTF16LE  : vals = "utf16le"; break;
-                    case UTF16BE  : vals = "utf16be"; break;
-                    case UTF16    : vals = "utf16"; break;
-                    case WIN1252  : vals = "win1252"; break;
-                    case BIG5     : vals = "big5"; break;
-                    case SHIFTJIS : vals = "shiftjis"; break;
-                }
-            }
-            else
+                vals = CharEncodingName(*(configItem->location.number));
+             else
             {
                 vals = "ascii, latin1, raw, utf8, iso2022, mac,";
                 tidy_out( errout, fmt, name, type, vals );

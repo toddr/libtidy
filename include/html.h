@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:02:19 $ 
-    $Revision: 1.56 $ 
+    $Date: 2001/09/04 07:34:07 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -841,7 +841,9 @@ void InitConfig(void);
 void FreeConfig(void);
 void ParseConfigFile(char *file);
 Bool ParseConfig(char *option, char *parameter);
+void AdjustCharEncoding(int encoding);
 void AdjustConfig(void);
+char *CharEncodingName(int encoding);
 void PrintConfigOptions(FILE *errout, Bool showCurrent);
 
 extern uint spaces;         /* default indentation */
@@ -849,7 +851,8 @@ extern uint wraplen;        /* default wrap margin */
 extern int tabsize;
 
 extern int CharEncoding;
-
+extern int inCharEncoding;
+extern int outCharEncoding;
 /* char encoding used when replacing illegal SGML chars, regardless of specified encoding */
 extern int ReplacementCharEncoding;
 

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/01 04:16:40 $ 
-    $Revision: 1.29 $ 
+    $Date: 2001/09/04 07:39:59 $ 
+    $Revision: 1.30 $ 
 
   Contributing Author(s):
 
@@ -107,8 +107,8 @@ int DecodeWin1252(int c)
 }
 
 /*
-John Love-Jensen contributed this table for mapping MacRoman
-character set to Unicode
+   John Love-Jensen contributed this table for mapping MacRoman
+   character set to Unicode
 */
 
 /* modified to only need chars 128-255/U+0080-U+00FF - Terry Teague 19 Aug 01 */
@@ -154,9 +154,9 @@ int DecodeMacRoman(int c)
 }
 
 /*
-table to map symbol font characters to Unicode; undefined
-characters are mapped to 0x0000 and characters without any
-unicode equivalent are mapped to '?'. Is this appropriate?
+   Table to map symbol font characters to Unicode; undefined
+   characters are mapped to 0x0000 and characters without any
+   Unicode equivalent are mapped to '?'. Is this appropriate?
 */
 
 int Symbol2Unicode[] = 
@@ -271,26 +271,26 @@ void ClearMemory(void *mem, uint size)
     memset(mem, 0, size);
 }
 
+/* 
 
-/* UTF-8 encoding/decoding functions */
-/* return # of bytes in UTF-8 sequence; result < 0 if illegal sequence */
+UTF-8 encoding/decoding functions
+Return # of bytes in UTF-8 sequence; result < 0 if illegal sequence
 
-/*
+Also see below for UTF-16 encoding/decoding functions
 
 References :
 
-1) ISO/IEC 10646-1 Amendment 2 - UCS Transformation Format 8 (UTF-8):
+1) UCS Transformation Format 8 (UTF-8):
+ISO/IEC 10646-1:1996 Amendment 2 or ISO/IEC 10646-1:2000 Annex D
 <http://anubis.dkuug.dk/JTC1/SC2/WG2/docs/n1335>
+<http://www.cl.cam.ac.uk/~mgk25/ucs/ISO-10646-UTF-8.html>
 
 Table 4 - Mapping from UCS-4 to UTF-8
 
-2) ISO 10646-1:2000 Annex D :
-<http://www.cl.cam.ac.uk/~mgk25/ucs/ISO-10646-UTF-8.html>
-
-3) Unicode standards:
+2) Unicode standards:
 <http://www.unicode.org/unicode/standard/standard.html>
 
-4) Legal UTF-8 byte sequences:
+3) Legal UTF-8 byte sequences:
 <http://www.unicode.org/unicode/uni2errata/UTF-8_Corrigendum.html>
 
 Code point          1st byte    2nd byte    3rd byte    4th byte
@@ -309,6 +309,9 @@ character set; those five- and six-byte sequences are illegal for the use of UTF
 transformation of Unicode characters. ISO/IEC 10646 does not allow mapping of
 unpaired surrogates, nor U+FFFE and U+FFFF (but it does allow other noncharacters).
 
+4) RFC 2279: UTF-8, a transformation format of ISO 10646:
+<http://www.ietf.org/rfc/rfc2279.txt>
+
 5) UTF-8 and Unicode FAQ:
 <http://www.cl.cam.ac.uk/~mgk25/unicode.html>
 
@@ -321,6 +324,30 @@ unpaired surrogates, nor U+FFFE and U+FFFF (but it does allow other noncharacter
 8) UTF-8 Sampler:
 <http://www.columbia.edu/kermit/utf8.html>
 
+9) Transformation Format for 16 Planes of Group 00 (UTF-16):
+ISO/IEC 10646-1:1996 Amendment 1 or ISO/IEC 10646-1:2000 Annex C
+<http://anubis.dkuug.dk/JTC1/SC2/WG2/docs/n2005/n2005.pdf>
+<http://www.cl.cam.ac.uk/~mgk25/ucs/ISO-10646-UTF-16.html>
+
+10) RFC 2781: UTF-16, an encoding of ISO 10646:
+<http://www.ietf.org/rfc/rfc2781.txt>
+
+11) UTF-16 invalid surrogate pairs:
+<http://www.unicode.org/unicode/faq/utf_bom.html#16>
+
+UTF-16       UTF-8          UCS-4
+D83F DFF*    F0 9F BF B*    0001FFF*
+D87F DFF*    F0 AF BF B*    0002FFF*
+D8BF DFF*    F0 BF BF B*    0003FFF*
+D8FF DFF*    F1 8F BF B*    0004FFF*
+D93F DFF*    F1 9F BF B*    0005FFF*
+D97F DFF*    F1 AF BF B*    0006FFF*
+                ...
+DBBF DFF*    F3 BF BF B*    000FFFF*
+DBFF DFF*    F4 8F BF B*    0010FFF*
+
+* = E or F
+                                   
 1010  A
 1011  B
 1100  C
@@ -330,16 +357,22 @@ unpaired surrogates, nor U+FFFE and U+FFFF (but it does allow other noncharacter
 
 */
 
-#define kNumUTF8Sequences 7
-#define kMaxUTF8Bytes 4
+#define kNumUTF8Sequences        7
+#define kMaxUTF8Bytes            4
 
-#define kLowUTF16Surrogate 0xD800
-#define kHighUTF16Surrogate 0xDFFF
+#define kUTF8ByteSwapNotAChar    0xFFFE
+#define kUTF8NotAChar            0xFFFF
 
-#define kUTF8ByteSwapNotAChar 0xFFFE
-#define kUTF8NotAChar 0xFFFF
+#define kMaxUTF8FromUCS4         0x10FFFF
 
-#define kMaxUTF8FromUCS4 0x10FFFF
+#define kUTF16SurrogatesBegin    0x10000
+#define kMaxUTF16FromUCS4        0x10FFFF
+
+/* UTF-16 surrogate pair areas */
+#define kUTF16LowSurrogateBegin  0xD800
+#define kUTF16LowSurrogateEnd    0xDBFF
+#define kUTF16HighSurrogateBegin 0xDC00
+#define kUTF16HighSurrogateEnd   0xDFFF
 
 /* offsets into validUTF8 table below */
 static int offsetUTF8Sequences[kMaxUTF8Bytes + 1] =
@@ -471,7 +504,7 @@ int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes
     if (!hasError && (n > kMaxUTF8FromUCS4))
         hasError = yes;
         
-    if (!hasError && (n >= kLowUTF16Surrogate) && (n <= kHighUTF16Surrogate))
+    if (!hasError && (n >= kUTF16LowSurrogateBegin) && (n <= kUTF16HighSurrogateEnd))
         /* unpaired surrogates not allowed */
         hasError = yes;
 
@@ -563,7 +596,7 @@ int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
         bytes = 3;
         if ((c == kUTF8ByteSwapNotAChar) || (c == kUTF8NotAChar))
             hasError = yes;
-        else if ((c >= kLowUTF16Surrogate) && (c <= kHighUTF16Surrogate))
+        else if ((c >= kUTF16LowSurrogateBegin) && (c <= kUTF16HighSurrogateEnd))
             /* unpaired surrogates not allowed */
             hasError = yes;
     }
@@ -643,7 +676,7 @@ StreamIn *OpenInput(FILE *fp)
     in->tabs = 0;
     in->curline = 1;
     in->curcol = 1;
-    in->encoding = CharEncoding;
+    in->encoding = inCharEncoding;
     in->state = FSM_ASCII;
 
     return in;
@@ -752,20 +785,26 @@ static int ReadCharFromStream(StreamIn *in)
         if (bom == UNICODE_BOM_BE)
         {
             /* big-endian UTF-16 */
-            /* if (in->encoding != UTF16BE)
-                tidy_out(errout, "Input is encoded as UTF16BE\n"); */ /* debug */
+            if (in->encoding != UTF16 && in->encoding != UTF16BE)
+            {
+                /* tidy_out(errout, "Input is encoded as UTF16BE\n"); */ /* debug */
+                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16BE); /* fatal error */
+            }
             in->encoding = UTF16BE;
-            CharEncoding = UTF16BE;
+            inCharEncoding = UTF16BE;
             
             return UNICODE_BOM; /* return decoded BOM */
         }
         else if (bom == UNICODE_BOM_LE)
         {
             /* little-endian UTF-16 */
-            /* if (in->encoding != UTF16LE)
-                tidy_out(errout, "Input is encoded as UTF16LE\n"); */ /* debug */
+            if (in->encoding != UTF16 && in->encoding != UTF16LE)
+            {
+                /* tidy_out(errout, "Input is encoded as UTF16LE\n"); */ /* debug */
+                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16LE); /* fatal error */
+            }
             in->encoding = UTF16LE;
-            CharEncoding = UTF16LE;
+            inCharEncoding = UTF16LE;
             
             return UNICODE_BOM; /* return decoded BOM */
         }
@@ -780,10 +819,13 @@ static int ReadCharFromStream(StreamIn *in)
             if (((c << 16) + (c1 << 8) + c2) == UNICODE_BOM_UTF8)
             {
                 /* UTF-8 */
-                /* if (in->encoding != UTF8)
-                    tidy_out(errout, "Input is encoded as UTF8\n"); */ /* debug */
+                if (in->encoding != UTF8)
+                {
+                    /* tidy_out(errout, "Input is encoded as UTF8\n"); */ /* debug */
+                    ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF8); /* fatal error */
+                }
                 in->encoding = UTF8;
-                CharEncoding = UTF8;
+                inCharEncoding = UTF8;
                 
                 return UNICODE_BOM; /* return decoded BOM */
             }
@@ -964,7 +1006,7 @@ static int ReadCharFromStream(StreamIn *in)
             in->lexer->lines = in->curline;
             in->lexer->columns = in->curcol;
 
-            ReportEncodingError(in->lexer, ILLEGAL_UTF8 | REPLACED_CHAR, n);
+            ReportEncodingError(in->lexer, INVALID_UTF8 | REPLACED_CHAR, n);
             n = 0xFFFD; /* replacement char */
         }
         
@@ -1100,6 +1142,53 @@ int ReadChar(StreamIn *in)
             break;
         }
 
+        /* handle surrogate pairs */
+        if ((in->encoding == UTF16LE) || (in->encoding == UTF16) || (in->encoding == UTF16BE))
+        {
+            if (c > kMaxUTF16FromUCS4)
+            {
+                /* invalid UTF-16 value */
+                ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c);
+                c = 0;
+            }
+            else if (c >= kUTF16LowSurrogateBegin && c <= kUTF16LowSurrogateEnd) /* high surrogate */
+            {
+                uint n, m;
+
+                n = c;
+
+                m = ReadCharFromStream(in);
+                if (m < 0)
+                   return EndOfStream;
+
+                if (m >= kUTF16HighSurrogateBegin && m <= kUTF16HighSurrogateEnd) /* low surrogate */
+                {
+                    /* pair found, recombine them */
+                    c = (n - kUTF16LowSurrogateBegin) * 0x400 + (m - kUTF16HighSurrogateBegin) + 0x10000;
+                    
+                    /* check for invalid pairs */
+                    if (((c & 0x0000FFFE) == 0x0000FFFE) ||
+                        ((c & 0x0000FFFF) == 0x0000FFFF) ||
+                         (c < kUTF16SurrogatesBegin))
+                    {
+                        ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c);
+                        c = 0;
+                    }
+                }
+                else
+                {
+                    /* not a valid pair */
+                    ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c);
+                    c = 0;
+                    /* should we unget the just read char? */
+                }
+            }
+            else
+            {
+                /* no recombination needed */
+            }
+        }
+        
         if (in->encoding == MACROMAN)
             c = DecodeMacRoman(c);
 
@@ -1399,6 +1488,46 @@ void outc(uint c, Out *out)
 {
     uint ch;
 
+#if 1
+    if (out->encoding == MACROMAN)
+    {
+        if (c < 128)
+            putc(c, out->fp);
+        else
+        {
+            int i;
+
+            for (i = 128; i < 256; i++)
+                if (Mac2Unicode[i - 128] == c)
+                {
+                    putc(i, out->fp);
+                    break;
+                }
+        }
+    }
+    else
+#endif
+    
+#if 1
+    if (out->encoding == WIN1252)
+    {
+        if (c < 128 || (c > 159 && c < 256))
+            putc(c, out->fp);
+        else
+        {
+            int i;
+
+            for (i = 128; i < 160; i++)
+                if (Win2Unicode[i - 128] == c)
+                {
+                    putc(i, out->fp);
+                    break;
+                }
+        }
+    }
+    else
+#endif
+    
     if (out->encoding == UTF8)
 #if 0
     {
@@ -1438,7 +1567,7 @@ void outc(uint c, Out *out)
         EncodeCharToUTF8Bytes(c, null, out, outcUTF8Bytes, &count);
         if (count <= 0)
         {
-            /* ReportEncodingError(in->lexer, ILLEGAL_UTF8 | REPLACED_CHAR, c); */
+            /* ReportEncodingError(in->lexer, INVALID_UTF8 | REPLACED_CHAR, c); */
             /* replacement char 0xFFFD encoded as UTF-8 */
             putc(0xEF, out->fp); putc(0xBF, out->fp); putc(0xBF, out->fp);
         }
@@ -1483,6 +1612,63 @@ void outc(uint c, Out *out)
         }
 
         putc(c, out->fp);
+    }
+
+    else if (out->encoding == UTF16LE || out->encoding == UTF16BE || out->encoding == UTF16)
+    {
+        int i, numChars = 1;
+        uint theChars[2];
+        
+        if (c > kMaxUTF16FromUCS4)
+        {
+            /* invalid UTF-16 value */
+            /* ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
+            c = 0;
+            numChars = 0;
+        }
+        else if (c >= kUTF16SurrogatesBegin)
+        {
+            /* encode surrogate pairs */
+
+            /* check for invalid pairs */
+            if (((c & 0x0000FFFE) == 0x0000FFFE) ||
+                ((c & 0x0000FFFF) == 0x0000FFFF))
+            {
+                /* ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
+                c = 0;
+                numChars = 0;
+            }
+            else
+            {
+                theChars[0] = (c - kUTF16SurrogatesBegin) / 0x400 + kUTF16LowSurrogateBegin;
+                theChars[1] = (c - kUTF16SurrogatesBegin) % 0x400 + kUTF16HighSurrogateBegin;
+
+                /* output both */
+                numChars = 2;
+            }
+        }
+        else
+        {
+            /* just put the char out */
+            theChars[0] = c;
+        }
+        
+        for (i = 0; i < numChars; i++)
+        {
+            c = theChars[i];
+            
+            if (out->encoding == UTF16LE)
+            {
+                ch = c & 0xFF; putc(ch, out->fp); 
+                ch = (c >> 8) & 0xFF; putc(ch, out->fp); 
+            }
+    
+            else if (out->encoding == UTF16BE || out->encoding == UTF16)
+            {
+                ch = (c >> 8) & 0xFF; putc(ch, out->fp); 
+                ch = c & 0xFF; putc(ch, out->fp); 
+            }
+        }
     }
     /* #431953 - start RJ */
     else if (out->encoding == BIG5 || out->encoding == SHIFTJIS)
@@ -1600,29 +1786,29 @@ int main(int argc, char **argv)
             else if (wstrcasecmp(arg, "bare") == 0)
                 MakeBare = yes;
             else if (wstrcasecmp(arg, "raw") == 0)
-                CharEncoding = RAW;
+                AdjustCharEncoding(RAW);
             else if (wstrcasecmp(arg, "ascii") == 0)
-                CharEncoding = ASCII;
+                AdjustCharEncoding(ASCII);
             else if (wstrcasecmp(arg, "latin1") == 0)
-                CharEncoding = LATIN1;
+                AdjustCharEncoding(LATIN1);
             else if (wstrcasecmp(arg, "utf8") == 0)
-                CharEncoding = UTF8;
+                AdjustCharEncoding(UTF8);
             else if (wstrcasecmp(arg, "iso2022") == 0)
-                CharEncoding = ISO2022;
+                AdjustCharEncoding(ISO2022);
             else if (wstrcasecmp(arg, "mac") == 0)
-                CharEncoding = MACROMAN;
+                AdjustCharEncoding(MACROMAN);
             else if (wstrcasecmp(arg, "utf16le") == 0)
-                CharEncoding = UTF16LE;
+                AdjustCharEncoding(UTF16LE);
             else if (wstrcasecmp(arg, "utf16be") == 0)
-                CharEncoding = UTF16BE;
+                AdjustCharEncoding(UTF16BE);
             else if (wstrcasecmp(arg, "utf16") == 0)
-                CharEncoding = UTF16;
+                AdjustCharEncoding(UTF16);
             else if (wstrcasecmp(arg, "win1252") == 0)
-                CharEncoding = WIN1252;
+                AdjustCharEncoding(WIN1252);
             else if (wstrcasecmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
-                CharEncoding = SHIFTJIS; /* #431953 - RJ */
+                AdjustCharEncoding(SHIFTJIS);
             else if (wstrcasecmp(argv[1], "-big5") == 0) /* #431953 - RJ */
-                CharEncoding = BIG5; /* #431953 - RJ */
+                AdjustCharEncoding(BIG5);
             else if (wstrcasecmp(arg, "numeric") == 0)
                 NumEntities = yes;
             else if (wstrcasecmp(arg, "modify") == 0)
@@ -1929,7 +2115,7 @@ int main(int argc, char **argv)
                 NeedsAuthorIntervention(errout);
 
             out.state = FSM_ASCII;
-            out.encoding = CharEncoding;
+            out.encoding = outCharEncoding;
 
             if (!OnlyErrors && (lexer->errors == 0 || ForceOutput))
             {
