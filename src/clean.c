@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/02 08:18:48 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/06/02 08:25:57 $ 
+    $Revision: 1.3 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -305,7 +305,7 @@ void AddClass(Node *node, char *classname)
     {
         int len = wstrlen(classattr->value) +
                             wstrlen(classname) + 2;
-        char *s = (char *)malloc(len *sizeof(char));
+        char *s = (char *)MemAlloc(len *sizeof(char));	/* #427668 - was malloc() - fix by Arnaud BERCEGEAY 05 Aug 00 */
         wstrcpy(s, classattr->value);
         wstrcat(s, " ");
         wstrcat(s, classname);
@@ -345,7 +345,7 @@ static void Style2Rule(Lexer *lexer, Node *node)
         {
             int len = wstrlen(classattr->value) +
                                 wstrlen(classname) + 2;
-            char *s = (char *)malloc(len *sizeof(char));
+            char *s = (char *)MemAlloc(len *sizeof(char));	/* #427668 - was malloc() - fix by Arnaud BERCEGEAY 05 Aug 00 */
             wstrcpy(s, classattr->value);
             wstrcat(s, " ");
             wstrcat(s, classname);
