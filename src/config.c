@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/10/26 13:57:03 $ 
-    $Revision: 1.33 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/12/08 07:51:32 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -540,14 +540,16 @@ Bool ParseConfig(char *option, char *parameter)
     PList *entry;
     FILE *ffp;
 
-    if (option && parameter)
+    if (option /* && parameter */)
     {
         ffp = fin;
     
         fin = null;
     
+        /*
         c = *parameter;
         parameter++;
+        */
     
         entry = lookup(option);
     
@@ -558,16 +560,30 @@ Bool ParseConfig(char *option, char *parameter)
             return no;
         }
 
-        config_text = parameter;
-        entry->parser(entry->location, option);
+        if (parameter)
+        {
+            c = *parameter;
+            parameter++;
     
-        fin = ffp;
+            config_text = parameter;
+            entry->parser(entry->location, option);
+    
+            fin = ffp;
+        }
+        else
+        {
+            ReportBadArgument(option);
+            return no;
+        }
+        
     }
+    /*
     else if (!parameter)
     {
         ReportBadArgument(option);
         return no;
     }
+    */
     
     return yes;
 }
