@@ -6,7 +6,7 @@
    (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   $Id: attrdict.h,v 1.1 2003/04/07 22:56:58 hoehrmann Exp $
+   $Id: attrdict.h,v 1.2 2003/04/16 21:24:50 hoehrmann Exp $
 */
 
 #include "tidy.h"
