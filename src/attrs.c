@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:46 $ 
-    $Revision: 1.78 $ 
+    $Date: 2003/05/06 02:00:46 $ 
+    $Revision: 1.79 $ 
 
 */
 
@@ -452,7 +452,8 @@ AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr valu
 
     if (old)
     {
-        MemFree(old->value);
+        if (old->value)
+            MemFree(old->value);
         old->value = tmbstrdup(value);
         return old;
     }

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:55 $ 
-    $Revision: 1.37 $ 
+    $Date: 2003/05/06 02:00:46 $ 
+    $Revision: 1.38 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -769,10 +769,9 @@ void CheckSTYLE( TidyDocImpl* doc, Node *node )
 
     CheckAttributes( doc, node );
 
-    if ( !type )
+    if ( !type || !type->value || !tmbstrlen(type->value) )
     {
-        AddAttribute( doc, node, "type", "text/css" );
-        type = GetAttrByName( node, "type" );
+        type = RepairAttrValue(doc, node, "type", "text/css");
         ReportAttrError( doc, node, type, INSERTING_ATTRIBUTE );
     }
 }
