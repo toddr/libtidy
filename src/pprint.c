@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/07 16:27:04 $ 
-    $Revision: 1.98 $ 
+    $Date: 2005/03/08 15:29:55 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -1256,11 +1256,19 @@ static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
 
 /*
  Line can be wrapped immediately after inline start tag provided
- if follows a text node ending in a space, or it parent is an
- inline element that that rule applies to. This behaviour was
- reverse engineered from Netscape 3.0
+ if follows a text node ending in a space, or it follows a <br>,
+ or its parent is an inline element that that rule applies to.
+ This behaviour was reverse engineered from Netscape 3.0.
+
+ Line wrapping can occur if an element is not empty and before a block
+ level. For instance:
+ <p><span>
+ x</span>y</p>
+ will display properly. Whereas
+ <p><img />
+ x<</p> won't.
 */
-static Bool AfterSpace(Lexer *lexer, Node *node)
+static Bool AfterSpaceImp(Lexer *lexer, Node *node, Bool isEmpty)
 {
     Node *prev;
     uint c;
@@ -1278,11 +1286,21 @@ static Bool AfterSpace(Lexer *lexer, Node *node)
             if ( c == 160 || c == ' ' || c == '\n' )
                 return yes;
         }
+        else if (nodeIsBR(prev))
+            return yes;
 
         return no;
     }
 
-    return AfterSpace(lexer, node->parent);
+    if ( isEmpty && !nodeCMIsInline(node->parent) )
+        return no;
+
+    return AfterSpaceImp(lexer, node->parent, isEmpty);
+}
+
+static Bool AfterSpace(Lexer *lexer, Node *node)
+{
+    return AfterSpaceImp(lexer, node, nodeCMIsEmpty(node));
 }
 
 static void PPrintTag( TidyDocImpl* doc,
@@ -1334,14 +1352,23 @@ static void PPrintTag( TidyDocImpl* doc,
 
         if ( indent + pprint->linelen < wraplen )
         {
-            /* wrap after start tag if is <br/> or if it's not inline */
+            /* wrap after start tag if is <br/> or if it's not inline.
+               Technically, it would be safe to call only AfterSpace.
+               However, it would disrupt the existing algorithm. So let's
+               leave as is. Note that AfterSpace returns true for non inline
+               elements but can still be false for some <br>. So it has to
+               stay as well. */
             if (!(mode & NOWRAP) && (!nodeCMIsInline(node) || nodeIsBR(node))
                 && AfterSpace(doc->lexer, node))
             {
-                    pprint->wraphere = pprint->linelen;
+                pprint->wraphere = pprint->linelen;
             }
         }
-        else
+        /* flush the current buffer only if it is known to be safe,
+           i.e. it will not introduce some spurious white spaces.
+           See bug #996484 */
+        else if ( mode & NOWRAP ||
+                  nodeIsBR(node) || AfterSpace(doc->lexer, node))
             PCondFlushLine( doc, indent );
     }
 }
