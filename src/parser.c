@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: krusch $ 
-    $Date: 2002/04/07 12:55:33 $ 
-    $Revision: 1.39 $ 
+    $Date: 2002/04/07 13:14:29 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -1686,7 +1686,11 @@ void ParseDefList(Lexer *lexer, Node *list, uint mode)
             else /* trim empty dl list */
             {
                 InsertNodeBeforeElement(list, node);
+
+/* #540296 tidy dumps with empty definition list */
+#if 0
                 DiscardElement(list);
+#endif
             }
 
             /* #426885 - fix by Glenn Carroll 19 Apr 00, and
