@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 17:48:04 $ 
-    $Revision: 1.91 $ 
+    $Date: 2005/03/21 14:12:28 $ 
+    $Revision: 1.92 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1090,34 +1090,39 @@ static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
 }
 
 /*
-    Symptom <div><div>...</div></div>
-    Action: merge the two divs
+    Symptom <XX><XX>...</XX></XX>
+    Action: merge the two XXs
 
-  This is useful after nested <dir>s used by Word
+  For instance, this is useful after nested <dir>s used by Word
   for indenting have been converted to <div>s
+
+  If state is "no", no merging.
+  If state is "yes", inner element is discarded. Only Style and Class
+  attributes are merged using MergeStyles().
+  If state is "auto", atttibutes are merged as described in CopyAttrs().
+  Style and Class attributes are merged using MergeStyles().
 */
-static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
+static Bool MergeNestedElements( TidyDocImpl* doc,
+                                 TidyTagId Id, TidyTriState state, Node *node,
+                                 Node **pnode)
 {
 #pragma unused(pnode)
 
     Node *child;
 
-    if ( !nodeIsDIV(node) )
+    if ( state == TidyNoState
+         || !TagIsId(node, Id) )
         return no;
 
     child = node->content;
 
-    if (!child)
+    if ( child == NULL
+         || child->next != NULL
+         || !TagIsId(child, Id) )
         return no;
 
-    if ( !nodeIsDIV(child) )
-        return no;
-
-    if (child->next != NULL)
-        return no;
-
-    if (cfgAutoBool(doc, TidyMergeDivs) == TidyAutoState
-        && CopyAttrs(doc, node, child) == no)
+    if ( state == TidyAutoState
+         && CopyAttrs(doc, node, child) == no )
         return no;
 
     MergeStyles( doc, node, child );
@@ -1399,6 +1404,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
 Node* CleanNode( TidyDocImpl* doc, Node *node )
 {
     Node *next = NULL;
+    TidyTriState mergeDivs = cfgAutoBool(doc, TidyMergeDivs);
 
     for (next = node; nodeIsElement(node); node = next)
     {
@@ -1416,8 +1422,7 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
         if ( Center2Div(doc, node, &next) )
             continue;
 
-        if (cfgAutoBool(doc, TidyMergeDivs) != TidyNoState
-            && MergeDivs(doc, node, &next))
+        if ( MergeNestedElements(doc, TidyTag_DIV, mergeDivs, node, &next) )
             continue;
 
         if ( BlockStyle(doc, node, &next) )
