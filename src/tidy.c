@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/14 21:49:13 $ 
-    $Revision: 1.8 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/16 04:22:12 $ 
+    $Revision: 1.9 $ 
 
   Contributing Author(s):
 
@@ -78,6 +78,12 @@ int Win2Unicode[32] =
     0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x0000, 0x017E, 0x0178
 };
 
+/* Function for conversion from Windows-1252 to Unicode */
+int DecodeWin1252(int c)
+{
+    return Win2Unicode[c - 128];
+}
+
 /*
 John Love-Jensen contributed this table for mapping MacRoman
 character set to Unicode
@@ -134,6 +140,11 @@ int Mac2Unicode[256] =
     0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7
 };
 
+/* Function to convert from MacRoman to Unicode */
+int DecodeMacRoman(uint c)
+{
+    return Mac2Unicode[c];
+}
 
 void FatalError(char *msg)
 {
@@ -402,7 +413,7 @@ int ReadChar(StreamIn *in)
         }
 
         if (in->encoding == MACROMAN)
-            c = Mac2Unicode[c];
+            c = DecodeMacRoman(c);
 
         /* produced e.g. as a side-effect of smart quotes in Word */
 
@@ -410,7 +421,7 @@ int ReadChar(StreamIn *in)
         {
             ReportEncodingError(in->lexer, WINDOWS_CHARS, c);
 
-            c = Win2Unicode[c - 128];
+            c = DecodeWin1252(c);
 
             if (c == 0)
                 continue;
