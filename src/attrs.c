@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 08:07:59 $ 
-    $Revision: 1.10 $ 
+    $Date: 2001/07/11 08:52:57 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -42,6 +42,9 @@ AttrCheck CheckValign;
 AttrCheck CheckBool;
 AttrCheck CheckLength;
 AttrCheck CheckTarget;
+AttrCheck CheckFsubmit;
+AttrCheck CheckClear;
+AttrCheck CheckShape;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -78,7 +81,7 @@ static Attribute *hashtab[HASHSIZE];
 #define ALIGN       CheckAlign
 #define VALIGN      CheckValign
 #define COLOR       null
-#define CLEAR       null
+#define CLEAR       CheckClear
 #define BORDER      CheckBool     /* kludge */
 #define CHARSET     null
 #define LANG        null
@@ -96,11 +99,11 @@ static Attribute *hashtab[HASHSIZE];
 #define TFRAME      null
 #define FBORDER     null
 #define MEDIA       null
-#define FSUBMIT     null
+#define FSUBMIT     CheckFsubmit
 #define LINKTYPES   null
 #define TRULES      null
 #define SCOPE       null
-#define SHAPE       null
+#define SHAPE       CheckShape
 #define SCROLL      null
 #define TARGET      CheckTarget
 #define VTYPE       null
@@ -741,6 +744,46 @@ void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
         wstrcasecmp(value, "_parent") == 0 ||
         wstrcasecmp(value, "_top")    == 0))
         return; /* change to shout: illegal target name */
+}
+
+void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value = attval->value;
+    
+    if (value == null)
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "get") == 0 ||
+        wstrcasecmp(value, "post") == 0))
+        return; /* change to shout: method must be GET or POST */
+}
+
+void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value = attval->value;
+    
+    if (value == null)
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "none") == 0 ||
+        wstrcasecmp(value, "left")   == 0 ||
+        wstrcasecmp(value, "right") == 0 ||
+        wstrcasecmp(value, "all") == 0))
+        return; /* change to shout: clear must be 'left', 'all', 'right' or 'none' */
+}
+
+void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value = attval->value;
+    
+    if (value == null)
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "rect") == 0 ||
+        wstrcasecmp(value, "default") == 0 ||
+        wstrcasecmp(value,  "circle") == 0 ||
+        wstrcasecmp(value,    "poly") == 0))
+        return; /* change to shout: shape must be rect, default, circle or poly */
 }
 
 /* default method for checking an element's attributes */
