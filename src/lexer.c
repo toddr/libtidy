@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 15:47:29 $ 
-    $Revision: 1.147 $ 
+    $Date: 2004/03/07 16:00:36 $ 
+    $Revision: 1.148 $ 
 
 */
 
@@ -1744,7 +1744,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 /* <head><script src=foo><meta name=foo content=bar>*/
                 if (hasSrc && isEmpty && nodeIsSCRIPT(container))
                 {
-                    ReportError(doc, container, NULL, MISSING_ENDTAG_FOR);
+                    /* ReportError(doc, container, NULL, MISSING_ENDTAG_FOR); */
                     lexer->lexsize = lexer->txtstart;
                     UngetChar(c, doc->docIn);
                     UngetChar('<', doc->docIn);
@@ -1825,7 +1825,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
 
             if (isEmpty && !matches)
             {
-                ReportError(doc, container, NULL, MISSING_ENDTAG_FOR);
+                /* ReportError(doc, container, NULL, MISSING_ENDTAG_FOR); */
 
                 for (i = lexer->lexsize - 1; i >= start; --i)
                     UngetChar((uint)lexer->lexbuf[i], doc->docIn);

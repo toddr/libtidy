@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 15:47:29 $ 
-    $Revision: 1.112 $ 
+    $Date: 2004/03/07 16:00:36 $ 
+    $Revision: 1.113 $ 
 
 */
 
@@ -2964,7 +2964,8 @@ void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
 
     if (!(node && node->type == EndTag && node->tag->id == script->tag->id))
     {
-        /* todo: report error for missing endtag */
+        ReportError(doc, script, node, MISSING_ENDTAG_BEFORE);
+        UngetToken(doc);
     }
     else
     {
