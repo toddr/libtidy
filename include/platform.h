@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/05 18:07:38 $ 
-    $Revision: 1.36 $ 
+    $Date: 2003/03/07 15:21:30 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -24,7 +24,7 @@ extern "C" {
 */
 
 /* #define CONFIG_FILE "/etc/tidy_config.txt" */ /* original */
-/* #define CONFIG_FILE "/etc/.tidyrc" */
+/* #define CONFIG_FILE "/etc/tidyrc" */
 /* #define CONFIG_FILE "/etc/tidy.conf" */
 
 /*
@@ -36,13 +36,16 @@ extern "C" {
 /* #define USER_CONFIG_FILE "~/.tidyrc" */
 
 /*
-  Uncomment the following #define if 
-  a) you have defined USER_CONFIG_FILE and 
-  b) you are on a Unix system supporting the call getpwnam().
+  Uncomment the following #define if your
+  system supports the call getpwnam(). 
+  E.g. Unix and Linux.
 
-  It enables tidy to find config files named 
-  ~your/.tidyrc etc if the HTML_TIDY environment
-  variable is not set. Contributed by Todd Lewis.
+  It enables tidy to find files named 
+  ~your/foo for use in the HTML_TIDY environment
+  variable or CONFIG_FILE or USER_CONFIGFILE or
+  on the command line: -config ~joebob/tidy.cfg
+
+  Contributed by Todd Lewis.
 */
 
 /* #define SUPPORT_GETPWNAM */
@@ -63,24 +66,6 @@ extern "C" {
 #define SUPPORT_ACCESSIBILITY_CHECKS 1
 #endif
 
-/* Enable/disable original accessibility checks */
-
-/* Also at runtime : 
-   if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
-       if (AccessibilityCheckLevel == 0) then
-           do the original accessibility checks anyway
-*/
-
-/* If additional accessibility checks are enabled, disable the original accessibility checks by default */
-#ifndef USE_ORIGINAL_ACCESSIBILITY_CHECKS
-#define USE_ORIGINAL_ACCESSIBILITY_CHECKS 0
-#endif
-
-/* If additional accessibility checks are disabled, always enable the original accessibility checks */
-#if !SUPPORT_ACCESSIBILITY_CHECKS
-#undef USE_ORIGINAL_ACCESSIBILITY_CHECKS
-#define USE_ORIGINAL_ACCESSIBILITY_CHECKS 1
-#endif
 
 /* Convenience defines for Mac platforms */
 
