@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/03 15:51:22 $ 
-    $Revision: 1.97 $ 
+    $Date: 2004/07/30 20:42:22 $ 
+    $Revision: 1.98 $ 
 
 */
 
@@ -162,7 +162,7 @@ static const Attribute attribute_defs [] =
   { TidyAttr_TITLE,             "title",             VERS_HTML40,       PCDATA    }, /* text tool tip */
   { TidyAttr_TOPMARGIN,         "topmargin",         VERS_MICROSOFT,    NUMBER    }, /* used on BODY */
   { TidyAttr_TYPE,              "type",              VERS_FROM32,       TYPE      }, /* also used by SPACER */
-  { TidyAttr_USEMAP,            "usemap",            VERS_ALL,          BOOL      }, /* things with images */
+  { TidyAttr_USEMAP,            "usemap",            VERS_ALL,          URL       }, /* things with images */
   { TidyAttr_VALIGN,            "valign",            VERS_FROM32,       VALIGN    }, 
   { TidyAttr_VALUE,             "value",             VERS_ALL,          PCDATA    }, 
   { TidyAttr_VALUETYPE,         "valuetype",         VERS_HTML40,       VTYPE     }, /* PARAM: data, ref, object */
@@ -172,7 +172,7 @@ static const Attribute attribute_defs [] =
   { TidyAttr_WIDTH,             "width",             VERS_ALL,          LENGTH    }, /* pixels only for TD/TH */
   { TidyAttr_WRAP,              "wrap",              VERS_NETSCAPE,     PCDATA    }, /* textarea */
   { TidyAttr_XML_LANG,          "xml:lang",          VERS_XML,          LANG      }, /* XML language */
-  { TidyAttr_XML_SPACE,         "xml:space",         VERS_XML,          PCDATA    }, /* XML language */
+  { TidyAttr_XML_SPACE,         "xml:space",         VERS_XML,          PCDATA    }, /* XML white space */
 
   /* todo: VERS_ALL is wrong! */
   { TidyAttr_XMLNS,             "xmlns",             VERS_ALL,          PCDATA    }, /* name space */
