@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 04:40:45 $ 
-    $Revision: 1.77 $ 
+    $Date: 2003/04/11 20:20:39 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -787,7 +787,7 @@ void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
         break;
     case MISSING_DOCTYPE:
         messageNode( doc, TidyWarning, node,
-            "Missing <!DOCTYPE> declaration");
+            "missing <!DOCTYPE> declaration");
         break;
     }
 }
