@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/25 04:26:11 $ 
-    $Revision: 1.15 $ 
+    $Date: 2003/04/26 03:19:44 $ 
+    $Revision: 1.16 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -916,7 +916,7 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
     StreamOut* out = FileOutput( stdout, outenc, nl );
 
 #if defined(_WIN32) || defined(OS2_OS)
-    oldmode = _setmode( _fileno(stdout), _O_BINARY );
+    oldmode = setmode( fileno(stdout), _O_BINARY );
 #if SUPPORT_UTF16_ENCODINGS
     if ( out->encoding == UTF16   ||
          out->encoding == UTF16LE ||
@@ -935,7 +935,7 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
 
 #if defined(_WIN32) || defined(OS2_OS)
     if ( oldmode != -1 )
-        oldmode = _setmode( _fileno(stdout), oldmode );
+        oldmode = setmode( fileno(stdout), oldmode );
 #endif
     MemFree( out );
     return status;
