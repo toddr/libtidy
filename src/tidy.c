@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/15 03:49:26 $ 
-    $Revision: 1.18 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/17 23:02:36 $ 
+    $Revision: 1.19 $ 
 
   Contributing Author(s):
 
@@ -264,6 +264,388 @@ void ClearMemory(void *mem, uint size)
     memset(mem, 0, size);
 }
 
+
+/* UTF-8 encoding/decoding functions */
+/* return # of bytes in UTF-8 sequence; result < 0 if illegal sequence */
+
+/*
+
+References :
+
+1) ISO/IEC 10646-1 Amendment 2 - UCS Transformation Format 8 (UTF-8):
+<http://anubis.dkuug.dk/JTC1/SC2/WG2/docs/n1335>
+
+Table 4 - Mapping from UCS-4 to UTF-8
+
+2) ISO 10646-1:2000 Annex D :
+<http://www.cl.cam.ac.uk/~mgk25/ucs/ISO-10646-UTF-8.html>
+
+3) Unicode standards:
+<http://www.unicode.org/unicode/standard/standard.html>
+
+4) Legal UTF-8 byte sequences:
+<http://www.unicode.org/unicode/uni2errata/UTF-8_Corrigendum.html>
+
+Code point			1st byte	2nd byte	3rd byte	4th byte
+----------			--------	--------	--------	--------
+U+0000..U+007F		00..7F
+U+0080..U+07FF		C2..DF		80..BF
+U+0800..U+0FFF		E0			A0..BF		80..BF
+U+1000..U+FFFF		E1..EF		80..BF		80..BF
+U+10000..U+3FFFF	F0			90..BF		80..BF		80..BF
+U+40000..U+FFFFF	F1..F3		80..BF		80..BF		80..BF
+U+100000..U+10FFFF	F4			80..8F		80..BF		80..BF
+
+The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also allows for the use of
+five- and six-byte sequences to encode characters that are outside the range of the Unicode
+character set; those five- and six-byte sequences are illegal for the use of UTF-8 as a
+transformation of Unicode characters. ISO/IEC 10646 does not allow mapping of
+unpaired surrogates, nor U+FFFE and U+FFFF (but it does allow other noncharacters).
+
+5) UTF-8 and Unicode FAQ:
+<http://www.cl.cam.ac.uk/~mgk25/unicode.html>
+
+6) Markus Kuhn's UTF-8 decoder stress test file:
+<http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt>
+
+7) UTF-8 Demo:
+<http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-demo.txt>
+
+8) UTF-8 Sampler:
+<http://www.columbia.edu/kermit/utf8.html>
+
+1010  A
+1011  B
+1100  C
+1101  D
+1110  E
+1111  F
+
+*/
+
+#define kNumUTF8Sequences 7
+#define kMaxUTF8Bytes 4
+
+#define kLowUTF16Surrogate 0xD800
+#define kHighUTF16Surrogate 0xDFFF
+
+#define kUTF8ByteSwapNotAChar 0xFFFE
+#define kUTF8NotAChar 0xFFFF
+
+#define kMaxUTF8FromUCS4 0x10FFFF
+
+/* offsets into validUTF8 table below */
+static int offsetUTF8Sequences[kMaxUTF8Bytes + 1] =
+{
+    0, /* 1 byte */
+    1, /* 2 bytes */
+    2, /* 3 bytes */
+    4, /* 4 bytes */
+    kNumUTF8Sequences /* must be last */
+};
+
+static struct validUTF8Sequence
+{
+     unsigned int lowChar;
+     unsigned int highChar;
+     int numBytes;
+     unsigned char validBytes[8];
+} validUTF8[kNumUTF8Sequences] =
+{
+/*   low       high   #bytes  byte 1      byte 2      byte 3      byte 4 */
+    {0x0000,   0x007F,   1, 0x00, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x0080,   0x07FF,   2, 0xC2, 0xDF, 0x80, 0xBF, 0x00, 0x00, 0x00, 0x00},
+    {0x0800,   0x0FFF,   3, 0xE0, 0xE0, 0xA0, 0xBF, 0x80, 0xBF, 0x00, 0x00},
+    {0x1000,   0xFFFF,   3, 0xE1, 0xEF, 0x80, 0xBF, 0x80, 0xBF, 0x00, 0x00},
+    {0x10000,  0x3FFFF,  4, 0xF0, 0xF0, 0x90, 0xBF, 0x80, 0xBF, 0x80, 0xBF},
+    {0x40000,  0xFFFFF,  4, 0xF1, 0xF3, 0x80, 0xBF, 0x80, 0xBF, 0x80, 0xBF},
+    {0x100000, 0x10FFFF, 4, 0xF4, 0xF4, 0x80, 0x8F, 0x80, 0xBF, 0x80, 0xBF} 
+};
+
+/*
+   Private unget buffer for UTF-8 sequences, used by ReadCharFromStream.
+   We can't use the normal stream's unget buffer because it doesn't contain the raw bytes
+   needed by the UTF-8 decoder, and such bytes will probably get popped by the parser
+   before the UTF-8 decoder gets to them.
+*/
+
+static unsigned char utf8Bytebuf[CHARBUF_SIZE];
+static int utf8Bufpos = 0;
+static Bool utf8Pushed = no;
+
+int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes,
+                           StreamIn *in, GetBytes getter, int *count)
+{
+    unsigned char tempbuf[10];
+    unsigned char *buf = &tempbuf[0];
+    uint ch = 0, n = 0;
+    int i, bytes = 0;
+    Bool hasError = no;
+    
+    if (successorBytes)
+        buf = successorBytes;
+        
+    /* special check if we have been passed an EOF char */
+    if (/* (in && feof(in->file)) || */ firstByte == (uint)EndOfStream)
+    {
+        /* at present */
+        *c = firstByte;
+        *count = 1;
+        return 0;
+    }
+
+    ch = firstByte; /* first byte is passed in separately */
+    
+    if (ch <= 0x7F) /* 0XXX XXXX one byte */
+    {
+        n = ch;
+        bytes = 1;
+    }
+    else if ((ch & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
+    {
+        n = ch & 31;
+        bytes = 2;
+    }
+    else if ((ch & 0xF0) == 0xE0)  /* 1110 XXXX  three bytes */
+    {
+        n = ch & 15;
+        bytes = 3;
+    }
+    else if ((ch & 0xF8) == 0xF0)  /* 1111 0XXX  four bytes */
+    {
+        n = ch & 7;
+        bytes = 4;
+    }
+    else if ((ch & 0xFC) == 0xF8)  /* 1111 10XX  five bytes */
+    {
+        n = ch & 3;
+        bytes = 5;
+        hasError = yes;
+    }
+    else if ((ch & 0xFE) == 0xFC)  /* 1111 110X  six bytes */
+    {
+        n = ch & 1;
+        bytes = 6;
+        hasError = yes;
+    }
+    else
+    {
+        /* not a valid first byte of a UTF-8 sequence */
+        n = ch;
+        bytes = 1;
+        hasError = yes;
+    }
+
+    for (i = 1; i < bytes; ++i)
+    {
+        int tempCount; /* no. of additional bytes to get */
+        
+        /* successor bytes should have the form 10XX XXXX */
+        if (getter && (bytes - i > 0))
+        {
+            tempCount = 1; /* to simplify things, get 1 byte at a time */
+            getter(in, (unsigned char *)&buf[i - 1], &tempCount, no);
+            if (tempCount <= 0) /* EOF */
+            {
+                hasError = yes;
+                bytes = i;
+                break;
+            }
+        }
+        
+		if ((buf[i - 1] & 0xC0) != 0x80)
+		{
+		    /* illegal successor byte value */
+		    hasError = yes;
+		    bytes = i;
+            if (getter)
+            {
+                tempCount = 1; /* to simplify things, unget 1 byte at a time */
+            	getter(in, (unsigned char *)&buf[i - 1], &tempCount, yes); /* Unget the byte */
+            }
+		    break;
+		}
+        
+        n = (n << 6) | (buf[i - 1] & 0x3F);
+    }
+    
+    if (!hasError && ((n == kUTF8ByteSwapNotAChar) || (n == kUTF8NotAChar)))
+        hasError = yes;
+        
+    if (!hasError && (n > kMaxUTF8FromUCS4))
+        hasError = yes;
+        
+    if (!hasError && (n >= kLowUTF16Surrogate) && (n <= kHighUTF16Surrogate))
+        /* unpaired surrogates not allowed */
+        hasError = yes;
+
+    if (!hasError)
+    {
+        int lo, hi;
+        
+        lo = offsetUTF8Sequences[bytes - 1];
+        hi = offsetUTF8Sequences[bytes] - 1;
+        
+        /* check for overlong sequences */
+        if ((n < validUTF8[lo].lowChar) || (n > validUTF8[hi].highChar))
+            hasError = yes;
+        else
+        {
+            hasError = yes; /* assume error until proven otherwise */
+        
+            for (i = lo; i <= hi; i++)
+            {
+                int tempCount;
+                unsigned char theByte;
+                
+                for (tempCount = 0; tempCount < bytes; tempCount++)
+                {
+                    if (!tempCount)
+                        theByte = firstByte;
+                    else
+                        theByte = buf[tempCount - 1];
+                        
+                    if ((theByte >= validUTF8[i].validBytes[(tempCount * 2)]) &&
+                        (theByte <= validUTF8[i].validBytes[(tempCount * 2) + 1]))
+                        hasError = no;
+                    if (hasError)
+                        break;
+                }
+            }
+        }
+    }
+        
+    *count = bytes;
+
+    *c = n;
+    
+    if (hasError)
+    {
+#if 0
+ 	    /* debug */
+ 	    tidy_out(errout, "UTF-8 decoding error of %d bytes : ", bytes);
+		tidy_out(errout, "0x%02x ", firstByte);
+	    for (i = 1; i < bytes; i++)
+		    tidy_out(errout, "0x%02x ", buf[i - 1]);
+	    tidy_out(errout, " = U+%04lx\n", n);
+#endif
+
+       /* n = 0xFFFD; */ /* replacement char - do this in the caller */
+        return -1;
+    }
+
+    return 0;
+}
+
+int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
+                           Out *out, PutBytes putter, int *count)
+{
+    unsigned char tempbuf[10];
+    unsigned char *buf = &tempbuf[0];
+    int i, bytes = 0;
+    Bool hasError = no;
+    
+    if (encodebuf)
+        buf = encodebuf;
+        
+    if (c <= 0x7F)  /* 0XXX XXXX one byte */
+    {
+        buf[0] = c;
+        bytes = 1;
+    }
+    else if (c <= 0x7FF)  /* 110X XXXX  two bytes */
+    {
+        buf[0] = (0xC0 | (c >> 6));
+        buf[1] = (0x80 | (c & 0x3F));
+        bytes = 2;
+    }
+    else if (c <= 0xFFFF)  /* 1110 XXXX  three bytes */
+    {
+        buf[0] = (0xE0 | (c >> 12));
+        buf[1] = (0x80 | ((c >> 6) & 0x3F));
+        buf[2] = (0x80 | (c & 0x3F));
+        bytes = 3;
+        if ((c == kUTF8ByteSwapNotAChar) || (c == kUTF8NotAChar))
+            hasError = yes;
+        else if ((c >= kLowUTF16Surrogate) && (c <= kHighUTF16Surrogate))
+            /* unpaired surrogates not allowed */
+            hasError = yes;
+    }
+    else if (c <= 0x1FFFFF)  /* 1111 0XXX  four bytes */
+    {
+        buf[0] = (0xF0 | (c >> 18));
+        buf[1] = (0x80 | ((c >> 12) & 0x3F));
+        buf[2] = (0x80 | ((c >> 6) & 0x3F));
+        buf[3] = (0x80 | (c & 0x3F));
+        bytes = 4;
+        if (c > kMaxUTF8FromUCS4)
+            hasError = yes;
+    }
+    else if (c <= 0x3FFFFFF)  /* 1111 10XX  five bytes */
+    {
+        buf[0] = (0xF8 | (c >> 24));
+        buf[1] = (0x80 | (c >> 18));
+        buf[2] = (0x80 | ((c >> 12) & 0x3F));
+        buf[3] = (0x80 | ((c >> 6) & 0x3F));
+        buf[4] = (0x80 | (c & 0x3F));
+        bytes = 5;
+        hasError = yes;
+    }
+    else if (c <= 0x7FFFFFFF)  /* 1111 110X  six bytes */
+    {
+        buf[0] = (0xFC | (c >> 30));
+        buf[1] = (0x80 | ((c >> 24) & 0x3F));
+        buf[2] = (0x80 | ((c >> 18) & 0x3F));
+        buf[3] = (0x80 | ((c >> 12) & 0x3F));
+        buf[4] = (0x80 | ((c >> 6) & 0x3F));
+        buf[5] = (0x80 | (c & 0x3F));
+        bytes = 6;
+        hasError = yes;
+    }
+    else
+        hasError = yes;
+        
+    if (hasError)
+    {
+#if 0
+        /* do this in the caller ? */
+        /* replacement char 0xFFFD encoded as UTF-8 */
+        buf[0] = 0xEF;
+        buf[1] = 0xBF;
+        buf[2] = 0xBD;
+        bytes = 3;
+#else
+        putter = NULL; /* don't output invalid UTF-8 byte sequence to a stream */
+#endif
+    }
+        
+    if (putter)
+    {
+        int tempCount = bytes;
+        
+        putter(out, buf, &tempCount);
+        if (tempCount < bytes)
+            hasError = yes;
+    }
+    	
+    *count = bytes;
+    
+    if (hasError)
+	{
+#if 0
+	    /* debug */
+	    tidy_out(errout, "UTF-8 encoding error for U+%x : ", c);
+	    for (i = 0; 0 < bytes; i++)
+		    tidy_out(errout, "0x%02x ", buf[i]);
+	    tidy_out(errout, "\n");
+#endif
+
+        return -1;
+    }
+    
+    return 0;
+}
+
 StreamIn *OpenInput(FILE *fp)
 {
     StreamIn *in;
@@ -282,15 +664,100 @@ StreamIn *OpenInput(FILE *fp)
     return in;
 }
 
+/* read UTF-8 successor bytes from stream, return <= 0 if EOF */
+/* or if "unget" is true, Unget the bytes to re-synchronize the input stream */
+static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count, Bool unget)
+{
+    uint i;
+    
+    for (i = 0; i < *count; i++)
+    {
+        if (unget)
+        {
+            /* EOF fix by Terry Teague - 12 Aug 01 */
+            if (buf[i] == EndOfStream)
+            {
+	            /* tidy_out(errout, "Attempt to UngetChar EOF\n"); */ /* debug */
+	            return;
+            }
+    
+            utf8Pushed = yes;
+
+            if (utf8Bufpos >= CHARBUF_SIZE)
+            {
+                memcpy(utf8Bytebuf, utf8Bytebuf + 1, CHARBUF_SIZE - 1);
+                utf8Bufpos--;
+            }
+            utf8Bytebuf[utf8Bufpos++] = buf[i];
+
+            if (buf[i] == '\n')
+                --(in->curline);
+
+            in->curcol = in->lastcol;
+        }
+        else
+        {
+            if (utf8Pushed)
+            {
+                buf[i] = utf8Bytebuf[--utf8Bufpos];
+                if (utf8Bufpos == 0)
+                    utf8Pushed = no;
+
+                if (buf[i] == '\n')
+                {
+                    in->curcol = 1;
+                    in->curline++;
+                }
+                else
+                    in->curcol++;
+            }
+            else
+            {
+                if (feof(in->file))
+                {
+                    *count = -i;
+                    break;
+                }
+
+                buf[i] = getc(in->file);
+                in->curcol++;
+            }
+        }
+    }
+}
+
 /* read char from stream */
 static int ReadCharFromStream(StreamIn *in)
 {
-    uint n, c, i, count;
+    uint c, n;
 
-    if (feof(in->file))
-        return -1;
+    /*
+       If there are any unprocessed UTF-8 bytes that were pushed onto the
+       private UTF-8 unget buffer because of an error in a previous UTF-8 byte
+       sequence, we need to get one byte now from the private UTF-8 unget buffer,
+       rather than from the stream's file.
+    */
+    if (utf8Pushed)
+    {
+        c = utf8Bytebuf[--utf8Bufpos];
+        if (utf8Bufpos == 0)
+            utf8Pushed = no;
 
-    c = getc(in->file);
+        if (c == '\n')
+        {
+            in->curcol = 1;
+            in->curline++;
+        }
+        else
+            in->curcol++;
+    }
+    else
+    {
+        if (feof(in->file))
+            return EndOfStream;
+
+        c = getc(in->file);
+    }
 
     /*
        A document in ISO-2022 based encoding uses some ESC sequences
@@ -373,10 +840,12 @@ static int ReadCharFromStream(StreamIn *in)
         return c;
     }
 
-    if (in->encoding != UTF8)
-        return c;
+    if (in->encoding == UTF8)
+#if 0
+    {
+        /* deal with UTF-8 encoded char */
 
-    /* deal with UTF-8 encoded char */
+        uint i, count;
 
     if ((c & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
     {
@@ -416,6 +885,26 @@ static int ReadCharFromStream(StreamIn *in)
 
         n = (n << 6) | (c & 0x3F);
     }
+    }
+#else
+    {
+        /* deal with UTF-8 encoded char */
+
+        int err, count = 0;
+        
+        /* first byte "c" is passed in separately */
+        err = DecodeUTF8BytesToChar(&n, c, NULL, in, ReadUTF8BytesFromStream, &count);
+        if (!err && (n == EndOfStream) && (count == 1)) /* EOF */
+            return -1;
+        else if (err)
+        {
+            ReportEncodingError(in->lexer, ILLEGAL_UTF8, n);
+            n = 0xFFFD; /* replacement char */
+        }
+    }
+#endif
+    else
+        n = c;
 
     return n;
 }
@@ -494,9 +983,14 @@ int ReadChar(StreamIn *in)
         if (0 < c && c < 32)
             continue;
 
-        /* watch out for IS02022 */
+        /* watch out for chars that have already been decoded such as */
+        /* IS02022, UTF-8 etc, that don't require further decoding */
 
-        if (in->encoding == RAW || in->encoding == ISO2022)
+        if (
+            in->encoding == RAW ||
+            in->encoding == ISO2022 ||
+            in->encoding == UTF8
+           )
         {
             in->curcol++;
             break;
@@ -764,12 +1258,24 @@ char *wstrtolower(char *s)
     return s;
 }
 
+/* output UTF-8 bytes to output stream */
+static void outcUTF8Bytes(Out *out, unsigned char *buf, int *count)
+{
+    uint i;
+    
+    for (i = 0; i < *count; i++)
+    {
+        putc(buf[i], out->fp);
+    }
+}
+
 /* For mac users, should we map Unicode back to MacRoman? */
 void outc(uint c, Out *out)
 {
     uint ch;
 
     if (out->encoding == UTF8)
+#if 0
     {
         if (c < 128)
             putc(c, out->fp);
@@ -800,6 +1306,19 @@ void outc(uint c, Out *out)
             ch = (0x80 | (c & 0x3F)); putc(ch, out->fp);
         }
     }
+#else
+    {
+        int count = 0;
+        
+        EncodeCharToUTF8Bytes(c, NULL, out, outcUTF8Bytes, &count);
+        if (count <= 0)
+        {
+            /* ReportEncodingError(in->lexer, ILLEGAL_UTF8, c); */
+            /* replacement char 0xFFFD encoded as UTF-8 */
+            putc(0xEF, out->fp); putc(0xBF, out->fp); putc(0xBF, out->fp);
+        }
+    }
+#endif
     else if (out->encoding == ISO2022)
     {
         if (c == 0x1b)  /* ESC */

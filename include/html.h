@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/15 03:47:38 $ 
-    $Revision: 1.44 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/17 22:56:08 $ 
+    $Revision: 1.45 $ 
 
 */
 
@@ -623,6 +623,23 @@ Node *FindBody(Node *root);
 /* tidy.c */
 #define EndOfStream EOF
 
+/* UTF-8 encoding/decoding functions */
+
+/* The Getter/Putter callbacks are called to retrieve/store 0 or more additional UTF-8 bytes. */
+/* The Getter callback can also Unget if necessary to re-synchronize the input stream. */
+/* "count" is the number of bytes actually stored in external buffer "buf"; <= 0 if error or EOF */
+
+typedef void (GetBytes)(StreamIn *in, unsigned char *buf, int *count, Bool unget);
+typedef void (PutBytes)(Out *out, unsigned char *buf, int *count);
+
+/* Pass in NULL for the buf, in, out, getter and putter parameters respectively if not appropriate */
+/* Return < 0 if error or EOF */
+
+int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes,
+                           StreamIn *in, GetBytes getter, int *count);
+int EncodeCharToUTF8Bytes(uint c, unsigned char *encodebuf,
+                           Out *out, PutBytes putter, int *count);
+
 void *MemAlloc(uint size);
 void *MemRealloc(void *mem, uint newsize);
 void MemFree(void *mem);
@@ -769,7 +786,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 
 /* character encoding errors */
 #define WINDOWS_CHARS           1
-#define NON_ASCII               2
+#define ILLEGAL_UTF8            2
 #define FOUND_UTF16             4
 #define INVALID_URI             8
 

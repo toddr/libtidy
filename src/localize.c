@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/01 01:04:17 $ 
-    $Revision: 1.24 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/17 22:59:18 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -145,6 +145,12 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
             NtoS(c, buf);
             lexer->badChars |= WINDOWS_CHARS;
             tidy_out(lexer->errout, "Warning: replacing illegal character code %s", buf);
+        }
+        else if (code == ILLEGAL_UTF8)
+        {
+            sprintf(buf, "U+%04lX", c);
+            lexer->badChars |= ILLEGAL_UTF8;
+            tidy_out(lexer->errout, "Warning: replacing illegal UTF-8 bytes (char. code %s)", buf);
         }
 
         tidy_out(lexer->errout, "\n");
@@ -609,6 +615,18 @@ void ErrorSummary(Lexer *lexer)
             tidy_out(lexer->errout, "instead recommended to use named entities, e.g. &trade; rather\n");
             tidy_out(lexer->errout, "than Windows character code 153 (0x2122 in Unicode). Note that\n");
             tidy_out(lexer->errout, "as of February 1998 few browsers support the new entities.\n\n");
+        }
+        if (lexer->badChars & ILLEGAL_UTF8)
+        {
+            tidy_out(lexer->errout, "Character codes for UTF-8 must be in the range: U+0000 to U+10FFFF.\n");
+            tidy_out(lexer->errout, "The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also\n");
+            tidy_out(lexer->errout, "allows for the use of five- and six-byte sequences to encode\n");
+            tidy_out(lexer->errout, "characters that are outside the range of the Unicode character set;\n");
+            tidy_out(lexer->errout, "those five- and six-byte sequences are illegal for the use of\n");
+            tidy_out(lexer->errout, "UTF-8 as a transformation of Unicode characters. ISO/IEC 10646\n");
+            tidy_out(lexer->errout, "does not allow mapping of unpaired surrogates, nor U+FFFE and U+FFFF\n");
+            tidy_out(lexer->errout, "(but it does allow other noncharacters). For more information please refer to\n");
+            tidy_out(lexer->errout, "http://www.unicode.org/unicode and http://www.cl.cam.ac.uk/~mgk25/unicode.html\n\n");
         }
         if (lexer->badChars & INVALID_URI)
         {

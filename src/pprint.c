@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/15 02:15:06 $ 
-    $Revision: 1.23 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/17 23:00:49 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -64,21 +64,15 @@ do {\
     AddC( (uint) *cp, llen++ );\
 } while (0)
 
-/*
-  1010  A
-  1011  B
-  1100  C
-  1101  D
-  1110  E
-  1111  F
-*/
-
-/* return one less that the number of bytes used by UTF-8 char */
-/* str points to 1st byte, *ch initialized to 1st byte */
+/* return one less than the number of bytes used by the UTF-8 byte sequence */
+/* str points to the UTF-8 byte sequence */
+/* the Unicode char is returned in *ch */
 uint GetUTF8(unsigned char *str, uint *ch)
 {
-    uint c, n, i, bytes;
+    uint c, n, i;
+    int bytes;
 
+#if 0
     c = str[0];
 
     if ((c & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
@@ -119,6 +113,24 @@ uint GetUTF8(unsigned char *str, uint *ch)
         c = str[i];
         n = (n << 6) | (c & 0x3F);
     }
+#else
+    int err;
+    
+    bytes = 0;
+    
+    /* first byte "str[0]" is passed in separately from the */
+    /* rest of the UTF-8 byte sequence starting at "str[1]" */
+    err = DecodeUTF8BytesToChar(&n, str[0], (unsigned char *)&str[1], NULL, NULL, &bytes);
+    if (err)
+    {
+#if 0
+	    extern FILE* errout; /* debug */
+	    
+	    tidy_out(errout, "pprint UTF-8 decoding error for U+%x : ", n); /* debug */
+#endif
+        n = 0xFFFD; /* replacement char */
+    }
+#endif
 
     *ch = n;
     return bytes - 1;
@@ -127,6 +139,7 @@ uint GetUTF8(unsigned char *str, uint *ch)
 /* store char c as UTF-8 encoded byte stream */
 char *PutUTF8(char *buf, uint c)
 {
+#if 0
     if (c < 128)
         *buf++ = c;
     else if (c <= 0x7FF)
@@ -155,6 +168,26 @@ char *PutUTF8(char *buf, uint c)
         *buf++ =  (0x80 | ((c >> 6) & 0x3F));
         *buf++ =  (0x80 | (c & 0x3F));
     }
+#else
+    int err, count = 0;
+        
+    err = EncodeCharToUTF8Bytes(c, (unsigned char *)buf, NULL, NULL, &count);
+    if (err)
+    {
+#if 0
+	    extern FILE* errout; /* debug */
+	    
+	    tidy_out(errout, "pprint UTF-8 encoding error for U+%x : ", c); /* debug */
+#endif
+        /* replacement char 0xFFFD encoded as UTF-8 */
+        buf[0] = 0xEF;
+        buf[1] = 0xBF;
+        buf[2] = 0xBD;
+        count = 3;
+    }
+    
+    buf += count;
+#endif
 
     return buf;
 }

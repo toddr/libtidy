@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/15 03:49:26 $ 
-    $Revision: 1.41 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/17 22:57:22 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -300,6 +300,7 @@ static void ChangeChar(Lexer *lexer, char c)
 /* store char c as UTF-8 encoded byte stream */
 void AddCharToLexer(Lexer *lexer, uint c)
 {
+#if 0
     if (c < 128)
         AddByte(lexer, c);
     else if (c <= 0x7FF)
@@ -328,6 +329,28 @@ void AddCharToLexer(Lexer *lexer, uint c)
         AddByte(lexer, 0x80 | ((c >> 6) & 0x3F));
         AddByte(lexer, 0x80 | (c & 0x3F));
     }
+#else
+    int i, err, count = 0;
+    unsigned char buf[10];
+    
+    err = EncodeCharToUTF8Bytes(c, buf, NULL, NULL, &count);
+    if (err)
+    {
+#if 0
+	    extern FILE* errout; /* debug */
+	    
+	    tidy_out(errout, "lexer UTF-8 encoding error for U+%x : ", c); /* debug */
+#endif
+        /* replacement char 0xFFFD encoded as UTF-8 */
+        buf[0] = 0xEF;
+        buf[1] = 0xBF;
+        buf[2] = 0xBD;
+        count = 3;
+    }
+    
+    for (i = 0; i < count; i++)
+        AddByte(lexer, (uint)buf[i]);
+#endif
 }
 
 static void AddStringToLexer(Lexer *lexer, char *str)
