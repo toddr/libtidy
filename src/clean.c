@@ -4,6 +4,12 @@
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/02 08:18:48 $ 
+    $Revision: 1.2 $ 
+
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
   as font tags, B, I, and the align attribute. By applying
@@ -1629,7 +1635,7 @@ static void PurgeAttributes(Node *node)
             wstrcmp(attr->attribute, "style") == 0 ||
             wstrcmp(attr->attribute, "lang") == 0 ||
             wstrncmp(attr->attribute, "x:", 2) == 0 ||
-            ((wstrcmp(attr->attribute, "heigy") == 0 ||
+            ((wstrcmp(attr->attribute, "height") == 0 ||	/* #427669 - fix by skark 08 Aug 00 */
               wstrcmp(attr->attribute, "width") == 0) &&
                 (node->tag == tag_td ||
                  node->tag == tag_tr ||
