@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/02 08:58:00 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/06/13 08:16:28 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -161,11 +161,11 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
 
         if (code == MISSING_SEMICOLON)
         {
-            tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entity);
+            tidy_out(lexer->errout, "Warning: entity \"%s\" doesn't end in ';'", entity?entity:"NULL");	/* #427818 - fix based on suggestion by Tony Goodwin 11 Oct 00 */
         }
         else if (code == UNKNOWN_ENTITY)
         {
-            tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entity);
+            tidy_out(lexer->errout, "Warning: unescaped & or unknown entity \"%s\"", entity?entity:"NULL");	/* #427818 - fix based on suggestion by Tony Goodwin 11 Oct 00 */
         }
         else if (code == UNESCAPED_AMPERSAND)
         {
