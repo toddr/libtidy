@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 19:58:32 $ 
-    $Revision: 1.96 $ 
+    $Date: 2004/06/03 15:51:22 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -1242,6 +1242,10 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
     }
 
     CheckLowerCaseAttrValue( doc, node, attval);
+
+    /* currently CheckCaption(...) takes care of the remaining cases */
+    if (nodeIsCAPTION(node))
+        return;
 
     if (!(AttrValueIs(attval, "left")   ||
           AttrValueIs(attval, "right")  ||

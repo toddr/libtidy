@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:49:59 $ 
-    $Revision: 1.45 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/06/03 15:51:22 $ 
+    $Revision: 1.46 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -610,33 +610,23 @@ void CheckIMG( TidyDocImpl* doc, Node *node )
     }
 }
 
-void CheckCaption( TidyDocImpl* doc, Node *node )
+void CheckCaption(TidyDocImpl* doc, Node *node)
 {
     AttVal *attval;
-    char *value = NULL;
 
-    CheckAttributes( doc, node );
+    CheckAttributes(doc, node);
 
-    for (attval = node->attributes; attval != NULL; attval = attval->next)
-    {
-        if (attrIsALIGN(attval))
-        {
-            value = attval->value;
-            break;
-        }
-    }
+    attval = AttrGetById(node, TidyAttr_ALIGN);
 
-    if (value != NULL)
-    {
-        if ( tmbstrcasecmp(value, "left") == 0 ||
-             tmbstrcasecmp(value, "right") == 0 )
-            ConstrainVersion( doc, VERS_HTML40_LOOSE );
-        else if ( tmbstrcasecmp(value, "top") == 0 ||
-                  tmbstrcasecmp(value, "bottom") == 0 )
-            ConstrainVersion( doc, ~(VERS_HTML20|VERS_HTML32) );
-        else
-            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE );
-    }
+    if (!AttrHasValue(attval))
+        return;
+
+    if (AttrValueIs(attval, "left") || AttrValueIs(attval, "right"))
+        ConstrainVersion(doc, VERS_HTML40_LOOSE);
+    else if (AttrValueIs(attval, "top") || AttrValueIs(attval, "bottom"))
+        ConstrainVersion(doc, ~(VERS_HTML20|VERS_HTML32));
+    else
+        ReportAttrError(doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckHTML( TidyDocImpl* doc, Node *node )
