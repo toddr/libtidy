@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.20 $ 
+    $Date: 2003/03/04 02:35:16 $ 
+    $Revision: 1.21 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2184,7 +2184,7 @@ void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pHead )
                                     case RAW:       enc = "raw";          break;
                                     case ASCII:     enc = "us-ascii";     break;
                                     case LATIN1:    enc = "iso-8859-1";   break;
-                                    case UTF8:      enc = "UTF8";         break;
+                                    case UTF8:      enc = "UTF-8";        break;
                                     case ISO2022:   enc = "iso-2022";     break;
                                     case MACROMAN:  enc = "mac";          break;
                                     case WIN1252:   enc = "windows-1252"; break;
