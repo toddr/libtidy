@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:40 $ 
-    $Revision: 1.39 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/03/30 04:35:02 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -74,6 +74,10 @@ extern "C" {
 #define MAC_OS_CLASSIC
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Mac OS"
+#endif
+
+#ifdef SUPPORT_GETPWNAM
+#undef SUPPORT_GETPWNAM
 #endif
 
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -325,8 +329,6 @@ extern "C" {
 #include <pwd.h>
 #endif
 
-/* #define __USE_MISC */
-
 #ifdef NEEDS_UNISTD_H
 #include <unistd.h>  /* needed for unlink on some Unix systems */
 #endif
@@ -441,18 +443,16 @@ extern "C" {
 #endif /* PRESERVE_FILE_TIMES */
 
 /* hack for gnu sys/types.h file  which defines uint and ulong */
-/* you may need to delete the #ifndef and #endif on your system */
 
-#ifndef __USE_MISC
-#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS) || defined(IRIX_OS) || defined(AIX_OS)
+#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(OSF_OS) || defined(IRIX_OS) || defined(AIX_OS)
 #include <sys/types.h>
-#else
-#if !defined(HPUX_OS) && !defined(CYGWIN_OS)
+#endif
+#if !defined(HPUX_OS) && !defined(CYGWIN_OS) && !defined(MAC_OS_X) && !defined(BE_OS) && !defined(SOLARIS_OS) && !defined(BSD_BASED_OS) && !defined(OSF_OS) && !defined(IRIX_OS) && !defined(AIX_OS)
 typedef unsigned int uint;
 #endif
+#if defined(HPUX_OS) || defined(CYGWIN_OS) || defined(MAC_OS) || defined(BSD_BASED_OS)
 typedef unsigned long ulong;
 #endif
-#endif /* __USE_MISC */
 
 #ifndef TIDY_EXPORT /* Define it away for most builds */
 #define TIDY_EXPORT
