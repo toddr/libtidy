@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:38:57 $ 
-    $Revision: 1.21 $ 
+    $Date: 2001/07/14 12:56:15 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -47,6 +47,7 @@ AttrCheck CheckClear;
 AttrCheck CheckShape;
 AttrCheck CheckNumber;
 AttrCheck CheckScope;
+AttrCheck CheckColor;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -82,7 +83,7 @@ static Attribute *hashtab[HASHSIZE];
 #define SCRIPT      CheckScript
 #define ALIGN       CheckAlign
 #define VALIGN      CheckValign
-#define COLOR       null
+#define COLOR       CheckColor
 #define CLEAR       CheckClear
 #define BORDER      CheckBool     /* kludge */
 #define LANG        null
@@ -579,7 +580,7 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
     
     if (FixUri && escape_count)
     {
-        len = strlen(p) + escape_count * 2 + 1;
+        len = wstrlen(p) + escape_count * 2 + 1;
         dest = (char *)MemAlloc(len);
         
         for (i = 0; c = p[i]; ++i)
@@ -823,6 +824,80 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
             break;
         }
         ++p;
+    }
+}
+
+/* check color syntax and beautify value by option */
+void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
+{
+    Bool ReplaceColor = yes;
+    Bool HexUppercase = yes;
+    Bool invalid = no;
+    Bool found = no;
+    char *given = attval->value;
+    struct _colors *color;
+    uint i = 0;
+
+    for (color = colors; color->name; ++color)
+    {
+        if (given[0] == '#')
+        {
+            if (wstrlen(given) != 7)
+            {
+                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                invalid = yes;
+                break;
+            }
+            else if (wstrcasecmp(given, color->hex) == 0)
+            {
+                if (ReplaceColor)
+                {
+                    MemFree(attval->value);
+                    attval->value = wstrdup(color->name);
+                }
+                found = yes;
+                break;
+            }
+        }
+        else if (IsLetter(given[0]))
+        {
+            if (wstrcasecmp(given, color->name) == 0)
+            {
+                if (ReplaceColor)
+                {
+                    MemFree(attval->value);
+                    attval->value = wstrdup(color->name);
+                }
+                found = yes;
+                break;
+            }
+        }
+        else
+        {
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+            invalid = yes;
+            break;
+        }
+    }
+    if (!found && !invalid)
+    {
+        for (i = 1; i < 7; ++i)
+        {
+            if (!IsDigit(given[i]) &&
+                !strchr("abcdef", ToLower(given[i])))
+            {
+                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                invalid = yes;
+                break;
+            }
+        }
+        if (!invalid && HexUppercase)
+        {
+            for (i = 1; i < 7; ++i)
+            {
+                given[i] = ToUpper(given[i]);
+            }
+        }
     }
 }
 
