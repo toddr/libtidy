@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/09 10:33:17 $ 
-    $Revision: 1.30 $ 
+    $Date: 2003/04/13 13:43:42 $ 
+    $Revision: 1.31 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -371,7 +371,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
                       tmbstrlen(classname) + 2;
             tmbstr s = (tmbstr) MemAlloc( len );
             tmbstrcpy(s, classattr->value);
-            tmbstrcat(s, "_");
+            tmbstrcat(s, " ");
             tmbstrcat(s, classname);
             MemFree(classattr->value);
             classattr->value = s;
