@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/06/16 20:26:16 $ 
-    $Revision: 1.3 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/06/24 02:06:14 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -212,6 +212,8 @@ static void WrapLine(Out *fout, uint indent)
         q = linebuf + wraphere;
         AddC('\0', linelen);
 
+        p = linebuf; q = linebuf + wraphere;	/* 433856 - fix by Terry Teague 23 Jun 00 */
+        
         while ((*p++ = *q++));
 
         linelen -= wraphere;
@@ -249,6 +251,8 @@ static void WrapAttrVal(Out *fout, uint indent, Bool inString)
         q = linebuf + wraphere;
         AddC('\0', linelen);
 
+        p = linebuf; q = linebuf + wraphere;	/* 433856 - fix by Terry Teague 23 Jun 00 */
+        
         while ((*p++ = *q++));
 
         linelen -= wraphere;
