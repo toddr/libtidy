@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 20:54:46 $ 
-    $Revision: 1.58 $ 
+    $Date: 2003/04/10 10:45:17 $ 
+    $Revision: 1.59 $ 
 
 */
 
@@ -895,9 +895,10 @@ static void PPrintString( TidyDocImpl* doc, uint indent, ctmbstr str )
 
 
 static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
-                             tmbstr value, uint delim, Bool wrappable )
+                             tmbstr value, uint delim, Bool wrappable, Bool scriptAttr )
 {
     TidyPrintImpl* pprint = &doc->pprint;
+    Bool scriptlets = cfg(doc, TidyWrapScriptlets);
 
     int mode = PREFORMATTED | ATTRIBVALUE;
     if ( wrappable )
@@ -960,7 +961,7 @@ static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
                 else
                     AddChar( pprint, c );
 
-                if ( delim == '\'' )
+                if ( delim == '\'' && scriptAttr && scriptlets )
                     strStart = ToggleInString( pprint );
 
                 ++value;
@@ -973,7 +974,7 @@ static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
                 else
                     AddChar( pprint, c );
 
-                if ( delim == '"' )
+                if ( delim == '"' && scriptAttr && scriptlets )
                     strStart = ToggleInString( pprint );
 
                 ++value;
@@ -1085,19 +1086,21 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
  
     if ( attr->value == NULL )
     {
-        Bool isB = IsBoolAttribute( attr );
+        Bool isB = IsBoolAttribute(attr);
+        Bool scriptAttr = attrIsEvent(attr);
+
         if ( xmlOut )
             PPrintAttrValue( doc, indent, isB ? attr->attribute : "",
-                             attr->delim, no );
+                             attr->delim, no, scriptAttr );
 
         else if ( !isB && !IsNewNode(node) )
-            PPrintAttrValue( doc, indent, "", attr->delim, yes );
+            PPrintAttrValue( doc, indent, "", attr->delim, yes, scriptAttr );
 
         else 
             SetWrap( doc, indent );
     }
     else
-        PPrintAttrValue( doc, indent, attr->value, attr->delim, wrappable );
+        PPrintAttrValue( doc, indent, attr->value, attr->delim, wrappable, no );
 }
 
 static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
