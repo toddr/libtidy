@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:38:57 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/07/14 15:57:13 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -599,6 +599,7 @@ int wstrncmp(char *s1, char *s2, int n);
 int wstrncasecmp(char *s1, char *s2, int n);   
 int wstrlen(char *str);
 Bool wsubstr(char *s1, char *s2);
+char *wstrtolower(char *s);
 void ClearMemory(void *, uint size);
 
 void tidy_out(FILE *fp, const char* msg, ...);
@@ -805,6 +806,7 @@ extern Bool Emacs;  /* sasdjb 01May00 GNU Emacs error output format */
 extern Bool LiteralAttribs;
 extern Bool BodyOnly; /* #434940 - output BODY content only */
 extern Bool FixUri;
+extern Bool LowerLiterals;
 
 /* Parser methods for tags */
 
