@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 03:32:36 $ 
-    $Revision: 1.101 $ 
+    $Date: 2003/05/06 03:57:34 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -1409,6 +1409,12 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
         return 0;
 
     vers = GetVersFromFPI(fpi->value);
+
+    if (VERS_XHTML & vers)
+    {
+        SetOptionBool(doc, TidyXhtmlOut, yes);
+        doc->lexer->isvoyager = yes;
+    }
 
     /* todo: add a warning if case does not match? */
     MemFree(fpi->value);
