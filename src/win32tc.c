@@ -3,7 +3,7 @@
   (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.3 2003/04/30 02:25:48 hoehrmann Exp $
+  $Id: win32tc.c,v 1.4 2003/04/30 23:32:21 hoehrmann Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -706,14 +706,29 @@ Bool Win32MLangIsConvertible(tchar c, StreamOut * out)
     IMLangConvertCharset * p;
     UINT i = 1;
     HRESULT hr;
+    WCHAR inbuf[2] = { 0 };
+    UINT inbufsize = 0;
 
     assert( c != 0 );
     assert( c <= 0x10FFFF );
     assert( out != NULL );
     assert( out->mlang != 0 );
 
+    if (c > 0xFFFF)
+    {
+        tchar high = 0;
+        tchar low = 0;
+
+        SplitSurrogatePair(c, &low, &high);
+
+        inbuf[inbufsize++] = (WCHAR)low;
+        inbuf[inbufsize++] = (WCHAR)high;
+    }
+    else
+        inbuf[inbufsize++] = (WCHAR)c;
+
     p = (IMLangConvertCharset *)out->mlang;
-    hr = IMLangConvertCharset_DoConversionFromUnicode(p, (WCHAR*)&c, &i, NULL, NULL);
+    hr = IMLangConvertCharset_DoConversionFromUnicode(p, inbuf, &inbufsize, NULL, NULL);
 
     return hr == S_OK ? yes : no;
 }
@@ -724,8 +739,9 @@ void Win32MLangPutChar(tchar c, StreamOut * out, uint * bytesWritten)
     TidyOutputSink * sink;
     CHAR outbuf[TC_OUTBUFSIZE] = { 0 };
     UINT outbufsize = TC_OUTBUFSIZE;
-    UINT inbufsize = 1;
     HRESULT hr = S_OK;
+    WCHAR inbuf[2] = { 0 };
+    UINT inbufsize = 0;
     uint i;
 
     assert( c != 0 );
@@ -738,11 +754,24 @@ void Win32MLangPutChar(tchar c, StreamOut * out, uint * bytesWritten)
     p = (IMLangConvertCharset *)out->mlang;
     sink = &out->sink;
 
-    hr = IMLangConvertCharset_DoConversionFromUnicode(p, (WCHAR*)&c, &inbufsize, outbuf, &outbufsize);
+    if (c > 0xFFFF)
+    {
+        tchar high = 0;
+        tchar low = 0;
+
+        SplitSurrogatePair(c, &low, &high);
+
+        inbuf[inbufsize++] = (WCHAR)low;
+        inbuf[inbufsize++] = (WCHAR)high;
+    }
+    else
+        inbuf[inbufsize++] = (WCHAR)c;
+
+    hr = IMLangConvertCharset_DoConversionFromUnicode(p, inbuf, &inbufsize, outbuf, &outbufsize);
     
     assert( hr == S_OK );
     assert( outbufsize > 0 );
-    assert( inbufsize == 1 );
+    assert( inbufsize == 1 || inbufsize == 2 );
 
     for (i = 0; i < outbufsize; ++i)
         sink->putByte(sink->sinkData, (byte)(outbuf[i]));
