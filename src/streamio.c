@@ -1,13 +1,13 @@
 /* streamio.c -- handles character stream I/O
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/04 08:09:16 $ 
-    $Revision: 1.26 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/03/03 12:49:24 $ 
+    $Revision: 1.27 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -1278,28 +1278,29 @@ static struct _enc2iana
 {
     uint id;
     ctmbstr name;
+    ctmbstr tidyOptName;
 } const enc2iana[] =
 {
-  { ASCII,    "us-ascii"     },
-  { LATIN0,   "iso-8859-15"  },
-  { LATIN1,   "iso-8859-1"   },
-  { UTF8,     "utf-8"        },
-  { MACROMAN, "macintosh"    },
-  { WIN1252,  "windows-1252" },
-  { IBM858,   "ibm00858"     },
+  { ASCII,    "us-ascii",     "ascii"   },
+  { LATIN0,   "iso-8859-15",  "latin0"  },
+  { LATIN1,   "iso-8859-1",   "latin1"  },
+  { UTF8,     "utf-8",        "utf8"   },
+  { MACROMAN, "macintosh",    "mac"     },
+  { WIN1252,  "windows-1252", "win1252" },
+  { IBM858,   "ibm00858",     "ibm858"  },
 #if SUPPORT_UTF16_ENCODINGS
-  { UTF16LE,  "utf-16"       },
-  { UTF16BE,  "utf-16"       },
-  { UTF16,    "utf-16"       },
+  { UTF16LE,  "utf-16",       "utf16le" },
+  { UTF16BE,  "utf-16",       "utf16be" },
+  { UTF16,    "utf-16",       "utf16"   },
 #endif
 #if SUPPORT_ASIAN_ENCODINGS
-  { BIG5,     "big5"         },
-  { SHIFTJIS, "shift_jis"    },
+  { BIG5,     "big5",         "big5"    },
+  { SHIFTJIS, "shift_jis",    "shiftjis"},
 #endif
 #ifndef NO_NATIVE_ISO2022_SUPPORT
-  { ISO2022,  NULL           },
+  { ISO2022,  NULL,           "iso2022" },
 #endif
-  { RAW,      NULL           }
+  { RAW,      NULL,           "raw"     }
 };
 
 ctmbstr GetEncodingNameFromTidyId(uint id)
@@ -1311,4 +1312,26 @@ ctmbstr GetEncodingNameFromTidyId(uint id)
             return enc2iana[i].name;
 
     return NULL;
+}
+
+ctmbstr GetEncodingOptNameFromTidyId(uint id)
+{
+    uint i;
+
+    for (i = 0; i < sizeof(enc2iana)/sizeof(enc2iana[0]); ++i)
+        if (enc2iana[i].id == id)
+            return enc2iana[i].tidyOptName;
+
+    return NULL;
+}
+
+int GetCharEncodingFromOptName( ctmbstr charenc )
+{
+    uint i;
+
+    for (i = 0; i < sizeof(enc2iana)/sizeof(enc2iana[0]); ++i)
+        if (tmbstrcasecmp(charenc, enc2iana[i].tidyOptName) == 0 )
+            return enc2iana[i].id;
+
+    return -1;
 }

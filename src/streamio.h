@@ -3,14 +3,14 @@
 
 /* streamio.h -- handles character stream I/O
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/01/10 12:40:38 $ 
-    $Revision: 1.13 $ 
+    $Date: 2005/03/03 12:49:24 $ 
+    $Revision: 1.14 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -135,6 +135,8 @@ void WriteChar( uint c, StreamOut* out );
 void outBOM( StreamOut *out );
 
 ctmbstr GetEncodingNameFromTidyId(uint id);
+ctmbstr GetEncodingOptNameFromTidyId(uint id);
+int GetCharEncodingFromOptName(ctmbstr charenc);
 
 /************************
 ** Misc

@@ -1,14 +1,14 @@
 /*
   config.c -- read config file and manage config properties
   
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 15:32:08 $ 
-    $Revision: 1.78 $ 
+    $Date: 2005/03/03 12:49:24 $ 
+    $Revision: 1.79 $ 
 
 */
 
@@ -1247,46 +1247,10 @@ Bool ParseCharEnc( TidyDocImpl* doc, const TidyOptionImpl* option )
 
 int CharEncodingId( ctmbstr charenc )
 {
-    int enc = -1;
-    if ( tmbstrcasecmp(charenc, "ascii") == 0 )
-        enc = ASCII;
-    else if ( tmbstrcasecmp(charenc, "latin0") == 0 )
-        enc = LATIN0;
-    else if ( tmbstrcasecmp(charenc, "latin1") == 0 )
-        enc = LATIN1;
-    else if ( tmbstrcasecmp(charenc, "raw") == 0 )
-        enc = RAW;
-    else if ( tmbstrcasecmp(charenc, "utf8") == 0 )
-        enc = UTF8;
-#ifndef NO_NATIVE_ISO2022_SUPPORT
-    else if ( tmbstrcasecmp(charenc, "iso2022") == 0 )
-        enc = ISO2022;
-#endif
-    else if ( tmbstrcasecmp(charenc, "mac") == 0 )
-        enc = MACROMAN;
-    else if ( tmbstrcasecmp(charenc, "win1252") == 0 )
-        enc = WIN1252;
-    else if ( tmbstrcasecmp(charenc, "ibm858") == 0 )
-        enc = IBM858;
-
-#if SUPPORT_UTF16_ENCODINGS
-    else if ( tmbstrcasecmp(charenc, "utf16le") == 0 )
-        enc = UTF16LE;
-    else if ( tmbstrcasecmp(charenc, "utf16be") == 0 )
-        enc = UTF16BE;
-    else if ( tmbstrcasecmp(charenc, "utf16") == 0 )
-        enc = UTF16;
-#endif
-
-#if SUPPORT_ASIAN_ENCODINGS
-    else if ( tmbstrcasecmp(charenc, "big5") == 0 )
-        enc = BIG5;
-    else if ( tmbstrcasecmp(charenc, "shiftjis") == 0 )
-        enc = SHIFTJIS;
-#endif
+    int enc = GetCharEncodingFromOptName( charenc );
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
-    else
+    if (enc == -1)
     {
         uint wincp = Win32MLangGetCPFromName(charenc);
         if (wincp)
@@ -1300,6 +1264,16 @@ int CharEncodingId( ctmbstr charenc )
 ctmbstr CharEncodingName( int encoding )
 {
     ctmbstr encodingName = GetEncodingNameFromTidyId(encoding);
+
+    if (!encodingName)
+        encodingName = "unknown";
+
+    return encodingName;
+}
+
+ctmbstr CharEncodingOptName( int encoding )
+{
+    ctmbstr encodingName = GetEncodingOptNameFromTidyId(encoding);
 
     if (!encodingName)
         encodingName = "unknown";
