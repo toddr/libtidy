@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/25 04:26:11 $ 
-    $Revision: 1.6 $ 
+    $Author: lpassey $ 
+    $Date: 2003/04/30 20:21:07 $ 
+    $Revision: 1.7 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -23,6 +23,10 @@
 #include "buffio.h"
 #include "fileio.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 typedef enum
 {
   FileIO,
@@ -180,6 +184,9 @@ uint DecodeLatin0(uint c);
 
 /* Function to convert from Symbol Font chars to Unicode */
 uint DecodeSymbolFont(uint c);
+#ifdef __cplusplus
+}
+#endif
 
 
 /* Use numeric constants as opposed to escape chars (\r, \n)

@@ -8,13 +8,18 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.3 $ 
+    $Author: lpassey $ 
+    $Date: 2003/04/30 20:18:08 $ 
+    $Revision: 1.4 $ 
 
 */
 
 #include "platform.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* like strdup but using MemAlloc */
 tmbstr tmbstrdup( ctmbstr str );
@@ -65,5 +70,9 @@ ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 );
 tmbstr tmbstrtolower( tmbstr s );
 
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 );
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif /* __TMBSTR_H__ */

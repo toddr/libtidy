@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: hoehrmann $ 
-    $Date: 2003/04/18 19:34:25 $ 
-    $Revision: 1.8 $ 
+    $Author: lpassey $ 
+    $Date: 2003/04/30 20:17:23 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -36,6 +36,10 @@
  Not yet done:
     -   Doctype subset and marked sections
 */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "forward.h"
 
@@ -569,6 +573,10 @@ int InlineDup( TidyDocImpl* doc, Node *node );
 */
 void DeferDup( TidyDocImpl* doc );
 Node *InsertedToken( TidyDocImpl* doc );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __LEXER_H__ */
