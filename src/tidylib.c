@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.18 $ 
+    $Date: 2003/05/04 05:47:37 $ 
+    $Revision: 1.19 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -910,13 +910,14 @@ int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
 
 int         tidyDocSaveStdout( TidyDocImpl* doc )
 {
-    int oldmode = -1, status = 0;
+    int oldstdoutmode = -1, oldstderrmode = -1, status = 0;
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
     StreamOut* out = FileOutput( stdout, outenc, nl );
 
 #if defined(_WIN32) || defined(OS2_OS)
-    oldmode = setmode( fileno(stdout), _O_BINARY );
+    oldstdoutmode = setmode( fileno(stdout), _O_BINARY );
+    oldstderrmode = setmode( fileno(stderr), _O_BINARY );
 #if SUPPORT_UTF16_ENCODINGS
     if ( out->encoding == UTF16   ||
          out->encoding == UTF16LE ||
@@ -930,12 +931,14 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
     if ( 0 == status )
       status = tidyDocSaveStream( doc, out );
 
-    /* fix for bug 689588 */
     fflush(stdout);
+    fflush(stderr);
 
 #if defined(_WIN32) || defined(OS2_OS)
-    if ( oldmode != -1 )
-        oldmode = setmode( fileno(stdout), oldmode );
+    if ( oldstdoutmode != -1 )
+        oldstdoutmode = setmode( fileno(stdout), oldstdoutmode );
+    if ( oldstdoutmode != -1 )
+        oldstderrmode = setmode( fileno(stderr), oldstderrmode );
 #endif
     MemFree( out );
     return status;
