@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 04:25:15 $ 
-    $Revision: 1.104 $ 
+    $Date: 2003/07/14 12:01:30 $ 
+    $Revision: 1.105 $ 
 
 */
 
@@ -282,6 +282,10 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
 
     /* #433359 - fix by Randy Waki 12 Mar 01 */
     if ( nodeIsIFRAME(element) )
+        return no;
+
+    /* fix for bug 770297 */
+    if (nodeIsTEXTAREA(element))
         return no;
 
     if ( attrGetID(element) || attrGetNAME(element) )
