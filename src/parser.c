@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 17:25:52 $ 
-    $Revision: 1.77 $ 
+    $Date: 2003/04/18 22:58:21 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -237,8 +237,7 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
     if ( element->tag->model & CM_BLOCK && element->attributes != NULL )
         return no;
 
-    if ( element->attributes != NULL &&
-         (nodeIsA(element) || nodeIsSPAN(element)) )
+    if ( nodeIsA(element) && element->attributes != NULL )
         return no;
 
     if ( nodeIsP(element) && !cfgBool(doc, TidyDropEmptyParas) )
@@ -270,6 +269,11 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
         return no;
 
     if ( attrGetID(element) || attrGetNAME(element) )
+        return no;
+
+    /* fix for bug 695408; a better fix would look for unknown and    */
+    /* known proprietary attributes that make the element significant */
+    if (attrGetDATAFLD(element))
         return no;
 
     /* fix for bug 723772, don't trim new-...-tags */
