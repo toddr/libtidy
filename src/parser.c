@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 23:08:53 $ 
-    $Revision: 1.22 $ 
+    $Date: 2001/07/17 11:24:06 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -1865,7 +1865,9 @@ void ParseRow(Lexer *lexer, Node *row, uint mode)
             if ((node->tag == tag_form) ||
                 (node->tag && node->tag->model & (CM_BLOCK|CM_INLINE)))
             {
-                BadForm(lexer);
+                if (node->tag == tag_form)
+                    BadForm(lexer);
+
                 ReportWarning(lexer, row, node, DISCARDING_UNEXPECTED);
                 FreeNode(node);
                 continue;
@@ -2069,7 +2071,9 @@ void ParseRowGroup(Lexer *lexer, Node *rowgroup, uint mode)
             if ((node->tag == tag_form) ||
                 (node->tag && node->tag->model & (CM_BLOCK|CM_INLINE)))
             {
-                BadForm(lexer);
+                if (node->tag == tag_form)
+                    BadForm(lexer);
+
                 ReportWarning(lexer, rowgroup, node, DISCARDING_UNEXPECTED);
                 FreeNode(node);
                 continue;
