@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 05:49:07 $ 
-    $Revision: 1.13 $ 
+    $Date: 2001/07/12 05:57:10 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -471,7 +471,7 @@ void FixId(Lexer *lexer, Node *node)
         if (id)
         {
             if (wstrcmp(id->value, name->value) != 0)
-                ReportAttrError(lexer, node, "name", ID_NAME_MISMATCH);
+                ReportAttrError(lexer, node, name, ID_NAME_MISMATCH);
         }
         else if (XmlOut)
             AddAttribute(node, "id", name->value);

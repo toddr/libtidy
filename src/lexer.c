@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 03:51:28 $ 
-    $Revision: 1.19 $ 
+    $Date: 2001/07/12 05:57:10 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -2844,6 +2844,17 @@ AttVal *NewAttribute()
     return av;
 }
 
+/* create a new attribute with given name and value */
+AttVal *NewAttributeEx(char *name, char *value)
+{
+    AttVal *av = NewAttribute();
+
+    av->attribute = wstrdup(name);
+    av->value = wstrdup(value);
+
+    return av;
+}
+
 
 /* swallows closing '>' */
 
@@ -2903,9 +2914,10 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             av->attribute = attribute;
             av->value = value;
             /* ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE); */
-            if (value == NULL)	/* #427664 - fix by Gary Peskin 04 Aug 00 */
-            	ReportAttrError(lexer, lexer->token, attribute, MISSING_ATTR_VALUE); else
-            	ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE);
+            if (value == null)  /* #427664 - fix by Gary Peskin 04 Aug 00 */
+            	ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
+            else
+            	ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
             FreeAttribute(av);
         }
     }

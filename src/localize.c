@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/30 20:03:46 $ 
-    $Revision: 1.7 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/12 05:57:10 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -176,8 +176,19 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
     }
 }
 
-void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
+void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
 {
+    /* replacement for #427676 - fix by Tony Goodwin 11 Oct 00 */
+    char *name = "NULL", *value = "NULL";
+
+    if (av)
+    {
+        if (av->attribute)
+            name = av->attribute;
+        if (av->value)
+            value = av->value;
+    }
+
     lexer->warnings++;
 
     /* keep quiet after 6 errors */
@@ -196,18 +207,18 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         ReportPosition(lexer);
 
         if (code == UNKNOWN_ATTRIBUTE)
-            tidy_out(lexer->errout, "Warning: unknown attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, "Warning: unknown attribute \"%s\"", name);
         else if (code == MISSING_ATTRIBUTE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " lacks \"%s\" attribute", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " lacks \"%s\" attribute", name);
         }
         else if (code == MISSING_ATTR_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute \"%s\" lacks value", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " attribute \"%s\" lacks value", name);
         }
         else if (code == MISSING_IMAGEMAP)
         {
@@ -220,13 +231,13 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " unknown attribute value \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " unknown attribute value \"%s\"", value);
         }
         else if (code == XML_ATTRIBUTE_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " has XML attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " has XML attribute \"%s\"", name);
         }
         else if (code == UNEXPECTED_GT)
         {
@@ -245,13 +256,13 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " repeated attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " repeated attribute \"%s\"", name);
         }
         else if (code == PROPRIETARY_ATTR_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " proprietary attribute value \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
+            tidy_out(lexer->errout, " proprietary attribute value \"%s\"", value);
         }
         else if (code == UNEXPECTED_END_OF_FILE)
         {
@@ -274,6 +285,13 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         tidy_out(lexer->errout, " missing '>' for end of tag\n");
         lexer->errors++;
     }
+}
+
+void ReportMissingAttr(Lexer* lexer, Node* node, char* name)
+{
+   AttVal *dummy = NewAttributeEx(name, null);
+   ReportAttrError(lexer, node, dummy, MISSING_ATTRIBUTE);
+   FreeAttribute(dummy);
 }
 
 void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)

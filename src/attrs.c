@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 09:28:03 $ 
-    $Revision: 1.12 $ 
+    $Date: 2001/07/12 05:57:10 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -491,7 +491,7 @@ static void CheckUniqueAttribute(Lexer *lexer, Node *node, AttVal *attval)
     }
 
     if (count > 0)
-        ReportAttrError(lexer, node, attval->attribute, REPEATED_ATTRIBUTE);
+        ReportAttrError(lexer, node, attval, REPEATED_ATTRIBUTE);
 }
 
 void CheckUniqueAttributes(Lexer *lexer, Node *node)
@@ -522,7 +522,7 @@ Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
         else if (attribute->versions & VERS_XML)
         {
             if (!(XmlTags || XmlOut))
-                ReportAttrError(lexer, node, attval->attribute, XML_ATTRIBUTE_VALUE);
+                ReportAttrError(lexer, node, attval, XML_ATTRIBUTE_VALUE);
         }
         else
             lexer->versions &= attribute->versions;
@@ -532,7 +532,7 @@ Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
     }
     else if (!XmlTags && !(node->tag == null) && attval->asp == null &&
              !(node->tag && (node->tag->versions & VERS_PROPRIETARY)))
-        ReportAttrError(lexer, node, attval->attribute, UNKNOWN_ATTRIBUTE);
+        ReportAttrError(lexer, node, attval, UNKNOWN_ATTRIBUTE);
 
     return attribute;
 }
@@ -562,7 +562,7 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
     
     if (p == null)
     {
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
     
@@ -620,7 +620,7 @@ void CheckId(Lexer *lexer, Node *node, AttVal *attval)
     
     if (p == null)
     {
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
     
@@ -658,12 +658,12 @@ void CheckAlign(Lexer *lexer, Node *node, AttVal *attval)
     value = attval->value;
 
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     else if (! (wstrcasecmp(value, "left") == 0 ||
                 wstrcasecmp(value, "center") == 0 ||
                 wstrcasecmp(value, "right") == 0 ||
                 wstrcasecmp(value, "justify") == 0))
-          ReportAttrError(lexer, node, attval->value, BAD_ATTRIBUTE_VALUE);
+          ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
@@ -673,7 +673,7 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
     value = attval->value;
 
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     else if (wstrcasecmp(value, "top") == 0 ||
            wstrcasecmp(value, "middle") == 0 ||
            wstrcasecmp(value, "bottom") == 0 ||
@@ -685,7 +685,7 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
               wstrcasecmp(value, "right") == 0)
     {
         if (!(node->tag && (node->tag->model & CM_IMG)))
-            ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     }
     else if (wstrcasecmp(value, "texttop") == 0 ||
            wstrcasecmp(value, "absmiddle") == 0 ||
@@ -693,10 +693,10 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
            wstrcasecmp(value, "textbottom") == 0)
     {
         lexer->versions &= VERS_PROPRIETARY;
-        ReportAttrError(lexer, node, value, PROPRIETARY_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, PROPRIETARY_ATTR_VALUE);
     }
     else
-        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
@@ -704,7 +704,7 @@ void CheckLength(Lexer *lexer, Node *node, AttVal *attval)
     char *p = attval->value;
     
     if (p == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     if (!IsDigit(*p++))
     {
@@ -731,7 +731,7 @@ void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
     char *value = attval->value;
     
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     /*
       target names must begin with A-Za-z or be one of
@@ -752,11 +752,11 @@ void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
     char *value = attval->value;
     
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     if (! (wstrcasecmp(value, "get") == 0 ||
         wstrcasecmp(value, "post") == 0))
-        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
@@ -764,13 +764,13 @@ void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
     char *value = attval->value;
     
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     if (! (wstrcasecmp(value, "none") == 0 ||
         wstrcasecmp(value, "left")   == 0 ||
         wstrcasecmp(value, "right") == 0 ||
         wstrcasecmp(value, "all") == 0))
-        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
@@ -778,13 +778,13 @@ void CheckShape(Lexer *lexer, Node *node, AttVal *attval)
     char *value = attval->value;
     
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     if (! (wstrcasecmp(value, "rect") == 0 ||
         wstrcasecmp(value, "default") == 0 ||
         wstrcasecmp(value,  "circle") == 0 ||
         wstrcasecmp(value,    "poly") == 0))
-        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
@@ -792,13 +792,13 @@ void CheckScope(Lexer *lexer, Node *node, AttVal *attval)
     char *value = attval->value;
     
     if (value == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
     if (! (wstrcasecmp(value,   "row") == 0 ||
         wstrcasecmp(value, "rowgroup") == 0 ||
         wstrcasecmp(value,      "col") == 0 ||
         wstrcasecmp(value, "colgroup") == 0))
-        ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
@@ -806,7 +806,7 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
     char *p = attval->value;
     
     if (p == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
 
     while (*p)
     {
@@ -829,8 +829,9 @@ void CheckAttributes(Lexer *lexer, Node *node)
 
 void CheckHR(Lexer *lexer, Node *node)
 {
-    if (GetAttrByName(node, "src"))
-        ReportAttrError(lexer, node, "src", PROPRIETARY_ATTR_VALUE);
+    AttVal *av = GetAttrByName(node, "src");
+    if (av)
+        ReportAttrError(lexer, node, av, PROPRIETARY_ATTR_VALUE);
 }
 
 void CheckIMG(Lexer *lexer, Node *node)
@@ -866,17 +867,17 @@ void CheckIMG(Lexer *lexer, Node *node)
     if (!HasAlt)
     {
         lexer->badAccess |= MISSING_IMAGE_ALT;
-        ReportAttrError(lexer, node, "alt", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "alt");
 
         if (alt_text)
             AddAttribute(node, "alt", alt_text);
     }
 
     if (!HasSrc && !HasDataFld)
-        ReportAttrError(lexer, node, "src", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "src");
 
     if (HasIsMap && !HasUseMap)
-        ReportAttrError(lexer, node, "ismap", MISSING_IMAGEMAP);
+        ReportMissingAttr(lexer, node, "ismap");
 }
 
 void CheckAnchor(Lexer *lexer, Node *node)
@@ -929,7 +930,7 @@ void CheckCaption(Lexer *lexer, Node *node)
         else if (wstrcasecmp(value, "top") == 0 || wstrcasecmp(value, "bottom") == 0)
             lexer->versions &= VERS_FROM32;
         else
-            ReportAttrError(lexer, node, value, BAD_ATTRIBUTE_VALUE);
+            ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     }
 }
 
@@ -971,10 +972,10 @@ void CheckAREA(Lexer *lexer, Node *node)
     if (!HasAlt)
     {
         lexer->badAccess |= MISSING_LINK_ALT;
-        ReportAttrError(lexer, node, "alt", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "alt");
     }
     if (!HasHref)
-        ReportAttrError(lexer, node, "href", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "href");
 }
 
 void CheckTABLE(Lexer *lexer, Node *node)
@@ -997,7 +998,7 @@ void CheckTABLE(Lexer *lexer, Node *node)
     if (!HasSummary && lexer->doctype != VERS_HTML20 && lexer->doctype != VERS_HTML32)
     {
         lexer->badAccess |= MISSING_SUMMARY;
-        ReportAttrError(lexer, node, "summary", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "summary");
     }
 
     /* convert <table border> to <table border="1"> */
@@ -1021,7 +1022,7 @@ void CheckSCRIPT(Lexer *lexer, Node *node)
 
     if (!type)
     {
-        ReportAttrError(lexer, node, "type", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "type");
 
         /* check for javascript */
 
@@ -1051,7 +1052,7 @@ void CheckSTYLE(Lexer *lexer, Node *node)
 
     if (!type)
     {
-        ReportAttrError(lexer, node, "type", MISSING_ATTRIBUTE);
+        ReportMissingAttr(lexer, node, "type");
 
         AddAttribute(node, "type", "text/css");
     }
@@ -1071,7 +1072,7 @@ void CheckLINK(Lexer *lexer, Node *node)
 
         if (!type)
         {
-            ReportAttrError(lexer, node, "type", MISSING_ATTRIBUTE);
+            ReportMissingAttr(lexer, node, "type");
 
             AddAttribute(node, "type", "text/css");
         }

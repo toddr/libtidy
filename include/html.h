@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/11 06:59:12 $ 
-    $Revision: 1.10 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/12 05:57:10 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -418,6 +418,7 @@ Node *NewLineNode(Lexer *lexer);
 /* Parser calls this to create RootNode */
 Node *NewNode(void);
 AttVal *NewAttribute(void);
+AttVal *NewAttributeEx(char *name, char *value);
 
 void FreeAttrs(Node *node);
 void FreeAttribute(AttVal *av);
@@ -703,7 +704,8 @@ void UnknownFile(FILE *errout, char *program, char *file);
 void ErrorSummary(Lexer *lexer);
 void ReportEncodingError(Lexer *lexer, uint code, uint c);
 void ReportEntityError(Lexer *lexer, uint code, char *entity, int c);
-void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code);
+void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code);
+void ReportMissingAttr(Lexer* lexer, Node* node, char* name);
 void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code);
 void ReportError(Lexer *lexer, Node *element, Node *node, uint code);
 
