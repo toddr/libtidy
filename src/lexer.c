@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 09:34:05 $ 
-    $Revision: 1.118 $ 
+    $Date: 2003/05/15 12:41:13 $ 
+    $Revision: 1.119 $ 
 
 */
 
@@ -3748,8 +3748,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
                 lexer->txtstart = start;
                 lexer->txtend = lexer->lexsize - 1;
                 subset = TextToken(lexer);
-                assert( node->content == NULL );
-                node->content = subset;
+                InsertNodeAtEnd(node, subset);
                 state = DT_INTERMEDIATE;
             }
             break;

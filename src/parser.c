@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 23:11:49 $ 
-    $Revision: 1.90 $ 
+    $Date: 2003/05/15 12:41:14 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -475,6 +475,21 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
     }
 }
 
+static Bool IsPreDescendant(Node* node)
+{
+    Node *parent = node->parent;
+
+    while (parent)
+    {
+        if (parent->tag && parent->tag->parser == ParsePre)
+            return yes;
+
+        parent = parent->parent;
+    }
+
+    return no;
+}
+
 static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
 {
     Node* next;
@@ -482,7 +497,10 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
     if (!nodeIsText(node))
         return no;
 
-    if (node->parent->tag->parser == ParsePre)
+    if (node->parent->type == DocTypeTag)
+        return no;
+
+    if (IsPreDescendant(node))
         return no;
 
     if (node->parent->tag->parser == ParseScript)
@@ -521,7 +539,10 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
     if (!nodeIsText(node))
         return no;
 
-    if (node->parent->tag->parser == ParsePre)
+    if (node->parent->type == DocTypeTag)
+        return no;
+
+    if (IsPreDescendant(node))
         return no;
 
     if (node->parent->tag->parser == ParseScript)
@@ -584,12 +605,17 @@ static void CleanSpaces(TidyDocImpl* doc, Node* node)
 static void TrimSpaces( TidyDocImpl* doc, Node *element)
 {
     Node* text = element->content;
-    if ( nodeIsText(text) && !nodeIsPRE(element) )
-        TrimInitialSpace( doc, element, text );
+
+    if (nodeIsPRE(element) || IsPreDescendant(element))
+        return;
+
+    if (nodeIsText(text))
+        TrimInitialSpace(doc, element, text);
 
     text = element->last;
-    if ( nodeIsText(text) && !nodeIsPRE(element))
-        TrimTrailingSpace( doc, element, text );
+
+    if (nodeIsText(text))
+        TrimTrailingSpace(doc, element, text);
 }
 
 Bool DescendantOf( Node *element, TidyTagId tid )
