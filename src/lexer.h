@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/01/07 17:18:29 $ 
-    $Revision: 1.22 $ 
+    $Date: 2005/01/10 12:40:38 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -78,27 +78,33 @@ typedef enum
 
 /* lexer GetToken states
 */
-#define LEX_CONTENT     0
-#define LEX_GT          1
-#define LEX_ENDTAG      2
-#define LEX_STARTTAG    3
-#define LEX_COMMENT     4
-#define LEX_DOCTYPE     5
-#define LEX_PROCINSTR   6
-#define LEX_ENDCOMMENT  7
-#define LEX_CDATA       8
-#define LEX_SECTION     9
-#define LEX_ASP         10
-#define LEX_JSTE        11
-#define LEX_PHP         12
-#define LEX_XMLDECL     13
+typedef enum
+{
+  LEX_CONTENT,
+  LEX_GT,
+  LEX_ENDTAG,
+  LEX_STARTTAG,
+  LEX_COMMENT,
+  LEX_DOCTYPE,
+  LEX_PROCINSTR,
+  LEX_ENDCOMMENT,
+  LEX_CDATA,
+  LEX_SECTION,
+  LEX_ASP,
+  LEX_JSTE,
+  LEX_PHP,
+  LEX_XMLDECL
+} LexerState;
 
 /* ParseDocTypeDecl state constants */
-#define DT_INTERMEDIATE 0
-#define DT_DOCTYPENAME  1
-#define DT_PUBLICSYSTEM 2
-#define DT_QUOTEDSTRING 3
-#define DT_INTSUBSET    4
+typedef enum
+{
+  DT_INTERMEDIATE,
+  DT_DOCTYPENAME,
+  DT_PUBLICSYSTEM,
+  DT_QUOTEDSTRING,
+  DT_INTSUBSET
+} ParseDocTypeDeclState;
 
 /* content model shortcut encoding
 */
@@ -322,7 +328,7 @@ struct _Lexer
     Bool bad_doctype;       /* e.g. if html or PUBLIC is missing */
     uint txtstart;          /* start of current node */
     uint txtend;            /* end of current node */
-    uint state;             /* state of lexer's finite state machine */
+    LexerState state;       /* state of lexer's finite state machine */
 
     Node* token;            /* current parse point */
     Node* root;             /* remember root node of the document */

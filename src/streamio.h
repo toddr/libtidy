@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/07 14:38:47 $ 
-    $Revision: 1.12 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/01/10 12:40:38 $ 
+    $Revision: 1.13 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -34,6 +34,27 @@ typedef enum
   UserIO
 } IOType;
 
+/* states for ISO 2022
+
+ A document in ISO-2022 based encoding uses some ESC sequences called
+ "designator" to switch character sets. The designators defined and
+ used in ISO-2022-JP are:
+
+    "ESC" + "(" + ?     for ISO646 variants
+
+    "ESC" + "$" + ?     and
+    "ESC" + "$" + "(" + ?   for multibyte character sets
+*/
+typedef enum
+{
+  FSM_ASCII,
+  FSM_ESC,
+  FSM_ESCD,
+  FSM_ESCDP,
+  FSM_ESCP,
+  FSM_NONASCII
+} ISO2022State;
+
 /************************
 ** Source
 ************************/
@@ -43,7 +64,7 @@ typedef enum
 /* non-raw input is cleaned up*/
 struct _StreamIn
 {
-    int    state;     /* FSM for ISO2022 */
+    ISO2022State    state;     /* FSM for ISO2022 */
     Bool   pushed;
     tchar* charbuf;
     uint   bufpos;
@@ -91,7 +112,7 @@ Bool      IsEOF( StreamIn* in );
 struct _StreamOut
 {
     int   encoding;
-    int   state;     /* for ISO 2022 */
+    ISO2022State   state;     /* for ISO 2022 */
     uint  nl;
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
@@ -155,24 +176,6 @@ ctmbstr GetEncodingNameFromTidyId(uint id);
 /* hack: windows code page numbers start at 37 */
 #define WIN32MLANG  36
 #endif
-
-/* states for ISO 2022
-
- A document in ISO-2022 based encoding uses some ESC sequences called
- "designator" to switch character sets. The designators defined and
- used in ISO-2022-JP are:
-
-    "ESC" + "(" + ?     for ISO646 variants
-
-    "ESC" + "$" + ?     and
-    "ESC" + "$" + "(" + ?   for multibyte character sets
-*/
-#define FSM_ASCII    0
-#define FSM_ESC      1
-#define FSM_ESCD     2
-#define FSM_ESCDP    3
-#define FSM_ESCP     4
-#define FSM_NONASCII 5
 
 
 /* char encoding used when replacing illegal SGML chars,

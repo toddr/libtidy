@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/02 02:29:59 $ 
-    $Revision: 1.95 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/01/10 12:40:38 $ 
+    $Revision: 1.96 $ 
 
 */
 
@@ -65,16 +65,20 @@ uint CWrapLen( TidyDocImpl* doc, uint ind )
     return wraplen;
 }
 
-#define UCPC  1 /* Punctuation, Connector     */
-#define UCPD  2 /* Punctuation, Dash          */
-#define UCPE  3 /* Punctuation, Close         */
-#define UCPS  4 /* Punctuation, Open          */
-#define UCPI  5 /* Punctuation, Initial quote */
-#define UCPF  6 /* Punctuation, Final quote   */
-#define UCPO  7 /* Punctuation, Other         */
-#define UCZS  8 /* Separator, Space           */
-#define UCZL  9 /* Separator, Line            */
-#define UCZP 10 /* Separator, Paragraph       */
+typedef enum
+{
+  UC00, /* None                       */
+  UCPC, /* Punctuation, Connector     */
+  UCPD, /* Punctuation, Dash          */
+  UCPE, /* Punctuation, Close         */
+  UCPS, /* Punctuation, Open          */
+  UCPI, /* Punctuation, Initial quote */
+  UCPF, /* Punctuation, Final quote   */
+  UCPO, /* Punctuation, Other         */
+  UCZS, /* Separator, Space           */
+  UCZL, /* Separator, Line            */
+  UCZP  /* Separator, Paragraph       */
+} UnicodeCategory;
 
 /*
   From the original code, the following characters are removed:
@@ -114,7 +118,7 @@ uint CWrapLen( TidyDocImpl* doc, uint ind )
 static struct _unicode4cat
 {
   unsigned long code;
-  char category;
+  UnicodeCategory category;
 } const unicode4cat[] =
 {
 #if 0
@@ -211,7 +215,7 @@ static struct _unicode4cat
   { 0x10101,UCPO }, { 0x1039F,UCPO },
 
   /* final entry */
-  { 0x0000,    0 }
+  { 0x0000, UC00 }
 };
 
 typedef enum
