@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 00:36:29 $ 
-    $Revision: 1.89 $ 
+    $Date: 2003/04/11 00:50:48 $ 
+    $Revision: 1.90 $ 
 
 */
 
@@ -2060,8 +2060,14 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             if (isEmpty && !matches)
             {
                 Node* node = NewNode(lexer);
+                uint i = 0;
 
                 node->element = tmbstrndup(lexer->lexbuf + start, lexer->lexsize - start - 1);
+
+                /* transform case; this is safe, element names consist only of ASCII chars */
+                for (i=0;i<lexer->lexsize - start - 1;++i)
+                    node->element[i] = (tmbchar)ToLower(node->element[i]);
+
                 node->type = EndTag;
                 node->implicit = yes;
                 FindTag(doc, node);
