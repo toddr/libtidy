@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/07/07 01:07:20 $ 
-    $Revision: 1.154 $ 
+    $Author: krusch $ 
+    $Date: 2004/07/20 22:00:45 $ 
+    $Revision: 1.155 $ 
 
 */
 
@@ -3328,10 +3328,15 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
     if (len > 0 || delim)
     {
-        /* ignore leading and trailing white space for all but title and */
-        /* alt attributes unless --literal-attributes is set to yes      */
+        /* ignore leading and trailing white space for all but title, alt, value */
+        /* and prompts attributes unless --literal-attributes is set to yes      */
+        /* #994841 - Whitespace is removed from value attributes                 */
 
-        if (munge && tmbstrcasecmp(name, "alt") && tmbstrcasecmp(name, "title"))
+        if (munge &&
+            tmbstrcasecmp(name, "alt") &&
+            tmbstrcasecmp(name, "title") &&
+            tmbstrcasecmp(name, "value") &&
+            tmbstrcasecmp(name, "prompt"))
         {
             while (IsWhite(lexer->lexbuf[start+len-1]))
                 --len;
