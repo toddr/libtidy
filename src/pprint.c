@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/08 03:01:07 $ 
-    $Revision: 1.8 $ 
+    $Date: 2001/07/09 00:11:02 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -782,13 +782,22 @@ static void PPrintAttribute(Out *fout, uint indent,
 static void PPrintAttrs(Out *fout, uint indent,
                         Lexer *lexer, Node *node, AttVal *attr)
 {
+    Attribute *attribute;
+
     if (attr)
     {
         if (attr->next)
             PPrintAttrs(fout, indent, lexer, node, attr->next);
 
         if (attr->attribute != null)
+        {
+            attribute = attr->dict;
+
+            if (!DropPropAttrs ||
+                !(attribute == null ||
+                    (attribute->versions & VERS_PROPRIETARY)))
             PPrintAttribute(fout, indent, node, attr);
+        }
         else if (attr->asp != null)
         {
             AddC(' ', linelen++);

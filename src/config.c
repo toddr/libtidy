@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/08 06:56:49 $ 
-    $Revision: 1.5 $ 
+    $Date: 2001/07/09 00:10:11 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -75,6 +75,7 @@ Bool UpperCaseTags = no;    /* output tags in upper not lower case */
 Bool UpperCaseAttrs = no;   /* output attributes in upper not lower case */
 Bool MakeClean = no;        /* replace presentational clutter by style rules */
 Bool LogicalEmphasis = no;  /* replace i by em and b by strong */
+Bool DropPropAttrs = no;    /* discard proprietary attributes */
 Bool DropFontTags = no;     /* discard presentation tags */
 Bool DropEmptyParas = yes;  /* discard empty p elements */
 Bool FixComments = yes;     /* fix comments with adjacent hyphens */
@@ -170,6 +171,7 @@ static struct Flag
     {"word-2000",       {(int *)&Word2000},         ParseBool},
     {"drop-empty-paras", {(int *)&DropEmptyParas},  ParseBool},
     {"drop-font-tags",  {(int *)&DropFontTags},     ParseBool},
+    {"drop-proprietary-attributes", {(int *)&DropPropAttrs}, ParseBool},
     {"enclose-text",    {(int *)&EncloseBodyText},  ParseBool},
     {"enclose-block-text", {(int *)&EncloseBlockText}, ParseBool},
     {"alt-text",        {(int *)&alt_text},         ParseString},

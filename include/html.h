@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/08 03:02:53 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/07/09 00:09:47 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -746,6 +746,7 @@ extern Bool UpperCaseAttrs;
 extern Bool MakeClean;
 extern Bool LogicalEmphasis;
 extern Bool DropEmptyParas;
+extern Bool DropPropAttrs;
 extern Bool FixComments;
 extern Bool DropFontTags;
 extern Bool EncloseBodyText;
