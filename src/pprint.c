@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/31 04:11:30 $ 
-    $Revision: 1.20 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/07 04:45:54 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -56,7 +56,13 @@ static Bool InString;
 static int slide, count;
 static Node *slidecontent;
 
-int foo;  /* debug */
+
+#define AddAsciiString( s, llen )\
+do {\
+  char* cp;\
+  for (cp=s; *cp; ++cp)\
+    AddC( (uint) *cp, llen++ );\
+} while (0)
 
 /*
   1010  A
@@ -1204,6 +1210,221 @@ static void PPrintSection(Out *fout, uint indent,
     wraplen = savewraplen;
 }
 
+
+#if 0
+/*
+** Print script and style elements. For XHTML, wrap the content as follows:
+**     JavaScript:
+**         //<![CDATA[
+**             content
+**         //]]>
+**     VBScript:
+**         '<![CDATA[
+**             content
+**         ']]>
+**     CSS:
+**         /*<![CDATA[*/
+**             content
+**         /*]]>*/
+**     other:
+**         <![CDATA[
+**             content
+**         ]]>
+*/
+#endif
+
+static char* CDATA_START           = "<![CDATA[";
+static char* CDATA_END             = "]]>";
+static char* JS_COMMENT_START      = "//";
+static char* JS_COMMENT_END        = "";
+static char* VB_COMMENT_START      = "\'";
+static char* VB_COMMENT_END        = "";
+static char* CSS_COMMENT_START     = "/*";
+static char* CSS_COMMENT_END       = "*/";
+static char* DEFAULT_COMMENT_START = "";
+static char* DEFAULT_COMMENT_END   = "";
+
+
+static Bool StartsWithCDATA( Lexer* lexer, Node* node, char* commentStart )
+{
+    /* Scan forward through the textarray. Since the characters we're
+    ** looking for are < 0x7f, we don't have to do any UTF-8 decoding.
+    */
+    int i = node->start, j, end = node->end;
+
+    if ( node->type != TextNode )
+        return no;
+
+    /* Skip whitespace. */
+    while ( i < end && lexer->lexbuf[i] <= ' ' )
+        ++i;
+
+    /* Check for starting comment delimiter. */
+    for ( j = 0; j < wstrlen(commentStart); ++j )
+    {
+        if ( i >= end || lexer->lexbuf[i] != commentStart[j] )
+            return no;
+        ++i;
+    }
+
+    /* Skip whitespace. */
+    while ( i < end && lexer->lexbuf[i] <= ' ' )
+        ++i;
+
+    /* Check for "<![CDATA[". */
+    for ( j = 0; j < wstrlen(CDATA_START); ++j )
+    {
+        if (i >= end || lexer->lexbuf[i] != CDATA_START[j])
+            return no;
+        ++i;
+    }
+
+    return yes;
+}
+
+
+static Bool EndsWithCDATA( Lexer* lexer, Node* node, 
+                           char* commentStart, char* commentEnd )
+{
+    /* Scan backward through the buff. Since the characters we're
+    ** looking for are < 0x7f, we don't have do any UTF-8 decoding. Note
+    ** that this is true even though we are scanning backwards because every
+    ** byte of a UTF-8 multibyte character is >= 0x80.
+    */
+
+    int i = node->end - 1, j, start = node->start;
+
+    if ( node->type != TextNode )
+        return no;
+
+    /* Skip whitespace. */
+    while ( i >= start && (lexer->lexbuf[i] & 0xff) <= ' ' )
+        --i;
+
+    /* Check for ending comment delimiter. */
+    for ( j = wstrlen(commentEnd) - 1; j >= 0; --j )
+    {
+        if (i < start || lexer->lexbuf[i] != commentEnd[j])
+            return no;
+        --i;
+    }
+
+    /* Skip whitespace. */
+    while (i >= start && (lexer->lexbuf[i] & 0xff) <= ' ')
+        --i;
+
+    /* Check for "]]>". */
+    for (j = wstrlen(CDATA_END) - 1; j >= 0; j--)
+    {
+        if (i < start || lexer->lexbuf[i] != CDATA_END[j])
+            return no;
+        --i;
+    }
+
+    /* Skip whitespace. */
+    while (i >= start && lexer->lexbuf[i] <= ' ')
+        --i;
+
+    /* Check for starting comment delimiter. */
+    for ( j = wstrlen(commentStart) - 1; j >= 0; --j )
+    {
+        if ( i < start || lexer->lexbuf[i] != commentStart[j] )
+            return no;
+        --i;
+    }
+
+    return yes;
+}
+
+void PPrintScriptStyle( Out* fout, uint mode, uint indent,
+                        Lexer* lexer, Node* node )
+{
+    Node* content;
+    char* commentStart = DEFAULT_COMMENT_START;
+    char* commentEnd = DEFAULT_COMMENT_END;
+
+    PCondFlushLine(fout, indent);
+
+    indent = 0;
+    PPrintTag(lexer, fout, mode, indent, node);
+    PFlushLine(fout, indent);
+
+    if (xHTML && node->content != null)
+    {
+        AttVal* type = GetAttrByName(node, "type");
+        if (type != null)
+        {
+            if (wstrcasecmp(type->value, "text/javascript") == 0)
+            {
+                commentStart = JS_COMMENT_START;
+                commentEnd = JS_COMMENT_END;
+            }
+            else if (wstrcasecmp(type->value, "text/css") == 0)
+            {
+                commentStart = CSS_COMMENT_START;
+                commentEnd = CSS_COMMENT_END;
+            }
+            else if (wstrcasecmp(type->value, "text/vbscript") == 0)
+            {
+                commentStart = VB_COMMENT_START;
+                commentEnd = VB_COMMENT_END;
+            }
+        }
+
+        if ( ! StartsWithCDATA( lexer, node->content, commentStart ) )
+        {
+            /* disable wrapping */
+            uint savewraplen = wraplen;
+            wraplen = 0xFFFFFF;  /* a very large number */
+
+            AddAsciiString( commentStart, linelen );
+            AddAsciiString( CDATA_START,  linelen );
+            AddAsciiString( commentEnd,   linelen );
+            PCondFlushLine( fout, indent );
+
+            /* restore wrapping */
+            wraplen = savewraplen;
+        }
+    }
+
+    for ( content = node->content;
+          content != null;
+          content = content->next )
+    {
+        PPrintTree( fout, (mode | PREFORMATTED | NOWRAP |CDATA), 
+                    indent, lexer, content );
+    }
+
+    PCondFlushLine(fout, indent);
+
+    if (xHTML && node->content != null)
+    {
+        if ( ! EndsWithCDATA( lexer, node->content,
+                              commentStart, commentEnd ) )
+        {
+            /* disable wrapping */
+            uint savewraplen = wraplen;
+            wraplen = 0xFFFFFF;  /* a very large number */
+
+            AddAsciiString( commentStart, linelen );
+            AddAsciiString( CDATA_END,    linelen );
+            AddAsciiString( commentEnd,   linelen );
+
+            /* restore wrapping */
+            wraplen = savewraplen;
+            PCondFlushLine(fout, indent);
+        }
+    }
+
+    PPrintEndTag(fout, mode, indent, node);
+    PFlushLine(fout, indent);
+
+    if (IndentContent == no && node->next != null)
+        PFlushLine(fout, indent);
+}
+
+
+
 static Bool ShouldIndent(Node *node)
 {
     if (IndentContent == no)
@@ -1342,24 +1563,8 @@ void PPrintTree(Out *fout, uint mode, uint indent,
         }
         else if (node->tag == tag_style || node->tag == tag_script)
         {
-            PCondFlushLine(fout, indent);
-
-            indent = 0;
-            PCondFlushLine(fout, indent);
-            PPrintTag(lexer, fout, mode, indent, node);
-            PFlushLine(fout, indent);
-
-            for (content = node->content;
-                    content != null;
-                    content = content->next)
-                PPrintTree(fout, (mode | PREFORMATTED | NOWRAP |CDATA), indent, lexer, content);
-
-            PCondFlushLine(fout, indent);
-            PPrintEndTag(fout, mode, indent, node);
-            PFlushLine(fout, indent);
-
-            if (IndentContent == no && node->next != null)
-                PFlushLine(fout, indent);
+            PPrintScriptStyle( fout, (mode | PREFORMATTED | NOWRAP |CDATA),
+                               indent, lexer, node );
         }
         else if (node->tag->model & CM_INLINE)
         {

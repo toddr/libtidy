@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/30 22:54:15 $ 
-    $Revision: 1.34 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/07 04:45:54 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -1490,6 +1490,11 @@ void CheckSCRIPT(Lexer *lexer, Node *node)
                  (wstrncasecmp(buf, "jscript", 7) == 0) )
             {
                 AddAttribute(node, "type", "text/javascript");
+            }
+            else if ( wstrcasecmp(buf, "vbscript") == 0 )
+            {
+               /* per Randy Waki 8/6/01 */
+                AddAttribute(node, "type", "text/vbscript");
             }
         }
         else
