@@ -3,6 +3,13 @@
   
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/02 08:40:47 $ 
+    $Revision: 1.2 $ 
+
 */
 
 /*
@@ -2799,7 +2806,10 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             av = NewAttribute();
             av->attribute = attribute;
             av->value = value;
-            ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE);
+            /* ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE); */
+            if (value == NULL)	/* #427664 - fix by Gary Peskin 04 Aug 00 */
+            	ReportAttrError(lexer, lexer->token, attribute, MISSING_ATTR_VALUE); else
+            	ReportAttrError(lexer, lexer->token, value, BAD_ATTRIBUTE_VALUE);
             FreeAttribute(av);
         }
     }
