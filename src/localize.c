@@ -1,6 +1,6 @@
 /* localize.c -- text strings and routines to handle errors and general messages
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   You should only need to edit this file and tidy.c
@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/01/05 05:12:16 $ 
-    $Revision: 1.107 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/01/06 08:38:01 $ 
+    $Revision: 1.108 $ 
 
 */
 
@@ -29,7 +29,7 @@
 */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-const static char *release_date = "1st November 2003";
+const static char *release_date = "1st January 2004";
 
 ctmbstr ReleaseDate(void)
 {
