@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/13 23:29:22 $ 
-    $Revision: 1.151 $ 
+    $Date: 2004/03/15 21:17:50 $ 
+    $Revision: 1.152 $ 
 
 */
 
@@ -1869,7 +1869,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     if (c == EndOfStream)
         ReportError(doc, container, NULL, MISSING_ENDTAG_FOR );
 
-    if (lexer->txtend > lexer->txtstart)
+    /* if (lexer->txtend > lexer->txtstart) */
         return TextToken(lexer);
 
     return NULL;
