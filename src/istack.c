@@ -3,6 +3,13 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/02 08:34:28 $ 
+    $Revision: 1.2 $ 
+
 */
 
 #include "platform.h"
@@ -241,6 +248,8 @@ Node *InsertedToken(Lexer *lexer)
     node->start = lexer->txtstart;
     node->end = lexer->txtstart;
     istack = lexer->insert;
+    if (lexer->istacksize == 0)	/* Andy Quick 13 Jun 99 */
+        tidy_out(lexer->errout, "0-size istack!\n");
     node->element = wstrdup(istack->element);
     node->tag = istack->tag;
     node->attributes = DupAttrs(istack->attributes);
