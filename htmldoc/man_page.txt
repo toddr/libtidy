@@ -108,7 +108,7 @@ to set the two-letter language code <lang> (for future use)
 .B File manipulation
 .TP 15
 .B -output or -o <file>   
-to write errors to the specified <file>
+to write output to the specified <file>
 .TP 15
 .B -f      <file>   
 to write errors to the specified <file>
