@@ -3,14 +3,14 @@
 
 /* platform.h -- Platform specifics
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2003/06/09 08:06:39 $ 
-    $Revision: 1.43 $ 
+    $Date: 2004/01/11 03:30:00 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -482,7 +482,7 @@ extern "C" {
 
 #if defined(_WIN32)
 
-#if defined(_USRDLL) && !defined(TIDY_EXPORT)
+#if (defined(_USRDLL) || defined(_WINDLL)) && !defined(TIDY_EXPORT)
 #define TIDY_EXPORT __declspec( dllexport ) 
 #endif
 
