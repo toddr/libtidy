@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/18 21:10:30 $ 
-    $Revision: 1.153 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/07/07 01:07:20 $ 
+    $Revision: 1.154 $ 
 
 */
 
@@ -1409,8 +1409,11 @@ ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
 
     ctmbstr name = GetNameFromVers(vers);
 
+    /* this test has moved to ReportMarkupVersion() in localize.c, for localization reasons */
+    /*
     if (!name)
         name = "HTML Proprietary";
+     */
 
     return name;
 }
@@ -1610,7 +1613,7 @@ Bool FixDocType( TidyDocImpl* doc )
     return yes;
 }
 
-/* ensure XML document starts with <?XML version="1.0"?> */
+/* ensure XML document starts with <?xml version="1.0"?> */
 /* add encoding attribute if not using ASCII or UTF-8 output */
 Bool FixXmlDecl( TidyDocImpl* doc )
 {
