@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/01 17:41:48 $ 
-    $Revision: 1.18 $ 
+    $Date: 2005/03/01 17:46:24 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -1888,7 +1888,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
     int matchingCount = 0;
     AttVal* av;
     
-    if (Level1_Enabled( doc ))
+    if (Level1_Enabled( doc ) && node->content)
     {
         /* 
            Checks the text within the PRE and XMP tags to see if ascii 
