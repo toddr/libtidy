@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/09 19:47:55 $ 
-    $Revision: 1.35 $ 
+    $Date: 2001/09/15 21:31:18 $ 
+    $Revision: 1.36 $ 
 
   Contributing Author(s):
 
@@ -1041,6 +1041,15 @@ static int ReadCharFromStream(StreamIn *in)
     {
         if (c < 128)
             return c;
+        else if ((in->encoding == SHIFTJIS) && (c >= 0xa1 && c <= 0xdf)) /* 461643 - fix suggested by Rick Cameron 14 Sep 01 */
+        {
+            /*
+              Rick Cameron pointed out that for Shift_JIS, the values from
+              0xa1 through 0xdf represent singe-byte characters
+              (U+FF61 to U+FF9F - half-shift Katakana)
+            */
+            return c;
+        }
         else
         {
             uint c1;
