@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/03/21 18:41:44 $ 
-    $Revision: 1.36 $ 
+    $Date: 2002/03/27 18:14:53 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -58,12 +58,14 @@ static Bool InString;
 static int slide, count;
 static Node *slidecontent;
 
+/*
 #define AddAsciiString( s, llen )\
 do {\
   char* cp;\
   for (cp=s; *cp; ++cp)\
     AddC( (uint) *cp, llen++ );\
 } while (0)
+*/
 
 #if SUPPORT_ASIAN_ENCODINGS
 
@@ -243,6 +245,27 @@ static void AddC(uint c, uint index)
     }
 
     linebuf[index] = (uint)c;
+}
+
+static uint AddAsciiString( char* str, uint index )
+{
+    int ix, len = wstrlen( str );
+    if ( index + len >= lbufsize )
+    {
+        while ( index + len >= lbufsize )
+        {
+            if (lbufsize == 0)
+                lbufsize = 256;
+            else
+                lbufsize = lbufsize * 2;
+        }
+
+       linebuf = (uint*) MemRealloc( linebuf, lbufsize*sizeof(uint) );
+    }
+
+    for ( ix=0; ix<len; ++ix )
+      linebuf[index + ix] = (uint)(unsigned char) str[ ix ];
+    return index + (uint) len;
 }
 
 static void WrapLine(Out *fout, uint indent)
@@ -1440,6 +1463,37 @@ static char* CSS_COMMENT_END       = "*/";
 static char* DEFAULT_COMMENT_START = "";
 static char* DEFAULT_COMMENT_END   = "";
 
+static Bool InsideHead( Node *node )
+{
+  if ( node->tag == tag_head )
+    return yes;
+
+  if ( node->parent != null )
+    return InsideHead( node->parent );
+
+  return no;
+}
+
+/* Is text node and already ends w/ a newline?
+ 
+   Used to pretty print CDATA/PRE text content.
+   If it already ends on a newline, it is not
+   necessary to print another before printing end tag.
+*/
+static Bool TextEndsWithNewline(Lexer *lexer, Node *node)
+{
+    if ( node->type == TextNode && node->end > node->start )
+    {
+        uint ch, ix = node->end - 1;
+        /* Skip non-newline whitespace. */
+        while ( ix >= node->start && (ch = (lexer->lexbuf[ix] & 0xff))
+                && ( ch == ' ' || ch == '\t' || ch == '\r' ) )
+            --ix;
+
+        return ( lexer->lexbuf[ ix ] == '\n' );
+    }
+    return no;
+}
 
 static Bool HasCDATA( Lexer* lexer, Node* node )
 {
@@ -1556,10 +1610,13 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     char* commentStart = DEFAULT_COMMENT_START;
     char* commentEnd = DEFAULT_COMMENT_END;
     Bool  hasCData = no;
+    Bool  contentEndsOnNewline = no;
 
-    /* PCondFlushLine(fout, indent); */
+    if ( InsideHead(node) )
+      PFlushLine(fout, indent);
+/*    else
+      indent = 0; */
 
-    indent = 0;
     PPrintTag(lexer, fout, mode, indent, node);
     PFlushLine(fout, indent);
 
@@ -1592,9 +1649,9 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             uint savewraplen = wraplen;
             wraplen = 0xFFFFFF;  /* a very large number */
 
-            AddAsciiString( commentStart, linelen );
-            AddAsciiString( CDATA_START,  linelen );
-            AddAsciiString( commentEnd,   linelen );
+            linelen = AddAsciiString( commentStart, linelen );
+            linelen = AddAsciiString( CDATA_START,  linelen );
+            linelen = AddAsciiString( commentEnd,   linelen );
             PCondFlushLine( fout, indent );
 
             /* restore wrapping */
@@ -1608,9 +1665,13 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     {
         PPrintTree( fout, (mode | PREFORMATTED | NOWRAP |CDATA), 
                     indent, lexer, content );
+
+        if ( content->next == null )
+            contentEndsOnNewline = TextEndsWithNewline( lexer, content );
     }
 
-    PCondFlushLine(fout, indent);
+    if ( ! contentEndsOnNewline )
+        PCondFlushLine(fout, indent);
 
     if (xHTML && node->content != null)
     {
@@ -1620,9 +1681,9 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
             uint savewraplen = wraplen;
             wraplen = 0xFFFFFF;  /* a very large number */
 
-            AddAsciiString( commentStart, linelen );
-            AddAsciiString( CDATA_END,    linelen );
-            AddAsciiString( commentEnd,   linelen );
+            linelen = AddAsciiString( commentStart, linelen );
+            linelen = AddAsciiString( CDATA_END,    linelen );
+            linelen = AddAsciiString( commentEnd,   linelen );
 
             /* restore wrapping */
             wraplen = savewraplen;
@@ -1631,10 +1692,6 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     }
 
     PPrintEndTag(fout, mode, indent, node);
-    /* 
-    PFlushLine(fout, indent);
-    */
-
     if ( IndentContent == no && node->next != null &&
          !( (node->tag && node->tag->model & CM_INLINE) || node->type != TextNode ) )
         PFlushLine(fout, indent);
