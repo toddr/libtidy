@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/10/28 21:16:10 $ 
-    $Revision: 1.40 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/12/28 18:20:42 $ 
+    $Revision: 1.41 $ 
 
   Contributing Author(s):
 
@@ -2339,6 +2339,9 @@ int main(int argc, char **argv)
                     /* Output a Byte Order Mark if required */
                     if (OutputBOM || (InputHadBOM && SmartBOM))
                         outBOM(&out);
+
+                    if (!FindDocType(document))
+                        NumEntities = yes;
 
                     if (XmlOut && !xHTML /*XmlTags*/) /* #427826 - fix by Dave Raggett 01 Sep 00 */
                         PPrintXMLTree(&out, null, 0, lexer, document);
