@@ -1,9 +1,9 @@
-/* win32tc.cpp -- Interface to Win32 transcoding routines
+/* win32tc.c -- Interface to Win32 transcoding routines
 
   (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.2 2003/04/26 21:12:01 hoehrmann Exp $
+  $Id: win32tc.c,v 1.3 2003/04/30 02:25:48 hoehrmann Exp $
 */
 
 /* keep these here to keep file non-empty */
