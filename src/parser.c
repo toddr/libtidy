@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/12/27 02:28:55 $ 
-    $Revision: 1.33 $ 
+    $Author: lpassey $ 
+    $Date: 2002/01/25 19:23:32 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -309,31 +309,44 @@ static void TrimTrailingSpace(Lexer *lexer, Node *element, Node *last)
 {
     unsigned char c;
 
-    if (last != null && last->type == TextNode && last->end > last->start)
+    if (last != null && last->type == TextNode)
     {
-        c = (unsigned char)lexer->lexbuf[last->end - 1];
-
-        if (c == 160 || c == ' ')
+        if (last->end > last->start)
         {
-            /* take care with <td>&nbsp;</td> */
-            if (c == 160 && (element->tag == tag_td || element->tag == tag_th))
+            c = (unsigned char)lexer->lexbuf[last->end - 1];
+
+            if (   c == ' '
+#ifdef COMMENT_NBSP_FIX
+                || c == 160
+#endif
+               )
             {
-                if (last->end > last->start + 1)
+#ifdef COMMENT_NBSP_FIX
+                /* take care with <td>&nbsp;</td> */
+                if (c == 160 && (element->tag == tag_td || element->tag == tag_th))
+                {
+                    if (last->end > last->start + 1)
+                        last->end -= 1;
+                }
+                else
+#endif
+                {
                     last->end -= 1;
-            }
-            else
-            {
-                last->end -= 1;
 
-                if ((element->tag->model & CM_INLINE) &&
-                        !(element->tag->model & CM_FIELD))
-                    lexer->insertspace = yes;
-
-                /* if empty string then delete from parse tree */
-                if (last->start == last->end)
-                    TrimEmptyElement(lexer, last);
+                    if ((element->tag->model & CM_INLINE) &&
+                            !(element->tag->model & CM_FIELD))
+                        lexer->insertspace = yes;
+                }
             }
         }
+        /* if empty string then delete from parse tree */
+        if (   last->start == last->end
+#ifdef COMMENT_NBSP_FIX
+            && tag != tag_td 
+            && tag != tag_th
+#endif
+            )
+            TrimEmptyElement(lexer, last);
     }
 }
 
@@ -2624,7 +2637,7 @@ void ParseText(Lexer *lexer, Node *field, uint mode)
         /* for textarea should all cases of < and & be escaped? */
 
         /* discard inline tags e.g. font */
-        if (node->tag && (node->tag->model & CM_INLINE))
+        if (node->tag && (node->tag == tag_textarea))
         {
             ReportWarning(lexer, field, node, DISCARDING_UNEXPECTED);
             FreeNode(node);
@@ -2633,7 +2646,7 @@ void ParseText(Lexer *lexer, Node *field, uint mode)
 
         /* terminate element on other tags */
         if (!(field->tag->model & CM_OPT))
-                ReportWarning(lexer, field, node, MISSING_ENDTAG_BEFORE);
+            ReportWarning(lexer, field, node, MISSING_ENDTAG_BEFORE);
 
         UngetToken(lexer);
         TrimSpaces(lexer, field);
