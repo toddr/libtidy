@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 09:28:59 $ 
-    $Revision: 1.25 $ 
+    $Date: 2003/05/13 11:06:10 $ 
+    $Revision: 1.26 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -771,8 +771,8 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
     {
         StreamIn* in = in = FileInput( doc, fin, inenc );
         status = tidyDocParseStream( doc, in );
-        MemFree( in );
-        fclose( fin );
+        freeFileSource(&in->source, yes);
+        MemFree(in);
     }
     else /* Error message! */
         FileError( doc, filnam, TidyError );
