@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:57:49 $ 
-    $Revision: 1.38 $ 
+    $Date: 2001/09/04 08:22:29 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -143,8 +143,17 @@ static void ReportPosition(Lexer *lexer)
 
 void ReportEncodingError(Lexer *lexer, uint code, uint c)
 {
-    char buf[32];
-
+    char buf[256];
+                
+    /* An encoding mismatch is currently treated as a fatal error */
+    if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
+    {
+        /* actual encoding passed in "c" */
+        sprintf(buf, "specified input encoding (%s) does not match actual input encoding (%s)",
+                CharEncodingName(lexer->in->encoding), CharEncodingName(c));
+        FatalError(buf);
+    }
+    
     lexer->warnings++;
 
     if (ShowWarnings)
