@@ -1,14 +1,14 @@
 /*
   parser.c - HTML Parser
 
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2002/01/30 23:15:08 $ 
-    $Revision: 1.35 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/03/07 09:57:48 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -2639,7 +2639,7 @@ void ParseText(Lexer *lexer, Node *field, uint mode)
         /* discard inline tags e.g. font */
         if (   node->tag 
             && node->tag->model & CM_INLINE
-            && !(node->tag->model & CM_FIELD))
+            && !(node->tag->model & CM_FIELD)) /* #487283 - fix by Lee Passey 25 Jan 02 */
         {
             ReportWarning(lexer, field, node, DISCARDING_UNEXPECTED);
             FreeNode(node);
@@ -3506,6 +3506,9 @@ Bool XMLPreserveWhiteSpace(Node *element)
         }
     }
 
+    if (element->element == null) /* Debian Bug #137124. Fix based on suggestion by Cesar Eduardo Barros 06 Mar 02 */
+        return no;
+        
     /* kludge for html docs without explicit xml:space attribute */
     if (wstrcasecmp(element->element, "pre") == 0
         || wstrcasecmp(element->element, "script") == 0
