@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/01/06 19:35:17 $ 
-    $Revision: 1.18 $ 
+    $Date: 2002/01/17 09:32:11 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -164,6 +164,14 @@
 #endif
 #endif
 
+/* Convenience defines for RISCOS + gcc platforms */
+#if defined(__riscos__)
+#define RISC_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "RISC OS"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -209,7 +217,11 @@
 #endif
 
 #ifndef PRESERVE_FILE_TIMES
+#if defined(RISC_OS)
+#define PRESERVE_FILE_TIMES 0
+#else
 #define PRESERVE_FILE_TIMES 1
+#endif
 #endif
 
 #if PRESERVE_FILE_TIMES
@@ -307,6 +319,10 @@ typedef enum
 
 #if defined(WINDOWS_OS) && !defined(__MSL__)
 #define unlink _unlink
+#endif
+
+#if defined(RISC_OS)
+#define unlink remove
 #endif
 
 #if defined(DMALLOC)
