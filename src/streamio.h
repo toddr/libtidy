@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 09:28:59 $ 
-    $Revision: 1.9 $ 
+    $Date: 2004/03/01 11:08:23 $ 
+    $Revision: 1.10 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -58,6 +58,12 @@ struct _StreamIn
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
     ulong mlang;
+#endif
+
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    tmbstr otextbuf;
+    size_t otextsize;
+    uint   otextlen;
 #endif
 
     /* Pointer back to document for error reporting */

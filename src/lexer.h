@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:53:46 $ 
-    $Revision: 1.14 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/01 11:08:23 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -279,6 +279,10 @@ struct _Node
     Bool        closed;         /* true if closed by explicit end tag */
     Bool        implicit;       /* true if inferred */
     Bool        linebreak;      /* true if followed by a line break */
+
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    tmbstr      otext;
+#endif
 };
 
 

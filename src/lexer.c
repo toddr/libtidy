@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/01 05:44:54 $ 
-    $Revision: 1.138 $ 
+    $Date: 2004/03/01 11:08:23 $ 
+    $Revision: 1.139 $ 
 
 */
 
@@ -1104,6 +1104,10 @@ void FreeNode( TidyDocImpl* doc, Node *node )
         FreeAttrs( doc, node );
         FreeNode( doc, node->content );
         MemFree( node->element );
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+        if (node->otext)
+            MemFree(node->otext);
+#endif
         if (RootNode != node->type)
             MemFree( node );
         else
@@ -1112,6 +1116,53 @@ void FreeNode( TidyDocImpl* doc, Node *node )
         node = next;
     }
 }
+
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+void StoreOriginalTextInToken(TidyDocImpl* doc, Node* node, uint count)
+{
+    if (!doc->storeText)
+        return;
+
+    if (count >= doc->docIn->otextlen)
+        return;
+
+    if (!doc->docIn->otextsize)
+        return;
+
+    if (count == 0)
+    {
+        node->otext = doc->docIn->otextbuf;
+        doc->docIn->otextbuf = NULL;
+        doc->docIn->otextlen = 0;
+        doc->docIn->otextsize = 0;
+    }
+    else
+    {
+        uint len = doc->docIn->otextlen;
+        tmbstr buf1 = (tmbstr)MemAlloc(len - count + 1);
+        tmbstr buf2 = (tmbstr)MemAlloc(count + 1);
+        uint i, j;
+
+        /* strncpy? */
+
+        for (i = 0; i < len - count; ++i)
+            buf1[i] = doc->docIn->otextbuf[i];
+
+        buf1[i] = 0;
+
+        for (j = 0; j + i < len; ++j)
+            buf2[j] = doc->docIn->otextbuf[j + i];
+
+        buf2[j] = 0;
+
+        MemFree(doc->docIn->otextbuf);
+        node->otext = buf1;
+        doc->docIn->otextbuf = buf2;
+        doc->docIn->otextlen = count;
+        doc->docIn->otextsize = count + 1;
+    }
+}
+#endif
 
 Node* TextToken( Lexer *lexer )
 {
@@ -1164,6 +1215,9 @@ static Node* NewToken(TidyDocImpl* doc, uint type)
     node->type = type;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    StoreOriginalTextInToken(doc, node, 0);
+#endif
     return node;
 }
 
@@ -1712,6 +1766,8 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     uint c;
     Bool hasSrc = AttrGetById(container, TidyAttr_SRC) != NULL;
 
+    /* todo: GetCDATA needs to be called from GetToken not parser.c */
+
     lexer->lines = doc->docIn->curline;
     lexer->columns = doc->docIn->curcol;
     lexer->waswhite = no;
@@ -1895,6 +1951,23 @@ void UngetToken( TidyDocImpl* doc )
     doc->lexer->pushed = yes;
 }
 
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+#define CondReturnTextNode(doc, skip) \
+            if (lexer->txtend > lexer->txtstart) \
+            { \
+                lexer->token = TextToken(lexer); \
+                StoreOriginalTextInToken(doc, lexer->token, skip); \
+                return lexer->token; \
+            }
+#else
+#define CondReturnTextNode(doc, skip) \
+            if (lexer->txtend > lexer->txtstart) \
+            { \
+                lexer->token = TextToken(lexer); \
+                return lexer->token; \
+            }
+#endif
+
 /*
   modes for GetToken()
 
@@ -2035,8 +2108,11 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                                 lexer->lexsize -= 1;
                                 lexer->txtend = lexer->lexsize;
                             }
-
-                            return lexer->token = TextToken(lexer);
+                            lexer->token = TextToken(lexer);
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+                            StoreOriginalTextInToken(doc, lexer->token, 3);
+#endif
+                            return lexer->token;
                         }
 
                         continue;       /* no text so keep going */
@@ -2074,9 +2150,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             lexer->lexsize -= 2;
                             lexer->txtend = lexer->lexsize;
 
-                            /* if some text before < return it now */
-                            if (lexer->txtend > lexer->txtstart)
-                                return lexer->token = TextToken(lexer);
+                            CondReturnTextNode(doc, 4)
 
                             lexer->txtstart = lexer->lexsize;
                             continue;
@@ -2132,9 +2206,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             break;
                         }
 
-                        /* if some text before < return it now */
-                        if (lexer->txtend > lexer->txtstart)
-                            return lexer->token = TextToken(lexer);
+                        CondReturnTextNode(doc, 0)
 
                         lexer->txtstart = lexer->lexsize;
                         continue;
@@ -2146,9 +2218,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         lexer->state = LEX_SECTION;
                         lexer->txtend = lexer->lexsize;
 
-                        /* if some text before < return it now */
-                        if (lexer->txtend > lexer->txtstart)
-                            return lexer->token = TextToken(lexer);
+                        CondReturnTextNode(doc, 2)
 
                         lexer->txtstart = lexer->lexsize;
                         continue;
@@ -2182,9 +2252,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->state = LEX_PROCINSTR;
                     lexer->txtend = lexer->lexsize;
 
-                    /* if some text before < return it now */
-                    if (lexer->txtend > lexer->txtstart)
-                        return lexer->token = TextToken(lexer);
+                    CondReturnTextNode(doc, 2)
 
                     lexer->txtstart = lexer->lexsize;
                     continue;
@@ -2197,9 +2265,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->state = LEX_ASP;
                     lexer->txtend = lexer->lexsize;
 
-                    /* if some text before < return it now */
-                    if (lexer->txtend > lexer->txtstart)
-                        return lexer->token = TextToken(lexer);
+                    CondReturnTextNode(doc, 2)
 
                     lexer->txtstart = lexer->lexsize;
                     continue;
@@ -2212,9 +2278,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->state = LEX_JSTE;
                     lexer->txtend = lexer->lexsize;
 
-                    /* if some text before < return it now */
-                    if (lexer->txtend > lexer->txtstart)
-                        return lexer->token = TextToken(lexer);
+                    CondReturnTextNode(doc, 2)
 
                     lexer->txtstart = lexer->lexsize;
                     continue;
@@ -2230,10 +2294,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->txtend = lexer->lexsize;
                     lexer->state = LEX_STARTTAG;         /* ready to read tag name */
 
-                    /* if some text before < return it now */
-                    if (lexer->txtend > lexer->txtstart)
-                        return lexer->token = TextToken(lexer);
+                    CondReturnTextNode(doc, 2)
 
+                    /* lexer->txtstart = lexer->lexsize; missing here? */
                     continue;       /* no text so keep going */
                 }
 
@@ -2270,6 +2333,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+                StoreOriginalTextInToken(doc, lexer->token, 0); /* hmm... */
+#endif
                 return lexer->token;  /* the endtag token */
 
             case LEX_STARTTAG: /* first letter of tagname */
@@ -2683,8 +2749,11 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexsize -= 1;
                 lexer->txtend = lexer->lexsize;
             }
-
-            return lexer->token = TextToken(lexer);
+            lexer->token = TextToken(lexer);
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+            StoreOriginalTextInToken(doc, lexer->token, 0); /* ? */
+#endif
+            return lexer->token;
         }
     }
     else if (lexer->state == LEX_COMMENT) /* comment */
@@ -3545,7 +3614,9 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
                     FreeNode(doc, node);
                     return NULL;
                 }
-
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+                StoreOriginalTextInToken(doc, node, 0);
+#endif
                 return node;
             }
             else

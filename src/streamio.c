@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:50:43 $ 
-    $Revision: 1.19 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/01 11:08:23 $ 
+    $Revision: 1.20 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -116,6 +116,11 @@ static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
     in->encoding = encoding;
     in->state = FSM_ASCII;
     in->doc = doc;
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    in->otextbuf = NULL;
+    in->otextlen = 0;
+    in->otextsize = 0;
+#endif
     return in;
 }
 
@@ -213,10 +218,48 @@ int ReadBOMEncoding(StreamIn *in)
     return -1;
 }
 
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+void AddByteToOriginalText(StreamIn *in, tmbchar c)
+{
+    if (in->otextlen + 1 >= in->otextsize)
+    {
+        size_t size = in->otextsize ? 1 : 2;
+        in->otextbuf = MemRealloc(in->otextbuf, in->otextsize + size);
+        in->otextsize += size;
+    }
+    in->otextbuf[in->otextlen++] = c;
+    in->otextbuf[in->otextlen  ] = 0;
+}
+
+void AddCharToOriginalText(StreamIn *in, tchar c)
+{
+    int i, err, count = 0;
+    tmbchar buf[10] = {0};
+    
+    err = EncodeCharToUTF8Bytes(c, buf, NULL, &count);
+
+    if (err)
+    {
+        /* replacement character 0xFFFD encoded as UTF-8 */
+        buf[0] = (byte) 0xEF;
+        buf[1] = (byte) 0xBF;
+        buf[2] = (byte) 0xBD;
+        count = 3;
+    }
+    
+    for (i = 0; i < count; ++i)
+        AddByteToOriginalText(in, buf[i]);
+}
+#endif
+
+
 uint ReadChar( StreamIn *in )
 {
     uint c = EndOfStream;
     uint tabsize = cfg( in->doc, TidyTabSize );
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    Bool added = no;
+#endif
 
     if ( in->pushed )
         return PopChar( in );
@@ -239,6 +282,10 @@ uint ReadChar( StreamIn *in )
 
         if (c == '\n')
         {
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+            added = yes;
+            AddCharToOriginalText(in, (tchar)c);
+#endif
             in->curcol = 1;
             in->curline++;
             break;
@@ -246,6 +293,10 @@ uint ReadChar( StreamIn *in )
 
         if (c == '\t')
         {
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+            added = yes;
+            AddCharToOriginalText(in, (tchar)c);
+#endif
             in->tabs = tabsize - ((in->curcol - 1) % tabsize) - 1;
             in->curcol++;
             c = ' ';
@@ -383,6 +434,11 @@ uint ReadChar( StreamIn *in )
         in->curcol++;
         break;
     }
+
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    if (!added)
+        AddCharToOriginalText(in, (tchar)c);
+#endif
 
     return c;
 }

@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/01 11:08:23 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -74,6 +74,10 @@ struct _TidyDocImpl
     ulong               appData;
     uint                nClassId;
     Bool                inputHadBOM;
+
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    Bool                storeText;
+#endif
 
 #if PRESERVE_FILE_TIMES
     struct utimbuf      filetimes;
