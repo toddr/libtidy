@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/03 15:25:05 $ 
-    $Revision: 1.72 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/07/05 02:03:55 $ 
+    $Revision: 1.73 $ 
 
 */
 
@@ -645,7 +645,10 @@ int ParseConfigFileEnc( TidyDocImpl* doc, ctmbstr file, ctmbstr charenc )
     int enc = CharEncodingId( charenc );
 
     if ( fin == NULL || enc < 0 )
+    {
         FileError( doc, fname, TidyConfig );
+        return -1;
+    }
     else
     {
         tchar c;
