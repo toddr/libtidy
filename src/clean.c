@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/17 20:21:52 $ 
-    $Revision: 1.44 $ 
+    $Date: 2003/05/18 21:50:59 $ 
+    $Revision: 1.45 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2192,4 +2192,71 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         FreeStyleProps(pFirstProp);
         pLastProp = NULL;
     }
+}
+
+void DropComments(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->type == CommentTag)
+        {
+            RemoveNode(node);
+            FreeNode(doc, node);
+            node = next;
+            continue;
+        }
+
+        if (node->content)
+            DropComments(doc, node->content);
+
+        node = next;
+    }
+}
+
+void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (nodeIsFONT(node))
+            DiscardContainer(doc, node, &next);
+
+        if (node->content)
+            DropFontElements(doc, node->content, &next);
+
+        node = next;
+    }
+}
+
+void WbrToSpace(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (nodeIsWBR(node))
+        {
+            Node* text;
+            text = NewLiteralTextNode(doc->lexer, " ");
+            InsertNodeAfterElement(node, text);
+            RemoveNode(node);
+            FreeNode(doc, node);
+            node = next;
+            continue;
+        }
+
+        if (node->content)
+            WbrToSpace(doc, node->content);
+
+        node = next;
+   }
 }

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/17 15:32:27 $ 
-    $Revision: 1.78 $ 
+    $Date: 2003/05/18 21:50:59 $ 
+    $Revision: 1.79 $ 
 
 */
 
@@ -1413,9 +1413,6 @@ static void PPrintComment( TidyDocImpl* doc, uint indent, Node* node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
 
-    if ( cfgBool(doc, TidyHideComments) )
-        return;
-
     SetWrap( doc, indent );
     AddString( pprint, "<!--" );
 
@@ -2062,10 +2059,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
             }
         }
 
-        if ( cfgBool(doc, TidyMakeClean) && nodeIsWBR(node) )
-            PPrintString( doc, indent, " " );
-        else
-            PPrintTag( doc, mode, indent, node );
+        PPrintTag( doc, mode, indent, node );
 
         if (node->next)
         {
@@ -2120,16 +2114,6 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
         {
             if ( cfgBool(doc, TidyMakeClean) )
             {
-                /* discards <font> and </font> tags */
-                if ( nodeIsFONT(node) )
-                {
-                    for ( content = node->content;
-                          content != NULL;
-                          content = content->next )
-                        PPrintTree( doc, mode, indent, content );
-                    return;
-                }
-
                 /* replace <nobr>...</nobr> by &nbsp; or &#160; etc. */
                 if ( nodeIsNOBR(node) )
                 {

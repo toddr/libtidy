@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 08:26:29 $ 
-    $Revision: 1.27 $ 
+    $Date: 2003/05/18 21:50:59 $ 
+    $Revision: 1.28 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1214,6 +1214,20 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
     Bool xmlOut      = cfgBool( doc, TidyXmlOut );
     Bool xhtmlOut    = cfgBool( doc, TidyXhtmlOut );
     Bool bodyOnly    = cfgBool( doc, TidyBodyOnly );
+
+    Bool dropComments = cfgBool(doc, TidyHideComments);
+    Bool makeClean    = cfgBool(doc, TidyMakeClean);
+
+    /* drop comments */
+    if (dropComments)
+        DropComments(doc, &doc->root);
+
+    if (makeClean)
+    {
+        /* noop */
+        DropFontElements(doc, &doc->root, NULL);
+        WbrToSpace(doc, &doc->root);
+    }
 
     if ( showMarkup && (doc->errors == 0 || forceOutput) )
     {
