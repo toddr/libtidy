@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/09 01:47:02 $ 
-    $Revision: 1.18 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 03:51:28 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -99,6 +99,29 @@ Bool IsLetter(uint c)
     return (Bool)(map & letter);
 }
 
+Bool IsNamechar(uint c)
+{
+	uint map;
+
+	map = MAP(c);
+
+	return (Bool)(map & namechar);
+}
+
+Bool IsLower(uint c)
+{
+    uint map = MAP(c);
+
+	return (Bool)(map & lowercase);
+}
+
+Bool IsUpper(uint c)
+{
+	uint map = MAP(c);
+
+	return (Bool)(map & uppercase);
+}
+
 uint ToLower(uint c)
 {
     uint map = MAP(c);
@@ -121,21 +144,15 @@ uint ToUpper(uint c)
 
 char FoldCase(char c, Bool tocaps)
 {
-    uint map;
-
     if (!XmlTags)
     {
-        map = MAP(c);
-
         if (tocaps)
         {
-            if (map & lowercase)
-                c += 'A' - 'a';
+			c = ToUpper(c);
         }
         else /* force to lower case */
         {
-            if (map & uppercase)
-                c += 'a' - 'A';
+			c = ToLower(c);
         }
     }
 
@@ -301,7 +318,7 @@ static void AddStringToLexer(Lexer *lexer, char *str)
 */
 static void ParseEntity(Lexer *lexer, int mode)
 {
-    uint start, map;
+    uint start;
     Bool first = yes, semicolon = no;
     int c, ch, startcol;
 
@@ -324,9 +341,8 @@ static void ParseEntity(Lexer *lexer, int mode)
         }
 
         first = no;
-        map = MAP(c);
 
-        if (map & namechar)
+        if (IsNamechar(c))
         {
             AddCharToLexer(lexer, c);
             continue;
@@ -390,31 +406,26 @@ static void ParseEntity(Lexer *lexer, int mode)
 
 static char ParseTagName(Lexer *lexer)
 {
-    int map;
     uint c;
 
     /* fold case of first char in buffer */
 
     c = lexer->lexbuf[lexer->txtstart];
-    map = MAP(c);
 
-    if (!XmlTags && (map & uppercase) != 0)
+    if (!XmlTags && IsUpper(c))
     {
-        c -= (uint)('A' - 'a');
-        lexer->lexbuf[lexer->txtstart] = c;
+        lexer->lexbuf[lexer->txtstart] = ToLower(c);
     }
 
     while ((c = ReadChar(lexer->in)) != EndOfStream)
     {
-        map = MAP(c);
-
-        if ((map & namechar) == 0)
+        if (!IsNamechar(c))
             break;
 
        /* fold case of subsequent chars */
 
-       if (!XmlTags && (map & uppercase) != 0)
-            c -= (uint)('A' - 'a');
+       if (!XmlTags && IsUpper(c))
+            c = ToLower(c);
 
        AddCharToLexer(lexer, c);
     }
@@ -1487,7 +1498,6 @@ void UngetToken(Lexer *lexer)
 
 Node *GetToken(Lexer *lexer, uint mode)
 {
-    uint map;
     int c, lastc, badcomment = 0;
     Bool isempty, inDTDSubset = no;
     AttVal *attributes;
@@ -1540,14 +1550,13 @@ Node *GetToken(Lexer *lexer, uint mode)
         switch (lexer->state)
         {
             case LEX_CONTENT:  /* element content */
-                map = MAP(c);
 
                 /*
                  Discard white space if appropriate. Its cheaper
                  to do this here rather than in parser methods
                  for elements that don't have mixed content.
                 */
-                if ((map & white) && (mode == IgnoreWhitespace) 
+                if (IsWhite(c) && (mode == IgnoreWhitespace) 
                       && lexer->lexsize == lexer->txtstart + 1)
                 {
                     --(lexer->lexsize);
@@ -1563,7 +1572,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
                 }
 
-                if ((map & white) != 0)
+                if (IsWhite(c))
                 {
                     /* was previous char white? */
                     if (lexer->waswhite)
@@ -1608,9 +1617,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                     }
 
                     AddCharToLexer(lexer, c);
-                    map = MAP(c);
 
-                    if ((map & letter) != 0)
+                    if (IsLetter(c))
                     {
                         lexer->lexsize -= 3;
                         lexer->txtend = lexer->lexsize;
@@ -1696,9 +1704,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                                 break;
                             }
 
-                            map = MAP(c);
 
-                            if (!(map & white))
+                            if (!IsWhite(c))
                                 continue;
 
                             /* and skip to end of whitespace */
@@ -1713,9 +1720,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                                     break;
                                 }
 
-                                map = MAP(c);
 
-                                if (map & white)
+                                if (IsWhite(c))
                                     continue;
 
                                 UngetChar(c, lexer->in);
@@ -1813,10 +1819,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                     continue;
                 }
 
-                map = MAP(c);
-
                 /* check for start tag */
-                if ((map & letter) != 0)
+                if (IsLetter(c))
                 {
                     UngetChar(c, lexer->in);     /* push back letter */
                     lexer->lexsize -= 2;      /* discard "<" + letter */
@@ -2008,9 +2012,8 @@ Node *GetToken(Lexer *lexer, uint mode)
                 continue; 
 
             case LEX_DOCTYPE:  /* seen <!d so look for '>' munging whitespace */
-                map = MAP(c);
 
-                if (map & white)
+                if (IsWhite(c))
                 {
                     if (lexer->waswhite)
                         lexer->lexsize -= 1;
@@ -2350,7 +2353,7 @@ static Node *ParsePhp(Lexer *lexer)
 static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
                              Node **asp, Node **php)
 {
-    int map, start, len = 0;
+    int start, len = 0;
     char *attr;
     uint c;
 
@@ -2415,9 +2418,8 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
             return null;
         }
 
-        map = MAP(c);
 
-        if ((map & white) == 0)
+        if (!IsWhite(c))
            break;
     }
 
@@ -2438,16 +2440,14 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
             break;
         }
 
-        map = MAP(c);
-
-        if ((map & white) != 0)
+        if (IsWhite(c))
             break;
 
      /* what should be done about non-namechar characters? */
      /* currently these are incorporated into the attr name */
 
-        if (!XmlTags && (map & uppercase) != 0)
-            c += (uint)('a' - 'A');
+        if (!XmlTags && IsUpper(c))
+            c = ToLower(c);
 
         /* ++len; */	/* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
         AddCharToLexer(lexer, c);
@@ -2469,7 +2469,7 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
 */
 static int ParseServerInstruction(Lexer *lexer)
 {
-    int c, map, delim = '"';
+    int c, delim = '"';
     Bool isrule = no;
 
     c = ReadChar(lexer->in);
@@ -2500,9 +2500,7 @@ static int ParseServerInstruction(Lexer *lexer)
         /* then also finish value on whitespace */
         if (!isrule)
         {
-            map = MAP(c);
-
-            if ((map & white) != 0)
+            if (IsWhite(c))
                 break;
         }
 
@@ -2564,7 +2562,7 @@ static int ParseServerInstruction(Lexer *lexer)
 static char *ParseValue(Lexer *lexer, char *name,
                         Bool foldCase, Bool *isempty, int *pdelim)
 {
-    int len = 0, start, map;
+    int len = 0, start;
     Bool seen_gt = no;
     Bool munge = yes;
     uint c, lastc, delim, quotewarning;
@@ -2593,9 +2591,7 @@ static char *ParseValue(Lexer *lexer, char *name,
             break;
         }
 
-        map = MAP(c);
-
-        if ((map & white) == 0)
+        if (!IsWhite(c))
            break;
     }
 
@@ -2623,9 +2619,7 @@ static char *ParseValue(Lexer *lexer, char *name,
             break;
         }
 
-        map = MAP(c);
-
-        if ((map & white) == 0)
+        if (!IsWhite(c))
            break;
     }
 
@@ -2754,9 +2748,7 @@ static char *ParseValue(Lexer *lexer, char *name,
             }
         }
 
-        map = MAP(c);
-
-        if (map & white)
+        if (IsWhite(c))
         {
             if (delim == (char)0)
                 break;
@@ -2774,8 +2766,8 @@ static char *ParseValue(Lexer *lexer, char *name,
                     continue;
             }
         }
-        else if (foldCase && (map & uppercase) != 0)
-            c += (uint)('a' - 'A');
+        else if (foldCase && IsUpper(c))
+            c = ToLower(c);
 
         AddCharToLexer(lexer, c);
     }
@@ -2812,23 +2804,21 @@ static char *ParseValue(Lexer *lexer, char *name,
 /* attr must be non-null */
 Bool IsValidAttrName( char *attr)
 {
-    uint map, c;
+    uint c;
     int i;
 
     /* first character should be a letter */
     c = attr[0];
-    map = MAP(c);
 
-    if (!(map & letter))
+    if (!IsLetter(c))
         return no;
 
     /* remaining characters should be namechars */
     for( i = 1; i < wstrlen(attr); i++)
     {
         c = attr[i];
-        map = MAP(c);
 
-        if (map & namechar)
+        if (IsNamechar(c))
             continue;
 
         return no;
