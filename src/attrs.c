@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 01:03:33 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/07/14 02:43:09 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -1015,6 +1015,13 @@ void CheckTABLE(Lexer *lexer, Node *node)
     {
         if (attval->value == null)
             attval->value = wstrdup("1");
+    }
+
+    /* <table height="..."> is proprietary */
+    if (attval = GetAttrByName(node, "height"))
+    {
+        ReportAttrError(lexer, node, attval, PROPRIETARY_ATTRIBUTE);
+        ConstrainVersion(lexer, VERS_PROPRIETARY);
     }
 }
 
