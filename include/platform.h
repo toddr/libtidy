@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/03/30 04:35:02 $ 
-    $Revision: 1.40 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:49:57 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -450,7 +450,7 @@ extern "C" {
 #if !defined(HPUX_OS) && !defined(CYGWIN_OS) && !defined(MAC_OS_X) && !defined(BE_OS) && !defined(SOLARIS_OS) && !defined(BSD_BASED_OS) && !defined(OSF_OS) && !defined(IRIX_OS) && !defined(AIX_OS)
 typedef unsigned int uint;
 #endif
-#if defined(HPUX_OS) || defined(CYGWIN_OS) || defined(MAC_OS) || defined(BSD_BASED_OS)
+#if defined(HPUX_OS) || defined(CYGWIN_OS) || defined(MAC_OS) || defined(BSD_BASED_OS) || defined(_WIN32)
 typedef unsigned long ulong;
 #endif
 
