@@ -11,8 +11,8 @@
 # CVS Info:
 #
 #    $Author: creitzel $
-#    $Date: 2003/03/19 18:33:12 $
-#    $Revision: 1.7 $
+#    $Date: 2003/04/03 17:04:46 $
+#    $Revision: 1.8 $
 #
 # set -x
 
@@ -57,6 +57,12 @@ done
 if [ ! -f $CFGFILE ]
 then
   CFGFILE=./input/cfg_default.txt
+fi
+
+# Make sure output directory exists.
+if [ ! -d ./tmp ]
+then
+  mkdir ./tmp
 fi
 
 $TIDY -f $MSGFILE -config $CFGFILE "$@" --tidy-mark no -o $TIDYFILE $INFILE

@@ -40,10 +40,13 @@ REM Remove any pre-exising test outputs
 if exist %MSGFILE%  rm %MSGFILE%
 if exist %TIDYFILE% rm %TIDYFILE%
 
+REM Make sure output directory exists
+if NOT exist .\tmp  md .\tmp
+
 %TIDY% -f %MSGFILE% -config %CFGFILE% %3 %4 %5 %6 %7 %8 %9 --tidy-mark no -o %TIDYFILE% %INFILE%
 set STATUS=%ERRORLEVEL%
 
 if %STATUS% EQU %EXPECTED% goto done
-cat %MSGFILE
+cat %MSGFILE%
 
 :done
