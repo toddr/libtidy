@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/01 17:46:24 $ 
-    $Revision: 1.19 $ 
+    $Date: 2005/03/02 13:54:55 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -2057,6 +2057,78 @@ static void CheckLabel( TidyDocImpl* doc, Node* node )
 
 
 /************************************************************
+* CheckLabelPosition
+*
+* Checks for a LABEL immediately before of after an element.
+************************************************************/
+
+typedef struct LabelProp
+{
+    Bool HasLabelBefore;
+    Bool HasLabelAfter;
+    Bool HasValidLabel;
+} LabelProp;
+
+static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
+                                LabelProp *lprop )
+{
+    Bool foundLabel = no;
+    tmbstr word;
+    tmbstr text;
+
+    if ( node->prev != NULL && node->prev->prev != NULL )
+    {
+        Node* temp = node->prev->prev;
+        if ( nodeIsLABEL(temp) )
+        {
+            foundLabel = yes;
+            if ( nodeIsText(temp->content) )
+            {
+                word = textFromOneNode( doc, temp->content );
+                if ( !IsWhitespace(word) )
+                    lprop->HasLabelBefore = yes;
+            }
+        }
+
+        if ( lprop->HasLabelBefore && nodeIsText(node->prev) )
+        {
+            text = textFromOneNode( doc, node->prev );
+            if ( IsWhitespace(text) )
+                lprop->HasValidLabel = yes;
+        }
+    }
+
+    if ( !foundLabel
+         && node->next != NULL && node->next->next != NULL )
+    {
+        Node* temp = node->next->next;
+        if ( nodeIsLABEL(temp) &&
+             nodeIsText(temp->content) )
+        {
+            word = textFromOneNode( doc, temp->content);
+            if ( !IsWhitespace(word) )
+                lprop->HasLabelAfter = yes;
+        }
+        if ( lprop->HasLabelAfter && nodeIsText(node->next) )
+        {
+            text = textFromOneNode( doc, node->next);
+            if ( IsWhitespace(text) )
+                lprop->HasValidLabel = yes;
+        }
+    }
+}
+
+static void ReportErrorLabelPosition( TidyDocImpl* doc, Node* node,
+                                      LabelProp* lprop )
+{
+    if ( !lprop->HasValidLabel && lprop->HasLabelBefore )
+        ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT );
+
+    if ( !lprop->HasValidLabel && lprop->HasLabelAfter )
+        ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT );
+}
+
+/************************************************************
 * CheckInputLabel
 * 
 * Checks for valid 'ID' attribute within the INPUT element.
@@ -2067,16 +2139,9 @@ static void CheckLabel( TidyDocImpl* doc, Node* node )
 
 static void CheckInputLabel( TidyDocImpl* doc, Node* node )
 {
-    int flag = 0;
-
-    tmbstr word = NULL;
-    tmbstr text = NULL;
-
     AttVal* av;
 
-    Bool HasLabelBefore = no;
-    Bool HasLabelAfter = no;
-    Bool HasValidLabel = no;
+    LabelProp lprop = { no, no, no };
 
     if (Level2_Enabled( doc ))
     {
@@ -2100,73 +2165,22 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
                     AttrValueIs(av, "password") ||
                     AttrValueIs(av, "file"))
                 {
-                    if ( node->prev != NULL &&
-                         node->prev->prev != NULL )
-                    {
-                        Node* temp = node->prev->prev;
-                        if ( nodeIsLABEL(temp) )
-                        {
-                            flag = 1;
-                            if ( nodeIsText(temp->content) )
-                            {
-                                word = textFromOneNode( doc, temp->content );
-                                if ( !IsWhitespace(word) )
-                                    HasLabelBefore = yes;
-                            }
-                        }
-                        
-                        if ( HasLabelBefore && nodeIsText(node->prev) )
-                        {
-                            text = textFromOneNode( doc, node->prev );
-                            if ( IsWhitespace(text) )
-                                HasValidLabel = yes;
-                        }
-                    }
-
-                    if ( flag == 0 )
-                    {
-                        if ( node->next != NULL &&
-                             node->next->next != NULL )
-                        {
-                            Node* temp = node->next->next;
-                            if ( nodeIsLABEL(temp) &&
-                                 nodeIsText(temp->content) )
-                            {
-                                word = textFromOneNode( doc, temp->content);
-                                if ( !IsWhitespace(word) )
-                                    HasLabelAfter = yes;
-                            }
-
-                            if ( HasLabelAfter && nodeIsText(node->next) )
-                            {
-                                text = textFromOneNode( doc, node->next);
-                                if ( IsWhitespace(text) )
-                                    HasValidLabel = yes;
-                            }
-                        }
-                    }
+                    CheckLabelPosition( doc, node, &lprop );
                 }
-
+                else
                 /* The following 'TYPES' do not require a LABEL */
                 if (AttrValueIs(av, "image")  ||
                     AttrValueIs(av, "submit") ||
                     AttrValueIs(av, "reset")  ||
                     AttrValueIs(av, "button"))
                 {
-                    HasValidLabel = yes;
+                    lprop.HasValidLabel = yes;
                 }
             }
         }
 
-        if ( !HasValidLabel )
-        {
-            if ( HasLabelBefore )
-              ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT );
-       
-            if ( HasLabelAfter )
-              ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT );
-        }
-        
+        ReportErrorLabelPosition( doc, node, &lprop);
+
         if ( ++doc->access.ForID == 2 )
         {
             doc->access.ForID = 0;
@@ -2452,58 +2466,11 @@ static void CheckParagraphHeader( TidyDocImpl* doc, Node* node )
 
 static void CheckSelect( TidyDocImpl* doc, Node* node )
 {
-    Node* temp;
-    tmbstr label;
-    int flag = 0;
-
-    Bool HasLabelBefore = no;
-    Bool HasLabelAfter = no;
-
     if (Level2_Enabled( doc ))
     {
-        /* Check to see if there is a LABEL preceding SELECT */
-        if ( node->prev != NULL && node->prev->prev != NULL )
-        {
-            if ( nodeIsLABEL(node->prev->prev) )
-            {
-                temp = node->prev->prev;
-
-                if ( nodeIsText(temp->content) )
-                {
-                    label = textFromOneNode( doc, temp->content );
-                    if ( !IsWhitespace(label) )
-                    {
-                        flag = 1;
-                        HasLabelBefore = yes;
-                    }
-                }
-            }
-
-            /* Check to see if there is a LABEL following SELECT */
-            if (flag == 0)
-            {
-                if ( nodeIsLABEL(node) )
-                {
-                    temp = node->next->next;
-                    
-                    if ( nodeIsText(temp->content) )
-                    {
-                        label = textFromOneNode( doc, temp->content );
-                        if ( !IsWhitespace(label) )
-                        {
-                            flag = 1;
-                            HasLabelAfter = yes;
-                        }
-                    }
-                }
-            }
-
-            if ( !HasLabelAfter )
-                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
-
-            if (HasLabelBefore == no)
-                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
-        }
+        LabelProp lprop = { no, no, no };
+        CheckLabelPosition( doc, node, &lprop );
+        ReportErrorLabelPosition( doc, node, &lprop);
     }
 }
 
@@ -2518,58 +2485,11 @@ static void CheckSelect( TidyDocImpl* doc, Node* node )
 
 static void CheckTextArea( TidyDocImpl* doc, Node* node )
 {
-    int flag = 0;
-    
-    Bool HasLabelAfter = no;
-    Bool HasLabelBefore = no;
-
-    tmbstr label;
-    Node* temp;
-
     if (Level2_Enabled( doc ))
     {
-        /* Check to see if there is a LABEL before or after TEXTAREA */
-        if (node->prev != NULL && node->prev->prev != NULL)
-        {
-            if ( nodeIsLABEL(node->prev->prev) )
-            {
-                temp = node->prev->prev;
-                
-                if ( nodeIsText(temp->content) )
-                {
-                    label = textFromOneNode( doc, temp->content );
-                    if ( !IsWhitespace(label) )
-                    {
-                        flag = 1;
-                        HasLabelBefore = yes;
-                    }
-                }
-            }
-
-            if (flag == 0)
-            {
-                if ( node->next != NULL && nodeIsLABEL(node->next->next) )
-                {
-                    temp = node->next->next;
-                    
-                    if ( nodeIsText(temp->content) )
-                    {
-                        label = textFromOneNode( doc, temp->content);
-                        if ( !IsWhitespace(label) )
-                        {
-                            flag = 1;
-                            HasLabelAfter = yes;
-                        }
-                    }
-                }
-            }
-        
-            if ( !HasLabelAfter )
-                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT);
-
-            if ( !HasLabelBefore )
-                ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT);
-        }
+        LabelProp lprop = { no, no, no };
+        CheckLabelPosition( doc, node, &lprop );
+        ReportErrorLabelPosition( doc, node, &lprop);
     }
 }
 
