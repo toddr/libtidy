@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/22 09:07:28 $ 
-    $Revision: 1.49 $ 
+    $Date: 2004/06/22 09:53:04 $ 
+    $Revision: 1.50 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -631,27 +631,7 @@ void CheckCaption(TidyDocImpl* doc, Node *node)
 
 void CheckHTML( TidyDocImpl* doc, Node *node )
 {
-    AttVal *xmlns;
-
-    xmlns = AttrGetById(node, TidyAttr_XMLNS);
-
-    if (AttrValueIs(xmlns, XHTML_NAMESPACE))
-    {
-        Bool htmlOut = cfgBool( doc, TidyHtmlOut );
-        doc->lexer->isvoyager = yes;                  /* Unless plain HTML */
-        SetOptionBool( doc, TidyXhtmlOut, !htmlOut ); /* is specified, output*/
-        SetOptionBool( doc, TidyXmlOut, !htmlOut );   /* will be XHTML. */
-
-        /* adjust other config options, just as in config.c */
-        if ( !htmlOut )
-        {
-            SetOptionBool( doc, TidyUpperCaseTags, no );
-            SetOptionBool( doc, TidyUpperCaseAttrs, no );
-        }
-    }
-
     CheckAttributes(doc, node);
-
 }
 
 void CheckAREA( TidyDocImpl* doc, Node *node )

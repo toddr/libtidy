@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/18 21:10:31 $ 
-    $Revision: 1.118 $ 
+    $Date: 2004/06/22 09:53:03 $ 
+    $Revision: 1.119 $ 
 
 */
 
@@ -4001,6 +4001,28 @@ void ParseDocument(TidyDocImpl* doc)
             ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
+        }
+
+        if (node->type == StartTag && nodeIsHTML(node))
+        {
+            AttVal *xmlns;
+
+            xmlns = AttrGetById(node, TidyAttr_XMLNS);
+
+            if (AttrValueIs(xmlns, XHTML_NAMESPACE))
+            {
+                Bool htmlOut = cfgBool( doc, TidyHtmlOut );
+                doc->lexer->isvoyager = yes;                  /* Unless plain HTML */
+                SetOptionBool( doc, TidyXhtmlOut, !htmlOut ); /* is specified, output*/
+                SetOptionBool( doc, TidyXmlOut, !htmlOut );   /* will be XHTML. */
+
+                /* adjust other config options, just as in config.c */
+                if ( !htmlOut )
+                {
+                    SetOptionBool( doc, TidyUpperCaseTags, no );
+                    SetOptionBool( doc, TidyUpperCaseAttrs, no );
+                }
+            }
         }
 
         if ( node->type != StartTag || !nodeIsHTML(node) )
