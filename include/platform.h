@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/03/16 01:19:31 $ 
-    $Revision: 1.24 $ 
+    $Date: 2002/04/12 07:54:49 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -209,6 +209,15 @@
 #endif
 #endif
 
+/* Convenience defines for DEC Alpha OSF + gcc platforms */
+
+#if defined(__osf__)
+#define OSF_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "DEC Alpha OSF"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -254,7 +263,7 @@
 #endif
 
 #ifndef PRESERVE_FILE_TIMES
-#if defined(RISC_OS) || defined(OPENVMS_OS)
+#if defined(RISC_OS) || defined(OPENVMS_OS) || defined(OSF_OS)
 #define PRESERVE_FILE_TIMES 0
 #else
 #define PRESERVE_FILE_TIMES 1
@@ -315,7 +324,7 @@
 /* you may need to delete the #ifndef and #endif on your system */
 
 #ifndef __USE_MISC
-#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X)
+#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS)
 #include <sys/types.h>
 #else
 #ifndef _INCLUDE_HPUX_SOURCE
