@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/10 23:59:55 $ 
-    $Revision: 1.112 $ 
+    $Date: 2003/05/11 00:01:55 $ 
+    $Revision: 1.113 $ 
 
 */
 
@@ -2344,7 +2344,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
             case LEX_STARTTAG: /* first letter of tagname */
                 c = ReadChar(doc->docIn);
-                ChangeChar(lexer, c);
+                ChangeChar(lexer, (tmbchar)c);
                 lexer->txtstart = lexer->lexsize - 1; /* set txtstart to first letter */
                 c = ParseTagName( doc );
                 isempty = no;
