@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/08 03:09:52 $ 
-    $Revision: 1.70 $ 
+    $Date: 2002/05/08 03:45:18 $ 
+    $Revision: 1.71 $ 
 
 */
 
@@ -937,6 +937,9 @@ Node *CloneNode(Lexer *lexer, Node *element)
 Node *CloneNodeEx(Lexer *lexer, Node *element)
 {
     Node *node;
+
+    if (!element)
+        return null;
 
     node = NewNode();
     node->parent     = element->parent;

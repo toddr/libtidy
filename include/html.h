@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/06 06:22:44 $ 
-    $Revision: 1.68 $ 
+    $Date: 2002/05/08 03:45:17 $ 
+    $Revision: 1.69 $ 
 
 */
 
@@ -499,6 +499,9 @@ void FreeNode(Node *node);
 
 /* used to clone heading nodes when split by an <HR> */
 Node *CloneNode(Lexer *lexer, Node *element);
+
+/* same as above but respects original start and end */
+Node *CloneNodeEx(Lexer *lexer, Node *element);
 
 /* lexer char map - must be initialized */
 void InitMap(void);
