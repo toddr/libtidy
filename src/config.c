@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/10/06 02:32:28 $ 
-    $Revision: 1.77 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 15:32:08 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -190,7 +190,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyShowMarkup,              PP, "markup",                      BL, yes,             ParseBool,         boolPicks       },
   { TidyShowWarnings,            DG, "show-warnings",               BL, yes,             ParseBool,         boolPicks       },
   { TidyQuiet,                   MS, "quiet",                       BL, no,              ParseBool,         boolPicks       },
-  { TidyIndentContent,           PP, "indent",                      IN, TidyNoState,     ParseIndent,       autoBoolPicks   },
+  { TidyIndentContent,           PP, "indent",                      IN, TidyNoState,     ParseAutoBool,     autoBoolPicks   },
   { TidyHideEndTags,             MU, "hide-endtags",                BL, no,              ParseBool,         boolPicks       },
   { TidyXmlTags,                 MU, "input-xml",                   BL, no,              ParseBool,         boolPicks       },
   { TidyXmlOut,                  MU, "output-xml",                  BL, no,              ParseBool,         boolPicks       },
@@ -249,7 +249,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyNCR,                     MU, "ncr",                         BL, yes,             ParseBool,         boolPicks       },
 #endif
 #if SUPPORT_UTF16_ENCODINGS
-  { TidyOutputBOM,               CE, "output-bom",                  IN, TidyAutoState,   ParseBOM,          autoBoolPicks   },
+  { TidyOutputBOM,               CE, "output-bom",                  IN, TidyAutoState,   ParseAutoBool,     autoBoolPicks   },
 #endif
   { TidyReplaceColor,            MU, "replace-color",               BL, no,              ParseBool,         boolPicks       },
   { TidyCSSPrefix,               MU, "css-prefix",                  ST, 0,               ParseCSS1Selector, NULL            },
@@ -1003,6 +1003,15 @@ Bool ParseBool( TidyDocImpl* doc, const TidyOptionImpl* entry )
     return status;
 }
 
+Bool ParseAutoBool( TidyDocImpl* doc, const TidyOptionImpl* entry )
+{
+    ulong flag = 0;
+    Bool status = ParseTriState( TidyAutoState, doc, entry, &flag );
+    if ( status )
+        SetOptionInt( doc, entry->id, flag );
+    return status;
+}
+
 /* a string excluding whitespace */
 Bool ParseName( TidyDocImpl* doc, const TidyOptionImpl* option )
 {
@@ -1298,18 +1307,6 @@ ctmbstr CharEncodingName( int encoding )
     return encodingName;
 }
 
-Bool ParseIndent( TidyDocImpl* doc, const TidyOptionImpl* option )
-{
-    ulong flag = 0;
-    Bool status = ParseTriState( TidyAutoState, doc, option, &flag );
-
-    if ( status )
-    {
-        SetOptionInt( doc, TidyIndentContent, flag );
-    }
-    return status;
-}
-
 /*
    doctype: omit | auto | strict | loose | <fpi>
 
@@ -1393,19 +1390,6 @@ Bool ParseRepeatAttr( TidyDocImpl* doc, const TidyOptionImpl* option )
     }
     return status;
 }
-
-#if SUPPORT_UTF16_ENCODINGS
-Bool ParseBOM( TidyDocImpl* doc, const TidyOptionImpl* option )
-{
-    ulong flag = 0;
-    Bool status = ParseTriState( TidyAutoState, doc, option, &flag );
-    if ( status )
-    {
-        SetOptionInt( doc, TidyOutputBOM, flag );
-    }
-    return status;
-}
-#endif
 
 /* Use TidyOptionId as iterator.
 ** Send index of 1st option after TidyOptionUnknown as start of list.

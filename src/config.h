@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:55:50 $ 
-    $Revision: 1.6 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 15:32:08 $ 
+    $Revision: 1.7 $ 
 
   config files associate a property name with a value.
 
@@ -148,6 +148,10 @@ ParseProperty ParseInt;
 /* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
 ParseProperty ParseBool;
 
+/* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no', '1'/'0'
+   or 'auto' */
+ParseProperty ParseAutoBool;
+
 /* a string excluding whitespace */
 ParseProperty ParseName;
 
@@ -166,16 +170,10 @@ ParseProperty ParseTagNames;
 ParseProperty ParseCharEnc;
 ParseProperty ParseNewline;
 
-/* specific to the indent option - Bool and 'auto' */
-ParseProperty ParseIndent;
-
 /* omit | auto | strict | loose | <fpi> */
 ParseProperty ParseDocType;
 
 /* keep-first or keep-last? */
 ParseProperty ParseRepeatAttr;
-
-/* specific to the output-bom option - Bool and 'auto' */
-ParseProperty ParseBOM;
 
 #endif /* __CONFIG_H__ */
