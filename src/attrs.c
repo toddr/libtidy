@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2002/05/06 06:22:44 $ 
-    $Revision: 1.50 $ 
+    $Date: 2002/05/08 03:09:52 $ 
+    $Revision: 1.51 $ 
 
 */
 
@@ -1122,6 +1122,9 @@ void CheckTarget(Lexer *lexer, Node *node, AttVal *attval)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
         return;
     }
+
+    /* No target attribute in strict HTML versions */
+    ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
 
     /*
       target names must begin with A-Za-z or be one of

@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/10 08:57:17 $ 
-    $Revision: 1.42 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/08 03:09:52 $ 
+    $Revision: 1.43 $ 
 
   Contributing Author(s):
 
@@ -2204,6 +2204,9 @@ int main(int argc, char **argv)
                     exit(1);
                 }
 
+                /* remember given doctype */
+                doctype = CloneNodeEx(lexer, FindDocType(document));
+
                 if (document->content)
                 {
                     if (xHTML)
@@ -2226,7 +2229,6 @@ int main(int argc, char **argv)
                 
                 if (!Quiet && document->content)
                 {
-                    doctype = FindDocType(document);
                     ReportVersion(errout, lexer, file, doctype);
                     /* ReportNumWarnings(errout, lexer); */
                 }
