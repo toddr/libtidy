@@ -2,9 +2,9 @@
 #
 #  CVS Info :
 #
-#     $Author: creitzel $ 
-#     $Date: 2003/03/19 18:37:36 $ 
-#     $Revision: 1.4 $ 
+#     $Author: terry_teague $ 
+#     $Date: 2003/04/12 02:57:39 $ 
+#     $Revision: 1.5 $ 
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -112,13 +112,13 @@ AR=ar -r
 EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
 OBJFILES=\
-        $(OBJDIR)/access.o     $(OBJDIR)/attrs.o      $(OBJDIR)/istack.o\
-        $(OBJDIR)/parser.o     $(OBJDIR)/tags.o       $(OBJDIR)/entities.o\
-        $(OBJDIR)/lexer.o      $(OBJDIR)/pprint.o     $(OBJDIR)/clean.o\
-        $(OBJDIR)/localize.o   $(OBJDIR)/config.o     $(OBJDIR)/alloc.o\
-        $(OBJDIR)/attrask.o    $(OBJDIR)/attrget.o    $(OBJDIR)/buffio.o\
-        $(OBJDIR)/fileio.o     $(OBJDIR)/streamio.o   $(OBJDIR)/tagask.o\
-        $(OBJDIR)/tmbstr.o     $(OBJDIR)/utf8.o\
+        $(OBJDIR)/access.o     $(OBJDIR)/attrs.o      $(OBJDIR)/istack.o \
+        $(OBJDIR)/parser.o     $(OBJDIR)/tags.o       $(OBJDIR)/entities.o \
+        $(OBJDIR)/lexer.o      $(OBJDIR)/pprint.o     $(OBJDIR)/clean.o \
+        $(OBJDIR)/localize.o   $(OBJDIR)/config.o     $(OBJDIR)/alloc.o \
+        $(OBJDIR)/attrask.o    $(OBJDIR)/attrdict.o   $(OBJDIR)/attrget.o \
+        $(OBJDIR)/buffio.o     $(OBJDIR)/fileio.o     $(OBJDIR)/streamio.o \
+        $(OBJDIR)/tagask.o     $(OBJDIR)/tmbstr.o     $(OBJDIR)/utf8.o \
         $(OBJDIR)/tidylib.o
 
 CFILES= \
@@ -126,22 +126,21 @@ CFILES= \
         $(SRCDIR)/parser.c       $(SRCDIR)/tags.c         $(SRCDIR)/entities.c \
         $(SRCDIR)/lexer.c        $(SRCDIR)/pprint.c       $(SRCDIR)/clean.c \
         $(SRCDIR)/localize.c     $(SRCDIR)/config.c       $(SRCDIR)/alloc.c \
-        $(SRCDIR)/attrask.c      $(SRCDIR)/attrget.c      $(SRCDIR)/buffio.c \
-        $(SRCDIR)/fileio.c       $(SRCDIR)/streamio.c     $(SRCDIR)/tagask.c \
-        $(SRCDIR)/tagget.c       $(SRCDIR)/tmbstr.c       $(SRCDIR)/utf8.c \
+        $(SRCDIR)/attrask.c      $(SRCDIR)/attrdict.c     $(SRCDIR)/attrget.c \
+        $(SRCDIR)/buffio.c       $(SRCDIR)/fileio.c       $(SRCDIR)/streamio.c \
+        $(SRCDIR)/tagask.c       $(SRCDIR)/tmbstr.c       $(SRCDIR)/utf8.c \
         $(SRCDIR)/tidylib.c
 
 HFILES= $(INCDIR)/platform.h     $(INCDIR)/tidy.h         $(INCDIR)/tidyenum.h \
         $(INCDIR)/fileio.h       $(INCDIR)/buffio.h       
 
 LIBHFILES= \
-        $(SRCDIR)/access.h \
-        $(SRCDIR)/attrs.h        $(SRCDIR)/clean.h \
-        $(SRCDIR)/config.h       $(SRCDIR)/entities.h \
+        $(SRCDIR)/access.h       $(SRCDIR)/attrs.h        $(SRCDIR)/attrdict.h \
+        $(SRCDIR)/clean.h        $(SRCDIR)/config.h       $(SRCDIR)/entities.h \
         $(SRCDIR)/forward.h      $(SRCDIR)/lexer.h        $(SRCDIR)/message.h \
         $(SRCDIR)/parser.h       $(SRCDIR)/pprint.h       $(SRCDIR)/streamio.h \
-        $(SRCDIR)/tags.h \
-        $(SRCDIR)/tmbstr.h       $(SRCDIR)/utf8.h         $(SRCDIR)/tidy-int.h
+        $(SRCDIR)/tags.h         $(SRCDIR)/tmbstr.h       $(SRCDIR)/utf8.h \
+        $(SRCDIR)/tidy-int.h
 
 
 

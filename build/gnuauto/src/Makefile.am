@@ -2,9 +2,9 @@
 #
 #  CVS Info :
 #
-#     $Author: creitzel $ 
-#     $Date: 2003/03/19 18:37:38 $ 
-#     $Revision: 1.5 $ 
+#     $Author: terry_teague $ 
+#     $Date: 2003/04/12 02:58:04 $ 
+#     $Revision: 1.6 $ 
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -63,18 +63,18 @@ libtidy_la_SOURCES = \
 	access.c	attrs.c		istack.c	parser.c \
 	tags.c		entities.c	lexer.c		pprint.c \
 	clean.c		localize.c	config.c	alloc.c \
-	attrask.c	attrget.c	buffio.c	fileio.c \
-	streamio.c	tagask.c	tmbstr.c	utf8.c \
-	tidylib.c
+	attrask.c	attrdict.c	attrget.c	buffio.c \
+	fileio.c	streamio.c	tagask.c	tmbstr.c \
+	utf8.c		tidylib.c
 
 libtidy_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-release $(LT_RELEASE) -no-undefined -export-dynamic
 
 HFILES = \
-	access.h	attrs.h		clean.h		config.h \
-	entities.h	forward.h	lexer.h		message.h \
-	parser.h	pprint.h	streamio.h	tags.h \
-	tmbstr.h	utf8.h		tidy-int.h
+	access.h	attrdict.h	attrs.h		clean.h \
+	config.h	entities.h	forward.h	lexer.h \
+	message.h	parser.h	pprint.h	streamio.h \
+	tags.h		tmbstr.h	utf8.h		tidy-int.h
 
 EXTRA_DIST = $(HFILES)
