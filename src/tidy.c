@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/29 02:13:31 $ 
-    $Revision: 1.26 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/29 03:33:13 $ 
+    $Revision: 1.27 $ 
 
   Contributing Author(s):
 
@@ -1536,7 +1536,7 @@ int main(int argc, char **argv)
     char *s, c, *arg, *current_errorfile = "stderr";
     Out out;   /* normal output stream */
 
-#if PRESERVEFILETIMES
+#if PRESERVE_FILE_TIMES
     struct utimbuf filetimes;
     struct stat sbuf;
 #endif
@@ -1781,7 +1781,7 @@ int main(int argc, char **argv)
             file = argv[1];
             input = fopen(file, "r");
 
-#if PRESERVEFILETIMES
+#if PRESERVE_FILE_TIMES
             /* get last modified time */
             if (KeepFileTimes && input && fstat(fileno(input), &sbuf) != -1)
             {
@@ -1961,16 +1961,31 @@ int main(int argc, char **argv)
 
                     PFlushLine(&out, 0);
 
-#if PRESERVEFILETIMES
+#if PRESERVE_FILE_TIMES
+
+#if UTIME_NEEDS_CLOSED_FILE
+                    /* close the file first */
+                    fclose(input);
+#endif
+
                     /* set file last accessed/modified times to original values */
                     if (haveFileTimes)
-#ifdef __linux__
+#if !HAS_FUTIME
                         utime(file, &filetimes);
 #else
                         futime(fileno(input), &filetimes);
-#endif /* __linux__ */
-#endif /* PRESERVFILETIMES */
+#endif
+
+#if !UTIME_NEEDS_CLOSED_FILE
+                    /* close the file later */
                     fclose(input);
+#endif
+
+#else
+
+                    fclose(input);
+
+#endif /* PRESERVFILETIMES */
                 }
                 else
                 {
