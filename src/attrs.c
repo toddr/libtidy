@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:40 $ 
-    $Revision: 1.59 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/06 08:57:58 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -656,7 +656,7 @@ void FreeAnchors( TidyDocImpl* doc )
 void InitAttrs( TidyDocImpl* doc )
 {
     ClearMemory( &doc->attribs, sizeof(TidyAttribImpl) );
-
+#if 0
 #ifdef _DEBUG
     {
       ctmbstr prev = NULL;
@@ -670,6 +670,7 @@ void InitAttrs( TidyDocImpl* doc )
         prev = dict->name;
       }
     }
+#endif
 #endif
 }
 
