@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/15 12:41:14 $ 
-    $Revision: 1.91 $ 
+    $Date: 2003/05/17 20:24:57 $ 
+    $Revision: 1.92 $ 
 
 */
 
@@ -515,6 +515,9 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
     if (!next)
         return no;
 
+    if (nodeIsBR(next))
+        return yes;
+
     if (nodeHasCM(next, CM_INLINE))
         return no;
 
@@ -556,6 +559,11 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
     if (node->prev == NULL && !nodeHasCM(node->parent, CM_INLINE))
         return yes;
 
+    /* <h4>...</h4> <em>...</em> */
+    if (node->prev && !nodeHasCM(node->parent, CM_INLINE) &&
+        (node->prev->type == StartTag || node->prev->type == StartEndTag))
+        return yes;
+
     return no;
 }
 
@@ -577,9 +585,13 @@ static void CleanSpaces(TidyDocImpl* doc, Node* node)
 
         if (nodeIsText(node) && !(node->start < node->end))
         {
+            Node *parent = node->parent;
+
             RemoveNode(node);
             FreeNode(doc, node);
             node = next;
+
+            TrimEmptyElement(doc, parent);
             continue;
         }
 
@@ -2689,6 +2701,8 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         if (node->type == TextNode)
         {
             /* if first check for inital newline */
+            /* GetToken() does this already */
+#if 0
             if (pre->content == NULL)
             {
                 if ( lexer->lexbuf[node->start] == '\n' )
@@ -2700,7 +2714,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
                     continue;
                 }
             }
-
+#endif
             InsertNodeAtEnd(pre, node);
             continue;
         }
