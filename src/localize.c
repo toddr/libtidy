@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/01 04:15:00 $ 
-    $Revision: 1.34 $ 
+    $Date: 2001/09/04 02:59:12 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -21,7 +21,7 @@
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
 
-char *release_date = "4th August 2000";
+char *release_date = "1st September 2001";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
@@ -48,8 +48,19 @@ void ReadingFromStdin(void)
 
 void ShowVersion(FILE *fp)
 {
+    /*
     tidy_out(fp, "HTML Tidy release date: %s\n"
             "See http://www.w3.org/People/Raggett for details\n", release_date);
+    */
+#ifdef PLATFORM_NAME
+    tidy_out(fp, "\nHTML Tidy for %s (release date: %s; built on %s, at %s)\n"
+            "See http://www.w3.org/People/Raggett for details\n",
+                 PLATFORM_NAME, release_date, __DATE__, __TIME__);
+#else
+    tidy_out(fp, "\nHTML Tidy (release date: %s; built on %s, at %s)\n"
+            "See http://www.w3.org/People/Raggett for details\n",
+                 release_date, __DATE__, __TIME__);
+#endif
 }
 
 void FileError(FILE *fp, const char *file)
@@ -822,10 +833,28 @@ void HelloMessage(FILE *errout, char *date, char *filename)
     /* #431895 - fix by Dave Bryan 04 Jan 01 */
     /* currentFile = filename; */  /* for use with Gnu Emacs */
 
+    /*
     if (wstrcmp(filename, "stdin") == 0)
         tidy_out(errout, "\nTidy (vers %s) Parsing console input (stdin)\n", date);
     else
         tidy_out(errout, "\nTidy (vers %s) Parsing \"%s\"\n", date, filename);
+    */
+    
+#ifdef PLATFORM_NAME
+    if (wstrcmp(filename, "stdin") == 0)
+        tidy_out(errout, "\nHTML Tidy for %s (vers %s; built on %s, at %s)\nParsing console input (stdin)\n",
+                 PLATFORM_NAME, date, __DATE__, __TIME__);
+    else
+        tidy_out(errout, "\nHTML Tidy for %s (vers %s; built on %s, at %s)\nParsing \"%s\"\n",
+                 PLATFORM_NAME, date, __DATE__, __TIME__, filename);
+#else
+    if (wstrcmp(filename, "stdin") == 0)
+        tidy_out(errout, "\nHTML Tidy (vers %s; built on %s, at %s)\nParsing console input (stdin)\n",
+                 date, __DATE__, __TIME__);
+    else
+        tidy_out(errout, "\nHTML Tidy (vers %s; built on %s, at %s)\nParsing \"%s\"\n",
+                 date, __DATE__, __TIME__, filename);
+#endif
 }
 
 void ReportVersion(FILE *errout, Lexer *lexer, char *filename, Node *doctype)
@@ -904,9 +933,13 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
 #else
     tidy_out(out, "%s: file1 file2 ...\n", prog);
-    tidy_out(out, "Utility to clean up & pretty print html files\n");
+    tidy_out(out, "Utility to clean up & pretty print HTML files\n");
     tidy_out(out, "see http://www.w3.org/People/Raggett/tidy/\n");
-    tidy_out(out, "options for tidy released on %s\n", release_date);
+#ifdef PLATFORM_NAME
+    tidy_out(out, "options for HTML Tidy for %s released on %s\n", PLATFORM_NAME, release_date);
+#else
+    tidy_out(out, "options for HTML Tidy released on %s\n", release_date);
+#endif
     tidy_out(out, "\n");
 
     tidy_out(out, "Processing directives\n");
