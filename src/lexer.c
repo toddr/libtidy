@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:57:00 $ 
-    $Revision: 1.52 $ 
+    $Date: 2001/09/04 07:03:50 $ 
+    $Revision: 1.53 $ 
 
 */
 
@@ -340,7 +340,24 @@ static void AddStringToLexer(Lexer *lexer, char *str)
   rather than:   <a href="something.htm?foo&amp;bar&amp;fred">
 
   My thanks for Maurice Buxton for spotting this.
-*/
+
+  Also Randy Waki pointed out the following case for the
+  04 Aug 00 version (bug #433012):
+  
+  For example:   <a href="something.htm?id=1&lang=en">
+  was tidied to: <a href="something.htm?id=1&lang;=en">
+  rather than:   <a href="something.htm?id=1&amp;lang=en">
+  
+  where "lang" is a known entity (#9001), but browsers would
+  misinterpret "&lang;" because it had a value > 256.
+  
+  So the case of an apparently known entity with a value > 256 and
+  missing a semicolon is handled specially.
+  
+  "ParseEntity" is also a bit of a misnomer - it handles entities and
+  numeric character references. Invalid NCR's are now reported.
+
+  */
 static void ParseEntity(Lexer *lexer, int mode)
 {
     uint start;
@@ -400,7 +417,7 @@ static void ParseEntity(Lexer *lexer, int mode)
 
     /* deal with unrecognized or invalid entities */
     /* #433012 - fix by Randy Waki 17 Feb 01 */
-    /* report invalid entities - Terry Teague 19 Aug 01 */
+    /* report invalid NCR's - Terry Teague 01 Sep 01 */
     if (ch <= 0 || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';'))
     {
         /* set error position just before offending character */
@@ -410,7 +427,38 @@ static void ParseEntity(Lexer *lexer, int mode)
         if (lexer->lexsize > start + 1)
         {
             if (ch >= 128 && ch <= 159)
-                ReportEntityError(lexer, INVALID_ENTITY, lexer->lexbuf+start, ch);
+            {
+                /* invalid numeric character reference */
+                
+                int c1, replaceMode;
+            
+                if (ReplacementCharEncoding == WIN1252)
+                    c1 = DecodeWin1252(ch);
+                else if (ReplacementCharEncoding == MACROMAN)
+                    c1 = DecodeMacRoman(ch);
+
+                replaceMode = c1?REPLACED_CHAR:DISCARDED_CHAR;
+                
+               if (c != ';')    /* issue warning if not terminated by ';' */
+                   ReportEntityError(lexer, MISSING_SEMICOLON_NCR, lexer->lexbuf+start, c);
+ 
+                ReportEncodingError(lexer, INVALID_NCR | replaceMode, ch);
+                
+                if (c1 != 0)
+                {
+                    /* make the replacement */
+                    lexer->lexsize = start;
+                    AddCharToLexer(lexer, c1);
+                    semicolon = no;
+                }
+                else
+                {
+                    /* discard */
+                    lexer->lexsize = start;
+                    semicolon = no;
+               }
+               
+            }
             else
                 ReportEntityError(lexer, UNKNOWN_ENTITY, lexer->lexbuf+start, ch);
 
@@ -666,6 +714,7 @@ Node *NewLineNode(Lexer *lexer)
 Node *NewLiteralTextNode(Lexer *lexer, char* txt )
 {
     Node *node = NewNode();
+
     node->start = lexer->lexsize;
     AddStringToLexer(lexer, txt);
     node->end = lexer->lexsize;
