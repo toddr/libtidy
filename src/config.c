@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/07 15:19:21 $ 
-    $Revision: 1.48 $ 
+    $Author: lpassey $ 
+    $Date: 2003/03/10 18:57:35 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -26,6 +26,7 @@
   the line, as whitespace at the start of a line signifies a
   line continuation.
 */
+#include "platform.h"
 
 #ifdef WINDOWS_OS
 #include <io.h>
