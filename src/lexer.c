@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/23 08:41:52 $ 
-    $Revision: 1.47 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:51:09 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -300,36 +300,6 @@ static void ChangeChar(Lexer *lexer, char c)
 /* store char c as UTF-8 encoded byte stream */
 void AddCharToLexer(Lexer *lexer, uint c)
 {
-#if 0
-    if (c < 128)
-        AddByte(lexer, c);
-    else if (c <= 0x7FF)
-    {
-        AddByte(lexer, 0xC0 | (c >> 6));
-        AddByte(lexer, 0x80 | (c & 0x3F));
-    }
-    else if (c <= 0xFFFF)
-    {
-        AddByte(lexer, 0xE0 | (c >> 12));
-        AddByte(lexer, 0x80 | ((c >> 6) & 0x3F));
-        AddByte(lexer, 0x80 | (c & 0x3F));
-    }
-    else if (c <= 0x1FFFFF)
-    {
-        AddByte(lexer, 0xF0 | (c >> 18));
-        AddByte(lexer, 0x80 | ((c >> 12) & 0x3F));
-        AddByte(lexer, 0x80 | ((c >> 6) & 0x3F));
-        AddByte(lexer, 0x80 | (c & 0x3F));
-    }
-    else
-    {
-        AddByte(lexer, 0xF8 | (c >> 24));
-        AddByte(lexer, 0x80 | ((c >> 18) & 0x3F));
-        AddByte(lexer, 0x80 | ((c >> 12) & 0x3F));
-        AddByte(lexer, 0x80 | ((c >> 6) & 0x3F));
-        AddByte(lexer, 0x80 | (c & 0x3F));
-    }
-#else
     int i, err, count = 0;
     unsigned char buf[10];
     
@@ -350,14 +320,13 @@ void AddCharToLexer(Lexer *lexer, uint c)
     
     for (i = 0; i < count; i++)
         AddByte(lexer, (uint)buf[i]);
-#endif
 }
 
 static void AddStringToLexer(Lexer *lexer, char *str)
 {
     uint c;
 
-    while((c = *str++))
+    while((c = (unsigned char)*str++))
         AddCharToLexer(lexer, c);
 }
 
@@ -689,6 +658,18 @@ Node *NewLineNode(Lexer *lexer)
     return node;
 }
 
+/* used for adding a &nbsp; for Word2000 */
+Node *NewLiteralTextNode(Lexer *lexer, char* txt )
+{
+    Node *node = NewNode();
+
+    node->start = lexer->lexsize;
+    AddStringToLexer(lexer, txt);
+    node->end = lexer->lexsize;
+    return node;
+}
+
+
 static Node *TagToken(Lexer *lexer, uint type)
 {
     Node *node;
@@ -861,6 +842,27 @@ Node *FindHEAD(Node *root)
         for (node = node->content;
             node && node->tag != tag_head; node = node->next);
     }
+
+    return node;
+}
+
+
+Node *FindBody(Node *root)
+{
+    Node *node;
+
+    node = root->content;
+
+    while (node && node->tag != tag_html)
+        node = node->next;
+
+    if (node == null)
+        return null;
+
+    node = node->content;
+
+    while (node && node->tag != tag_body)
+        node = node->next;
 
     return node;
 }
