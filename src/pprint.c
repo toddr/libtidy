@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:51:20 $ 
-    $Revision: 1.89 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/06 23:46:21 $ 
+    $Revision: 1.90 $ 
 
 */
 
@@ -1821,6 +1821,9 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     int     contentIndent = -1;
     Bool    xhtmlOut = cfgBool( doc, TidyXhtmlOut );
 
+    /* fix for http://tidy.sf.net/bug/729972, restores 04Aug00 behaivour */
+    indent = 0;
+
     if ( InsideHead(doc, node) )
       PFlushLine( doc, indent );
 
@@ -1867,7 +1870,7 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
           content != NULL;
           content = content->next )
     {
-        PPrintTree( doc, (mode | PREFORMATTED | NOWRAP |CDATA), 
+        PPrintTree( doc, (mode | PREFORMATTED | NOWRAP | CDATA), 
                     indent, content );
 
         if ( content == node->last )
