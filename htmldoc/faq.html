@@ -30,6 +30,8 @@ mailing lists. If you don't see your question addressed here, see
 
 <li><a href="#feature">How to Submit A Feature Request</a></li>
 
+<li><a href="#layout">How Do I Control the Output Layout?</a></li>
+
 <li><a href="#version">What Version of Tidy Should I Use?</a></li>
 </ul>
 
@@ -161,6 +163,44 @@ report, but place special emphasis on the desired output for a
 given input, desired options, etc. - please be as specific as
 possible about what you want Tidy to <em>do</em>.</p>
 </dd>
+
+<dt><a name="layout" id="layout"></a>How Do I Control the Output Layout?</dt>
+
+<dd>
+<p>There are three primary options that control how Tidy 
+formats your markup:</p>
+<ul>
+  <li><a class="code"
+         href="quickref.html#indent">indent</a></li>
+  <li><a class="code"
+         href="quickref.html#indent-attributes">indent-attributes</a></li>
+  <li><a class="code"
+         href="quickref.html#vertical-space">vertical-space</a></li>
+</ul>
+
+<p>Briefly, <code>indent</code> sets the level of left-to-right indenting 
+and, somewhat, how often elements are put onto a new line.  The options 
+are <code>yes</code>, <code>no</code>, and <code>auto</code>.  
+<code>indent-attributes</code> is a flag that, when set, tells Tidy to 
+put each attribute on a new line.  <code>vertical-space</code> is a flag
+that, when set, tells Tidy to add some empty lines for readability.  The 
+default for all three is <code>no</code>.  These options may be used in
+any combination to control you you want your markup to look.  The best
+thing is to experiment a bit to see what you like.  Be aware that 
+<code>indent yes</code> is deprecated for production use as it will 
+cause visual changes in most browsers.</p>
+
+<p>To get Tidy <em>Classic</em> <code>--indent auto</code> layout, use the following options:</p>
+
+<pre>
+indent: auto
+indent-attributes: no
+vertical-space: yes
+</pre>
+</dd>
+
+<p>You can read about more <em>Pretty Print</em> options
+<a href="quickref.html#PrettyPrintHeader">here</a>.</p>
 
 <dt><a name="version" id="version"></a>What Version of Tidy Should
 I Use?</dt>

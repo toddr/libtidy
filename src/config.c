@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 20:17:42 $ 
-    $Revision: 1.56 $ 
+    $Date: 2003/03/25 20:01:32 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -250,6 +250,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyPreTags,        MU, "new-pre-tags",         ST,    0, ParseTagNames, NULL },
 
   { TidyAccessibilityCheckLevel, DG, "accessibility-check", IN, 0, ParseAcc, accessPicks },
+  { TidyVertSpace,      PP, "vertical-space",       BL,   no, ParseBool,     boolPicks },
   { N_TIDY_OPTIONS,  0 }
 };
 

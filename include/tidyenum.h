@@ -14,8 +14,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:41 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/25 20:01:31 $ 
+    $Revision: 1.4 $ 
 
   Contributing Author(s):
 
@@ -183,6 +183,7 @@ typedef enum
   TidyAccessibilityCheckLevel, /**< Accessibility check level 
                                    0 (old style), or 1, 2, 3 */
 
+  TidyVertSpace,       /**< degree to which markup is spread out vertically */
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 
