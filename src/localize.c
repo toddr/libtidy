@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 04:38:46 $ 
-    $Revision: 1.10 $ 
+    $Date: 2001/07/13 05:04:19 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -296,13 +296,25 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
+            tidy_out(lexer->errout, " URI reference contains backslash. Typo?");
+        }
+        else if (code == FIXED_BACKSLASH)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
             tidy_out(lexer->errout, " converting backslash in URI to slash");
+        }
+        else if (code == ILLEGAL_URI_REFERENCE)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " improperly escaped URI reference");
         }
         else if (code == ESCAPED_ILLEGAL_URI)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " escaping malformed URI");
+            tidy_out(lexer->errout, " escaping malformed URI reference");
         }
 
         tidy_out(lexer->errout, "\n");

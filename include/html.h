@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 04:38:46 $ 
-    $Revision: 1.13 $ 
+    $Date: 2001/07/13 05:04:19 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -660,8 +660,12 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define UNEXPECTED_QUOTEMARK    11
 #define MISSING_QUOTEMARK       12
 #define ID_NAME_MISMATCH        13
+
 #define BACKSLASH_IN_URI        14
-#define ESCAPED_ILLEGAL_URI     15
+#define FIXED_BACKSLASH         15
+#define ILLEGAL_URI_REFERENCE   16
+#define ESCAPED_ILLEGAL_URI     17
+
 
 /* page transition effects */
 
@@ -796,6 +800,7 @@ extern Bool Word2000;
 extern Bool Emacs;  /* sasdjb 01May00 GNU Emacs error output format */
 extern Bool LiteralAttribs;
 extern Bool BodyOnly; /* #434940 - output BODY content only */
+extern Bool FixUri;
 
 /* Parser methods for tags */
 

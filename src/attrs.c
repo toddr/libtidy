@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 04:38:46 $ 
-    $Revision: 1.15 $ 
+    $Date: 2001/07/13 05:04:19 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -555,9 +555,8 @@ Bool IsBoolAttribute(AttVal *attval)
 void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
 {
     char c, *dest, *p = attval->value;
-    uint FixUri = 1; /* make this a global variable! */
-    uint i, pos = 0;
     uint escape_count = 0, backslash_count = 0;
+    uint i, pos = 0;
     size_t len;
     
     if (p == null)
@@ -597,11 +596,17 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
     }
     if (backslash_count)
     {
-        ReportAttrError(lexer, node, attval, BACKSLASH_IN_URI);
+        if (FixBackslash)
+            ReportAttrError(lexer, node, attval, FIXED_BACKSLASH);
+        else
+            ReportAttrError(lexer, node, attval, BACKSLASH_IN_URI);
     }
     if (escape_count)
     {
-        ReportAttrError(lexer, node, attval, ESCAPED_ILLEGAL_URI);
+        if (FixUri)
+            ReportAttrError(lexer, node, attval, ESCAPED_ILLEGAL_URI);
+        else
+            ReportAttrError(lexer, node, attval, ILLEGAL_URI_REFERENCE);
     }
 }
 

@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/09 00:10:11 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 05:04:19 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -103,6 +103,7 @@ Bool TidyMark = yes;        /* add meta element indicating tidied doc */
 Bool Emacs = no;            /* if true format error output for GNU Emacs */
 Bool LiteralAttribs = no;   /* if true attributes may use newlines */
 Bool BodyOnly = no;         /* #434940 - output BODY content only */
+Bool FixUri = yes;          /* applies URI encoding if necessary */
 
 typedef struct _lex PLex;
 
@@ -197,6 +198,7 @@ static struct Flag
     {"doctype",         {(int *)&doctype_str},      ParseDocType},
     {"fix-backslash",   {(int *)&FixBackslash},     ParseBool},
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
+    {"fix-uri",         {(int *)&FixUri},           ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}
