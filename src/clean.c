@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/07 04:27:49 $ 
-    $Revision: 1.36 $ 
+    $Author: lpassey $ 
+    $Date: 2003/05/08 17:31:37 $ 
+    $Revision: 1.37 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2092,10 +2092,15 @@ void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
         return;
 
     /*  First, check the status of All My Children  */
-    for ( pNode = pParent->content; NULL != pNode; pNode = pNode->next )
+    pNode = pParent->content;
+    while (NULL != pNode )
     {
+        /* The node may get trimmed, so save the next pointer, if any */
+        Node *pNext = pNode->next;
         FixBrakes( pDoc, pNode );
+        pNode = pNext;
     }
+
 
     /*  As long as my last child is a <br />, move it to my last peer  */
     if ( nodeCMIsBlock( pParent ))
