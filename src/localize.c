@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:22:29 $ 
-    $Revision: 1.39 $ 
+    $Date: 2001/09/04 08:26:54 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -25,7 +25,7 @@ char *release_date = "1st September 2001";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
-extern uint optionerrors;
+extern uint optionerrors; /* not used for anything yet */
 
 /*
  This routine is the single point via which
@@ -565,7 +565,7 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
         }
         else if (code == INCONSISTENT_VERSION)
         {
-            tidy_out(lexer->errout, "Warning: html doctype doesn't match content");
+            tidy_out(lexer->errout, "Warning: HTML DOCTYPE doesn't match content");
         }
         else if (code == MALFORMED_DOCTYPE)
         {
@@ -593,7 +593,7 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
         }
         else if (code == INCONSISTENT_NAMESPACE)
         {
-            tidy_out(lexer->errout, "Warning: html namespace doesn't match content");
+            tidy_out(lexer->errout, "Warning: HTML namespace doesn't match content");
         }
         else if (code == DTYPE_NOT_UPPER_CASE)
         {
@@ -633,7 +633,7 @@ void ReportError(Lexer *lexer, Node *element, Node *node, uint code)
 
     if (code == SUSPECTED_MISSING_QUOTE)
     {
-        tidy_out(lexer->errout, "Error: missing quotemark for attribute value");
+        tidy_out(lexer->errout, "Error: missing quote mark for attribute value");
     }
     else if (code == DUPLICATE_FRAMESET)
     {
@@ -858,8 +858,8 @@ void ReportNumberOfSlides(FILE *errout, int count)
 
 void GeneralInfo(FILE *errout)
 {
-    tidy_out(errout, "HTML & CSS specifications are available from http://www.w3.org/\n");
-    tidy_out(errout, "To learn more about Tidy see http://www.w3.org/People/Raggett/tidy/\n");
+    tidy_out(errout, "HTML and CSS specifications are available from http://www.w3.org/\n");
+    tidy_out(errout, "To learn more about HTML Tidy see http://www.w3.org/People/Raggett/tidy/\n");
     tidy_out(errout, "Please send bug reports to Dave Raggett care of <html-tidy@w3.org>\n");
     tidy_out(errout, "Lobby your company to join W3C, see http://www.w3.org/Consortium\n");
 }
@@ -987,17 +987,18 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "Processing directives\n");
     tidy_out(out, "---------------------\n");
     tidy_out(out, "  -indent or -i   indent element content\n");
-    tidy_out(out, "  -omit   or -o   omit optional endtags\n");
+    tidy_out(out, "  -omit   or -o   omit optional end tags\n");
     tidy_out(out, "  -wrap 72        wrap text at column 72 (default is 68)\n");
     tidy_out(out, "  -upper  or -u   force tags to upper case (default is lower)\n");
-    tidy_out(out, "  -clean  or -c   replace font, nobr & center tags by CSS\n");
-    tidy_out(out, "  -bare   or -b   Strip out smart quotes and em dashes, etc.\n");
+    tidy_out(out, "  -clean  or -c   replace FONT, NOBR & CENTER tags by CSS\n");
+    tidy_out(out, "  -bare   or -b   strip out smart quotes and em dashes, etc.\n");
     tidy_out(out, "  -numeric or -n  output numeric rather than named entities\n");
     tidy_out(out, "  -errors or -e   only show errors\n");
     tidy_out(out, "  -quiet or -q    suppress nonessential output\n");
-    tidy_out(out, "  -xml            use this when input is wellformed xml\n");
-    tidy_out(out, "  -asxml          to convert html to wellformed xml\n");
-    tidy_out(out, "  -slides         to burst into slides on h2 elements\n");
+    tidy_out(out, "  -xml            use this when input is well formed XML\n");
+    tidy_out(out, "  -asxml          to convert HTML to well formed XHTML\n");
+    tidy_out(out, "  -asxhtml        to convert HTML to well formed XHTML\n");
+    tidy_out(out, "  -slides         to burst into slides on H2 elements\n");
     tidy_out(out, "\n");
 
     tidy_out(out, "Character encodings\n");
