@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/23 00:38:34 $ 
-    $Revision: 1.5 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/07 02:36:19 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -120,6 +120,7 @@ typedef enum
 
 #if  defined(WINDOWS) || defined(_WIN32)
 #define unlink _unlink
+#define fileno _fileno
 #endif
 
 #if defined(DMALLOC)
