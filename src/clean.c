@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 11:13:13 $ 
-    $Revision: 1.56 $ 
+    $Date: 2004/03/05 16:18:20 $ 
+    $Revision: 1.57 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2102,6 +2102,8 @@ void BumpObject( TidyDocImpl* doc, Node *html )
     }
 }
 
+/* This is disabled due to http://tidy.sf.net/bug/681116 */
+#if 0
 void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
 {
     Node *pNode;
@@ -2142,6 +2144,7 @@ void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
         TrimEmptyElement( pDoc, pParent );
     }
 }
+#endif
 
 void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
 {

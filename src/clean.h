@@ -8,8 +8,8 @@
 
   CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/05/19 00:52:52 $ 
-    $Revision: 1.7 $ 
+    $Date: 2004/03/05 16:18:20 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -73,7 +73,10 @@ Bool IsWord2000( TidyDocImpl* doc );
 /* where appropriate move object elements from head to body */
 void BumpObject( TidyDocImpl* doc, Node *html );
 
+/* This is disabled due to http://tidy.sf.net/bug/681116 */
+#if 0
 void FixBrakes( TidyDocImpl* pDoc, Node *pParent );
+#endif
 
 void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pParent );
 
