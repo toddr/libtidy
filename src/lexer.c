@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/15 12:41:13 $ 
-    $Revision: 1.119 $ 
+    $Date: 2003/05/17 20:26:57 $ 
+    $Revision: 1.120 $ 
 
 */
 
@@ -73,32 +73,31 @@ struct _doctypes
 {
     uint score;
     uint vers;
-    uint compatvers;
     ctmbstr name;
     ctmbstr fpi;
     ctmbstr si;
 } const W3C_Doctypes[] =
 {
-  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                      },
-  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
-  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                      },
-  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                      },
-  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                      },
-  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2 Draft//EN",         NULL,                                                      },
-  {  6, H40S, VERS_HTML40_STRICT, "HTML 4.0 Strict",        "-//W3C//DTD HTML 4.0//EN",               "http://www.w3.org/TR/REC-html40/strict.dtd"               },
-  {  8, H40T, VERS_HTML40_LOOSE,  "HTML 4.0 Transitional",  "-//W3C//DTD HTML 4.0 Transitional//EN",  "http://www.w3.org/TR/REC-html40/loose.dtd"                },
-  {  7, H40F, VERS_FRAMESET,      "HTML 4.0 Frameset",      "-//W3C//DTD HTML 4.0 Frameset//EN",      "http://www.w3.org/TR/REC-html40/frameset.dtd"             },
-  {  3, H41S, VERS_HTML40_STRICT, "HTML 4.01 Strict",       "-//W3C//DTD HTML 4.01//EN",              "http://www.w3.org/TR/html4/strict.dtd"                    },
-  {  5, H41T, VERS_HTML40_LOOSE,  "HTML 4.01 Transitional", "-//W3C//DTD HTML 4.01 Transitional//EN", "http://www.w3.org/TR/html4/loose.dtd"                     },
-  {  4, H41F, VERS_FRAMESET,      "HTML 4.01 Frameset",     "-//W3C//DTD HTML 4.01 Frameset//EN",     "http://www.w3.org/TR/html4/frameset.dtd"                  },
-  {  9, X10S, VERS_HTML40_STRICT, "XHTML 1.0 Strict",       "-//W3C//DTD XHTML 1.0 Strict//EN",       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"        },
-  { 11, X10T, VERS_HTML40_LOOSE,  "XHTML 1.0 Transitional", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"  },
-  { 10, X10F, VERS_FRAMESET,      "XHTML 1.0 Frameset",     "-//W3C//DTD XHTML 1.0 Frameset//EN",     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"      },
-  { 12, XH11, XH11,               "XHTML 1.1",              "-//W3C//DTD XHTML 1.1//EN",              "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"             },
-  { 13, XB10, XB10,               "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"       },
+  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
+  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                      },
+  {  2, HT20, "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                      },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                      },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                      },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Draft//EN",         NULL,                                                      },
+  {  6, H40S, "HTML 4.0 Strict",        "-//W3C//DTD HTML 4.0//EN",               "http://www.w3.org/TR/REC-html40/strict.dtd"               },
+  {  8, H40T, "HTML 4.0 Transitional",  "-//W3C//DTD HTML 4.0 Transitional//EN",  "http://www.w3.org/TR/REC-html40/loose.dtd"                },
+  {  7, H40F, "HTML 4.0 Frameset",      "-//W3C//DTD HTML 4.0 Frameset//EN",      "http://www.w3.org/TR/REC-html40/frameset.dtd"             },
+  {  3, H41S, "HTML 4.01 Strict",       "-//W3C//DTD HTML 4.01//EN",              "http://www.w3.org/TR/html4/strict.dtd"                    },
+  {  5, H41T, "HTML 4.01 Transitional", "-//W3C//DTD HTML 4.01 Transitional//EN", "http://www.w3.org/TR/html4/loose.dtd"                     },
+  {  4, H41F, "HTML 4.01 Frameset",     "-//W3C//DTD HTML 4.01 Frameset//EN",     "http://www.w3.org/TR/html4/frameset.dtd"                  },
+  {  9, X10S, "XHTML 1.0 Strict",       "-//W3C//DTD XHTML 1.0 Strict//EN",       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"        },
+  { 11, X10T, "XHTML 1.0 Transitional", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"  },
+  { 10, X10F, "XHTML 1.0 Frameset",     "-//W3C//DTD XHTML 1.0 Frameset//EN",     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"      },
+  { 12, XH11, "XHTML 1.1",              "-//W3C//DTD XHTML 1.1//EN",              "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"             },
+  { 13, XB10, "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"       },
 
   /* final entry */
-  {  0,    0, 0,                  NULL,                     NULL,                                     NULL                                                       }
+  {  0,    0, NULL,                     NULL,                                     NULL                                                       }
 };
 
 int HTMLVersion(TidyDocImpl* doc)
@@ -1625,7 +1624,8 @@ Bool FixDocType( TidyDocImpl* doc )
 
     if (dtmode == TidyDoctypeAuto &&
         lexer->versions & lexer->doctype &&
-        !(VERS_XHTML & lexer->doctype && !lexer->isvoyager))
+        !(VERS_XHTML & lexer->doctype && !lexer->isvoyager)
+        && FindDocType(doc))
         return yes;
 
     if (dtmode == TidyDoctypeOmit)
@@ -2383,16 +2383,13 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->token->attributes = attributes;
                 lexer->lexsize = lexer->txtend = lexer->txtstart;
 
-
                 /* swallow newline following start tag */
                 /* special check needed for CRLF sequence */
                 /* this doesn't apply to empty elements */
                 /* nor to preformatted content that needs escaping */
 
-                if ( ( mode != Preformatted || PreContent(doc, lexer->token) ) &&
-                     ( ExpectsContent(lexer->token) || 
-                       nodeIsBR(lexer->token) )
-                   )
+                if ((mode != Preformatted && ExpectsContent(lexer->token))
+                    || nodeIsBR(lexer->token) || nodeIsHR(lexer->token))
                 {
                     c = ReadChar(doc->docIn);
 
@@ -3360,6 +3357,8 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
             {
                 AddCharToLexer(lexer, c);
                 ParseEntity( doc, 0 );
+                if (lexer->lexbuf[lexer->lexsize - 1] == '\n' && munge)
+                    ChangeChar(lexer, ' ');
                 continue;
             }
         }
