@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.2 $ 
+    $Author: lpassey $ 
+    $Date: 2003/02/25 21:15:45 $ 
+    $Revision: 1.3 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1122,7 +1122,8 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     FixBrakes( doc, FindBody( doc ));
 
     /*  Reconcile http-equiv meta element with output encoding  */
-    VerifyHTTPEquiv( doc, FindHEAD( doc ));
+    if (RAW != cfg( doc, TidyOutCharEncoding))
+        VerifyHTTPEquiv( doc, FindHEAD( doc ));
 
     if ( !CheckNodeIntegrity(doc->root) )
         FatalError( integrity );
