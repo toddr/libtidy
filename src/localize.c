@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:27:09 $ 
-    $Revision: 1.118 $ 
+    $Date: 2004/08/04 08:07:55 $ 
+    $Revision: 1.119 $ 
 
 */
 
@@ -980,7 +980,7 @@ void ErrorSummary( TidyDocImpl* doc )
 
             tidy_out(doc, "It is unlikely that vendor-specific, system-dependent encodings\n");
             tidy_out(doc, "work widely enough on the World Wide Web; you should avoid using the \n");
-            tidy_out(doc, encnam );
+            tidy_out(doc, "%s", encnam );
             tidy_out(doc, " character encoding, instead you are recommended to\n" );
             tidy_out(doc, "use named entities, e.g. &trade;.\n\n");
         }
@@ -989,7 +989,7 @@ void ErrorSummary( TidyDocImpl* doc )
             tidy_out(doc, "Character codes 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
             tidy_out(doc, "even if they were, they would likely be unprintable control characters.\n");
             tidy_out(doc, "Tidy assumed you wanted to refer to a character with the same byte value in the \n");
-            tidy_out(doc, encnam );
+            tidy_out(doc, "%s", encnam );
             tidy_out(doc, " encoding and replaced that reference with the Unicode equivalent.\n\n" );
         }
         if (doc->badChars & BC_INVALID_UTF8)
@@ -1045,9 +1045,9 @@ void ErrorSummary( TidyDocImpl* doc )
       if ( cfg(doc, TidyAccessibilityCheckLevel) > 0 )
       {
         tidy_out(doc, "For further advice on how to make your pages accessible, see\n");
-        tidy_out(doc, ACCESS_URL );
+        tidy_out(doc, "%s", ACCESS_URL );
         tidy_out(doc, "and\n" );
-        tidy_out(doc, ATRC_ACCESS_URL );
+        tidy_out(doc, "%s", ATRC_ACCESS_URL );
         tidy_out(doc, ".\n" );
         tidy_out(doc, "You may also want to try \"http://www.cast.org/bobby/\" which is a free Web-based\n");
         tidy_out(doc, "service for checking URLs for accessibility.\n\n");
