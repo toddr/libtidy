@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+
+<!--
+                          bug-2000-12-27-a.html
+
+Problem:
+  Running Tidy on this file produces the diagnostic:
+
+    Doctype given is "-//W3C//DTD HTML 3.2//EN"
+
+  ...when clearly the DOCTYPE is not as shown.  Problem appears to be that
+  doctype is "fixed" in FixDocType before it is reported in ReportVersion.
+  See "tidy.c" lines 1001, 1016.
+
+Expected behavior:
+
+  The DOCTYPE that appears in the file should be reported in the "Doctype
+  given" diagnostic.
+
+Verification:
+  tidy -e bug-2000-12-27-a.html
+
+Correction:
+  tidy.c (main)
+-->
+
+<html>
+
+<head>
+<title>Bug-2000-12-27-A [ #431883 ] Given doctype reported incorrectly</title>
+</head>
+
+<body>
+
+<table>
+<tr>
+<td>A cell.</td>
+</tr>
+</table>
+
+</body>
+</html>
