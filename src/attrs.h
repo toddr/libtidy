@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -99,11 +99,11 @@ AttrCheck CheckScroll;
 AttrCheck CheckTextDir;
 AttrCheck CheckLang;
 
-#define TEXT        null
-#define CHARSET     null
-#define TYPE        null
-#define CHARACTER   null
-#define URLS        null
+#define TEXT        NULL
+#define CHARSET     NULL
+#define TYPE        NULL
+#define CHARACTER   NULL
+#define URLS        NULL
 #define URL         CheckUrl
 #define SCRIPT      CheckScript
 #define ALIGN       CheckAlign
@@ -113,22 +113,22 @@ AttrCheck CheckLang;
 #define BORDER      CheckBool     /* kludge */
 #define LANG        CheckLang
 #define BOOL        CheckBool
-#define COLS        null
+#define COLS        NULL
 #define NUMBER      CheckNumber
 #define LENGTH      CheckLength
-#define COORDS      null
-#define DATE        null
+#define COORDS      NULL
+#define DATE        NULL
 #define TEXTDIR     CheckTextDir
-#define IDREFS      null
-#define IDREF       null
+#define IDREFS      NULL
+#define IDREF       NULL
 #define IDDEF       CheckId
 #define NAME        CheckName
-#define TFRAME      null
-#define FBORDER     null
-#define MEDIA       null
+#define TFRAME      NULL
+#define FBORDER     NULL
+#define MEDIA       NULL
 #define FSUBMIT     CheckFsubmit
-#define LINKTYPES   null
-#define TRULES      null
+#define LINKTYPES   NULL
+#define TRULES      NULL
 #define SCOPE       CheckScope
 #define SHAPE       CheckShape
 #define SCROLL      CheckScroll
@@ -218,7 +218,7 @@ AttVal* AttrGetById( Node* node, TidyAttrId id );
 #define AttrMatches(attr, val)  (AttrHasValue(attr) && \
                                  tmbstrcasecmp((attr)->value, val) == 0)
 #define AttrContains(attr, val) (AttrHasValue(attr) && \
-                                 tmbsubstr((attr)->value, val) != null)
+                                 tmbsubstr((attr)->value, val) != NULL)
 #define AttrVersions(attr)      ((attr) && (attr)->dict ? (attr)->dict->versions : VERS_PROPRIETARY)
 
 

@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -22,7 +22,7 @@
   The tags include an attribute list:
 
     - linked list of attribute/value nodes
-    - each node has 2 null-terminated strings.
+    - each node has 2 NULL-terminated strings.
     - entities are replaced in attribute values
 
   white space is compacted if not in preformatted mode
@@ -230,7 +230,7 @@ struct _IStack
 {
     IStack*     next;
     const Dict* tag;        /* tag's dictionary definition */
-    tmbstr      element;    /* name (null for text nodes) */
+    tmbstr      element;    /* name (NULL for text nodes) */
     AttVal*     attributes;
 };
 
@@ -251,7 +251,7 @@ struct _Node
     const Dict* was;            /* old tag when it was changed */
     const Dict* tag;            /* tag's dictionary definition */
 
-    tmbstr      element;        /* name (null for text nodes) */
+    tmbstr      element;        /* name (NULL for text nodes) */
 
     uint        start;          /* start of span onto text array */
     uint        end;            /* end of span onto text array */
@@ -383,7 +383,7 @@ void AddCharToLexer( Lexer *lexer, uint c );
 
 /*
   Used for elements and text nodes
-  element name is null for text nodes
+  element name is NULL for text nodes
   start and end are offsets into lexbuf
   which contains the textual content of
   all elements in the parse tree.
@@ -416,7 +416,7 @@ void RemoveAttribute( Node *node, AttVal *attr );
 
 /*
   Free document nodes by iterating through peers and recursing
-  through children. Set next to null before calling FreeNode()
+  through children. Set next to NULL before calling FreeNode()
   to avoid freeing peer nodes. Doesn't patch up prev/next links.
  */
 void FreeNode( TidyDocImpl* doc, Node *node );

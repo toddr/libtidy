@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.3 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -52,7 +52,7 @@ void filesrc_ungetByte( uint sourceData, byte bv )
 
 void initFileSource( TidyInputSource* inp, FILE* fp )
 {
-  FileSource* fin = null;
+  FileSource* fin = NULL;
 
   inp->getByte    = filesrc_getByte;
   inp->eof        = filesrc_eof;

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 19:46:15 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.6 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -122,11 +122,11 @@ void          tidyDocRelease( TidyDocImpl* doc )
     /* doc in/out opened and closed by parse/print routines */
     if ( doc )
     {
-        assert( doc->docIn == null );
-        assert( doc->docOut == null );
+        assert( doc->docIn == NULL );
+        assert( doc->docOut == NULL );
 
         ReleaseStreamOut( doc->errout );
-        doc->errout = null;
+        doc->errout = NULL;
 
         FreePrintBuf( doc );
         FreeLexer( doc );
@@ -224,7 +224,7 @@ TidyIterator  tidyGetOptionList( TidyDoc tdoc )
 TidyOption    tidyGetNextOption( TidyDoc tdoc, TidyIterator* pos )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
-    const TidyOptionImpl* option = null;
+    const TidyOptionImpl* option = NULL;
     if ( impl )
         option = getNextOption( impl, pos );
     else if ( pos )
@@ -256,7 +256,7 @@ ctmbstr       tidyOptGetName( TidyOption topt )
     const TidyOptionImpl* option = tidyOptionToImpl( topt );
     if ( option )
         return option->name;
-    return null;
+    return NULL;
 }
 TidyOptionType tidyOptGetType( TidyOption topt )
 {
@@ -277,7 +277,7 @@ ctmbstr       tidyOptGetDefault( TidyOption topt )
     const TidyOptionImpl* option = tidyOptionToImpl( topt );
     if ( option && option->type == TidyString )
         return (ctmbstr) option->dflt;
-    return null;
+    return NULL;
 }
 uint           tidyOptGetDefaultInt( TidyOption topt )
 {
@@ -297,7 +297,7 @@ Bool          tidyOptIsReadOnly( TidyOption topt )
 {
     const TidyOptionImpl* option = tidyOptionToImpl( topt );
     if ( option  )
-        return ( option->parser == null );
+        return ( option->parser == NULL );
     return yes;
 }
 
@@ -314,7 +314,7 @@ ctmbstr       tidyOptGetNextPick( TidyOption topt, TidyIterator* pos )
     const TidyOptionImpl* option = tidyOptionToImpl( topt );
     if ( option )
         return getNextOptionPick( option, pos );
-    return null;
+    return NULL;
 }
 
 
@@ -399,7 +399,7 @@ ctmbstr       tidyOptGetCurrPick( TidyDoc tdoc, TidyOptionId optId )
         if ( *pL )
             return *pL;
     }
-    return null;
+    return NULL;
 }
 
 
@@ -416,7 +416,7 @@ ctmbstr       tidyOptGetNextDeclTag( TidyDoc tdoc, TidyOptionId optId,
                                      TidyIterator* iter )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
-    ctmbstr tagnam = null;
+    ctmbstr tagnam = NULL;
     if ( impl )
     {
         int tagtyp = 0;
@@ -598,7 +598,7 @@ FILE*   tidySetErrorFile( TidyDoc tdoc, ctmbstr errfilnam )
         else /* Emit message to current error sink */
             FileError( impl, errfilnam, TidyError );
     }
-    return null;
+    return NULL;
 }
 
 int     tidySetErrorBuffer( TidyDoc tdoc, TidyBuffer* errbuf )
@@ -798,7 +798,7 @@ int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
     int status = -EINVAL;
     uint inenc = cfg( doc, TidyInCharEncoding );
     TidyBuffer inbuf = {0};
-    StreamIn* in = null;
+    StreamIn* in = NULL;
 
     if ( content )
     {
@@ -853,7 +853,7 @@ int         tidySaveSink( TidyDoc tdoc, TidyOutputSink* sink )
 int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
 {
     int status = -ENOENT;
-    FILE* fout = null;
+    FILE* fout = NULL;
 
     /* Don't zap input file if no output */
     if ( doc->errors > 0 &&
@@ -1019,8 +1019,8 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     int status = -EINVAL;
     Bool xmlIn = cfgBool( doc, TidyXmlTags );
 
-    assert( doc != null && in != null );
-    assert( doc->docIn == null );
+    assert( doc != NULL && in != NULL );
+    assert( doc->docIn == NULL );
     doc->docIn = in;
 
     TakeConfigSnapshot( doc );    /* Save config state */
@@ -1060,7 +1060,7 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
             FatalError( integrity );
     }
 
-    doc->docIn = null;
+    doc->docIn = NULL;
     return tidyDocStatus( doc );
 }
 
@@ -1208,7 +1208,7 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
             PPrintTree( doc, 0, 0, doc->root );
 
         PFlushLine( doc, 0 );
-        doc->docOut = null;
+        doc->docOut = NULL;
     }
 
     ResetConfigToSnapshot( doc );
@@ -1228,7 +1228,7 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 TidyNode    tidyGetRoot( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
-  Node* node = null;
+  Node* node = NULL;
   if ( impl )
       node = impl->root;
   return tidyImplToNode( node );
@@ -1236,7 +1236,7 @@ TidyNode    tidyGetRoot( TidyDoc tdoc )
 TidyNode    tidyGetHtml( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
-  Node* node = null;
+  Node* node = NULL;
   if ( impl )
       node = FindHTML( impl );
   return tidyImplToNode( node );
@@ -1244,7 +1244,7 @@ TidyNode    tidyGetHtml( TidyDoc tdoc )
 TidyNode    tidyGetHead( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
-  Node* node = null;
+  Node* node = NULL;
   if ( impl )
       node = FindHEAD( impl );
   return tidyImplToNode( node );
@@ -1252,7 +1252,7 @@ TidyNode    tidyGetHead( TidyDoc tdoc )
 TidyNode    tidyGetBody( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
-  Node* node = null;
+  Node* node = NULL;
   if ( impl )
       node = FindBody( impl );
   return tidyImplToNode( node );
@@ -1295,7 +1295,7 @@ TidyNodeType tidyNodeGetType( TidyNode tnod )
 ctmbstr        tidyNodeGetName( TidyNode tnod )
 {
   Node* nimp = tidyNodeToImpl( tnod );
-  ctmbstr nnam = null;
+  ctmbstr nnam = NULL;
   if ( nimp )
     nnam = nimp->element;
   return nnam;
@@ -1330,7 +1330,7 @@ Bool  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf )
           PPrintTree( doc, 0, 0, nimp );
 
       PFlushLine( doc, 0 );
-      doc->docOut = null;
+      doc->docOut = NULL;
 
   
       MemFree( out );

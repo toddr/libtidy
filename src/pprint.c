@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.50 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.51 $ 
 
 */
 
@@ -1069,7 +1069,7 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
 
     CheckWrapIndent( doc, indent );
  
-    if ( attr->value == null )
+    if ( attr->value == NULL )
     {
         Bool isB = IsBoolAttribute( attr );
         if ( xmlOut )
@@ -1101,19 +1101,19 @@ static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
 
     for ( av = node->attributes; av; av = av->next )
     {
-        if ( av->attribute != null )
+        if ( av->attribute != NULL )
         {
             const Attribute *dict = av->dict;
             if ( !cfgBool(doc, TidyDropPropAttrs) ||
-                 ( dict != null && !(dict->versions & VERS_PROPRIETARY) ) )
+                 ( dict != NULL && !(dict->versions & VERS_PROPRIETARY) ) )
                 PPrintAttribute( doc, indent, node, av );
         }
-        else if ( av->asp != null )
+        else if ( av->asp != NULL )
         {
             AddChar( pprint, ' ' );
             PPrintAsp( doc, indent, av->asp );
         }
-        else if ( av->php != null )
+        else if ( av->php != NULL )
         {
             AddChar( pprint, ' ' );
             PPrintPhp( doc, indent, av->php );
@@ -1197,7 +1197,7 @@ static void PPrintTag( TidyDocImpl* doc,
                      ( !nodeCMIsInline(node) ||
                        nodeIsBR(node) ||
                        ( nodeCMIsEmpty(node) && 
-                         node->next == null &&
+                         node->next == NULL &&
                          nodeIsA(node->parent)
                        )
                      )
@@ -1483,7 +1483,7 @@ static Bool InsideHead( TidyDocImpl* doc, Node *node )
   if ( nodeIsHEAD(node) )
     return yes;
 
-  if ( node->parent != null )
+  if ( node->parent != NULL )
     return InsideHead( doc, node->parent );
 
   return no;
@@ -1513,7 +1513,7 @@ static int TextEndsWithNewline(Lexer *lexer, Node *node, uint mode )
 
 static int TextStartsWithWhitespace( Lexer *lexer, Node *node, uint start, uint mode )
 {
-    assert( node != null );
+    assert( node != NULL );
     if ( (mode & (CDATA|COMMENT)) && node->type == TextNode && node->end > node->start && start >= node->start )
     {
         uint ch, ix = start;
@@ -1539,7 +1539,7 @@ static Bool HasCDATA( Lexer* lexer, Node* node )
     if ( node->type != TextNode )
         return no;
 
-    return ( null != tmbsubstrn( start, len, CDATA_START ));
+    return ( NULL != tmbsubstrn( start, len, CDATA_START ));
 }
 
 
@@ -1652,10 +1652,10 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     PPrintTag( doc, mode, indent, node );
     PFlushLine( doc, indent );
 
-    if ( xhtmlOut && node->content != null )
+    if ( xhtmlOut && node->content != NULL )
     {
         AttVal* type = attrGetTYPE( node );
-        if ( type != null )
+        if ( type != NULL )
         {
             if ( tmbstrcasecmp(type->value, "text/javascript") == 0 )
             {
@@ -1689,7 +1689,7 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     }
 
     for ( content = node->content;
-          content != null;
+          content != NULL;
           content = content->next )
     {
         PPrintTree( doc, (mode | PREFORMATTED | NOWRAP |CDATA), 
@@ -1705,7 +1705,7 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
         contentIndent = 0;
     }
 
-    if ( xhtmlOut && node->content != null )
+    if ( xhtmlOut && node->content != NULL )
     {
         if ( ! hasCData )
         {
@@ -1725,7 +1725,7 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
         pprint->indent[ 0 ].spaces = indent;
     }
     PPrintEndTag( doc, mode, indent, node );
-    if ( !cfg(doc, TidyIndentContent) && node->next != null &&
+    if ( !cfg(doc, TidyIndentContent) && node->next != NULL &&
          !( nodeHasCM(node, CM_INLINE) || nodeIsText(node) ) )
         PFlushLine( doc, indent );
 }
@@ -1787,7 +1787,7 @@ void PrintBody( TidyDocImpl* doc )
 
     if ( node )
     {
-        for ( node = node->content; node != null; node = node->next )
+        for ( node = node->content; node != NULL; node = node->next )
             PPrintTree( doc, 0, 0, node );
     }
 }
@@ -1798,7 +1798,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     uint spaces = cfg( doc, TidyIndentSpaces );
     Bool xhtml = cfgBool( doc, TidyXhtmlOut );
 
-    if ( node == null )
+    if ( node == NULL )
         return;
 
     if ( node->type == TextNode ||
@@ -1882,7 +1882,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
             PCondFlushLine( doc, indent );
             PPrintEndTag( doc, mode, indent, node );
 
-            if ( !cfg(doc, TidyIndentContent) && node->next != null )
+            if ( !cfg(doc, TidyIndentContent) && node->next != NULL )
                 PFlushLine( doc, indent );
         }
         else if ( nodeIsSTYLE(node) || nodeIsSCRIPT(node) )
@@ -1898,7 +1898,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 if ( nodeIsFONT(node) )
                 {
                     for ( content = node->content;
-                          content != null;
+                          content != NULL;
                           content = content->next )
                         PPrintTree( doc, mode, indent, content );
                     return;
@@ -1908,7 +1908,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 if ( nodeIsNOBR(node) )
                 {
                     for ( content = node->content;
-                          content != null;
+                          content != NULL;
                           content = content->next)
                         PPrintTree( doc, mode|NOWRAP, indent, content );
                     return;
@@ -1925,7 +1925,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 PCondFlushLine( doc, indent );
 
                 for ( content = node->content;
-                      content != null;
+                      content != NULL;
                       content = content->next )
                     PPrintTree( doc, mode, indent, content );
 
@@ -1936,7 +1936,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
             else
             {
                 for ( content = node->content;
-                      content != null;
+                      content != NULL;
                       content = content->next )
                     PPrintTree( doc, mode, indent, content );
             }
@@ -1953,12 +1953,12 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 contentIndent += spaces;
 
             PCondFlushLine( doc, indent );
-            if ( indsmart && node->prev != null )
+            if ( indsmart && node->prev != NULL )
                 PFlushLine( doc, indent );
 
             /* do not omit elements with attributes */
             if ( !hideend || !nodeHasCM(node, CM_OMITST) ||
-                 node->attributes != null )
+                 node->attributes != NULL )
             {
                 PPrintTag( doc, mode, indent, node );
                 if ( ShouldIndent(doc, node) )
@@ -1968,7 +1968,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                     PFlushLine( doc, contentIndent );
             }
 
-            last = null;
+            last = NULL;
             for ( content = node->content; content; content = content->next )
             {
                 /* kludge for naked text before block level tag */
@@ -2009,7 +2009,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 
             /*
             */
-            if ( !indcont && !hideend && node->next != null &&
+            if ( !indcont && !hideend && node->next != NULL &&
                  nodeHasCM(node, CM_BLOCK|CM_LIST|CM_DEFLIST|CM_TABLE) )
             {
                 PFlushLine( doc, indent );
@@ -2021,7 +2021,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 void PPrintXMLTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 {
     Bool xhtmlOut = cfgBool( doc, TidyXhtmlOut );
-    if (node == null)
+    if (node == NULL)
         return;
 
     if ( node->type == TextNode  ||
@@ -2039,7 +2039,7 @@ void PPrintXMLTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     {
         Node *content;
         for ( content = node->content;
-              content != null;
+              content != NULL;
               content = content->next )
            PPrintXMLTree( doc, mode, indent, content );
     }

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -26,7 +26,7 @@ AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
 {
     AttVal *newattrs;
 
-    if (attrs == null)
+    if (attrs == NULL)
         return attrs;
 
     newattrs = NewAttribute();
@@ -62,7 +62,7 @@ void PushInline( TidyDocImpl* doc, Node *node)
     if (node->implicit)
         return;
 
-    if (node->tag == null)
+    if (node->tag == NULL)
         return;
 
     if (!(node->tag->model & CM_INLINE))
@@ -102,7 +102,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
 
     if (node)
     {
-        if (node->tag == null)
+        if (node->tag == NULL)
             return;
 
         if (!(node->tag->model & CM_INLINE))
@@ -167,7 +167,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
 
         /* #427822 - fix by Randy Waki 7 Aug 00 */
         if (lexer->insert >= lexer->istack + lexer->istacksize)
-            lexer->insert = null;
+            lexer->insert = NULL;
     }
 }
 
@@ -222,8 +222,8 @@ int InlineDup( TidyDocImpl* doc, Node* node )
 */
 void DeferDup( TidyDocImpl* doc )
 {
-    doc->lexer->insert = null;
-    doc->lexer->inode = null;
+    doc->lexer->insert = NULL;
+    doc->lexer->inode = NULL;
 }
 
 Node *InsertedToken( TidyDocImpl* doc )
@@ -233,11 +233,11 @@ Node *InsertedToken( TidyDocImpl* doc )
     IStack *istack;
     uint n;
 
-    /* this will only be null if inode != null */
-    if (lexer->insert == null)
+    /* this will only be NULL if inode != NULL */
+    if (lexer->insert == NULL)
     {
         node = lexer->inode;
-        lexer->inode = null;
+        lexer->inode = NULL;
         return node;
     }
 
@@ -247,7 +247,7 @@ Node *InsertedToken( TidyDocImpl* doc )
       the position, otherwise use current values
     */
 
-    if (lexer->inode == null)
+    if (lexer->inode == NULL)
     {
         lexer->lines = doc->docIn->curline;
         lexer->columns = doc->docIn->curcol;
@@ -277,7 +277,7 @@ Node *InsertedToken( TidyDocImpl* doc )
     if (++n < lexer->istacksize)
         lexer->insert = &(lexer->istack[n]);
     else
-        lexer->insert = null;
+        lexer->insert = NULL;
 
     return node;
 }

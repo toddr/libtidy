@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/03 19:45:34 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -16,7 +16,7 @@
 /* like strdup but using MemAlloc */
 tmbstr tmbstrdup( ctmbstr str )
 {
-    tmbstr s = null;
+    tmbstr s = NULL;
     if ( str )
     {
         uint len = tmbstrlen( str );
@@ -30,7 +30,7 @@ tmbstr tmbstrdup( ctmbstr str )
 /* like strndup but using MemAlloc */
 tmbstr tmbstrndup( ctmbstr str, uint len )
 {
-    tmbstr s = null;
+    tmbstr s = NULL;
     if ( str && len > 0 )
     {
         tmbstr cp = s = (tmbstr) MemAlloc( 1+len );
@@ -44,11 +44,11 @@ tmbstr tmbstrndup( ctmbstr str, uint len )
 /* exactly same as strncpy */
 uint tmbstrncpy( tmbstr s1, ctmbstr s2, uint size )
 {
-    if ( s1 != null && s2 != null )
+    if ( s1 != NULL && s2 != NULL )
     {
         tmbstr cp = s1;
         while ( *s2 && --size )  /* Predecrement: reserve byte */
-            *cp++ = *s2++;       /* for null terminator. */
+            *cp++ = *s2++;       /* for NULL terminator. */
         *cp = 0;
     }
     return size;
@@ -203,7 +203,7 @@ ctmbstr tmbsubstrn( ctmbstr s1, uint len1, ctmbstr s2 )
         if ( tmbstrncmp(s1+ix, s2, len2) == 0 )
             return (ctmbstr) s1+ix;
     }
-    return null;
+    return NULL;
 }
 
 ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 )
@@ -216,7 +216,7 @@ ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 )
         if ( tmbstrncasecmp(s1+ix, s2, len2) == 0 )
             return (ctmbstr) s1+ix;
     }
-    return null;
+    return NULL;
 }
 
 ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 )
@@ -229,7 +229,7 @@ ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 )
         if ( tmbstrncasecmp(s1+ix, s2, len2) == 0 )
             return (ctmbstr) s1+ix;
     }
-    return null;
+    return NULL;
 }
 
 /* Transform ASCII chars in string to lower case.

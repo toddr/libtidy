@@ -70,7 +70,7 @@ void *MemRealloc(void *old, size_t size)
 void MemFree(void *p)
 {
     free(p);
-    p = null;
+    p = NULL;
 }
 
 Stream *NewStream(FILE *fp)
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 {
     char *infile, *outfile, *prog;
     FILE *fin, *fout;
-    Stream *in = null;
+    Stream *in = NULL;
 
     prog = argv[0];
 
@@ -314,7 +314,7 @@ int main(int argc, char **argv)
         if (argc > 2)
         {
             outfile = argv[2];
-            fout = null;
+            fout = NULL;
             --argc;
             ++argv;
         }

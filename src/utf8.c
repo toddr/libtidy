@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:04 $ 
+    $Revision: 1.3 $ 
 
   Uses public interfaces to abstract input source and output
   sink, which may be user supplied or either FILE* or memory
@@ -410,7 +410,7 @@ int EncodeCharToUTF8Bytes( uint c, tmbstr encodebuf,
         hasError = yes;
         
     /* don't output invalid UTF-8 byte sequence to a stream */
-    if ( !hasError && outp != null )
+    if ( !hasError && outp != NULL )
     {
         int ix;
         for ( ix=0; ix < bytes; ++ix )
@@ -449,7 +449,7 @@ uint GetUTF8( tmbstr str, uint *ch )
     
     /* first byte "str[0]" is passed in separately from the */
     /* rest of the UTF-8 byte sequence starting at "str[1]" */
-    err = DecodeUTF8BytesToChar( &n, str[0], str+1, null, &bytes );
+    err = DecodeUTF8BytesToChar( &n, str[0], str+1, NULL, &bytes );
     if (err)
     {
 #if 1 && defined(_DEBUG)
@@ -467,7 +467,7 @@ tmbstr PutUTF8( tmbstr buf, uint c )
 {
     int err, count = 0;
         
-    err = EncodeCharToUTF8Bytes( c, buf, null, &count );
+    err = EncodeCharToUTF8Bytes( c, buf, NULL, &count );
     if (err)
     {
 #if 1 && defined(_DEBUG)

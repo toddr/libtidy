@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.54 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.55 $ 
 
 */
 
@@ -16,11 +16,12 @@
 #include "message.h"
 #include "tmbstr.h"
 
-#define TEXT        null
-#define CHARSET     null
-#define TYPE        null
-#define CHARACTER   null
-#define URLS        null
+#if 0
+#define TEXT        NULL
+#define CHARSET     NULL
+#define TYPE        NULL
+#define CHARACTER   NULL
+#define URLS        NULL
 #define URL         CheckUrl
 #define SCRIPT      CheckScript
 #define ALIGN       CheckAlign
@@ -30,34 +31,34 @@
 #define BORDER      CheckBool     /* kludge */
 #define LANG        CheckLang
 #define BOOL        CheckBool
-#define COLS        null
+#define COLS        NULL
 #define NUMBER      CheckNumber
 #define LENGTH      CheckLength
-#define COORDS      null
-#define DATE        null
+#define COORDS      NULL
+#define DATE        NULL
 #define TEXTDIR     CheckTextDir
-#define IDREFS      null
-#define IDREF       null
+#define IDREFS      NULL
+#define IDREF       NULL
 #define IDDEF       CheckId
 #define NAME        CheckName
-#define TFRAME      null
-#define FBORDER     null
-#define MEDIA       null
+#define TFRAME      NULL
+#define FBORDER     NULL
+#define MEDIA       NULL
 #define FSUBMIT     CheckFsubmit
-#define LINKTYPES   null
-#define TRULES      null
+#define LINKTYPES   NULL
+#define TRULES      NULL
 #define SCOPE       CheckScope
 #define SHAPE       CheckShape
 #define SCROLL      CheckScroll
 #define TARGET      CheckTarget
 #define VTYPE       CheckVType
-
+#endif
 /*
 */
 
 static const Attribute attribute_defs [] =
 {
-  {TidyAttr_UNKNOWN,  "unknown!",     VERS_PROPRIETARY,  null},
+  {TidyAttr_UNKNOWN,  "unknown!",     VERS_PROPRIETARY,  NULL},
   {TidyAttr_ABBR,     "abbr",         VERS_HTML40,       TEXT},
   {TidyAttr_ACCEPT,   "accept",       VERS_ALL,          TYPE},
   {TidyAttr_ACCEPT_CHARSET, "accept-charset", VERS_HTML40, CHARSET},
@@ -214,7 +215,7 @@ static const Attribute attribute_defs [] =
   {TidyAttr_XMLNS,    "xmlns",        VERS_ALL,          TEXT},     /* name space */
    
   /* this must be the final entry */
-  {N_TIDY_ATTRIBS,    null}
+  {N_TIDY_ATTRIBS,    NULL}
 };
 
 /* used by CheckColor() */
@@ -242,7 +243,7 @@ static const struct _colors colors[] =
     {"teal",    "#008080"},
     {"fuchsia", "#FF00FF"},
     {"aqua",    "#00FFFF"},
-    {null,      null}
+    {NULL,      NULL}
 };
 
 static const struct _colors fancy_colors[] =
@@ -387,7 +388,7 @@ static const struct _colors fancy_colors[] =
     { "whitesmoke",           "#F5F5F5" },
     { "yellow",               "#FFFF00" },
     { "yellowgreen",          "#9ACD32" },
-    { null,      null }
+    { NULL,      NULL }
 };
 
 
@@ -400,7 +401,7 @@ static const Attribute* lookup( ctmbstr atnam )
             if ( tmbstrcmp(atnam, np->name) == 0 )
                 return np;
     }
-    return null;
+    return NULL;
 }
 
 
@@ -415,7 +416,7 @@ AttVal* AttrGetById( Node* node, TidyAttrId id )
      if ( AttrIsId(av, id) )
          return av;
    }
-   return null;
+   return NULL;
 }
 
 /* public method for finding attribute definition by name */
@@ -423,13 +424,13 @@ const Attribute* FindAttribute( TidyDocImpl* doc, AttVal *attval )
 {
     if ( attval )
        return lookup( attval->attribute );
-    return null;
+    return NULL;
 }
 
 AttVal* GetAttrByName( Node *node, ctmbstr name )
 {
     AttVal *attr;
-    for (attr = node->attributes; attr != null; attr = attr->next)
+    for (attr = node->attributes; attr != NULL; attr = attr->next)
     {
         if (attr->attribute && tmbstrcmp(attr->attribute, name) == 0)
             break;
@@ -446,7 +447,7 @@ AttVal* AddAttribute( TidyDocImpl* doc,
     av->value = tmbstrdup( value );
     av->dict = lookup( name );
 
-    if ( node->attributes == null )
+    if ( node->attributes == NULL )
         node->attributes = av;
     else /* append to end of attributes */
     {
@@ -565,9 +566,9 @@ static void FreeAnchor(Anchor *a)
 void RemoveAnchorByNode( TidyDocImpl* doc, Node *node )
 {
     TidyAttribImpl* attribs = &doc->attribs;
-    Anchor *delme = null, *curr, *prev = null;
+    Anchor *delme = NULL, *curr, *prev = NULL;
 
-    for ( curr=attribs->anchor_list; curr!=null; curr=curr->next )
+    for ( curr=attribs->anchor_list; curr!=NULL; curr=curr->next )
     {
         if ( curr->node == node )
         {
@@ -590,7 +591,7 @@ static Anchor* NewAnchor( ctmbstr name, Node* node )
 
     a->name = tmbstrdup( name );
     a->node = node;
-    a->next = null;
+    a->next = NULL;
 
     return a;
 }
@@ -601,7 +602,7 @@ Anchor* AddAnchor( TidyDocImpl* doc, ctmbstr name, Node *node )
     TidyAttribImpl* attribs = &doc->attribs;
     Anchor *a = NewAnchor( name, node );
 
-    if ( attribs->anchor_list == null)
+    if ( attribs->anchor_list == NULL)
          attribs->anchor_list = a;
     else
     {
@@ -619,7 +620,7 @@ Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
 {
     TidyAttribImpl* attribs = &doc->attribs;
     Anchor *found;
-    for ( found = attribs->anchor_list; found != null; found = found->next )
+    for ( found = attribs->anchor_list; found != NULL; found = found->next )
     {
         if ( tmbstrcasecmp(found->name, name) == 0 )
             break;
@@ -627,7 +628,7 @@ Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
     
     if ( found )
         return found->node;
-    return null;
+    return NULL;
 }
 
 /* free all anchors */
@@ -650,7 +651,7 @@ void InitAttrs( TidyDocImpl* doc )
 
 #ifdef _DEBUG
     {
-      ctmbstr prev = null;
+      ctmbstr prev = NULL;
       TidyAttrId id;
       for ( id=1; id < N_TIDY_ATTRIBS; ++id )
       {
@@ -674,7 +675,7 @@ static void DeclareAttribute( TidyDocImpl* doc, ctmbstr name,
                               uint versions, Bool nowrap, Bool isliteral )
 {
     const Attribute *exist = lookup( name );
-    if ( exist == null )
+    if ( exist == NULL )
     {
         TidyAttribImpl* attribs = &doc->attribs;
         Attribute* dict = (Attribute*) MemAlloc( sizeof(Attribute) );
@@ -724,15 +725,15 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 {
     AttVal *attval;
 
-    for (attval = node->attributes; attval != null;)
+    for (attval = node->attributes; attval != NULL;)
     {
-        if (attval->asp == null && attval->php == null)
+        if (attval->asp == NULL && attval->php == NULL)
         {
             AttVal *current;
             
-            for (current = attval->next; current != null;)
+            for (current = attval->next; current != NULL;)
             {
-                if (current->asp == null && current->php == null &&
+                if (current->asp == NULL && current->php == NULL &&
                     tmbstrcasecmp(attval->attribute, current->attribute) == 0)
                 {
                     AttVal *temp;
@@ -749,8 +750,8 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 
                         temp = attval->next;
 
-                        if (temp->next == null)
-                            current = null;
+                        if (temp->next == NULL)
+                            current = NULL;
                         else
                             current = current->next;
 
@@ -806,8 +807,8 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 
                         temp = attval->next;
 
-                        if (temp->next == null)
-                            current = null;
+                        if (temp->next == NULL)
+                            current = NULL;
                         else
                             current = current->next;
 
@@ -827,8 +828,8 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                     else
                     {
                         temp = attval->next;
-                        if (attval->next == null)
-                            current = null;
+                        if (attval->next == NULL)
+                            current = NULL;
                         else
                             current = current->next;
 
@@ -853,7 +854,7 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
 {
     const Attribute* attribute = attval->dict;
 
-    if ( attribute != null )
+    if ( attribute != NULL )
     {
         /* if attribute looks like <foo/> check XML is ok */
         if ( attribute->versions & VERS_XML )
@@ -873,8 +874,8 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
             ReportAttrError( doc, node, attval, PROPRIETARY_ATTRIBUTE);
     }
     else if ( !cfgBool(doc, TidyXmlTags)
-              && attval->asp == null 
-              && node->tag != null 
+              && attval->asp == NULL 
+              && node->tag != NULL 
               && !(node->tag->versions & VERS_PROPRIETARY) )
     {
         ReportAttrError( doc, node, attval, UNKNOWN_ATTRIBUTE );
@@ -885,7 +886,7 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
 
 Bool IsBoolAttribute(AttVal *attval)
 {
-    const Attribute *attribute = ( attval ? attval->dict : null );
+    const Attribute *attribute = ( attval ? attval->dict : NULL );
     if ( attribute && attribute->attrchk == CheckBool )
         return yes;
     return no;
@@ -912,7 +913,7 @@ static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attva
     tmbstr p;
     Bool hasUpper = no;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
         return;
 
     p = attval->value;
@@ -948,7 +949,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
     uint i, pos = 0;
     size_t len;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1011,7 +1012,7 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     Node *old;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1037,7 +1038,7 @@ void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
     Node *old;
     uint s;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1079,7 +1080,7 @@ void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
 
 void CheckBool( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
         return;
 
     CheckLowerCaseAttrValue( doc, node, attval );
@@ -1096,7 +1097,7 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
         return;
     }
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1117,7 +1118,7 @@ void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1156,7 +1157,7 @@ void CheckLength( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr p;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1191,7 +1192,7 @@ void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1221,7 +1222,7 @@ void CheckFsubmit( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1240,10 +1241,10 @@ void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        if (attval->value == null)
+        if (attval->value == NULL)
             attval->value = tmbstrdup( "none" );
         return;
     }
@@ -1263,7 +1264,7 @@ void CheckShape( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1284,7 +1285,7 @@ void CheckScope( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1305,7 +1306,7 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr p;
     
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1345,7 +1346,7 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
     const struct _colors *color;
     uint i = 0;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1436,7 +1437,7 @@ void CheckVType( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1457,7 +1458,7 @@ void CheckScroll( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1478,7 +1479,7 @@ void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbstr value;
 
-    if (attval == null || attval->value == null)
+    if (attval == NULL || attval->value == NULL)
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
@@ -1496,7 +1497,7 @@ void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 /* checks lang and xml:lang attributes */
 void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if ( attval == null || attval->value == null )
+    if ( attval == NULL || attval->value == NULL )
     {
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {

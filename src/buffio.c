@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.3 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -61,7 +61,7 @@ void  initOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
 
 void      tidyBufInit( TidyBuffer* buf )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     ClearMemory( buf, sizeof(TidyBuffer) );
 }
 
@@ -73,14 +73,14 @@ void      tidyBufAlloc( TidyBuffer* buf, uint allocSize )
 }
 void      tidyBufFree( TidyBuffer* buf )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     MemFree( buf->bp );
     tidyBufInit( buf );
 }
 
 void      tidyBufClear( TidyBuffer* buf )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     if ( buf->bp )
     {
         ClearMemory( buf->bp, buf->allocated );
@@ -94,7 +94,7 @@ void      tidyBufClear( TidyBuffer* buf )
 */
 void tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     if ( 0 == chunkSize )
         chunkSize = 256;
     if ( allocSize > buf->allocated )
@@ -107,7 +107,7 @@ void tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
             allocAmt *= 2;
 
         bp = MemRealloc( buf->bp, allocAmt );
-        if ( bp != null )
+        if ( bp != NULL )
         {
             ClearMemory( bp + buf->allocated, allocAmt - buf->allocated );
             buf->bp = bp;
@@ -119,7 +119,7 @@ void tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
 /* Attach buffer to a chunk O' memory w/out allocation */
 void      tidyBufAttach( TidyBuffer* buf, void* bp, uint size )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     buf->bp = bp;
     buf->size = buf->allocated = size;
     buf->next = 0;
@@ -138,8 +138,8 @@ void      tidyBufDetach( TidyBuffer* buf )
 
 void      tidyBufAppend( TidyBuffer* buf, void* vp, uint size )
 {
-    assert( buf != null );
-    if ( vp != null && size > 0 )
+    assert( buf != NULL );
+    if ( vp != NULL && size > 0 )
     {
         tidyBufCheckAlloc( buf, buf->size + size, 0 );
         memcpy( buf->bp + buf->size, vp, size );
@@ -149,7 +149,7 @@ void      tidyBufAppend( TidyBuffer* buf, void* vp, uint size )
 
 void      tidyBufPutByte( TidyBuffer* buf, byte bv )
 {
-    assert( buf != null );
+    assert( buf != NULL );
     tidyBufCheckAlloc( buf, buf->size + 1, 0 );
     buf->bp[ buf->size++ ] = bv;
 }
@@ -158,7 +158,7 @@ void      tidyBufPutByte( TidyBuffer* buf, byte bv )
 int      tidyBufPopByte( TidyBuffer* buf )
 {
     int bv = EOF;
-    assert( buf != null );
+    assert( buf != NULL );
     if ( buf->size > 0 )
       bv = buf->bp[ --buf->size ];
     return bv;

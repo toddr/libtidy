@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:09 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/03/18 23:51:02 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -1095,7 +1095,7 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
     Bool HasDescription = no;
 
     AttVal* av;
-    tmbstr word = null;
+    tmbstr word = NULL;
         
     if ((doc->access.PRIORITYCHK == 1)||
         (doc->access.PRIORITYCHK == 2)||
@@ -1157,8 +1157,8 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
 
 static void CheckObject( TidyDocImpl* doc, Node* node )
 {
-    tmbstr word = null;
-    Node* tnode = null;
+    tmbstr word = NULL;
+    Node* tnode = NULL;
 
     Bool HasAlt = no;
     Bool HasDescription = no;
@@ -1274,7 +1274,7 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
          doc->access.PRIORITYCHK == 3 )
     {
         /* Checks for attributes within the FRAME element */
-        for (av = node->attributes; av != null; av = av->next)
+        for (av = node->attributes; av != NULL; av = av->next)
         {
             /* Checks if 'LONGDESC' value is valid only if present */
             if ( attrIsLONGDESC(av) )
@@ -1363,13 +1363,13 @@ static void CheckIFrame( TidyDocImpl* doc, Node* node )
 * Checks that the sound file is valid, and to ensure that
 * text transcript is present describing the 'HREF' within the 
 * ANCHOR element.  Also checks to see ensure that the 'TARGET' attribute
-* (if it exists) is not null and does not contain '_new' or '_blank'.
+* (if it exists) is not NULL and does not contain '_new' or '_blank'.
 **********************************************************************/
 
 static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 {
     AttVal* av;
-    tmbstr word = null;
+    tmbstr word = NULL;
     int checked = 0;
     Bool HasDescription = no;
     Bool HasTriggeredLink = no;
@@ -1511,7 +1511,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 * Checks attributes within the AREA element to 
 * determine if the 'ALT' text and 'HREF' values are valid.
 * Also checks to see ensure that the 'TARGET' attribute
-* (if it exists) is not null and does not contain '_new' 
+* (if it exists) is not NULL and does not contain '_new' 
 * or '_blank'.
 ************************************************************/
 
@@ -1522,7 +1522,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
     AttVal* av;
 
     /* Checks all attributes within the AREA element */
-    for (av = node->attributes; av != null; av = av->next)
+    for (av = node->attributes; av != NULL; av = av->next)
     {
         if ((doc->access.PRIORITYCHK == 1)||
             (doc->access.PRIORITYCHK == 2)||
@@ -1716,7 +1716,7 @@ static void CheckColumns( TidyDocImpl* doc, Node* node )
 static void CheckTH( TidyDocImpl* doc, Node* node )
 {
     Bool HasAbbr = no;
-    tmbstr word = null;
+    tmbstr word = NULL;
     AttVal* av;
 
     if (doc->access.PRIORITYCHK == 3)
@@ -1726,7 +1726,7 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
         {
             if ( attrIsABBR(av) )
             {
-                /* Value must not be null and must be less than 15 characters */
+                /* Value must not be NULL and must be less than 15 characters */
                 if ((av->value != NULL)&&
                     (IsWhitespace (av->value) == no))
                 {
@@ -1808,7 +1808,7 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
                         if ( nodeIsTH(temp) )
                         {
                             AttVal* av;
-                            for (av = temp->attributes; av != null; av = av->next)
+                            for (av = temp->attributes; av != NULL; av = av->next)
                             {
                                 if ( attrIsROWSPAN(av) )
                                 {
@@ -1832,7 +1832,7 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
                                 if ( nodeIsTH(temp) )
                                 {
                                     AttVal* av;
-                                    for (av = temp->attributes; av != null; av = av->next)
+                                    for (av = temp->attributes; av != NULL; av = av->next)
                                     {
                                         if ( attrIsCOLSPAN(av) )
                                         {
@@ -1885,8 +1885,8 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     Node* TNode;
     Node* temp;
 
-    tmbstr word = null;
-    tmbstr value = null;
+    tmbstr word = NULL;
+    tmbstr value = NULL;
 
     int numTR = 0;
 
@@ -1897,7 +1897,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     {
         AttVal* av;
         /* Table must have a 'SUMMARY' describing the purpose of the table */
-        for (av = node->attributes; av != null; av = av->next)
+        for (av = node->attributes; av != NULL; av = av->next)
         {
             if ( attrIsSUMMARY(av) )
             {
@@ -2111,7 +2111,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
     Node* temp1;
     Node* temp2;
 
-    tmbstr skipOver = null;
+    tmbstr skipOver = NULL;
     Bool IsAscii = no;
     int HasSkipOverLink = 0;
         
@@ -2179,7 +2179,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
                 temp1 = node->prev->prev;
 
                 /* Checks for 'HREF' attribute */
-                for (av = temp1->attributes; av != null; av = av->next)
+                for (av = temp1->attributes; av != NULL; av = av->next)
                 {
                     if ( attrIsHREF(av) && hasValue(av) )
                     {
@@ -2205,7 +2205,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
                 temp2 = node->next;
                 
                 /* Checks for 'NAME' attribute */
-                for (av = temp2->attributes; av != null; av = av->next)
+                for (av = temp2->attributes; av != NULL; av = av->next)
                 {
                     if ( attrIsNAME(av) && hasValue(av) )
                     {
@@ -2306,8 +2306,8 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
 {
     int flag = 0;
 
-    tmbstr word = null;
-    tmbstr text = null;
+    tmbstr word = NULL;
+    tmbstr text = NULL;
 
     AttVal* av;
 
@@ -2945,7 +2945,7 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
     {
         AttVal* av;
         /* Check for valid 'REL' and 'TYPE' attribute */
-        for (av = node->attributes; av != null; av = av->next)
+        for (av = node->attributes; av != NULL; av = av->next)
         {
             if ( attrIsREL(av) && hasValue(av) )
             {
@@ -3219,7 +3219,7 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
     {
         AttVal* av;
         /* Checks all elements for their attributes */
-        for (av = node->attributes; av != null; av = av->next)
+        for (av = node->attributes; av != NULL; av = av->next)
         {
             /* Must also have 'ONKEYDOWN' attribute with 'ONMOUSEDOWN' */
             if ( attrIsOnMOUSEDOWN(av) )
@@ -3313,7 +3313,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
         if ( nodeIsMETA(node) )
         {
             AttVal* av;
-            for (av = node->attributes; av != null; av = av->next)
+            for (av = node->attributes; av != NULL; av = av->next)
             {
                 if ( attrIsHTTP_EQUIV(av) && hasValue(av) )
                 {
@@ -3533,7 +3533,7 @@ static void CheckForListElements( TidyDocImpl* doc, Node* node )
         doc->access.OtherListElements++;
     }
 
-    for ( node = node->content; node != null; node = node->next )
+    for ( node = node->content; node != NULL; node = node->next )
     {
         CheckForListElements( doc, node );
     }
@@ -3836,7 +3836,7 @@ static void AccessibilityCheckNode( TidyDocImpl* doc, Node* node )
 
     /* Recursively check all child nodes.
     */
-    for ( content = node->content; content != null; content = content->next )
+    for ( content = node->content; content != NULL; content = content->next )
     {
         AccessibilityCheckNode( doc, content );
     }

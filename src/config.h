@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.3 $ 
 
   config files associate a property name with a value.
 
@@ -43,7 +43,7 @@ struct _tidy_option
     ctmbstr             name;       /* property name */
     TidyOptionType      type;       /* string, int or bool */
     uint                dflt;       /* factory default */
-    ParseProperty*      parser;     /* parsing method, read-only if null */
+    ParseProperty*      parser;     /* parsing method, read-only if NULL */
     const ctmbstr*      pickList;   /* pick list */
 };
 

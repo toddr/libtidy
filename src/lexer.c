@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 18:59:16 $ 
-    $Revision: 1.77 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -20,7 +20,7 @@
   The tags include an attribute list:
 
     - linked list of attribute/value nodes
-    - each node has 2 null-terminated strings.
+    - each node has 2 NULL-terminated strings.
     - entities are replaced in attribute values
 
   white space is compacted if not in preformatted mode
@@ -562,7 +562,7 @@ Lexer* NewLexer()
 {
     Lexer* lexer = (Lexer*) MemAlloc( sizeof(Lexer) );
 
-    if ( lexer != null )
+    if ( lexer != NULL )
     {
         ClearMemory( lexer, sizeof(Lexer) );
 
@@ -578,7 +578,7 @@ Lexer* NewLexer()
 
 Bool EndOfInput( TidyDocImpl* doc )
 {
-    assert( doc->docIn != null );
+    assert( doc->docIn != NULL );
     return ( !doc->docIn->pushed && IsEOF(doc->docIn) );
 }
 
@@ -590,19 +590,19 @@ void FreeLexer( TidyDocImpl* doc )
         FreeStyles( doc );
 
         while ( lexer->istacksize > 0 )
-            PopInline( doc, null );
+            PopInline( doc, NULL );
 
         MemFree( lexer->istack );
         MemFree( lexer->lexbuf );
         MemFree( lexer );
-        doc->lexer = null;
+        doc->lexer = NULL;
     }
 
     FreeNode( doc, doc->root );
-    doc->root = null;
+    doc->root = NULL;
 
     FreeNode( doc, doc->givenDoctype );
-    doc->givenDoctype = null;
+    doc->givenDoctype = NULL;
 }
 
 /* Lexer uses bigger memory chunks than pprint as
@@ -613,7 +613,7 @@ void AddByte( Lexer *lexer, tmbchar ch )
 {
     if ( lexer->lexsize + 1 >= lexer->lexlength )
     {
-        tmbstr buf = null;
+        tmbstr buf = NULL;
         uint allocAmt = lexer->lexlength;
         while ( lexer->lexsize + 1 >= allocAmt )
         {
@@ -650,7 +650,7 @@ void AddCharToLexer( Lexer *lexer, uint c )
     int i, err, count = 0;
     tmbchar buf[10] = {0};
     
-    err = EncodeCharToUTF8Bytes( c, buf, null, &count );
+    err = EncodeCharToUTF8Bytes( c, buf, NULL, &count );
     if (err)
     {
 #if 0 && defined(_DEBUG)
@@ -754,7 +754,7 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
         break;
     }
 
-    /* make sure entity is null terminated */
+    /* make sure entity is NULL terminated */
     lexer->lexbuf[lexer->lexsize] = '\0';
 
     if ( tmbstrcmp(lexer->lexbuf+start, "&apos") == 0
@@ -873,7 +873,7 @@ static tmbchar ParseTagName( TidyDocImpl* doc )
 
 /*
   Used for elements and text nodes
-  element name is null for text nodes
+  element name is NULL for text nodes
   start and end are offsets into lexbuf
   which contains the textual content of
   all elements in the parse tree.
@@ -925,7 +925,7 @@ Node *CloneNode( TidyDocImpl* doc, Node *element )
 /* Maybe CloneNode is just buggy and could be modified   */
 Node *CloneNodeEx( TidyDocImpl* doc, Node *element )
 {
-    Node *node = null;
+    Node *node = NULL;
 
     if ( element )
     {
@@ -984,7 +984,7 @@ void FreeAttribute( AttVal *av )
 */
 void RemoveAttribute( Node *node, AttVal *attr )
 {
-    AttVal *av, *prev = null;
+    AttVal *av, *prev = NULL;
 
     for ( av = node->attributes; av; av = av->next )
     {
@@ -1003,7 +1003,7 @@ void RemoveAttribute( Node *node, AttVal *attr )
 
 /*
   Free document nodes by iterating through peers and recursing
-  through children. Set next to null before calling FreeNode()
+  through children. Set next to NULL before calling FreeNode()
   to avoid freeing peer nodes. Doesn't patch up prev/next links.
  */
 void FreeNode( TidyDocImpl* doc, Node *node )
@@ -1170,7 +1170,7 @@ void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len )
 Node *FindDocType( TidyDocImpl* doc )
 {
     Node* node;
-    for ( node = (doc->root ? doc->root->content : null);
+    for ( node = (doc->root ? doc->root->content : NULL);
           node && node->type != DocTypeTag; 
           node = node->next )
         /**/;
@@ -1180,7 +1180,7 @@ Node *FindDocType( TidyDocImpl* doc )
 /* find parent container element */
 Node* FindContainer( Node* node )
 {
-    for ( node = (node ? node->parent : null);
+    for ( node = (node ? node->parent : NULL);
           node && nodeHasCM(node, CM_INLINE);
           node = node->parent )
         /**/;
@@ -1193,7 +1193,7 @@ Node* FindContainer( Node* node )
 Node *FindHTML( TidyDocImpl* doc )
 {
     Node *node = doc->root;
-    for ( node = (node ? node->content : null);
+    for ( node = (node ? node->content : NULL);
           node && !nodeIsHTML(node); 
           node = node->next )
         /**/;
@@ -1218,13 +1218,13 @@ Node *FindHEAD( TidyDocImpl* doc )
 
 Node *FindBody( TidyDocImpl* doc )
 {
-    Node *node = ( doc->root ? doc->root->content : null );
+    Node *node = ( doc->root ? doc->root->content : NULL );
 
     while ( node && !nodeIsHTML(node) )
         node = node->next;
 
-    if (node == null)
-        return null;
+    if (node == NULL)
+        return NULL;
 
     node = node->content;
     while ( node && !nodeIsBODY(node) && !nodeIsFRAMESET(node) )
@@ -1318,7 +1318,7 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
     s += 5; /* if all is well s -> SYSTEM or PUBLIC */
 
     if ( !CheckDocTypeKeyWords(lexer, doctype) )
-        ReportWarning( doc, doctype, null, DTYPE_NOT_UPPER_CASE );
+        ReportWarning( doc, doctype, NULL, DTYPE_NOT_UPPER_CASE );
 
 
     /* give up if all we are given is the system id for the doctype */
@@ -1326,14 +1326,14 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
     {
         /* but at least ensure the case is correct */
         if ( tmbstrncmp(s, "SYSTEM", 6) != 0 )
-             memcpy( s, "SYSTEM", 6 );  /* No null terminator! */
+             memcpy( s, "SYSTEM", 6 );  /* No NULL terminator! */
         return 0;  /* unrecognized */
     }
 
     if (tmbstrncasecmp(s, "PUBLIC ", 7) == 0)
     {
         if ( tmbstrncmp(s, "PUBLIC", 6) != 0 )
-            memcpy( s, "PUBLIC", 6 );   /* No null terminator! */
+            memcpy( s, "PUBLIC", 6 );   /* No NULL terminator! */
     }
     else if ( lexer->doctype == VERS_UNKNOWN )
         lexer->bad_doctype = yes;
@@ -1452,7 +1452,7 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
         {
             if ( tmbstrcmp(attr->value, profile) != 0 )
             {
-                ReportWarning( doc, node, null, INCONSISTENT_NAMESPACE );
+                ReportWarning( doc, node, NULL, INCONSISTENT_NAMESPACE );
                 MemFree( attr->value );
                 attr->value = tmbstrdup( profile );
             }
@@ -1480,13 +1480,13 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
 
 static Node* NewDocTypeNode( TidyDocImpl* doc )
 {
-    Node* doctype = null;
+    Node* doctype = NULL;
     Node* html = FindHTML( doc );
     Node* root = doc->root;
     if ( !html )
-        return null;
+        return NULL;
 
-    doctype = NewNode( null );
+    doctype = NewNode( NULL );
     doctype->type = DocTypeTag;
     doctype->next = html;
     doctype->parent = root;
@@ -1496,7 +1496,7 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
         /* No <?xml ... ?> declaration. */
         root->content->prev = doctype;
         root->content = doctype;
-        doctype->prev = null;
+        doctype->prev = NULL;
     }
     else
     {
@@ -1511,7 +1511,7 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
 Bool SetXHTMLDocType( TidyDocImpl* doc )
 {
     Lexer *lexer = doc->lexer;
-    ctmbstr fpi = null, sysid = null, dtdsub = null, name_space = XHTML_NAMESPACE;
+    ctmbstr fpi = NULL, sysid = NULL, dtdsub = NULL, name_space = XHTML_NAMESPACE;
     int dtdlen = 0;
     Node *doctype = FindDocType( doc );
     uint dtmode = cfg(doc, TidyDoctypeMode);
@@ -1545,7 +1545,7 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
         }
         else /* proprietary */
         {
-            fpi = null;
+            fpi = NULL;
             sysid = "";
         
             if ( doctype )
@@ -1676,7 +1676,7 @@ int ApparentVersion( TidyDocImpl* doc )
     */
     lexer->lines = 1;
     lexer->columns = 1;
-    ReportWarning( doc, null, null, INCONSISTENT_VERSION);
+    ReportWarning( doc, NULL, NULL, INCONSISTENT_VERSION);
     return HTMLVersion( doc );
 }
 
@@ -1705,13 +1705,13 @@ Bool FixDocType( TidyDocImpl* doc )
     if ( dtmode == TidyDoctypeStrict )
     {
         DiscardElement( doc, doctype );
-        doctype = null;
+        doctype = NULL;
         guessed = VERS_HTML40_STRICT;
     }
     else if ( dtmode == TidyDoctypeLoose )
     {
         DiscardElement( doc, doctype );
-        doctype = null;
+        doctype = NULL;
         guessed = VERS_HTML40_LOOSE;
     }
     else if ( dtmode == TidyDoctypeAuto )
@@ -1850,9 +1850,9 @@ Bool FixXmlDecl( TidyDocImpl* doc )
       declaration accordingly!!!
     */
 
-    if ( encoding == null && cfg(doc, TidyOutCharEncoding) != UTF8 )
+    if ( encoding == NULL && cfg(doc, TidyOutCharEncoding) != UTF8 )
     {
-        ctmbstr enc = null;
+        ctmbstr enc = NULL;
         switch ( cfg(doc, TidyOutCharEncoding) )
         {
         case LATIN1:    enc = "iso-8859-1";   break;
@@ -1880,7 +1880,7 @@ Bool FixXmlDecl( TidyDocImpl* doc )
             AddAttribute( doc, xml, "encoding", enc );
     }
 
-    if ( version == null )
+    if ( version == NULL )
         AddAttribute( doc, xml, "version", "1.0" );
     return yes;
 }
@@ -1904,7 +1904,7 @@ Bool ExpectsContent(Node *node)
         return no;
 
     /* unknown element? */
-    if (node->tag == null)
+    if (node->tag == NULL)
         return yes;
 
     if (node->tag->model & CM_EMPTY)
@@ -1958,7 +1958,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 lexer->lines = doc->docIn->curline;
                 lexer->columns = doc->docIn->curcol - 3;
 
-                ReportWarning( doc, null, null, BAD_CDATA_CONTENT );
+                ReportWarning( doc, NULL, NULL, BAD_CDATA_CONTENT );
 
                 /* if javascript insert backslash before / */
                 if ( esc )
@@ -2014,7 +2014,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             lexer->lines = doc->docIn->curline;
             lexer->columns = doc->docIn->curcol - 3;
 
-            ReportWarning( doc, null, null, BAD_CDATA_CONTENT );
+            ReportWarning( doc, NULL, NULL, BAD_CDATA_CONTENT );
             if ( begtag )
               decr = 1;
             lexer->txtend = start - decr;
@@ -2049,12 +2049,12 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     }
 
     if (c == EndOfStream)
-        ReportWarning( doc, container, null, MISSING_ENDTAG_FOR );
+        ReportWarning( doc, container, NULL, MISSING_ENDTAG_FOR );
 
     if (lexer->txtend > lexer->txtstart)
         return lexer->token = TextToken(lexer);
 
-    return null;
+    return NULL;
 }
 
 void UngetToken( TidyDocImpl* doc )
@@ -2075,7 +2075,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
     Lexer* lexer = doc->lexer;
     uint c, lastc, badcomment = 0;
     Bool isempty, inDTDSubset = no;
-    AttVal *attributes = null;
+    AttVal *attributes = NULL;
 
     if (lexer->pushed)
     {
@@ -2258,7 +2258,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             continue;
                         }
 
-                        ReportWarning( doc, null, null, MALFORMED_COMMENT );
+                        ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
                     }
                     else if (c == 'd' || c == 'D')
                     {
@@ -2444,7 +2444,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->txtstart = lexer->lexsize - 1; /* set txtstart to first letter */
                 c = ParseTagName( doc );
                 isempty = no;
-                attributes = null;
+                attributes = NULL;
                 lexer->token = TagToken( doc, (isempty ? StartEndTag : StartTag) );
 
                 /* parse attributes, consuming closing ">" */
@@ -2491,8 +2491,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     lexer->waswhite = no;
 
                 lexer->state = LEX_CONTENT;
-                if (lexer->token->tag == null)
-                    ReportError( doc, null, lexer->token, UNKNOWN_ELEMENT );
+                if (lexer->token->tag == NULL)
+                    ReportError( doc, NULL, lexer->token, UNKNOWN_ELEMENT );
                 else if ( !cfgBool(doc, TidyXmlTags) )
                 {
                     Node* curr = lexer->token;
@@ -2503,7 +2503,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         if ( !cfgBool(doc, TidyMakeClean) ||
                              ( !nodeIsNOBR(curr) && !nodeIsWBR(curr) ) )
                         {
-                            ReportWarning( doc, null, curr, PROPRIETARY_ELEMENT );
+                            ReportWarning( doc, NULL, curr, PROPRIETARY_ELEMENT );
 
                             if ( nodeIsLAYER(curr) )
                                 doc->badLayout |= USING_LAYER;
@@ -2541,7 +2541,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 if (c == '>')
                 {
                     if (badcomment)
-                        ReportWarning( doc, null, null, MALFORMED_COMMENT );
+                        ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
 
                     lexer->txtend = lexer->lexsize;
                     lexer->lexbuf[lexer->lexsize] = '\0';
@@ -2642,7 +2642,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         IsWhite(lexer->lexbuf[lexer->txtstart + 3]))
                     {
                         lexer->state = LEX_XMLDECL;
-                        attributes = null;
+                        attributes = NULL;
                         continue;
                     }
                 }
@@ -2657,7 +2657,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                     if (c == EndOfStream)
                     {
-                        ReportWarning( doc, null, null, UNEXPECTED_END_OF_FILE );
+                        ReportWarning( doc, NULL, NULL, UNEXPECTED_END_OF_FILE );
                         UngetChar(c, doc->docIn);
                         continue;
                     }
@@ -2748,7 +2748,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 {
                     tmbstr name;
                     Node *asp, *php;
-                    AttVal *av = null;
+                    AttVal *av = NULL;
                     int pdelim = 0;
                     isempty = no;
 
@@ -2865,7 +2865,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
     else if (lexer->state == LEX_COMMENT) /* comment */
     {
         if (c == EndOfStream)
-            ReportWarning( doc, null, null, MALFORMED_COMMENT );
+            ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
 
         lexer->txtend = lexer->lexsize;
         lexer->lexbuf[lexer->lexsize] = '\0';
@@ -2917,7 +2917,7 @@ static Node *ParseAsp( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     uint c;
-    Node *asp = null;
+    Node *asp = NULL;
 
     lexer->txtstart = lexer->lexsize;
 
@@ -2960,7 +2960,7 @@ static Node *ParsePhp( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     uint c;
-    Node *php = null;
+    Node *php = NULL;
 
     lexer->txtstart = lexer->lexsize;
 
@@ -3000,11 +3000,11 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
 {
     Lexer* lexer = doc->lexer;
     int start, len = 0;
-    tmbstr attr = null;
+    tmbstr attr = NULL;
     uint c, lastc;
 
-    *asp = null;  /* clear asp pointer */
-    *php = null;  /* clear php pointer */
+    *asp = NULL;  /* clear asp pointer */
+    *php = NULL;  /* clear php pointer */
 
  /* skip white space before the attribute */
 
@@ -3020,7 +3020,7 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
             if (c == '>')
             {
                 *isempty = yes;
-                return null;
+                return NULL;
             }
 
             UngetChar(c, doc->docIn);
@@ -3029,7 +3029,7 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
         }
 
         if (c == '>')
-            return null;
+            return NULL;
 
         if (c =='<')
         {
@@ -3038,37 +3038,37 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
             if (c == '%')
             {
                 *asp = ParseAsp( doc );
-                return null;
+                return NULL;
             }
             else if (c == '?')
             {
                 *php = ParsePhp( doc );
-                return null;
+                return NULL;
             }
 
             UngetChar(c, doc->docIn);
             UngetChar('<', doc->docIn);
-            ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
-            return null;
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_GT );
+            return NULL;
         }
 
         if (c == '=')
         {
-            ReportAttrError( doc, lexer->token, null, UNEXPECTED_EQUALSIGN );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_EQUALSIGN );
             continue;
         }
 
         if (c == '"' || c == '\'')
         {
-            ReportAttrError( doc, lexer->token, null, UNEXPECTED_QUOTEMARK );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_QUOTEMARK );
             continue;
         }
 
         if (c == EndOfStream)
         {
-            ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
             UngetChar(c, doc->docIn);
-            return null;
+            return NULL;
         }
 
 
@@ -3118,7 +3118,7 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
 
     /* handle attribute names with multibyte chars */
     len = lexer->lexsize - start;
-    attr = (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : null);
+    attr = (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : NULL);
     lexer->lexsize = start;
     return attr;
 }
@@ -3175,15 +3175,15 @@ static int ParseServerInstruction( TidyDocImpl* doc )
                 c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
                     UngetChar(c, doc->docIn);
-                    return null;
+                    return 0;
                 }
                 if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     UngetChar(c, doc->docIn);
-                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
-                    return null;
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_GT );
+                    return 0;
                 }
                 AddCharToLexer(lexer, c);
             }
@@ -3199,15 +3199,15 @@ static int ParseServerInstruction( TidyDocImpl* doc )
                 c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
                     UngetChar(c, doc->docIn);
-                    return null;
+                    return 0;
                 }
                 if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     UngetChar(c, doc->docIn);
-                    ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
-                    return null;
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_GT );
+                    return 0;
                 }
                 AddCharToLexer(lexer, c);
             }
@@ -3267,7 +3267,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
     if (c != '=' && c != '"' && c != '\'')
     {
         UngetChar(c, doc->docIn);
-        return null;
+        return NULL;
     }
 
  /* skip white space after '=' */
@@ -3297,7 +3297,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
         *pdelim = ParseServerInstruction( doc );
         len = lexer->lexsize - start;
         lexer->lexsize = start;
-        return (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : null);
+        return (len > 0 ? tmbstrndup(lexer->lexbuf+start, len) : NULL);
     }
     else
         UngetChar(c, doc->docIn);
@@ -3318,7 +3318,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
         if (c == EndOfStream)
         {
-            ReportAttrError( doc, lexer->token, null, UNEXPECTED_END_OF_FILE );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
             UngetChar(c, doc->docIn);
             break;
         }
@@ -3333,7 +3333,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
             if (c == '"' || c == '\'')
             {
-                ReportAttrError( doc, lexer->token, null, UNEXPECTED_QUOTEMARK );
+                ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_QUOTEMARK );
                 break;
             }
 
@@ -3342,7 +3342,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
                 UngetChar(c, doc->docIn);
                 c = '>';
                 UngetChar(c, doc->docIn);
-                ReportAttrError( doc, lexer->token, null, UNEXPECTED_GT );
+                ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_GT );
                 break;
             }
 
@@ -3396,13 +3396,13 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
             /* no entities in ID attributes */
             if (tmbstrcasecmp(name, "id") == 0)
             {
-                ReportAttrError( doc, null, null, ENTITY_IN_ID );
+                ReportAttrError( doc, NULL, NULL, ENTITY_IN_ID );
                 continue;
             }
             else
             {
                 AddCharToLexer(lexer, c);
-                ParseEntity( doc, null );
+                ParseEntity( doc, 0 );
                 continue;
             }
         }
@@ -3434,7 +3434,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
                 if ( c == '\n' && IsUrl(doc, name) )
                 {
                     /* warn that we discard this newline */
-                    ReportAttrError( doc, lexer->token, null, NEWLINE_IN_URI);
+                    ReportAttrError( doc, lexer->token, NULL, NEWLINE_IN_URI);
                     continue;
                 }
                 
@@ -3465,7 +3465,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
              !(IsUrl(doc, name) && tmbstrncmp(lexer->lexbuf+start, "javascript:", 11) == 0) &&
              !(tmbstrncmp(lexer->lexbuf+start, "<xml ", 5) == 0)
            )
-            ReportError( doc, null, null, SUSPECTED_MISSING_QUOTE ); 
+            ReportError( doc, NULL, NULL, SUSPECTED_MISSING_QUOTE ); 
     }
 
     len = lexer->lexsize - start;
@@ -3492,7 +3492,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
         value = tmbstrndup(lexer->lexbuf + start, len);
     }
     else
-        value = null;
+        value = NULL;
 
     /* note delimiter if given */
     *pdelim = (delim ? delim : '"');
@@ -3500,7 +3500,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
     return value;
 }
 
-/* attr must be non-null */
+/* attr must be non-NULL */
 Bool IsValidAttrName( ctmbstr attr )
 {
     uint i, c = attr[0];
@@ -3546,7 +3546,7 @@ AttVal* NewAttributeEx( ctmbstr name, ctmbstr value )
 
 static void AddAttrToList( AttVal** list, AttVal* av )
 {
-  if ( *list == null )
+  if ( *list == NULL )
     *list = av;
   else
   {
@@ -3565,13 +3565,13 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
     int delim;
     Node *asp, *php;
 
-    list = null;
+    list = NULL;
 
     while ( !EndOfInput(doc) )
     {
         tmbstr attribute = ParseAttribute( doc, isempty, &asp, &php );
 
-        if (attribute == null)
+        if (attribute == NULL)
         {
             /* check if attributes are created by ASP markup */
             if (asp)
@@ -3612,11 +3612,11 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             av->value = value;
             /* #427664 - fix by Gary Peskin 04 Aug 00; other fixes by Dave Raggett */
             /*
-            if (value == null)
+            if (value == NULL)
                 ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
             else
                 ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
-            if (value != null)
+            if (value != NULL)
                 ReportAttrError( doc, lexer->token, av, BAD_ATTRIBUTE_VALUE);
             else if (LastChar(attribute) == '"')
                 ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
@@ -3625,7 +3625,7 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             */
             if (LastChar(attribute) == '"')
                 ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
-            else if (value == null)
+            else if (value == NULL)
                 ReportAttrError(doc, lexer->token, av, MISSING_ATTR_VALUE);
             else
                 ReportAttrError(doc, lexer->token, av, INVALID_ATTRIBUTE);

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 18:59:17 $ 
-    $Revision: 1.3 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.4 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -419,7 +419,7 @@ void WriteChar( uint c, StreamOut* out )
     {
         int count = 0;
         
-        EncodeCharToUTF8Bytes( c, null, &out->sink, &count );
+        EncodeCharToUTF8Bytes( c, NULL, &out->sink, &count );
         if (count <= 0)
         {
           /* ReportEncodingError(in->lexer, INVALID_UTF8 | REPLACED_CHAR, c); */
@@ -1101,7 +1101,7 @@ uint ReadCharFromStream( StreamIn* in )
         int err, count = 0;
         
         /* first byte "c" is passed in separately */
-        err = DecodeUTF8BytesToChar( &n, c, null, &in->source, &count );
+        err = DecodeUTF8BytesToChar( &n, c, NULL, &in->source, &count );
         if (!err && (n == (uint)EndOfStream) && (count == 1)) /* EOF */
             return EndOfStream;
         else if (err)

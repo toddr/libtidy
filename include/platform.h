@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/07 15:21:30 $ 
-    $Revision: 1.37 $ 
+    $Date: 2003/03/18 23:51:02 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -485,8 +485,10 @@ typedef enum
    yes
 } Bool;
 
-/* for null pointers */
-#define null 0
+/* for NULL pointers 
+#define null ((const void*)0)
+extern void* null;
+*/
 
 #if defined(DMALLOC)
 #include "dmalloc.h"

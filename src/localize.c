@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/18 19:46:14 $ 
-    $Revision: 1.71 $ 
+    $Date: 2003/03/18 23:51:03 $ 
+    $Revision: 1.72 $ 
 
 */
 
@@ -257,14 +257,14 @@ static char* TagToString( Node* tag, char* buf )
 /* lexer is not defined when this is called */
 void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option )
 {
-    assert( option != null );
+    assert( option != NULL );
     message( doc, TidyConfig, "unknown option: %s", option );
 }
 
 /* lexer is not defined when this is called */
 void ReportBadArgument( TidyDocImpl* doc, ctmbstr option )
 {
-    assert( option != null );
+    assert( option != NULL );
     message( doc, TidyConfig,
              "missing or malformed argument for option: %s", option );
 }
@@ -303,7 +303,7 @@ void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
 
     uint reason = code & ~DISCARDED_CHAR;
     ctmbstr action = code & DISCARDED_CHAR ? "discarding" : "replacing";
-    ctmbstr fmt = null;
+    ctmbstr fmt = NULL;
 
     doc->warnings++;
 
@@ -361,7 +361,7 @@ void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
 {
     ctmbstr entityname = ( entity ? entity : "NULL" );
-    ctmbstr fmt = null;
+    ctmbstr fmt = NULL;
 
     switch ( code )
     {
@@ -573,7 +573,7 @@ void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versW
 
 void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
 {
-    /* ReportAttrError( doc, node, null, MISSING_ATTRIBUTE ); */
+    /* ReportAttrError( doc, node, NULL, MISSING_ATTRIBUTE ); */
     char tagdesc[ 64 ];
     TagToString( node, tagdesc );
     messageNode( doc, TidyWarning, node,
@@ -828,7 +828,7 @@ void ReportError( TidyDocImpl* doc, Node *element, Node *node, uint code)
 
 void ErrorSummary( TidyDocImpl* doc )
 {
-    /* adjust badAccess to that its null if frames are ok */
+    /* adjust badAccess to that its NULL if frames are ok */
     ctmbstr encnam = "specified";
     int charenc = cfg( doc, TidyCharEncoding ); 
     if ( charenc == WIN1252 ) 
