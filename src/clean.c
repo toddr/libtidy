@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2004/06/15 20:35:52 $ 
-    $Revision: 1.62 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/06/18 21:10:30 $ 
+    $Revision: 1.63 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1699,7 +1699,7 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
         /* Pass thru user defined styles as HTML class names */
         if (attrIsCLASS(attr))
         {
-            if ( tmbstrcmp(attr->value, "Code") == 0 ||
+            if (AttrValueIs(attr, "Code") ||
                  tmbstrncmp(attr->value, "Mso", 3) != 0 )
             {
                 prev = attr;
@@ -1707,7 +1707,9 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
             }
         }
 
-        if ( attrIsCLASS(attr) || attrIsSTYLE(attr) || attrIsLANG(attr) ||
+        if (attrIsCLASS(attr) ||
+            attrIsSTYLE(attr) ||
+            attrIsLANG(attr)  ||
              ( (attrIsHEIGHT(attr) || attrIsWIDTH(attr)) &&
                (nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node)) ) ||
              (attr->attribute && tmbstrncmp(attr->attribute, "x:", 2) == 0) )
@@ -1934,7 +1936,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         {
             AttVal *attr = AttrGetById(node, TidyAttr_REL);
 
-            if (attr && tmbstrcmp(attr->value, "File-List") == 0)
+            if (AttrValueIs(attr, "File-List"))
             {
                 node = DiscardElement( doc, node );
                 continue;
@@ -1968,7 +1970,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                  AttrContains(atrStyle, "mso-list:") )
             {
                 TidyTagId listType = TidyTag_UL;
-                if ( attr && tmbstrcmp(attr->value, "MsoListNumber") == 0 )
+                if (AttrValueIs(attr, "MsoListNumber"))
                     listType = TidyTag_OL;
 
                 CoerceNode(doc, node, TidyTag_LI, no, yes);
@@ -1991,7 +1993,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 node = list;
             }
             /* map sequence of <p class="Code"> to <pre>...</pre> */
-            else if (attr && tmbstrcmp(attr->value, "Code") == 0)
+            else if (AttrValueIs(attr, "Code"))
             {
                 Node *br = NewLineNode(lexer);
                 NormalizeSpaces(lexer, node);

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/18 20:32:41 $ 
-    $Revision: 1.47 $ 
+    $Date: 2004/06/18 21:10:32 $ 
+    $Revision: 1.48 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -761,8 +761,8 @@ void CheckLINK( TidyDocImpl* doc, Node *node )
 
     CheckAttributes( doc, node );
 
-    if ( rel && rel->value &&
-         tmbstrcmp(rel->value, "stylesheet") == 0 )
+    /* todo: <link rel="alternate stylesheet"> */
+    if (AttrValueIs(rel, "stylesheet"))
     {
         AttVal *type = AttrGetById(node, TidyAttr_TYPE);
         if (!type)

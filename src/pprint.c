@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/05/14 07:13:36 $ 
-    $Revision: 1.93 $ 
+    $Date: 2004/06/18 21:10:31 $ 
+    $Revision: 1.94 $ 
 
 */
 
@@ -1739,28 +1739,27 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 
     if ( xhtmlOut && node->content != NULL )
     {
-        AttVal* type = attrGetTYPE( node );
-        if ( type != NULL && type->value != NULL )
+        AttVal* type = attrGetTYPE(node);
+
+        if (AttrValueIs(type, "text/javascript"))
         {
-            if ( tmbstrcasecmp(type->value, "text/javascript") == 0 )
-            {
-                commentStart = JS_COMMENT_START;
-                commentEnd = JS_COMMENT_END;
-            }
-            else if ( tmbstrcasecmp(type->value, "text/css") == 0 )
-            {
-                commentStart = CSS_COMMENT_START;
-                commentEnd = CSS_COMMENT_END;
-            }
-            else if ( tmbstrcasecmp(type->value, "text/vbscript") == 0 )
-            {
-                commentStart = VB_COMMENT_START;
-                commentEnd = VB_COMMENT_END;
-            }
+            commentStart = JS_COMMENT_START;
+            commentEnd = JS_COMMENT_END;
+        }
+        else if (AttrValueIs(type, "text/css"))
+        {
+            commentStart = CSS_COMMENT_START;
+            commentEnd = CSS_COMMENT_END;
+        }
+        else if (AttrValueIs(type, "text/vbscript"))
+        {
+            commentStart = VB_COMMENT_START;
+            commentEnd = VB_COMMENT_END;
         }
 
-        hasCData = HasCDATA( doc->lexer, node->content );
-        if ( ! hasCData )
+        hasCData = HasCDATA(doc->lexer, node->content);
+
+        if (!hasCData)
         {
             uint saveWrap = WrapOff( doc );
 

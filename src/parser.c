@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/03 14:29:41 $ 
-    $Revision: 1.117 $ 
+    $Date: 2004/06/18 21:10:31 $ 
+    $Revision: 1.118 $ 
 
 */
 
@@ -4052,9 +4052,9 @@ Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element)
     /* search attributes for xml:space */
     for (attribute = element->attributes; attribute; attribute = attribute->next)
     {
-        if ( tmbstrcmp(attribute->attribute, "xml:space") == 0 )
+        if (AttrValueIs(attribute, "xml:space"))
         {
-            if ( tmbstrcmp(attribute->value, "preserve") == 0 )
+            if (AttrValueIs(attribute, "preserve"))
                 return yes;
 
             return no;
