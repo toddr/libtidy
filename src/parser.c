@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/07 03:32:20 $ 
-    $Revision: 1.124 $ 
+    $Date: 2004/09/12 02:35:48 $ 
+    $Revision: 1.125 $ 
 
 */
 
@@ -3543,7 +3543,10 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
                     node = InferredTag(doc, TidyTag_P);
                     ReportError(doc, noframes, node, CONTENT_AFTER_BODY );
                 }
-                InsertNodeAtEnd( body, node );
+                if ( body )
+                {
+                    InsertNodeAtEnd( body, node );
+                }
             }
             else
             {
