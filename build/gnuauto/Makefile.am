@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: creitzel $ 
-#     $Date: 2003/01/18 14:23:43 $ 
-#     $Revision: 1.1 $ 
+#     $Date: 2003/02/16 21:12:28 $ 
+#     $Revision: 1.2 $ 
 #
 #  Copyright (c) 1998-2002 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, Institut National de
@@ -55,8 +55,9 @@
 
 SUBDIRS = src console include
 
+#TODO: Pull man page from htmldoc
 #installmanpage:
-#	if [ -f "man_page.txt" ] ; then \
+#	if [ -f "$(TOPDIR)/htmldoc/man_page.txt" ] ; then \
 #    	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi; \
-#    	cp -f man_page.txt "$(maninst)/man1/tidy.1"; \
+#    	cp -f $(TOPDIR)/htmldoc/man_page.txt "$(maninst)/man1/tidy.1"; \
 #	fi
