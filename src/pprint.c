@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/04/11 08:45:55 $ 
-    $Revision: 1.42 $ 
+    $Author: krusch $ 
+    $Date: 2002/04/18 20:39:35 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -1495,7 +1495,7 @@ static int TextEndsWithNewline(Lexer *lexer, Node *node)
             --ix;
 
         if ( lexer->lexbuf[ ix ] == '\n' )
-          return node->end - ix + 1;
+          return node->end - ix - 1; /* #543262 tidy eats all memory */
     }
     return -1;
 }
