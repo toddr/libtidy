@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/21 08:28:53 $ 
-    $Revision: 1.13 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/12/27 21:23:37 $ 
+    $Revision: 1.14 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1603,6 +1603,8 @@ static char indent_buf[32];
 void BQ2Div(Node *node)
 {
     int indent;
+    size_t len;
+    AttVal *attval;
 
     while (node)
     {
@@ -1621,12 +1623,32 @@ void BQ2Div(Node *node)
             if (node->content)
                 BQ2Div(node->content);
 
-            sprintf(indent_buf, "margin-left: %dem", 2*indent);
+            len = sprintf(indent_buf, "margin-left: %dem", 2*indent);
 
             MemFree(node->element);
             node->element = wstrdup(tag_div->name);
             node->tag = tag_div;
-            AddAttribute(node, "style", indent_buf);
+
+            attval = GetAttrByName(node, "style");
+
+            if (attval)
+            {
+                char *s;
+
+                s = (char *)MemAlloc(len + 3 + wstrlen(attval->value));
+
+                wstrcpy(s, indent_buf);
+                wstrcat(s, "; ");
+                wstrcat(s, attval->value);
+
+                MemFree(attval->value);
+
+                attval->value = s;
+            }
+            else
+            {
+                AddAttribute(node, "style", indent_buf);
+            }
         }
         else if (node->content)
             BQ2Div(node->content);
