@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/01 01:04:17 $ 
-    $Revision: 1.28 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/19 19:23:31 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -137,7 +137,7 @@ void InsertNodeAtStart(Node *element, Node *node)
     else
         element->content->prev = node; // AQ added 13 Apr 2000
 #endif
-
+    
     node->next = element->content;
     node->prev = null;
     element->content = node;
@@ -419,7 +419,7 @@ static void TrimInitialSpace(Lexer *lexer, Node *element, Node *text)
 {
     Node *prev, *node;
 
-    if (text->type == TextNode && lexer->lexbuf[text->start] == ' ' && text->start < text->end)	/* #427677 - fix by Gary Peskin 31 Oct 00 */
+    if (text->type == TextNode && lexer->lexbuf[text->start] == ' ' && text->start < text->end) /* #427677 - fix by Gary Peskin 31 Oct 00 */
     {
         if ((element->tag->model & CM_INLINE) &&
             !(element->tag->model & CM_FIELD) &&
@@ -516,11 +516,13 @@ static Bool InsertMisc(Node *element, Node *node)
 
 static void ParseTag(Lexer *lexer, Node *node, uint mode)
 {
-   // Local fix by GLP 2000-12-21.  Need to reset insertspace if this 
-   // is both a non-inline and empty tag (base, link, meta, isindex, hr, area).
-   // Remove this code once the fix is made in Tidy.
+    /*
+       Local fix by GLP 2000-12-21.  Need to reset insertspace if this 
+       is both a non-inline and empty tag (base, link, meta, isindex, hr, area).
+       Remove this code once the fix is made in Tidy.
+    */
 #if 0
-	if (!(node->tag->model & CM_INLINE))
+    if (!(node->tag->model & CM_INLINE))
         lexer->insertspace = no;
         
     if (node->tag->model & CM_EMPTY)
@@ -1039,7 +1041,7 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
                 {
                     checkstack = no;
 
-                    if (!(element->tag->model & CM_MIXED))	/* #431731 - fix by Randy Waki 25 Dec 00 */
+                    if (!(element->tag->model & CM_MIXED)) /* #431731 - fix by Randy Waki 25 Dec 00 */
                     {
                         if (InlineDup(lexer, node) > 0)
                             continue;
@@ -1688,7 +1690,7 @@ void ParseDefList(Lexer *lexer, Node *list, uint mode)
             /* #426885 - fix by Glenn Carroll 19 Apr 00, and
                          Gary Dechaines 11 Aug 00 */
             /* ParseTag can destroy node, if it finds that
-           	 * this <center> is followed immediately by </center>.
+             * this <center> is followed immediately by </center>.
              * It's awkward but necessary to determine if this
              * has happened.
              */
@@ -2332,7 +2334,7 @@ void ParseTableTag(Lexer *lexer, Node *table, uint mode)
                 ReportWarning(lexer, table, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
 
-                if (node->type != TextNode)	/* #427662 - was (!node->type == TextNode) - fix by Young 04 Aug 00 */
+                if (node->type != TextNode) /* #427662 - was (!node->type == TextNode) - fix by Young 04 Aug 00 */
                     ParseTag(lexer, node, IgnoreWhitespace);
 
                 lexer->exiled = no;
@@ -2840,8 +2842,8 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
   
     if (HasTitle == 0)
     {
-        if (!BodyOnly)	/* Feature request #434940 - fix by Ignacio Vazquez-Abrams 21 Jun 01 */
-        ReportWarning(lexer, head, null, MISSING_TITLE_ELEMENT);
+        if (!BodyOnly) /* Feature request #434940 - fix by Ignacio Vazquez-Abrams 21 Jun 01 */
+            ReportWarning(lexer, head, null, MISSING_TITLE_ELEMENT);
         InsertNodeAtEnd(head, InferredTag(lexer, "title"));
     }
 }
@@ -3403,13 +3405,13 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
                 MoveToHead(lexer, html, node);
                 continue;
             }
-			
-			/* #427675 - discard illegal frame element following a frameset - fix by Randy Waki 11 Oct 00 */
-			if (frameset != null && node->tag == tag_frame)
-			{
-				ReportWarning(lexer, html, node, DISCARDING_UNEXPECTED);
-				continue;
-			}
+
+            /* #427675 - discard illegal frame element following a frameset - fix by Randy Waki 11 Oct 00 */
+            if (frameset != null && node->tag == tag_frame)
+            {
+                ReportWarning(lexer, html, node, DISCARDING_UNEXPECTED);
+                continue;
+            }
         }
 
         UngetToken(lexer);

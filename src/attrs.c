@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/13 02:37:49 $ 
-    $Revision: 1.36 $ 
+    $Date: 2001/08/19 19:15:59 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -1178,26 +1178,26 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
         if (given[0] == '#')
         {
             /* check if valid hex digits and letters */
-        for (i = 1; i < 7; ++i)
-        {
-            if (!IsDigit(given[i]) &&
-                !strchr("abcdef", ToLower(given[i])))
-            {
-                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
-                invalid = yes;
-                break;
-            }
-        }
-            
-            /* convert hex letters to uppercase */
-        if (!invalid && HexUppercase)
-        {
             for (i = 1; i < 7; ++i)
             {
-                given[i] = ToUpper(given[i]);
+                if (!IsDigit(given[i]) &&
+                    !strchr("abcdef", ToLower(given[i])))
+                {
+                    ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                    invalid = yes;
+                    break;
+                }
+            }
+            
+            /* convert hex letters to uppercase */
+            if (!invalid && HexUppercase)
+            {
+                for (i = 1; i < 7; ++i)
+                {
+                    given[i] = ToUpper(given[i]);
+                }
             }
         }
-    }
         else
         {
             /* we could search for more colors and mark the file as HTML

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/17 10:56:56 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/19 19:18:57 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -342,7 +342,7 @@ uint EntityCode(char *name)
         c = 0;  /* zero on missing/bad number */
 
         /* 'x' prefix denotes hexadecimal number format */
-        if (name[2] == 'x' || (!XmlTags && name[2] == 'X'))	/* #427833 - fix by Bjšrn Hšhrmann 05 Jun 01 */
+        if (name[2] == 'x' || (!XmlTags && name[2] == 'X')) /* #427833 - fix by Bjšrn Hšhrmann 05 Jun 01 */
             sscanf(name+3, "%x", &c);
         else
             sscanf(name+2, "%d", &c);

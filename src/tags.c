@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/01 01:04:17 $ 
-    $Revision: 1.17 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/08/19 19:26:55 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -31,7 +31,7 @@ Dict *tag_meta;
 Dict *tag_body;
 Dict *tag_frameset;
 Dict *tag_frame;
-Dict *tag_iframe;	/* #433359 - fix by Randy Waki 12 Mar 01 */
+Dict *tag_iframe; /* #433359 - fix by Randy Waki 12 Mar 01 */
 Dict *tag_noframes;
 Dict *tag_hr;
 Dict *tag_h1;
@@ -372,7 +372,7 @@ void InitTags(void)
     tag_body = lookup("body");
     tag_frameset = lookup("frameset");
     tag_frame = lookup("frame");
-    tag_iframe = lookup("iframe");	/* #433359 - fix by Randy Waki 12 Mar 01 */
+    tag_iframe = lookup("iframe"); /* #433359 - fix by Randy Waki 12 Mar 01 */
     tag_noframes = lookup("noframes");
     tag_meta = lookup("meta");
     tag_title = lookup("title");

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/18 09:13:02 $ 
-    $Revision: 1.43 $ 
+    $Date: 2001/08/19 19:20:22 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -115,25 +115,25 @@ Bool IsLetter(uint c)
 
 Bool IsNamechar(uint c)
 {
-	uint map;
+    uint map;
 
-	map = MAP(c);
+    map = MAP(c);
 
-	return (Bool)(map & namechar);
+    return (Bool)(map & namechar);
 }
 
 Bool IsLower(uint c)
 {
     uint map = MAP(c);
 
-	return (Bool)(map & lowercase);
+    return (Bool)(map & lowercase);
 }
 
 Bool IsUpper(uint c)
 {
-	uint map = MAP(c);
+    uint map = MAP(c);
 
-	return (Bool)(map & uppercase);
+    return (Bool)(map & uppercase);
 }
 
 uint ToLower(uint c)
@@ -162,11 +162,11 @@ char FoldCase(char c, Bool tocaps)
     {
         if (tocaps)
         {
-			c = ToUpper(c);
+            c = ToUpper(c);
         }
         else /* force to lower case */
         {
-			c = ToLower(c);
+            c = ToLower(c);
         }
     }
 
@@ -337,9 +337,9 @@ void AddCharToLexer(Lexer *lexer, uint c)
     if (err)
     {
 #if 0
-	    extern FILE* errout; /* debug */
-	    
-	    tidy_out(errout, "lexer UTF-8 encoding error for U+%x : ", c); /* debug */
+        extern FILE* errout; /* debug */
+
+        tidy_out(errout, "lexer UTF-8 encoding error for U+%x : ", c); /* debug */
 #endif
         /* replacement char 0xFFFD encoded as UTF-8 */
         buf[0] = 0xEF;
@@ -391,12 +391,12 @@ static void ParseEntity(Lexer *lexer, int mode)
 
         if (first && c == '#')
         {
-	        /* #431953 - start RJ */
+            /* #431953 - start RJ */
             if ( NCR == no || CharEncoding == BIG5 || CharEncoding == SHIFTJIS )
             {
-        	    UngetChar('#', lexer->in);
+                UngetChar('#', lexer->in);
                 return;
-	        }
+            }
             /* #431953 - end RJ */
 
             AddCharToLexer(lexer, c);
@@ -921,10 +921,10 @@ static int FindGivenVersion(Lexer *lexer, Node *doctype)
             ReportWarning(lexer, doctype, null, DTYPE_NOT_UPPER_CASE);
 
 
-   /* give up if all we are given is the system id for the doctype */
+    /* give up if all we are given is the system id for the doctype */
     if (wstrncasecmp(s, "SYSTEM ", 7) == 0)
     {
-            /* but at least ensure the case is correct */
+        /* but at least ensure the case is correct */
         if (wstrncmp(s, "SYSTEM", 6) != 0)
             memcpy(s, "SYSTEM", 6);
 
@@ -1121,7 +1121,7 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
 
     doctype = FindDocType(root);
 
-    FixHTMLNameSpace(lexer, root, name_space);	/* #427839 - fix by Evan Lenz 05 Sep 00 */
+    FixHTMLNameSpace(lexer, root, name_space); /* #427839 - fix by Evan Lenz 05 Sep 00 */
 
     if (doctype_mode == doctype_omit)
     {
@@ -1413,9 +1413,9 @@ Bool FixDocType(Lexer *lexer, Node *root)
 
     if (doctype_mode == doctype_user && doctype_str)
     { 
-       AddStringLiteral(lexer, "\"");	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+       AddStringLiteral(lexer, "\""); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
        AddStringLiteral(lexer, doctype_str); 
-       AddStringLiteral(lexer, "\"");	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+       AddStringLiteral(lexer, "\""); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
     }
     else if (guessed == VERS_HTML20)
         AddStringLiteral(lexer, "\"-//IETF//DTD HTML 2.0//EN\"");
@@ -1482,7 +1482,7 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
     {
         if (CharEncoding == LATIN1)
             AddAttribute(xml, "encoding", "iso-8859-1");
-        if (CharEncoding == ISO2022)
+        else if (CharEncoding == ISO2022)
             AddAttribute(xml, "encoding", "iso-2022");
     }
 
@@ -1562,7 +1562,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
                 wstrncasecmp(lexer->lexbuf+start, container->element, len) == 0)
             {
                 lexer->txtend = start - 2;
-                lexer->lexsize = start - 2; /* #433857 - fix by Huajun Zeng */
+                lexer->lexsize = start - 2; /* #433857 - fix by Huajun Zeng 26 Apr 01 */
                 break;
             }
 
@@ -1629,8 +1629,8 @@ void UngetToken(Lexer *lexer)
   modes for GetToken()
 
   MixedContent   -- for elements which don't accept PCDATA
-  Preformatted       -- white space preserved as is
-  IgnoreMarkup       -- for CDATA elements such as script, style
+  Preformatted   -- white space preserved as is
+  IgnoreMarkup   -- for CDATA elements such as script, style
 */
 
 Node *GetToken(Lexer *lexer, uint mode)
@@ -1895,7 +1895,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     /* otherwise swallow chars up to and including next '>' */
                     while ((c = ReadChar(lexer->in)) != '>')
                     {
-                        if (c == -1)
+                        if (c == EndOfStream)
                         {
                             UngetChar(c, lexer->in);
                             break;
@@ -2660,15 +2660,15 @@ static char  *ParseAttribute(Lexer *lexer, Bool *isempty,
         if (!XmlTags && IsUpper(c))
             c = ToLower(c);
 
-        /* ++len; */	/* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
+        /* ++len; */ /* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
         AddCharToLexer(lexer, c);
 
         lastc = c;
         c = ReadChar(lexer->in);
     }
 
-    len = lexer->lexsize - start;	/* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
-	attr = (len > 0 ? wstrndup(lexer->lexbuf+start, len) : null);
+    len = lexer->lexsize - start; /* #427672 - handle attribute names with multibyte chars - fix by Randy Waki - 10 Aug 00 */
+    attr = (len > 0 ? wstrndup(lexer->lexbuf+start, len) : null);
     lexer->lexsize = start;
 
     return attr;
@@ -2723,13 +2723,13 @@ static int ParseServerInstruction(Lexer *lexer)
             do
             {
                 c = ReadChar(lexer->in);
-                if (c == EndOfStream)	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
                     UngetChar(c, lexer->in);
                     return null;
                 }
-                if (c == '>')	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     UngetChar(c, lexer->in);
                     ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
@@ -2747,13 +2747,13 @@ static int ParseServerInstruction(Lexer *lexer)
             do
             {
                 c = ReadChar(lexer->in);
-                if (c == EndOfStream)	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     ReportAttrError(lexer, lexer->token, null, UNEXPECTED_END_OF_FILE);
                     UngetChar(c, lexer->in);
                     return null;
                 }
-                if (c == '>')	/* #427840 - fix by Terry Teague 30 Jun 01 */
+                if (c == '>') /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
                     UngetChar(c, lexer->in);
                     ReportAttrError(lexer, lexer->token, null, UNEXPECTED_GT);
@@ -2980,7 +2980,7 @@ static char *ParseValue(Lexer *lexer, char *name,
             {
                 /* discard line breaks in quoted URLs */ 
                 /* #438650 - fix by Randy Waki */
-                if (c == '\n' && IsUrl(name))
+                if (c == '\n' && IsUrl(name)) 
                 {
                     /* warn that we discard this newline */
                     ReportAttrError(lexer, lexer->token, null, NEWLINE_IN_URI);
@@ -3143,9 +3143,9 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
             /* #427664 - fix by Gary Peskin 04 Aug 00; other fixes by Dave Raggett */
             /*
             if (value == null)
-            	ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
+                ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
             else
-            	ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
+                ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
             */
             if (value != null)
                 ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
