@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 15:53:42 $ 
-    $Revision: 1.111 $ 
+    $Date: 2004/03/07 15:47:29 $ 
+    $Revision: 1.112 $ 
 
 */
 
@@ -2956,8 +2956,20 @@ void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
 #pragma unused(mode)
 
     Node *node = GetCDATA(doc, script);
-    if ( node )
+
+    if (node)
         InsertNodeAtEnd(script, node);
+
+    node = GetToken(doc, IgnoreWhitespace);
+
+    if (!(node && node->type == EndTag && node->tag->id == script->tag->id))
+    {
+        /* todo: report error for missing endtag */
+    }
+    else
+    {
+        FreeNode(doc, node);
+    }
 }
 
 Bool IsJavaScript(Node *node)

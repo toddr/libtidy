@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 14:38:47 $ 
-    $Revision: 1.146 $ 
+    $Date: 2004/03/07 15:47:29 $ 
+    $Revision: 1.147 $ 
 
 */
 
@@ -1836,14 +1836,10 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
 
             if (matches && nested-- <= 0)
             {
-                /* skip trailing white space in end tag */
-                while (IsWhite(c))
-                    c = ReadChar(doc->docIn);
-
-                /* <script>...</script<p>... */
-                if (c == '<')
-                    UngetChar(c, doc->docIn);
-
+                for (i = lexer->lexsize - 1; i >= start; --i)
+                    UngetChar((uint)lexer->lexbuf[i], doc->docIn);
+                UngetChar('/', doc->docIn);
+                UngetChar('<', doc->docIn);
                 lexer->lexsize -= (lexer->lexsize - start) + 2;
                 break;
             }
