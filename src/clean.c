@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/13 12:33:58 $ 
-    $Revision: 1.73 $ 
+    $Date: 2005/01/20 15:22:13 $ 
+    $Revision: 1.74 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -826,6 +826,9 @@ static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
         "60%", "70%", "80%", NULL,
         "120%", "150%", "200%"
     };
+
+    if (size[0] == '\0')
+        return NULL;
 
     if ('0' <= size[0] && size[0] <= '6')
     {
