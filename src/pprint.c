@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/01/24 21:52:35 $ 
-    $Revision: 1.87 $ 
+    $Date: 2004/02/06 02:43:16 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -1137,6 +1137,10 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
     tmbstr name    = attr->attribute;
     Bool wrappable = no;
     tchar c;
+
+    /* fix for odd attribute indentation bug triggered by long values */
+    if (!indAttrs)
+      xtra = 0;
 
     if ( indAttrs )
     {
