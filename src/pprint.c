@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/18 15:31:20 $ 
-    $Revision: 1.64 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/19 15:21:06 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -64,7 +64,99 @@ uint CWrapLen( TidyDocImpl* doc, uint ind )
     
     return wraplen;
 }
-#endif
+
+/* Return if Tidy should break on Chinese char.
+*/
+typedef enum
+{
+  NoBreak,
+  BreakAfter,
+  BreakBefore
+} BreakChar;
+
+BreakChar isBreakableUnicode( tchar c, uint mode )
+{
+  Bool breakable = no; 
+
+  /* Break after any punctuation or spaces characters */ 
+  if ( c >= 0x2000 && !(mode & PREFORMATTED) )
+  {
+    if ( (c >= 0x2000 && c<= 0x2006) ||
+         (c >= 0x2008 && c<= 0x2010) ||
+         (c >= 0x2011 && c<= 0x2046) ||
+         (c >= 0x207D && c<= 0x207E) ||
+         (c >= 0x208D && c<= 0x208E) ||
+         (c >= 0x2329 && c<= 0x232A) ||
+         (c >= 0x3001 && c<= 0x3003) ||
+         (c >= 0x3008 && c<= 0x3011) ||
+         (c >= 0x3014 && c<= 0x301F) ||
+         (c >= 0xFD3E && c<= 0xFD3F) ||
+         (c >= 0xFE30 && c<= 0xFE44) ||
+         (c >= 0xFE49 && c<= 0xFE52) ||
+         (c >= 0xFE54 && c<= 0xFE61) ||
+         (c >= 0xFE6A && c<= 0xFE6B) ||
+         (c >= 0xFF01 && c<= 0xFF03) ||
+         (c >= 0xFF05 && c<= 0xFF0A) ||
+         (c >= 0xFF0C && c<= 0xFF0F) ||
+         (c >= 0xFF1A && c<= 0xFF1B) ||
+         (c >= 0xFF1F && c<= 0xFF20) ||
+         (c >= 0xFF3B && c<= 0xFF3D) ||
+         (c >= 0xFF61 && c<= 0xFF65) )
+    { 
+      breakable =  yes; 
+    } 
+    else switch (c)
+    { 
+      case 0xFE63: case 0xFE68: case 0x3030: 
+      case 0x30FB: case 0xFF3F: case 0xFF5B: 
+      case 0xFF5D: 
+        breakable = yes; 
+        break;
+    } 
+
+    /* but break before a left punctuation */ 
+    if ( breakable )
+    { 
+      if ( (c >= 0x201A && c <= 0x201C) || 
+           (c >= 0x201E && c <= 0x201F) )
+      { 
+        return BreakBefore; 
+      } 
+      else switch ( c )
+      { 
+        case 0x2018: case 0x2039: case 0x2045: 
+        case 0x207D: case 0x208D: case 0x2329: 
+        case 0x3008: case 0x300A: case 0x300C: 
+        case 0x300E: case 0x3010: case 0x3014: 
+        case 0x3016: case 0x3018: case 0x301A: 
+        case 0x301D: case 0xFD3E: case 0xFE35: 
+        case 0xFE37: case 0xFE39: case 0xFE3B: 
+        case 0xFE3D: case 0xFE3F: case 0xFE41: 
+        case 0xFE43: case 0xFE59: case 0xFE5B: 
+        case 0xFE5D: case 0xFF08: case 0xFF3B: 
+        case 0xFF5B: case 0xFF62: 
+          return BreakBefore; 
+      } 
+      return BreakAfter;
+    } 
+  } 
+  return NoBreak;
+}
+
+BreakChar isBreakableBig5( tchar c, uint mode )
+{
+  if ( (c & 0xFF00) == 0xA100 && !(mode & PREFORMATTED) )
+  { 
+    /* opening brackets have odd codes: break before them */ 
+    if ( c > 0x5C && c < 0xAD && (c & 1) == 1 ) 
+      return BreakBefore;
+    return BreakAfter;
+  }
+  return NoBreak;
+}
+
+
+#endif /* SUPPORT_ASIAN_ENCODINGS */
 
 static void InitIndent( TidyIndent* ind )
 {
@@ -500,7 +592,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 {
     tmbchar entity[128];
     ctmbstr p;
-    Bool breakable = no;
+    BreakChar brk = NoBreak;
     TidyPrintImpl* pprint  = &doc->pprint;
     uint outenc = cfg( doc, TidyOutCharEncoding );
     Bool qmark = cfgBool( doc, TidyQuoteMarks );
@@ -591,110 +683,28 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     switch ( outenc )
     {
     case UTF8:
-    /* Chinese doesn't have spaces, so it needs other kinds of breaks */
-    /* This will also help documents using nice Unicode punctuation */
-    /* But we leave the ASCII range punctuation untouched */
-
-    /* Break after any punctuation or spaces characters */
-    if ( c >= 0x2000 && !(mode & PREFORMATTED) )
-    {
-        if(((c >= 0x2000) && ( c<= 0x2006 ))
-        || ((c >= 0x2008) && ( c<= 0x2010 ))
-        || ((c >= 0x2011) && ( c<= 0x2046 ))
-        || ((c >= 0x207D) && ( c<= 0x207E )) 
-        || ((c >= 0x208D) && ( c<= 0x208E )) 
-        || ((c >= 0x2329) && ( c<= 0x232A )) 
-        || ((c >= 0x3001) && ( c<= 0x3003 )) 
-        || ((c >= 0x3008) && ( c<= 0x3011 )) 
-        || ((c >= 0x3014) && ( c<= 0x301F )) 
-        || ((c >= 0xFD3E) && ( c<= 0xFD3F )) 
-        || ((c >= 0xFE30) && ( c<= 0xFE44 )) 
-        || ((c >= 0xFE49) && ( c<= 0xFE52 )) 
-        || ((c >= 0xFE54) && ( c<= 0xFE61 )) 
-        || ((c >= 0xFE6A) && ( c<= 0xFE6B )) 
-        || ((c >= 0xFF01) && ( c<= 0xFF03 )) 
-        || ((c >= 0xFF05) && ( c<= 0xFF0A )) 
-        || ((c >= 0xFF0C) && ( c<= 0xFF0F )) 
-        || ((c >= 0xFF1A) && ( c<= 0xFF1B )) 
-        || ((c >= 0xFF1F) && ( c<= 0xFF20 )) 
-        || ((c >= 0xFF3B) && ( c<= 0xFF3D )) 
-        || ((c >= 0xFF61) && ( c<= 0xFF65 )))
-        {
-            /* 2, because AddChar is not till later */
-            pprint->wraphere = pprint->linelen + 2;
-            breakable = yes;
-        } 
-        else switch (c)
-        {
-            case 0xFE63:
-            case 0xFE68:
-            case 0x3030:
-            case 0x30FB:
-            case 0xFF3F:
-            case 0xFF5B:
-            case 0xFF5D:
-                pprint->wraphere = pprint->linelen + 2;
-                breakable = yes;
-        }
-        /* but break before a left punctuation */
-        if (breakable == yes)
-        { 
-            if (((c >= 0x201A) && (c <= 0x201C)) ||
-                ((c >= 0x201E) && (c <= 0x201F)))
-            {
-                pprint->wraphere--;
-            }
-            else switch (c)
-            {
-            case 0x2018:
-            case 0x2039:
-            case 0x2045:
-            case 0x207D:
-            case 0x208D:
-            case 0x2329:
-            case 0x3008:
-            case 0x300A:
-            case 0x300C:
-            case 0x300E:
-            case 0x3010:
-            case 0x3014:
-            case 0x3016:
-            case 0x3018:
-            case 0x301A:
-            case 0x301D:
-            case 0xFD3E:
-            case 0xFE35:
-            case 0xFE37:
-            case 0xFE39:
-            case 0xFE3B:
-            case 0xFE3D:
-            case 0xFE3F:
-            case 0xFE41:
-            case 0xFE43:
-            case 0xFE59:
-            case 0xFE5B:
-            case 0xFE5D:
-            case 0xFF08:
-            case 0xFF3B:
-            case 0xFF5B:
-            case 0xFF62:
-                pprint->wraphere--; 
-            }
-        }
-    }
-    break;
+    case UTF16:
+    case UTF16LE:
+    case UTF16BE:
+        /* Chinese doesn't have spaces, so it needs other kinds of breaks */
+        /* This will also help documents using nice Unicode punctuation */
+        /* But we leave the ASCII range punctuation untouched */
+        brk = isBreakableUnicode( c, mode );
+        if ( brk == BreakBefore )
+            pprint->wraphere = pprint->linelen;
+        else if ( brk == BreakAfter )
+            pprint->wraphere = pprint->linelen + 1;
+        break;
 
     case BIG5:
         /* Allow linebreak at Chinese punctuation characters */
         /* There are not many spaces in Chinese */
         AddChar( pprint, c );
-        if ( (c & 0xFF00) == 0xA100 && !(mode & PREFORMATTED) )
-        {
+        brk = isBreakableBig5( c, mode );
+        if ( brk == BreakBefore )
             pprint->wraphere = pprint->linelen;
-            /* opening brackets have odd codes: break before them */
-            if ( c > 0x5C && c < 0xAD && (c & 1) == 1 ) 
-                pprint->wraphere--; 
-        }
+        else if ( brk == BreakAfter )
+            pprint->wraphere = pprint->linelen + 1;
         return;
 
     case SHIFTJIS:
