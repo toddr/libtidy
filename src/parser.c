@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:52:25 $ 
-    $Revision: 1.109 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/03/05 11:13:13 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -82,7 +82,7 @@ Bool IsNewNode(Node *node)
 void CoerceNode(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete, Bool expected)
 {
     const Dict* tag = LookupTagDef(tid);
-    Node* tmp = InferredTag(doc, tag->name);
+    Node* tmp = InferredTag(doc, tag->id);
 
     if (obsolete)
         ReportWarning(doc, node, tmp, OBSOLETE_ELEMENT);
@@ -939,7 +939,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( element, node );
-                node = InferredTag( doc, "br" );
+                node = InferredTag(doc, TidyTag_BR);
             }
             else
             {
@@ -1124,14 +1124,14 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 if ( nodeHasCM(node, CM_LIST) )
                 {
                     UngetToken( doc );
-                    node = InferredTag( doc, "ul" );
+                    node = InferredTag(doc, TidyTag_UL);
                     AddClass( doc, node, "noindent" );
                     lexer->excludeBlocks = yes;
                 }
                 else if ( nodeHasCM(node, CM_DEFLIST) )
                 {
                     UngetToken( doc );
-                    node = InferredTag( doc, "dl" );
+                    node = InferredTag(doc, TidyTag_DL);
                     lexer->excludeBlocks = yes;
                 }
 
@@ -1209,7 +1209,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         return;
                     }
 
-                    node = InferredTag( doc, "ul" );
+                    node = InferredTag(doc, TidyTag_UL);
                     AddClass( doc, node, "noindent" );
                 }
                 else if ( nodeHasCM(node, CM_DEFLIST) )
@@ -1220,11 +1220,11 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         return;
                     }
 
-                    node = InferredTag( doc, "dl" );
+                    node = InferredTag(doc, TidyTag_DL);
                 }
                 else if ( nodeHasCM(node, CM_TABLE) || nodeHasCM(node, CM_ROW) )
                 {
-                    node = InferredTag( doc, "table" );
+                    node = InferredTag(doc, TidyTag_TABLE);
                 }
                 else if ( nodeHasCM(element, CM_OBJECT) )
                 {
@@ -1511,7 +1511,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                     CoerceNode(doc, node, TidyTag_BR, no, no);
                     TrimSpaces( doc, element );
                     InsertNodeAtEnd( element, node );
-                    node = InferredTag(doc, "br");
+                    node = InferredTag(doc, TidyTag_BR);
                     continue;
                 }
            }
@@ -1684,7 +1684,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 }
 
                 ReportError(doc, element, node, TAG_NOT_ALLOWED_IN);
-                dd = InferredTag(doc, "dd");
+                dd = InferredTag(doc, TidyTag_DD);
 
                 /* insert hr within dd before dt if dt is empty */
                 if (element->content == NULL)
@@ -1850,7 +1850,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         if (node->type == TextNode)
         {
             UngetToken( doc );
-            node = InferredTag( doc, "dt");
+            node = InferredTag(doc, TidyTag_DT);
             ReportError(doc, list, node, MISSING_STARTTAG);
         }
 
@@ -1923,7 +1923,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
              */
             if (parent->last == node)
             {
-                list = InferredTag( doc, "dl");
+                list = InferredTag(doc, TidyTag_DL);
                 InsertNodeAfterElement(node, list);
             }
             continue;
@@ -1943,7 +1943,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
             if (!(node->tag->model & CM_INLINE) && lexer->excludeBlocks)
                 return;
 
-            node = InferredTag( doc, "dd");
+            node = InferredTag(doc, TidyTag_DD);
             ReportError(doc, list, node, MISSING_STARTTAG);
         }
 
@@ -2042,7 +2042,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                 return;
             }
 
-            node = InferredTag( doc, "li" );
+            node = InferredTag(doc, TidyTag_LI);
             AddAttribute( doc, node, "style", "list-style: none" );
             ReportError(doc, list, node, MISSING_STARTTAG );
         }
@@ -2098,7 +2098,7 @@ static void FixEmptyRow(TidyDocImpl* doc, Node *row)
 
     if (row->content == NULL)
     {
-        cell = InferredTag( doc, "td");
+        cell = InferredTag(doc, TidyTag_TD);
         InsertNodeAtEnd(row, cell);
         ReportError(doc, row, cell, MISSING_STARTTAG);
     }
@@ -2207,7 +2207,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
             if ( nodeIsFORM(node) )
             {
                 UngetToken( doc );
-                node = InferredTag( doc, "td");
+                node = InferredTag(doc, TidyTag_TD);
                 ReportError(doc, row, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node)
@@ -2308,7 +2308,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
             if ( nodeIsTD(node) || nodeIsTH(node) )
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "tr");
+                node = InferredTag(doc, TidyTag_TR);
                 ReportError(doc, rowgroup, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node)
@@ -2388,7 +2388,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
         
         if ( !nodeIsTR(node) )
         {
-            node = InferredTag(doc, "tr");
+            node = InferredTag(doc, TidyTag_TR);
             ReportError(doc, rowgroup, node, MISSING_STARTTAG);
             UngetToken( doc );
         }
@@ -2522,7 +2522,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             if ( nodeIsTD(node) || nodeIsTH(node) || nodeIsTABLE(node) )
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "tr");
+                node = InferredTag(doc, TidyTag_TR);
                 ReportError(doc, table, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node) ||nodeHasCM(node,CM_BLOCK|CM_INLINE) )
@@ -2728,7 +2728,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             ReportError(doc, pre, node, MISSING_ENDTAG_BEFORE);
             ParseTag(doc, node, IgnoreWhitespace);
 
-            newnode = InferredTag(doc, "pre");
+            newnode = InferredTag(doc, TidyTag_PRE);
             ReportError(doc, pre, newnode, INSERTING_TAG);
             pre = newnode;
             InsertNodeAfterElement(node, pre);
@@ -3357,26 +3357,26 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
             if (node->tag->model & CM_LIST)
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "ul");
+                node = InferredTag(doc, TidyTag_UL);
                 AddClass( doc, node, "noindent" );
                 lexer->excludeBlocks = yes;
             }
             else if (node->tag->model & CM_DEFLIST)
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "dl");
+                node = InferredTag(doc, TidyTag_DL);
                 lexer->excludeBlocks = yes;
             }
             else if (node->tag->model & (CM_TABLE | CM_ROWGRP | CM_ROW))
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "table");
+                node = InferredTag(doc, TidyTag_TABLE);
                 lexer->excludeBlocks = yes;
             }
             else if ( nodeIsINPUT(node) )
             {
                 UngetToken( doc );
-                node = InferredTag(doc, "form");
+                node = InferredTag(doc, TidyTag_FORM);
                 lexer->excludeBlocks = yes;
             }
             else
@@ -3402,7 +3402,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd(body, node);
-                node = InferredTag(doc, "br");
+                node = InferredTag(doc, TidyTag_BR);
             }
             else if ( nodeHasCM(node, CM_INLINE) )
                 PopInline( doc, node );
@@ -3525,7 +3525,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
                 if ( node->type == TextNode )
                 {
                     UngetToken( doc );
-                    node = InferredTag( doc, "p" );
+                    node = InferredTag(doc, TidyTag_P);
                     ReportError(doc, noframes, node, CONTENT_AFTER_BODY );
                 }
                 InsertNodeAtEnd( body, node );
@@ -3533,7 +3533,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
             else
             {
                 UngetToken( doc );
-                node = InferredTag( doc, "body" );
+                node = InferredTag(doc, TidyTag_BODY);
                 if ( cfgBool(doc, TidyXmlOut) )
                     ReportError(doc, noframes, node, INSERTING_TAG);
                 InsertNodeAtEnd( noframes, node );
@@ -3596,7 +3596,7 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
         if ( nodeIsBODY(node) )
         {
             UngetToken( doc );
-            node = InferredTag(doc, "noframes");
+            node = InferredTag(doc, TidyTag_NOFRAMES);
             ReportError(doc, frameset, node, INSERTING_TAG);
         }
 
@@ -3635,7 +3635,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
 
         if (node == NULL)
         {
-            node = InferredTag(doc, "head");
+            node = InferredTag(doc, TidyTag_HEAD);
             break;
         }
 
@@ -3662,7 +3662,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             continue;
 
         UngetToken( doc );
-        node = InferredTag(doc, "head");
+        node = InferredTag(doc, TidyTag_HEAD);
         break;
     }
 
@@ -3678,7 +3678,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             if (frameset == NULL) /* implied body */
             {
-                node = InferredTag(doc, "body");
+                node = InferredTag(doc, TidyTag_BODY);
                 InsertNodeAtEnd(html, node);
                 ParseBody(doc, node, mode);
             }
@@ -3718,7 +3718,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
 
                     if (noframes == NULL)
                     {
-                        noframes = InferredTag(doc, "noframes");
+                        noframes = InferredTag(doc, TidyTag_NOFRAMES);
                         InsertNodeAtEnd(frameset, noframes);
                         ReportError(doc, html, noframes, INSERTING_TAG);
                     }
@@ -3777,7 +3777,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             {
                 ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
-                node = InferredTag(doc, "body");
+                node = InferredTag(doc, TidyTag_BODY);
                 break;
             }
 
@@ -3817,7 +3817,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             if (noframes == NULL)
             {
-                noframes = InferredTag(doc, "noframes");
+                noframes = InferredTag(doc, TidyTag_NOFRAMES);
                 InsertNodeAtEnd(frameset, noframes);
             }
             else
@@ -3828,7 +3828,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             continue;
         }
 
-        node = InferredTag(doc, "body");
+        node = InferredTag(doc, TidyTag_BODY);
         ConstrainVersion(doc, ~VERS_FRAMESET);
         break;
     }
@@ -3854,7 +3854,7 @@ static void EncloseBodyText(TidyDocImpl* doc)
         if ((node->type == TextNode && !IsBlank(doc->lexer, node)) ||
             (nodeIsElement(node) && nodeHasCM(node, CM_INLINE)))
         {
-            Node* p = InferredTag(doc, "p");
+            Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(node, p);
             while (node && (!nodeIsElement(node) || nodeHasCM(node, CM_INLINE)))
             {
@@ -3893,7 +3893,7 @@ static void EncloseBlockText(TidyDocImpl* doc, Node* node)
         if ((block->type == TextNode && !IsBlank(doc->lexer, block)) ||
             (nodeIsElement(block) && nodeHasCM(block, CM_INLINE)))
         {
-            Node* p = InferredTag(doc, "p");
+            Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(block, p);
             while (block && (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
             {
@@ -4029,7 +4029,7 @@ void ParseDocument(TidyDocImpl* doc)
         if ( node->type != StartTag || !nodeIsHTML(node) )
         {
             UngetToken( doc );
-            html = InferredTag(doc, "html");
+            html = InferredTag(doc, TidyTag_HTML);
         }
         else
             html = node;
@@ -4045,7 +4045,7 @@ void ParseDocument(TidyDocImpl* doc)
     if (!FindHTML(doc))
     {
         /* a later check should complain if <body> is empty */
-        html = InferredTag(doc, "html");
+        html = InferredTag(doc, TidyTag_HTML);
         InsertNodeAtEnd( &doc->root, html);
         ParseHTML(doc, html, no);
     }
@@ -4054,7 +4054,7 @@ void ParseDocument(TidyDocImpl* doc)
     {
         Node* head = FindHEAD(doc);
         ReportError(doc, head, NULL, MISSING_TITLE_ELEMENT);
-        InsertNodeAtEnd(head, InferredTag(doc, "title"));
+        InsertNodeAtEnd(head, InferredTag(doc, TidyTag_TITLE));
     }
 
     AttributeChecks(doc, &doc->root);

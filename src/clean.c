@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 10:06:08 $ 
-    $Revision: 1.55 $ 
+    $Date: 2004/03/05 11:13:13 $ 
+    $Revision: 1.56 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1029,7 +1029,7 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
             {
                 Node *last = node->last, *parent = node->parent;
                 DiscardContainer( doc, node, pnode );
-                node = InferredTag( doc, "br" );
+                node = InferredTag(doc, TidyTag_BR);
 
                 if (last->next)
                     last->next->prev = node;
@@ -1048,7 +1048,7 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
                 Node *prev = node->prev, *next = node->next, *parent = node->parent;
                 DiscardContainer( doc, node, pnode );
 
-                node = InferredTag( doc, "br" );
+                node = InferredTag(doc, TidyTag_BR);
                 node->next = next;
                 node->prev = prev;
                 node->parent = parent;
@@ -1966,7 +1966,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 if ( !list || TagId(list) != listType )
                 {
                     const Dict* tag = LookupTagDef( listType );
-                    list = InferredTag( doc, tag->name );
+                    list = InferredTag(doc, tag->id);
                     InsertNodeBeforeElement(node, list);
                 }
 
@@ -1988,7 +1988,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
 
                 if ( !list || TagId(list) != TidyTag_PRE )
                 {
-                    list = InferredTag( doc, "pre" );
+                    list = InferredTag(doc, TidyTag_PRE);
                     InsertNodeBeforeElement(node, list);
                 }
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/04 09:08:07 $ 
-    $Revision: 1.142 $ 
+    $Date: 2004/03/05 11:13:13 $ 
+    $Revision: 1.143 $ 
 
 */
 
@@ -1402,7 +1402,7 @@ Bool AddGenerator( TidyDocImpl* doc )
 
         if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
-            node = InferredTag( doc, "meta" );
+            node = InferredTag(doc, TidyTag_META);
             AddAttribute( doc, node, "name", "generator" );
             AddAttribute( doc, node, "content", buf );
             InsertNodeAtStart( head, node );
@@ -1721,16 +1721,21 @@ Bool FixXmlDecl( TidyDocImpl* doc )
     return yes;
 }
 
-Node* InferredTag( TidyDocImpl* doc, ctmbstr name )
+Node* InferredTag(TidyDocImpl* doc, TidyTagId id)
 {
     Lexer *lexer = doc->lexer;
     Node *node = NewNode( lexer );
+    const Dict* dict = LookupTagDef(id);
+
+    assert( dict != NULL );
+
     node->type = StartTag;
     node->implicit = yes;
-    node->element = tmbstrdup(name);
+    node->element = tmbstrdup(dict->name);
+    node->tag = dict;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
-    FindTag( doc, node );
+
     return node;
 }
 

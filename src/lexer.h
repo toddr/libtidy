@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2004/03/04 06:54:10 $ 
-    $Revision: 1.16 $ 
+    $Date: 2004/03/05 11:13:13 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -482,7 +482,7 @@ Bool FixDocType( TidyDocImpl* doc );
 /* add encoding attribute if not using ASCII or UTF-8 output */
 Bool FixXmlDecl( TidyDocImpl* doc );
 
-Node* InferredTag( TidyDocImpl* doc, ctmbstr name );
+Node* InferredTag(TidyDocImpl* doc, TidyTagId id);
 
 Bool ExpectsContent(Node *node);
 
