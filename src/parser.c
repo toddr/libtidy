@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:33:37 $ 
-    $Revision: 1.127 $ 
+    $Date: 2004/12/14 16:48:19 $ 
+    $Revision: 1.128 $ 
 
 */
 
@@ -4017,7 +4017,7 @@ void ParseDocument(TidyDocImpl* doc)
             }
             else
             {
-                ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, &doc->root, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
             }
             continue;
@@ -4025,7 +4025,7 @@ void ParseDocument(TidyDocImpl* doc)
 
         if (node->type == EndTag)
         {
-            ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, &doc->root, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -4064,7 +4064,7 @@ void ParseDocument(TidyDocImpl* doc)
             ReportError(doc, NULL, NULL, MISSING_DOCTYPE);
 
         InsertNodeAtEnd( &doc->root, html);
-        ParseHTML( doc, html, no );
+        ParseHTML( doc, html, IgnoreWhitespace );
         break;
     }
 
@@ -4073,7 +4073,7 @@ void ParseDocument(TidyDocImpl* doc)
         /* a later check should complain if <body> is empty */
         html = InferredTag(doc, TidyTag_HTML);
         InsertNodeAtEnd( &doc->root, html);
-        ParseHTML(doc, html, no);
+        ParseHTML(doc, html, IgnoreWhitespace);
     }
 
     if (!FindTITLE(doc))
@@ -4236,7 +4236,7 @@ void ParseXMLDocument(TidyDocImpl* doc)
             }
             else
             {
-                ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, &doc->root, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
             }
             continue;
@@ -4256,7 +4256,7 @@ void ParseXMLDocument(TidyDocImpl* doc)
             continue;
         }
 
-        ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, &doc->root, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
