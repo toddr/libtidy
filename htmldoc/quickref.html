@@ -1,37 +1,38 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy Configuration Options Quick Reference</title>
-<meta name="version" content="$Id: quickref.html,v 1.5 2003/06/08 00:54:20 terry_teague Exp $" />
+<meta name="version" content="$Id: quickref.html,v 1.6 2004/08/01 03:19:57 terry_teague Exp $" />
 </head>
 <body>
-<a name="top"></a><h1>Quick Reference</h1>
+<h1 id="top">Quick Reference</h1>
 <h2>HTML Tidy Configuration Options</h2>
+<p>
 <a class="h3" href="#MarkupHeader">HTML, XHTML, XML</a><br />
 <a class="h3" href="#DiagnosticsHeader">Diagnostics</a><br />
 <a class="h3" href="#PrettyPrintHeader">Pretty Print</a><br />
 <a class="h3" href="#EncodingHeader">Character Encoding</a><br />
-<a class="h3" href="#MiscellaneousHeader">Miscellaneous</a><br /><br />
+<a class="h3" href="#MiscellaneousHeader">Miscellaneous</a><br /></p>
 
 <table summary="Tidy Options Quick Reference Header Section" border="0" cellpadding="3" cellspacing="0">
+<colgroup>
+<col width="30%" />
+<col width="30%" />
+<col width="40%" />
+</colgroup>
 <tr valign="bottom">
 <td class="h3" colspan="2"><a name="MarkupHeader"></a>HTML, XHTML, XML Options</td>
 <td valign="top"><a href="#top">Top</a></td>
 </tr>
 <tr>
-<td width="30%" class="tabletitle">Option</td>
-<td width="30%" class="tabletitle">Type</td>
+<td class="tabletitle">Option</td>
+<td class="tabletitle">Type</td>
 <td class="tabletitle">Default</td>
 </tr>
 <tr>
 <td><a href="#add-xml-decl">add-xml-decl</a></td>
-<td>Boolean</td>
-<td>no</td>
-</tr>
-<tr>
-<td><a href="#add-xml-pi">add-xml-pi</a></td>
 <td>Boolean</td>
 <td>no</td>
 </tr>
@@ -56,9 +57,9 @@
 <td>no</td>
 </tr>
 <tr>
-<td><a href="#break-before-br">break-before-br</a></td>
-<td>Boolean</td>
-<td>no</td>
+<td><a href="#css-prefix">css-prefix</a></td>
+<td>String</td>
+<td></td>
 </tr>
 <tr>
 <td><a href="#clean">clean</a></td>
@@ -151,6 +152,11 @@
 <td>yes</td>
 </tr>
 <tr>
+<td><a href="#merge-divs">merge-divs</a></td>
+<td>Boolean</td>
+<td>yes</td>
+</tr>
+<tr>
 <td><a href="#ncr">ncr</a></td>
 <td>Boolean</td>
 <td>yes</td>
@@ -178,6 +184,11 @@ names</td>
 </tr>
 <tr>
 <td><a href="#numeric-entities">numeric-entities</a></td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="#output-xhtml">output-html</a></td>
 <td>Boolean</td>
 <td>no</td>
 </tr>
@@ -222,16 +233,6 @@ names</td>
 <td>no</td>
 </tr>
 <tr>
-<td><a href="#slide-style">slide-style</a> (Tidy Classic)</td>
-<td>Name</td>
-<td></td>
-</tr>
-<tr>
-<td><a href="#split">split</a> (Tidy Classic)</td>
-<td>Boolean</td>
-<td>no</td>
-</tr>
-<tr>
 <td><a href="#uppercase-attributes">uppercase-attributes</a></td>
 <td>Boolean</td>
 <td>no</td>
@@ -255,9 +256,14 @@ names</td>
 <td valign="top"><a href="#top">Top</a></td>
 </tr>
 <tr>
-<td width="30%" class="tabletitle">Option</td>
-<td width="30%" class="tabletitle">Type</td>
+<td class="tabletitle">Option</td>
+<td class="tabletitle">Type</td>
 <td class="tabletitle">Default</td>
+</tr>
+<tr>
+<td><a href="#accessibility-check">accessibility-check</a></td>
+<td>Integer</td>
+<td>0</td>
 </tr>
 <tr>
 <td><a href="#show-errors">show-errors</a></td>
@@ -269,11 +275,6 @@ names</td>
 <td>Boolean</td>
 <td>yes</td>
 </tr>
-<tr>
-<td><a href="#accessibility-check">accessibility-check</a></td>
-<td>Integer</td>
-<td>0</td>
-</tr>
 <tr valign="bottom">
 <td colspan="3"><br /></td>
 </tr>
@@ -283,9 +284,14 @@ names</td>
 <td valign="top"><a href="#top">Top</a></td>
 </tr>
 <tr>
-<td width="30%" class="tabletitle">Option</td>
-<td width="30%" class="tabletitle">Type</td>
+<td class="tabletitle">Option</td>
+<td class="tabletitle">Type</td>
 <td class="tabletitle">Default</td>
+</tr>
+<tr>
+<td><a href="#break-before-br">break-before-br</a></td>
+<td>Boolean</td>
+<td>no</td>
 </tr>
 <tr>
 <td><a href="#indent">indent</a></td>
@@ -313,9 +319,24 @@ names</td>
 <td>yes</td>
 </tr>
 <tr>
+<td><a href="#punctuation-wrap">punctuation-wrap</a></td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
+<td><a href="#split">split</a> (Tidy Classic)</td>
+<td>Boolean</td>
+<td>no</td>
+</tr>
+<tr>
 <td><a href="#tab-size">tab-size</a></td>
 <td>Integer</td>
 <td>4</td>
+</tr>
+<tr>
+<td><a href="#vertical-space">vertical-space</a></td>
+<td>Boolean</td>
+<td>no</td>
 </tr>
 <tr>
 <td><a href="#wrap">wrap</a></td>
@@ -361,8 +382,8 @@ names</td>
 <td valign="top"><a href="#top">Top</a></td>
 </tr>
 <tr>
-<td width="30%" class="tabletitle">Option</td>
-<td width="30%" class="tabletitle">Type</td>
+<td class="tabletitle">Option</td>
+<td class="tabletitle">Type</td>
 <td class="tabletitle">Default</td>
 </tr>
 <tr>
@@ -386,6 +407,11 @@ names</td>
 <td></td>
 </tr>
 <tr>
+<td><a href="#newline">newline</a></td>
+<td>enum</td>
+<td><em>Platform Dependent</em></td>
+</tr>
+<tr>
 <td><a href="#output-bom">output-bom</a></td>
 <td>AutoBool</td>
 <td>auto</td>
@@ -394,11 +420,6 @@ names</td>
 <td><a href="#output-encoding">output-encoding</a></td>
 <td>Encoding</td>
 <td>ascii</td>
-</tr>
-<tr>
-<td><a href="#newline">newline</a></td>
-<td>enum</td>
-<td><em>Platform Dependent</em></td>
 </tr>
 <tr valign="bottom">
 <td colspan="3"><br /></td>
@@ -409,24 +430,19 @@ names</td>
 <td valign="top"><a href="#top">Top</a></td>
 </tr>
 <tr>
-<td width="30%" class="tabletitle">Option</td>
-<td width="30%" class="tabletitle">Type</td>
+<td class="tabletitle">Option</td>
+<td class="tabletitle">Type</td>
 <td class="tabletitle">Default</td>
-</tr>
-<tr>
-<td><a href="#fix-backslash">fix-backslash</a></td>
-<td>Boolean</td>
-<td>yes</td>
-</tr>
-<tr>
-<td><a href="#output-file">output-file</a></td>
-<td>String</td>
-<td></td>
 </tr>
 <tr>
 <td><a href="#error-file">error-file</a></td>
 <td>String</td>
 <td></td>
+</tr>
+<tr>
+<td><a href="#fix-backslash">fix-backslash</a></td>
+<td>Boolean</td>
+<td>yes</td>
 </tr>
 <tr>
 <td><a href="#force-output">force-output</a></td>
@@ -439,12 +455,27 @@ names</td>
 <td>no</td>
 </tr>
 <tr>
+<td><a href="#keep-time">keep-time</a></td>
+<td>Boolean</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><a href="#output-file">output-file</a></td>
+<td>String</td>
+<td></td>
+</tr>
+<tr>
 <td><a href="#quiet">quiet</a></td>
 <td>Boolean</td>
 <td>no</td>
 </tr>
 <tr>
-<td><a href="#keep-time">keep-time</a></td>
+<td><a href="#slide-style">slide-style</a> (Tidy Classic)</td>
+<td>Name</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="#tidy-mark">tidy-mark</a></td>
 <td>Boolean</td>
 <td>yes</td>
 </tr>
@@ -452,11 +483,6 @@ names</td>
 <td><a href="#write-back">write-back</a></td>
 <td>Boolean</td>
 <td>no</td>
-</tr>
-<tr>
-<td><a href="#tidy-mark">tidy-mark</a></td>
-<td>Boolean</td>
-<td>yes</td>
 </tr>
 <tr valign="bottom">
 <td colspan="3"><br /></td>
@@ -490,25 +516,6 @@ names</td>
 <td colspan="2">This option specifies if Tidy should add the XML declaration when
 outputting XML or XHTML. Note that if the input already includes an
 &lt;?xml ... ?&gt; declaration then this option will be ignored.</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="add-xml-pi"></a>add-xml-pi</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option is the same as the
-add-xml-decl option.</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -596,21 +603,19 @@ should strip Microsoft specific HTML from Word 2000 documents, and output spaces
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="break-before-br"></a>break-before-br</td>
+<td class="tabletitle" valign="top"><a name="css-prefix"></a>css-prefix</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
 <tr>
 <td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false,
-1/0</b></td>
+  Type: <b>String</b><br />
+  Default: <b>-none-</b></td>
 <td align="right" valign="top">
 </td>
 </tr>
 <tr>
-<td colspan="2">This option specifies if Tidy should output a line break before each
-&lt;BR&gt; element. </td>
+<td colspan="2">This option specifies the prefix that
+Tidy uses for styles rules. By default, "c" will be used.</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1000,6 +1005,26 @@ documents. </td>
 <td><br /></td>
 </tr>
 <tr>
+<td class="tabletitle" valign="top"><a name="merge-divs"></a>merge-divs</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>yes</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">Can be used to modify behavior of -c (--clean yes) option.
+This option specifies if Tidy should merge nested &lt;div&gt; such as
+"&lt;div&gt;&lt;div&gt;...&lt;/div&gt;&lt;/div&gt;".</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
 <td class="tabletitle" valign="top"><a name="ncr"></a>ncr</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -1130,6 +1155,25 @@ than the built-in HTML entities (&amp;amp;, &amp;lt;, &amp;gt; and
 <td><br /></td>
 </tr>
 <tr>
+<td class="tabletitle" valign="top"><a name="output-html"></a>output-html</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy
+should generate pretty printed output, writing it as HTML.</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
 <td class="tabletitle" valign="top"><a name="output-xhtml"></a>output-xhtml</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -1210,7 +1254,7 @@ should output unadorned &amp; characters as &amp;amp;. </td>
 </tr>
 <tr>
 <td colspan="2">This option specifies if Tidy
-should output " characters as &amp;quot; as is preferred by some editing
+should output &quot; characters as &amp;quot; as is preferred by some editing
 environments. The apostrophe character ' is written out as &amp;#39; since
 many web browsers don't yet support &amp;apos;. </td>
 </tr>
@@ -1298,45 +1342,6 @@ pages as a portion of another page.</td>
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="slide-style"></a>slide-style (Tidy Classic only)</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Name</b><br />
-  Default: <b>-none-</b><br /></td>
-<td align="right" valign="top"><a href="#split">split</a></td>
-</tr>
-<tr>
-<td colspan="2">Currently not
-used.</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="split"></a>split (Tidy Classic only)</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f,
-true/false, 1/0</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies if Tidy should create a sequence of
-slides from the input, splitting the markup prior to each successive
-&lt;H2&gt;. The slides are written to "slide001.html", "slide002.html" etc.
-</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
 <td class="tabletitle" valign="top"><a name="uppercase-attributes"></a>uppercase-attributes</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -1408,42 +1413,23 @@ VML.</td>
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="gnu-emacs"></a>gnu-emacs</td>
+<td class="tabletitle" valign="top"><a name="accessibility-check"></a>accessibility-check</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
 <tr>
 <td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false,
-1/0</b></td>
+  Type: <b>Integer</b><br />
+  Default: <b>0</b><br />
+  Example: <b>0, 1, 2, 3</b></td>
 <td align="right" valign="top">
 </td>
 </tr>
 <tr>
-<td colspan="2">This option specifies if Tidy should change the format for reporting
-errors and warnings to a format that is more easily parsed by GNU Emacs.
-</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="quiet"></a>quiet</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>no</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies if Tidy
-should output the summary of the numbers of errors and warnings, or the
-welcome or informational messages.</td>
+<td colspan="2">This option specifies what level of accessibility checking, if any,
+that Tidy should do. Level 0 is equivalent to Tidy Classic's accessibility checking. 
+For more information on Tidy's accessibility checking, visit the 
+<a href="http://www.aprompt.ca/Tidy/accessibilitychecks.html">
+Adaptive Technology Resource Centre at the University of Toronto</a>. </td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1486,33 +1472,31 @@ should suppress warnings. This can be useful when a few errors are hidden
 in a flurry of warnings. </td>
 </tr>
 <tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="accessibility-check"></a>accessibility-check</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>Integer</b><br />
-  Default: <b>0</b><br />
-  Example: <b>0, 1, 2, 3</b></td>
-<td align="right" valign="top">
-</td>
-</tr>
-<tr>
-<td colspan="2">This option specifies what level of accessibility checking, if any,
-that Tidy should do. Level 0 is equivalent to Tidy Classic's accessibility checking. 
-For more information on Tidy's accessibility checking, visit the 
-<a href="http://www.aprompt.ca/Tidy/accessibilitychecks.html">
-Adaptive Technology Resource Centre at the University of Toronto</a>. </td>
-</tr>
-<tr>
 <td><br /><br /></td>
 </tr>
 <tr valign="bottom">
 <td valign="top" colspan="2" class='h2'><a name="PrettyPrintReference"></a>Pretty Print Options Reference
 </td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="break-before-br"></a>break-before-br</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false,
+1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should output a line break before each
+&lt;BR&gt; element. </td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1620,6 +1604,48 @@ finds significant errors (see force-output).</td>
 <td><br /></td>
 </tr>
 <tr>
+<td class="tabletitle" valign="top"><a name="punctuation-wrap"></a>punctuation-wrap</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no,
+t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should line
+wrap after some Unicode or Chinese punctuation characters.</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="split"></a>split (Tidy Classic only)</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f,
+true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should create a sequence of
+slides from the input, splitting the markup prior to each successive
+&lt;H2&gt;. The slides are written to "slide001.html", "slide002.html" etc.
+</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
 <td class="tabletitle" valign="top"><a name="tab-size"></a>tab-size</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -1636,6 +1662,26 @@ finds significant errors (see force-output).</td>
 specifies the number of columns that Tidy uses between successive tab
 stops. It is used to map tabs to spaces when reading the input. Tidy never
 outputs tabs. </td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="vertical-space"></a>vertical-space</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no,
+t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should add some empty
+lines for readability.</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1800,7 +1846,7 @@ break.</td>
 <td align="right" valign="top"><a href="#char-encoding">char-encoding</a></td>
 </tr>
 <tr>
-<td colspan="2">Can be used to modify behavior of -c (--clean yes) option.  Defaults to "yes" when using -c.  Set to "no" to prevent converting &gt;emdash;, &amp;rdquo;, and other named character entities to their ascii equivalents.</td>
+<td colspan="2">Can be used to modify behavior of -c (--clean yes) option.  Defaults to "yes" when using -c.  Set to "no" to prevent converting &amp;emdash;, &amp;rdquo;, and other named character entities to their ascii equivalents.</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1926,7 +1972,7 @@ win1252, ibm858).</td>
 </td>
 </tr>
 <tr>
-<td colspan="2">The default is appropriate to the current platform: CRLF on Windows and OS/2, CR on the Mac and LF everywhere else (Unix and Linux).</td>
+<td colspan="2">The default is appropriate to the current platform: CRLF on PC-DOS, MS-Windows and OS/2, CR on Classic Mac OS, and LF everywhere else (Unix and Linux).</td>
 </tr>
 <tr>
 <td><br /><br /></td>
@@ -1934,6 +1980,24 @@ win1252, ibm858).</td>
 <tr valign="bottom">
 <td valign="top" colspan="2" class='h2'><a name="MiscellaneousReference"></a>Miscellaneous Options Reference
 </td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="error-file"></a>error-file</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>String</b><br />
+  Default: <b>-none-</b><br /></td>
+<td align="right" valign="top"><a href="#output-file">output-file</a></td>
+</tr>
+<tr>
+<td colspan="2">This option specifies the error file
+Tidy uses for errors and warnings. Normally errors and warnings are output
+to "stderr".</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -1954,41 +2018,6 @@ win1252, ibm858).</td>
 <td colspan="2">This option
 specifies if Tidy should replace backslash characters "\" in URLs by
 forward slashes "/". </td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="output-file"></a>output-file</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>String</b><br />
-  Default: <b>-none-</b><br /></td>
-<td align="right" valign="top"><a href="#error-file">error-file</a></td>
-</tr>
-<tr>
-<td colspan="2">This option specifies the output file
-Tidy uses for markup. Normally markup is written to "stdout".</td>
-</tr>
-<tr>
-<td><br /></td>
-</tr>
-<tr>
-<td class="tabletitle" valign="top"><a name="error-file"></a>error-file</td>
-<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
-</tr>
-<tr>
-<td valign="top">
-  Type: <b>String</b><br />
-  Default: <b>-none-</b><br /></td>
-<td align="right" valign="top"><a href="#output-file">output-file</a></td>
-</tr>
-<tr>
-<td colspan="2">This option specifies the error file
-Tidy uses for errors and warnings. Normally errors and warnings are output
-to "stderr".</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -2016,6 +2045,27 @@ intention. </td>
 <td><br /></td>
 </tr>
 <tr>
+<td class="tabletitle" valign="top"><a name="gnu-emacs"></a>gnu-emacs</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false,
+1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy should change the format for reporting
+errors and warnings to a format that is more easily parsed by GNU Emacs.
+</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
 <td class="tabletitle" valign="top"><a name="keep-time"></a>keep-time</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
@@ -2038,7 +2088,24 @@ that this feature may not work on some platforms. </td>
 <td><br /></td>
 </tr>
 <tr>
-<td class="tabletitle" valign="top"><a name="write-back"></a>write-back</td>
+<td class="tabletitle" valign="top"><a name="output-file"></a>output-file</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>String</b><br />
+  Default: <b>-none-</b><br /></td>
+<td align="right" valign="top"><a href="#error-file">error-file</a></td>
+</tr>
+<tr>
+<td colspan="2">This option specifies the output file
+Tidy uses for markup. Normally markup is written to "stdout".</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="quiet"></a>quiet</td>
 <td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
 </tr>
 <tr>
@@ -2051,9 +2118,25 @@ that this feature may not work on some platforms. </td>
 </tr>
 <tr>
 <td colspan="2">This option specifies if Tidy
-should write back the tidied markup to the same file it read from. You are
-advised to keep copies of important files before tidying them, as on rare
-occasions the result may not be what you expect. </td>
+should output the summary of the numbers of errors and warnings, or the
+welcome or informational messages.</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="slide-style"></a>slide-style (Tidy Classic only)</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Name</b><br />
+  Default: <b>-none-</b><br /></td>
+<td align="right" valign="top"><a href="#split">split</a></td>
+</tr>
+<tr>
+<td colspan="2">Currently not
+used.</td>
 </tr>
 <tr>
 <td><br /></td>
@@ -2075,6 +2158,27 @@ t/f, true/false, 1/0</b></td>
 <td colspan="2">This option specifies if Tidy should add a meta
 element to the document head to indicate that the document has been tidied.
 Tidy won't add a meta element if one is already present.</td>
+</tr>
+<tr>
+<td><br /></td>
+</tr>
+<tr>
+<td class="tabletitle" valign="top"><a name="write-back"></a>write-back</td>
+<td class="tabletitlelink" valign="top" align="right"><a href="#top">Top</a></td>
+</tr>
+<tr>
+<td valign="top">
+  Type: <b>Boolean</b><br />
+  Default: <b>no</b><br />
+  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
+<td align="right" valign="top">
+</td>
+</tr>
+<tr>
+<td colspan="2">This option specifies if Tidy
+should write back the tidied markup to the same file it read from. You are
+advised to keep copies of important files before tidying them, as on rare
+occasions the result may not be what you expect. </td>
 </tr>
 </table>
 </body>
