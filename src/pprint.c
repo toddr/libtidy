@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/30 20:06:59 $ 
-    $Revision: 1.5 $ 
+    $Date: 2001/07/01 22:56:40 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -1569,10 +1569,14 @@ Node *FindBody(Node *root)
 
 /* split parse tree by h2 elements and output to separate files */
 
-/* counts number of h2 children belonging to node */
+/* counts number of h2 children (if any) belonging to node */
 int CountSlides(Node *node)
 {
-    int n = 1;
+    int n = 1;	/* assume minimum of 1 slide */
+
+	/* #431716 - fix by Terry Teague 01 Jul 01 */
+    if (node && node->content && node->content->tag == tag_h2)
+    	n--;	/* "first" slide is empty, so ignore it */
 
     for (node = node->content; node; node = node->next)
         if (node->tag == tag_h2)
@@ -1642,7 +1646,7 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
     PCondFlushLine(fout, indent);
 
     /* first print the h2 element and navbar */
-    if (slidecontent->tag == tag_h2)
+    if (slidecontent && slidecontent->tag == tag_h2)	/* #431716 - fix by Terry Teague 01 Jul 01 */
     {
         PrintNavBar(fout, indent);
 
@@ -1674,7 +1678,7 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
         slidecontent = slidecontent->next;
     }
     
-    /* now continue until we reach the next h2 */
+    /* now continue until we reach the next h2 (or end) */
 
     last = null;
     content = slidecontent;
