@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/04/09 03:40:36 $ 
-    $Revision: 1.56 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/04 23:53:52 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -21,7 +21,7 @@
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
 
-char *release_date = "1st April 2002";
+char *release_date = "1st May 2002";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
@@ -151,12 +151,12 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
         ReportPosition(lexer);
 
         /* An encoding mismatch is currently treated as a non-fatal error */
-    if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
-    {
-        /* actual encoding passed in "c" */
+        if ((code & ~DISCARDED_CHAR) == ENCODING_MISMATCH)
+        {
+            /* actual encoding passed in "c" */
             lexer->badChars |= ENCODING_MISMATCH;
             tidy_out(lexer->errout, "specified input encoding (%s) does not match actual input encoding (%s)",
-                CharEncodingName(lexer->in->encoding), CharEncodingName(c));
+                     CharEncodingName(lexer->in->encoding), CharEncodingName(c));
         }
         else if ((code & ~DISCARDED_CHAR) == VENDOR_SPECIFIC_CHARS)
         {
