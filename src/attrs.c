@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 08:00:12 $ 
-    $Revision: 1.87 $ 
+    $Date: 2003/05/14 09:04:37 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -948,7 +948,14 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
     if ( attribute != NULL )
     {
         if (attribute->versions & VERS_XML)
+        {
             doc->lexer->isvoyager = yes;
+            if (!cfgBool(doc, TidyHtmlOut))
+            {
+                SetOptionBool(doc, TidyXhtmlOut, yes);
+                SetOptionBool(doc, TidyXmlOut, yes);
+            }
+        }
 
         ConstrainVersion(doc, AttributeVersions(node, attval));
         
