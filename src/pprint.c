@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 23:46:21 $ 
-    $Revision: 1.90 $ 
+    $Date: 2004/03/06 23:49:14 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -1717,99 +1717,6 @@ static Bool HasCDATA( Lexer* lexer, Node* node )
     return ( NULL != tmbsubstrn( start, len, CDATA_START ));
 }
 
-
-#if 0 
-static Bool StartsWithCDATA( Lexer* lexer, Node* node, char* commentStart )
-{
-    /* Scan forward through the textarray. Since the characters we're
-    ** looking for are < 0x7f, we don't have to do any UTF-8 decoding.
-    */
-    int i = node->start, j, end = node->end;
-
-    if ( node->type != TextNode )
-        return no;
-
-    /* Skip whitespace. */
-    while ( i < end && lexer->lexbuf[i] <= ' ' )
-        ++i;
-
-    /* Check for starting comment delimiter. */
-    for ( j = 0; j < mbstrlen(commentStart); ++j )
-    {
-        if ( i >= end || lexer->lexbuf[i] != commentStart[j] )
-            return no;
-        ++i;
-    }
-
-    /* Skip whitespace. */
-    while ( i < end && lexer->lexbuf[i] <= ' ' )
-        ++i;
-
-    /* Check for "<![CDATA[". */
-    for ( j = 0; j < mbstrlen(CDATA_START); ++j )
-    {
-        if (i >= end || lexer->lexbuf[i] != CDATA_START[j])
-            return no;
-        ++i;
-    }
-
-    return yes;
-}
-
-
-static Bool EndsWithCDATA( Lexer* lexer, Node* node, 
-                           char* commentStart, char* commentEnd )
-{
-    /* Scan backward through the buff. Since the characters we're
-    ** looking for are < 0x7f, we don't have do any UTF-8 decoding. Note
-    ** that this is true even though we are scanning backwards because every
-    ** byte of a UTF-8 multibyte character is >= 0x80.
-    */
-
-    int i = node->end - 1, j, start = node->start;
-
-    if ( node->type != TextNode )
-        return no;
-
-    /* Skip whitespace. */
-    while ( i >= start && (lexer->lexbuf[i] & 0xff) <= ' ' )
-        --i;
-
-    /* Check for ending comment delimiter. */
-    for ( j = mbstrlen(commentEnd) - 1; j >= 0; --j )
-    {
-        if (i < start || lexer->lexbuf[i] != commentEnd[j])
-            return no;
-        --i;
-    }
-
-    /* Skip whitespace. */
-    while (i >= start && (lexer->lexbuf[i] & 0xff) <= ' ')
-        --i;
-
-    /* Check for "]]>". */
-    for (j = mbstrlen(CDATA_END) - 1; j >= 0; j--)
-    {
-        if (i < start || lexer->lexbuf[i] != CDATA_END[j])
-            return no;
-        --i;
-    }
-
-    /* Skip whitespace. */
-    while (i >= start && lexer->lexbuf[i] <= ' ')
-        --i;
-
-    /* Check for starting comment delimiter. */
-    for ( j = mbstrlen(commentStart) - 1; j >= 0; --j )
-    {
-        if ( i < start || lexer->lexbuf[i] != commentStart[j] )
-            return no;
-        --i;
-    }
-
-    return yes;
-}
-#endif /* 0 */
 
 void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 {
