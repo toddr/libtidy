@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/04 04:54:05 $ 
-    $Revision: 1.69 $ 
+    $Date: 2003/05/05 21:26:54 $ 
+    $Revision: 1.70 $ 
 
 */
 
@@ -1426,47 +1426,60 @@ static void PPrintComment( TidyDocImpl* doc, uint indent, Node* node )
 static void PPrintDocType( TidyDocImpl* doc, uint indent, Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
-    uint i, c, mode = 0, xtra = 10;
-    Bool q = cfgBool( doc, TidyQuoteMarks );
-    SetOptionBool( doc, TidyQuoteMarks, no );
+    uint wraplen = cfg( doc, TidyWrapLen );
+    uint spaces = cfg( doc, TidyIndentSpaces );
+    AttVal* fpi = GetAttrByName(node, "PUBLIC");
+    AttVal* sys = GetAttrByName(node, "SYSTEM");
+
+    /* todo: handle non-ASCII characters in FPI / SI / node->element */
 
     SetWrap( doc, indent );
     PCondFlushLine( doc, indent );
 
     AddString( pprint, "<!DOCTYPE " );
     SetWrap( doc, indent );
+    AddString(pprint, node->element);
 
-    for (i = node->start; i < node->end; ++i)
+    if (fpi && fpi->value)
     {
-        CheckWrapIndent( doc, indent+xtra );
+        AddString(pprint, " PUBLIC ");
+        AddChar(pprint, fpi->delim);
+        AddString(pprint, fpi->value);
+        AddChar(pprint, fpi->delim);
+    }
 
-        c = doc->lexer->lexbuf[i];
+    if (fpi && fpi->value && sys && sys->value)
+    {
+        uint i = pprint->linelen - (tmbstrlen(sys->value) + 2) - 1;
+        if (!(i>0&&tmbstrlen(sys->value)+2+i<wraplen&&i<=(spaces?spaces:2)*2))
+            i = 0;
 
-        /* inDTDSubset? */
-        if ( mode & CDATA ) {
-            if ( c == ']' )
-                mode &= ~CDATA;
-        }
-        else if ( c == '[' )
-            mode |= CDATA;
+        PCondFlushLine(doc, i);
+        if (pprint->linelen)
+            AddChar(pprint, ' ');
+    }
+    else if (sys && sys->value)
+    {
+        AddString(pprint, " SYSTEM ");
+    }
 
-        /* look for UTF-8 multibyte character */
-        if (c > 0x7F)
-             i += GetUTF8( doc->lexer->lexbuf + i, &c );
+    if (sys && sys->value)
+    {
+        AddChar(pprint, sys->delim);
+        AddString(pprint, sys->value);
+        AddChar(pprint, sys->delim);
+    }
 
-        if ( c == '\n' )
-        {
-            PFlushLine( doc, indent );
-            continue;
-        }
-
-        PPrintChar( doc, c, mode );
+    if (node->content)
+    {
+        PCondFlushLine(doc, indent);
+        AddChar(pprint, '[');
+        PPrintText(doc, CDATA, 0, node->content);
+        AddChar(pprint, ']');
     }
 
     SetWrap( doc, 0 );
     AddChar( pprint, '>' );
-
-    SetOptionBool( doc, TidyQuoteMarks, q );
     PCondFlushLine( doc, indent );
 }
 

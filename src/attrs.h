@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 16:52:54 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/05/05 21:26:48 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -145,6 +145,8 @@ AttVal* GetAttrByName( Node *node, ctmbstr name );
 
 AttVal* AddAttribute( TidyDocImpl* doc,
                       Node *node, ctmbstr name, ctmbstr value );
+
+AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr value);
 
 Bool IsUrl( TidyDocImpl* doc, ctmbstr attrname );
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.34 $ 
+    $Date: 2003/05/05 21:26:49 $ 
+    $Revision: 1.35 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2210,7 +2210,7 @@ static Bool AttrCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
         /* No align, except on: <col>, <colgroup>, <tbody>, <td>,
         ** <tfoot>, <th>, <thead>, <tr>
         */
-        if ( attrIsALIGN(attr) && VERS_HTML40_STRICT==versWanted )
+        if ( attrIsALIGN(attr) && VERS_HTML40_STRICT & versWanted )
         {
             switch ( TagId(node) )
             {
@@ -2270,7 +2270,7 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
                 compliant = no;
             }
         }
-        if ( compliant && VERS_HTML40_STRICT == versWanted )
+        if ( compliant && VERS_HTML40_STRICT & versWanted )
         {
             AttVal* attr = NULL;
             switch ( TagId(node) )

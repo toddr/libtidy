@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/04 05:54:24 $ 
-    $Revision: 1.77 $ 
+    $Date: 2003/05/05 21:26:46 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -444,6 +444,20 @@ AttVal* AddAttribute( TidyDocImpl* doc,
         here->next = av;
     }
     return av;
+}
+
+AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr value)
+{
+    AttVal* old = GetAttrByName(node, name);
+
+    if (old)
+    {
+        MemFree(old->value);
+        old->value = tmbstrdup(value);
+        return old;
+    }
+    else
+        return AddAttribute(doc, node, name, value);
 }
 
 static Bool CheckAttrType( TidyDocImpl* doc,

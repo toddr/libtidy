@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.98 $ 
+    $Date: 2003/05/05 21:26:49 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -67,39 +67,113 @@ static void AddAttrToList( AttVal** list, AttVal* av );
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
 uint lexmap[128];
 
-#define XHTML_NAMESPACE "http://www.w3.org/1999/xhtml"
-
-/* the 3 URIs  for the XHTML 1.0 DTDs */
-#define voyager_loose    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-#define voyager_strict   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
-#define voyager_frameset "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
-
-/* URI for XHTML 1.1 and XHTML Basic 1.0 */
-#define voyager_11       "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-#define voyager_basic    "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"
-
-#define W3C_VERSIONS 10
-
-struct _vers
+struct _doctypes
 {
+    uint score;
+    uint vers;
+    uint compatvers;
     ctmbstr name;
-    ctmbstr voyager_name;
-    ctmbstr profile;
-    uint    code;
-}
-const W3C_Version[] =
+    ctmbstr fpi;
+    ctmbstr si;
+} const W3C_Doctypes[] =
 {
-    {"HTML 4.01", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
-    {"HTML 4.01 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
-    {"HTML 4.01 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
-    {"HTML 4.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
-    {"HTML 4.0 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
-    {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
-    {"HTML 3.2", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
-    {"HTML 3.2 Final", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
-    {"HTML 3.2 Draft", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
-    {"HTML 2.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML20}
+  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                      },
+  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
+  {  2, HT20, VERS_HTML20,        "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                      },
+  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                      },
+  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                      },
+  {  1, HT32, VERS_HTML32,        "HTML 3.2",               "-//W3C//DTD HTML 3.2 Draft//EN",         NULL,                                                      },
+  {  6, H40S, VERS_HTML40_STRICT, "HTML 4.0 Strict",        "-//W3C//DTD HTML 4.0//EN",               "http://www.w3.org/TR/REC-html40/strict.dtd"               },
+  {  8, H40T, VERS_HTML40_LOOSE,  "HTML 4.0 Transitional",  "-//W3C//DTD HTML 4.0 Transitional//EN",  "http://www.w3.org/TR/REC-html40/loose.dtd"                },
+  {  7, H40F, VERS_FRAMESET,      "HTML 4.0 Frameset",      "-//W3C//DTD HTML 4.0 Frameset//EN",      "http://www.w3.org/TR/REC-html40/frameset.dtd"             },
+  {  3, H41S, VERS_HTML40_STRICT, "HTML 4.01 Strict",       "-//W3C//DTD HTML 4.01//EN",              "http://www.w3.org/TR/html4/strict.dtd"                    },
+  {  5, H41T, VERS_HTML40_LOOSE,  "HTML 4.01 Transitional", "-//W3C//DTD HTML 4.01 Transitional//EN", "http://www.w3.org/TR/html4/loose.dtd"                     },
+  {  4, H41F, VERS_FRAMESET,      "HTML 4.01 Frameset",     "-//W3C//DTD HTML 4.01 Frameset//EN",     "http://www.w3.org/TR/html4/frameset.dtd"                  },
+  {  9, X10S, VERS_HTML40_STRICT, "XHTML 1.0 Strict",       "-//W3C//DTD XHTML 1.0 Strict//EN",       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"        },
+  { 11, X10T, VERS_HTML40_LOOSE,  "XHTML 1.0 Transitional", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"  },
+  { 10, X10F, VERS_FRAMESET,      "XHTML 1.0 Frameset",     "-//W3C//DTD XHTML 1.0 Frameset//EN",     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"      },
+  { 12, XH11, XH11,               "XHTML 1.1",              "-//W3C//DTD XHTML 1.1//EN",              "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"             },
+  { 13, XB10, XB10,               "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"       },
+
+  /* final entry */
+  {  0,    0, 0,                  NULL,                     NULL,                                     NULL                                                       }
 };
+
+int HTMLVersion(TidyDocImpl* doc)
+{
+    uint i;
+    uint j = 0;
+    uint score = 0;
+    uint vers = doc->lexer->versions;
+    uint dtver = doc->lexer->doctype;
+    TidyDoctypeModes dtmode = cfg(doc, TidyDoctypeMode);
+    Bool xhtml = (cfgBool(doc, TidyXmlOut) || doc->lexer->isvoyager) &&
+                 !cfgBool(doc, TidyHtmlOut);
+    Bool html4 = dtmode == TidyDoctypeStrict || dtmode == TidyDoctypeLoose || VERS_FROM40 & dtver;
+
+    for (i = 0; W3C_Doctypes[i].name; ++i)
+    {
+        if ((xhtml && !(VERS_XHTML & W3C_Doctypes[i].vers)) ||
+            (html4 && !(VERS_FROM40 & W3C_Doctypes[i].vers)))
+            continue;
+
+        if (vers & W3C_Doctypes[i].vers &&
+            (W3C_Doctypes[i].score < score || !score))
+        {
+            score = W3C_Doctypes[i].score;
+            j = i;
+        }
+    }
+
+    if (score)
+        return W3C_Doctypes[j].vers;
+
+    return VERS_UNKNOWN;
+}
+
+ctmbstr GetFPIFromVers(uint vers)
+{
+    uint i;
+
+    for (i = 0; W3C_Doctypes[i].name; ++i)
+        if (W3C_Doctypes[i].vers == vers)
+            return W3C_Doctypes[i].fpi;
+
+    return NULL;
+}
+
+ctmbstr GetSIFromVers(uint vers)
+{
+    uint i;
+
+    for (i = 0; W3C_Doctypes[i].name; ++i)
+        if (W3C_Doctypes[i].vers == vers)
+            return W3C_Doctypes[i].si;
+
+    return NULL;
+}
+
+ctmbstr GetNameFromVers(uint vers)
+{
+    uint i;
+
+    for (i = 0; W3C_Doctypes[i].name; ++i)
+        if (W3C_Doctypes[i].vers == vers)
+            return W3C_Doctypes[i].name;
+
+    return NULL;
+}
+
+uint GetVersFromFPI(ctmbstr fpi)
+{
+    uint i;
+
+    for (i = 0; W3C_Doctypes[i].name; ++i)
+        if (tmbstrcasecmp(W3C_Doctypes[i].fpi, fpi) == 0)
+            return W3C_Doctypes[i].vers;
+
+    return 0;
+}
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */
@@ -1328,140 +1402,29 @@ Bool AddGenerator( TidyDocImpl* doc )
 /* examine <!DOCTYPE> to identify version */
 int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 {
-    Lexer* lexer = doc->lexer;
-    tmbstr p, s = lexer->lexbuf+doctype->start;
-    ctmbstr nm;
-    uint i, j;
-    uint len;
+    AttVal * fpi = GetAttrByName(doctype, "PUBLIC");
+    uint vers;
 
-    /* if root tag for doctype isn't html give up now */
-    if ( tmbstrncasecmp(s, "html ", 5) != 0 )
+    if (!fpi || !fpi->value)
         return 0;
 
-    s += 5; /* if all is well s -> SYSTEM or PUBLIC */
+    vers = GetVersFromFPI(fpi->value);
 
-    if ( !CheckDocTypeKeyWords(lexer, doctype) )
-        ReportWarning( doc, doctype, NULL, DTYPE_NOT_UPPER_CASE );
+    /* todo: add a warning if case does not match? */
+    MemFree(fpi->value);
+    fpi->value = tmbstrdup(GetFPIFromVers(vers));
 
-
-    /* give up if all we are given is the system id for the doctype */
-    if ( tmbstrncasecmp(s, "SYSTEM ", 7) == 0 )
-    {
-        /* but at least ensure the case is correct */
-        if ( tmbstrncmp(s, "SYSTEM", 6) != 0 )
-             memcpy( s, "SYSTEM", 6 );  /* No NULL terminator! */
-        return 0;  /* unrecognized */
-    }
-
-    if (tmbstrncasecmp(s, "PUBLIC ", 7) == 0)
-    {
-        if ( tmbstrncmp(s, "PUBLIC", 6) != 0 )
-            memcpy( s, "PUBLIC", 6 );   /* No NULL terminator! */
-    }
-    else if ( lexer->doctype == VERS_UNKNOWN )
-        lexer->bad_doctype = yes;
-
-    for ( i = doctype->start; i < doctype->end; ++i )
-    {
-        if ( lexer->lexbuf[i] == '"' )
-        {
-            if ( tmbstrncmp(lexer->lexbuf+i+1, "-//W3C//DTD ", 12) == 0 )
-            {
-                p = lexer->lexbuf + i + 13;
-
-                /* compute length of identifier e.g. "HTML 4.0 Transitional" */
-                for ( j=i+13; j<doctype->end && lexer->lexbuf[j] != '/'; ++j )
-                    /**/;
-                len = j - i - 13;
-
-                for (j = 0; j < W3C_VERSIONS; ++j)
-                {
-                    nm = W3C_Version[j].name;
-                    if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
-                        return W3C_Version[j].code;
-
-                    nm = W3C_Version[j].voyager_name;
-                    if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
-                        return W3C_Version[j].code;
-                }
-
-                /* else unrecognized version */
-            }
-            else if ( tmbstrncmp(lexer->lexbuf+i+1, "-//IETF//DTD ", 13) == 0 )
-            {
-                p = lexer->lexbuf + i + 14;
-
-                /* compute length of identifier e.g. "HTML 2.0" */
-                for ( j=i+14; j<doctype->end && lexer->lexbuf[j] != '/'; ++j )
-                    /**/;
-                len = j - i - 14;
-
-                nm = W3C_Version[0].name;
-                if ( len == tmbstrlen(nm) && tmbstrncmp(p, nm, len) == 0 )
-                    return W3C_Version[0].code;
-
-                /* else unrecognized version */
-            }
-            break;
-        }
-    }
-
-    return 0;
-}
-
-/* return true if substring s is in p and isn't all in upper case */
-/* this is used to check the case of SYSTEM, PUBLIC, DTD and EN */
-/* len is how many characters to check in p */
-
-static Bool FindBadSubString( ctmbstr s, ctmbstr p, int len )
-{
-    int n = tmbstrlen(s);
-
-    while (n < len)
-    {
-        if (tmbstrncasecmp(s, p, n) == 0)
-            return (tmbstrncmp(s, p, n) != 0);
-
-        ++p;
-        --len;
-    }
-
-    return 0;
-}
-
-Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype)
-{
-    ctmbstr s = lexer->lexbuf+doctype->start;
-    int len = doctype->end - doctype->start;
-
-    return !(
-        FindBadSubString("SYSTEM", s, len) ||
-        FindBadSubString("PUBLIC", s, len) ||
-        FindBadSubString("//DTD", s, len) ||
-        FindBadSubString("//W3C", s, len) ||
-        FindBadSubString("//EN", s, len)
-        );
-}
-
-ctmbstr HTMLVersionName( TidyDocImpl* doc )
-{
-    uint vers = ApparentVersion( doc );
-    return HTMLVersionNameFromCode( vers, doc->lexer->isvoyager );
+    return vers;
 }
 
 ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
 {
-  int ix;
-  for ( ix=0; ix < W3C_VERSIONS; ++ix )
-  {
-    if ( vers == W3C_Version[ix].code )
-    {
-        if ( isXhtml )
-            return W3C_Version[ix].voyager_name;
-        return W3C_Version[ix].name;
-    }
-  }
-  return "HTML Proprietary";
+    ctmbstr name = GetNameFromVers(vers);
+
+    if (!name)
+        name = "HTML Proprietary";
+
+    return name;
 }
 
 
@@ -1534,304 +1497,138 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
 Bool SetXHTMLDocType( TidyDocImpl* doc )
 {
     Lexer *lexer = doc->lexer;
-    ctmbstr fpi = NULL, sysid = NULL, dtdsub = NULL, name_space = XHTML_NAMESPACE;
-    int dtdlen = 0;
     Node *doctype = FindDocType( doc );
     uint dtmode = cfg(doc, TidyDoctypeMode);
+    ctmbstr pub = "PUBLIC";
+    ctmbstr sys = "SYSTEM";
 
-    FixHTMLNameSpace( doc, name_space );
+    FixHTMLNameSpace(doc, XHTML_NAMESPACE);
 
-    if ( dtmode == TidyDoctypeOmit )
+    if (dtmode == TidyDoctypeOmit)
     {
-        if ( doctype )
-            DiscardElement( doc, doctype );
+        if (doctype)
+            DiscardElement(doc, doctype);
         return yes;
     }
 
-    if ( dtmode == TidyDoctypeAuto )
+    if (dtmode == TidyDoctypeUser && !cfgStr(doc, TidyDoctype))
+        return no;
+
+    if (!doctype)
     {
-        /* see what flavor of XHTML this document matches */
-        if ( lexer->versions & VERS_HTML40_STRICT )
-        {  /* use XHTML strict */
-            fpi = "-//W3C//DTD XHTML 1.0 Strict//EN";
-            sysid = voyager_strict;
+        doctype = NewDocTypeNode(doc);
+        doctype->element = tmbstrdup("html");
+    }
+    else
+    {
+        doctype->element = tmbstrtolower(doctype->element);
+    }
+
+    switch(dtmode)
+    {
+    case TidyDoctypeStrict:
+        /* XHTML 1.0 Strict */
+        RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10S));
+        RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10S));
+        break;
+    case TidyDoctypeLoose:
+        /* XHTML 1.0 Transitional */
+        RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10T));
+        RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10T));
+        break;
+    case TidyDoctypeUser:
+        /* user defined document type declaration */
+        RepairAttrValue(doc, doctype, pub, cfgStr(doc, TidyDoctype));
+        RepairAttrValue(doc, doctype, sys, "");
+        break;
+    case TidyDoctypeAuto:
+        if (lexer->versions & VERS_HTML40_STRICT)
+        {
+            RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10S));
+            RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10S));
         }
-        else if ( lexer->versions & VERS_FRAMESET )
-        {   /* use XHTML frames */
-            fpi = "-//W3C//DTD XHTML 1.0 Frameset//EN";
-            sysid = voyager_frameset;
+        else if (lexer->versions & VERS_FRAMESET)
+        {
+            RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10F));
+            RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10F));
         }
         else if (lexer->versions & VERS_LOOSE)
         {
-            fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
-            sysid = voyager_loose;
+            RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10T));
+            RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10T));
         }
-        else /* proprietary */
+        else
         {
-            fpi = NULL;
-            sysid = "";
-        
-            if ( doctype )
-                DiscardElement( doc, doctype );
-        }
-    }
-    else if ( dtmode == TidyDoctypeStrict )
-    {
-        fpi = "-//W3C//DTD XHTML 1.0 Strict//EN";
-        sysid = voyager_strict;
-    }
-    else if ( dtmode == TidyDoctypeLoose )
-    {
-        fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
-        sysid = voyager_loose;
-    }
-
-    if ( dtmode == TidyDoctypeUser && cfgStr(doc, TidyDoctype) )
-    {
-        fpi = cfgStr( doc, TidyDoctype );
-        sysid = "";
-    }
-
-    if ( !fpi )
-        return no;
-
-    if ( doctype )
-    {
-      /* Look for internal DTD subset */
-      if ( cfgBool(doc, TidyXhtmlOut) || cfgBool(doc, TidyXmlOut) )
-      {
-        ctmbstr start = lexer->lexbuf + doctype->start;
-        int len = doctype->end - doctype->start + 1;
-        int dtdbeg = tmbstrnchr( start, len, '[' );
-        if ( dtdbeg >= 0 )
-        {
-          int dtdend = tmbstrnchr( start+dtdbeg, len-dtdbeg, ']' );
-          if ( dtdend >= 0 )
-          {
-            dtdlen = dtdend + 1;
-            dtdsub = start + dtdbeg;
-          }
-        }
-      }
-    }
-    else
-    {
-        if ( !(doctype = NewDocTypeNode( doc )) )
+            if (doctype)
+                DiscardElement(doc, doctype);
             return no;
+        }
+        break;
     }
-
-    lexer->txtstart = lexer->txtend = lexer->lexsize;
-
-   /* add public identifier */
-    AddStringLiteral(lexer, "html PUBLIC ");
-
-    /* check if the fpi is quoted or not */
-    if (fpi[0] == '"')
-        AddStringLiteral(lexer, fpi);
-    else
-    {
-        AddStringLiteral(lexer, "\"");
-        AddStringLiteral(lexer, fpi);
-        AddStringLiteral(lexer, "\"");
-    }
-
-    if ( tmbstrlen(sysid) + 6 >= cfg(doc, TidyWrapLen) )
-        AddStringLiteral(lexer, "\n\"");
-    else
-        AddStringLiteral(lexer, "\n    \"");
-
-    /* add system identifier */
-    AddStringLiteral(lexer, sysid);
-    AddStringLiteral(lexer, "\"");
-
-    if ( dtdlen > 0 && dtdsub )
-    {
-      AddCharToLexer( lexer, ' ' );
-      AddStringLiteralLen( lexer, dtdsub, dtdlen );
-    }
-
-    lexer->txtend = lexer->lexsize;
-
-    doctype->start = lexer->txtstart;
-    doctype->end = lexer->txtend;
 
     return no;
 }
-
-int ApparentVersion( TidyDocImpl* doc )
-{
-    Lexer* lexer = doc->lexer;
-    switch (lexer->doctype)
-    {
-    case VERS_UNKNOWN:
-        return HTMLVersion( doc );
-
-    case VERS_HTML20:
-        if ( lexer->versions & VERS_HTML20 )
-            return VERS_HTML20;
-        break;
-
-    case VERS_HTML32:
-        if ( lexer->versions & VERS_HTML32 )
-            return VERS_HTML32;
-        break; /* to replace old version by new */
-
-    case VERS_HTML40_STRICT:
-        if ( lexer->versions & VERS_HTML40_STRICT )
-            return VERS_HTML40_STRICT;
-        break;
-
-    case VERS_HTML40_LOOSE:
-        if ( lexer->versions & VERS_HTML40_LOOSE )
-            return VERS_HTML40_LOOSE;
-        break; /* to replace old version by new */
-
-    case VERS_FRAMESET:
-        if ( lexer->versions & VERS_FRAMESET )
-            return VERS_FRAMESET;
-        break;
-    }
-
-    /* 
-     kludge to avoid error appearing at end of file
-     it would be better to note the actual position
-     when first encountering the doctype declaration
-    */
-    lexer->lines = 1;
-    lexer->columns = 1;
-    ReportWarning( doc, NULL, NULL, INCONSISTENT_VERSION);
-    return HTMLVersion( doc );
-}
-
 
 /* fixup doctype if missing */
 Bool FixDocType( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     Node* doctype = FindDocType( doc );
-    uint i, guessed = VERS_HTML40_STRICT;
     uint dtmode = cfg( doc, TidyDoctypeMode );
+    uint guessed = VERS_UNKNOWN;
+    AttVal* sys;
 
-    if ( lexer->bad_doctype )
-        ReportWarning( doc, doc->root, doctype, MALFORMED_DOCTYPE );
+    if (dtmode == TidyDoctypeAuto &&
+        lexer->versions & lexer->doctype)
+        return yes;
 
-    if ( dtmode == TidyDoctypeOmit )
+    if (dtmode == TidyDoctypeOmit)
     {
-        if ( doctype )
+        if (doctype)
             DiscardElement( doc, doctype );
         return yes;
     }
 
-    if ( cfgBool(doc, TidyXmlOut) )
+    if (cfgBool(doc, TidyXmlOut))
         return yes;
 
-    if ( dtmode == TidyDoctypeStrict )
+    if ((dtmode == TidyDoctypeStrict ||
+         dtmode == TidyDoctypeLoose) && doctype)
     {
-        DiscardElement( doc, doctype );
-        doctype = NULL;
-        guessed = VERS_HTML40_STRICT;
-    }
-    else if ( dtmode == TidyDoctypeLoose )
-    {
-        DiscardElement( doc, doctype );
-        doctype = NULL;
-        guessed = VERS_HTML40_LOOSE;
-    }
-    else if ( dtmode == TidyDoctypeAuto )
-    {
-        if ( doctype )
-        {
-            switch ( lexer->doctype )
-            {
-            case VERS_UNKNOWN:
-                return no;
-
-            case VERS_HTML20:
-                if (lexer->versions & VERS_HTML20)
-                    return yes;
-                break; /* to replace old version by new */
-
-            case VERS_HTML32:
-                if (lexer->versions & VERS_HTML32)
-                    return yes;
-                break; /* to replace old version by new */
-
-            case VERS_HTML40_STRICT:
-                if (lexer->versions & VERS_HTML40_STRICT)
-                    return yes;
-                break; /* to replace old version by new */
-
-            case VERS_HTML40_LOOSE:
-                if (lexer->versions & VERS_HTML40_LOOSE)
-                    return yes;
-                break; /* to replace old version by new */
-
-            case VERS_FRAMESET:
-                if (lexer->versions & VERS_FRAMESET)
-                    return yes;
-                break; /* to replace old version by new */
-            }
-
-            /* INCONSISTENT_VERSION warning is now issued by ApparentVersion() */
-        }
-
-        /* choose new doctype */
-        guessed = HTMLVersion( doc );
+            DiscardElement(doc, doctype);
+            doctype = NULL;
     }
 
-    if ( guessed == VERS_UNKNOWN )
+    switch (dtmode)
+    {
+    case TidyDoctypeStrict:
+        guessed = H41S;
+        break;
+    case TidyDoctypeLoose:
+        guessed = H41T;
+        break;
+    case TidyDoctypeAuto:
+        guessed = HTMLVersion(doc);
+        break;
+    }
+
+    if (guessed == VERS_UNKNOWN)
         return no;
 
-    /* for XML use the Voyager system identifier */
-    if ( !cfgBool(doc, TidyHtmlOut) &&
-         ( cfgBool(doc, TidyXmlOut) || cfgBool(doc, TidyXmlTags) ||
-           lexer->isvoyager ) )
+    if (doctype)
     {
-        if ( doctype )
-            DiscardElement( doc, doctype );
-
-        FixHTMLNameSpace( doc, XHTML_NAMESPACE );
+        doctype->element = tmbstrtolower(doctype->element);
     }
-
-    if ( !doctype )
-    {
-        if ( !(doctype = NewDocTypeNode( doc )) )
-            return no;
-    }
-
-    lexer->txtstart = lexer->txtend = lexer->lexsize;
-
-   /* use the appropriate public identifier */
-    AddStringLiteral(lexer, "html PUBLIC ");
-
-    if ( dtmode == TidyDoctypeUser && cfgStr(doc, TidyDoctype) )
-    { 
-       AddStringLiteral(lexer, "\"" );
-       AddStringLiteral(lexer, cfgStr(doc, TidyDoctype) ); 
-       AddStringLiteral(lexer, "\"" );
-    }
-    else if (guessed == VERS_HTML20)
-        AddStringLiteral(lexer, "\"-//IETF//DTD HTML 2.0//EN\"");
     else
     {
-        AddStringLiteral(lexer, "\"-//W3C//DTD ");
-
-        for (i = 0; i < W3C_VERSIONS; ++i)
-        {
-            if (guessed == W3C_Version[i].code)
-            {
-                AddStringLiteral(lexer, W3C_Version[i].name);
-                break;
-            }
-        }
-
-        AddStringLiteral(lexer, "//EN\"");
+        doctype = NewDocTypeNode(doc);
+        doctype->element = tmbstrdup("html");
     }
 
-    lexer->txtend = lexer->lexsize;
+    RepairAttrValue(doc, doctype, "PUBLIC", GetFPIFromVers(guessed));
 
-    doctype->start = lexer->txtstart;
-    doctype->end = lexer->txtend;
+    if (sys = GetAttrByName(doctype, "SYSTEM"))
+        RemoveAttribute(doctype, sys);
 
     return yes;
 }
@@ -2845,8 +2642,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
+#if 0
                 lexer->token = DocTypeToken(lexer);
-
+#endif
                 /* make a note of the version named by the 1st doctype */
                 if ( lexer->doctype == VERS_UNKNOWN )
                     lexer->doctype = FindGivenVersion( doc, lexer->token );
@@ -3883,6 +3681,19 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
     return list;
 }
 
+/*
+  Returns document type declarations like
+
+  <!DOCTYPE foo PUBLIC "fpi" "sysid">
+  <!DOCTYPE bar SYSTEM "sysid">
+  <!DOCTYPE baz [ <!ENTITY ouml "&#246"> ]>
+
+  as
+
+  <foo PUBLIC="fpi" SYSTEM="sysid" />
+  <bar SYSTEM="sysid" />
+  <baz> &lt;!ENTITY ouml &quot;&amp;#246&quot;&gt; </baz>
+*/
 static Node *ParseDocTypeDecl(TidyDocImpl* doc)
 {
     Lexer *lexer = doc->lexer;
@@ -3895,13 +3706,16 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
 
     lexer->waswhite = no;
 
+    /* todo: reset lexer->lexsize when appropriate to avoid wasting memory */
+
     while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
         /* convert newlines to spaces */
-        c = c == '\n' ? ' ' : c;
+        if (state != DT_INTSUBSET)
+            c = c == '\n' ? ' ' : c;
 
         /* convert white-space sequences to single space character */
-        if (IsWhite(c))
+        if (IsWhite(c) && state != DT_INTSUBSET)
         {
             if (!lexer->waswhite)
             {
@@ -3932,6 +3746,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             }
             else if (c == '[')
             {
+                start = lexer->lexsize;
                 state = DT_INTSUBSET;
                 continue;
             }
@@ -3976,6 +3791,8 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
                     lexer->lexsize - start - 1);
                 hasfpi = !(tmbstrcasecmp(attname, "SYSTEM") == 0);
 
+                /* todo: report an error if SYSTEM/PUBLIC not uppercase */
+
                 if (c == '>')
                 {
                     --(lexer->lexsize);
@@ -3992,7 +3809,8 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             {
                 char *value = tmbstrndup(lexer->lexbuf + start,
                     lexer->lexsize - start - 1);
-                AddAttribute(doc, node, hasfpi ? "PUBLIC" : "SYSTEM", value);
+                AttVal* att = AddAttribute(doc, node, hasfpi ? "PUBLIC" : "SYSTEM", value);
+                att->delim = delim;
                 hasfpi = no;
                 state = DT_INTERMEDIATE;
                 delim = 0;
@@ -4003,6 +3821,12 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             /* read internal subset */
             if (c == ']')
             {
+                Node* subset;
+                lexer->txtstart = start;
+                lexer->txtend = lexer->lexsize - 1;
+                subset = TextToken(lexer);
+                assert( node->content == NULL );
+                node->content = subset;
                 state = DT_INTERMEDIATE;
             }
             break;

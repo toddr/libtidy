@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2003/05/01 23:15:51 $ 
-    $Revision: 1.81 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/05 21:26:51 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -1099,30 +1099,11 @@ void ReportMarkupVersion( TidyDocImpl* doc )
 {
     Node* doctype = doc->givenDoctype;
 
-    if ( doctype )
+    if (doctype)
     {
-        Lexer* lexer = doc->lexer;
-        uint ix;
-        int quoteCount = 0;
-        tmbchar buf[ 2048 ] = {0};
-        tmbstr cp = buf;
-
-        for ( ix = doctype->start; ix < doctype->end; ++ix )
-        {
-            uint c = (byte) lexer->lexbuf[ix];
-
-            /* look for UTF-8 multibyte character */
-            if ( c > 0x7F )
-                ix += GetUTF8( lexer->lexbuf + ix, &c );
-
-            if ( c == '"' )
-                ++quoteCount;
-            else if ( quoteCount == 1 )
-                *cp++ = (tmbchar) c;
-        }
-
-        *cp = 0;
-        message( doc, TidyInfo, "Doctype given is \"%s\"", buf );
+        AttVal* fpi = GetAttrByName(doctype, "PUBLIC");
+        /* todo: deal with non-ASCII characters in FPI */
+        message(doc, TidyInfo, "Doctype given is \"%s\"", fpi?fpi->value:"");
     }
 
     if ( ! cfgBool(doc, TidyXmlTags) )

@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: lpassey $ 
-    $Date: 2003/04/30 20:17:23 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/05 21:26:51 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -174,6 +174,7 @@ extern "C" {
 #define VERS_EVENTS        (VERS_HTML40|VERS_XHTML11)
 #define VERS_FROM32        (VERS_HTML32|VERS_HTML40)
 #define VERS_FROM40        (VERS_HTML40|VERS_XHTML11|VERS_BASIC)
+#define VERS_XHTML         (X10S|X10T|X10F|XH11|XB10)
 
 /* all W3C defined document types */
 #define VERS_ALL           (VERS_HTML20|VERS_HTML32|VERS_FROM40)
@@ -355,18 +356,8 @@ struct _Lexer
 */
 Node *CommentToken( Lexer *lexer );
 
-
-#define XHTML_NAMESPACE "http://www.w3.org/1999/xhtml"
-
-/* the 3 URIs  for the XHTML 1.0 DTDs */
-#define voyager_loose    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
-#define voyager_strict   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
-#define voyager_frameset "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
-
-/* URI for XHTML 1.1 and XHTML Basic 1.0 */
-#define voyager_11       "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-#define voyager_basic    "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"
-
+/* choose what version to use for new doctype */
+int HTMLVersion( TidyDocImpl* doc );
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */

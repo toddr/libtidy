@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/18 22:58:21 $ 
-    $Revision: 1.78 $ 
+    $Date: 2003/05/05 21:26:52 $ 
+    $Revision: 1.79 $ 
 
 */
 
@@ -3846,8 +3846,12 @@ Node *ParseXMLDocument(TidyDocImpl* doc)
 
     }
 
+#if 0
+    /* ParseDocTypeDecl is responsible for PUBLIC/SYSTEM case */
+    /* Unknown FPIs should neither be fixed nor modified */
     if ( doctype && !CheckDocTypeKeyWords(lexer, doctype) )
         ReportWarning( doc, doctype, NULL, DTYPE_NOT_UPPER_CASE );
+#endif
 
     /* ensure presence of initial <?XML version="1.0"?> */
     if ( cfgBool(doc, TidyXmlDecl) )
