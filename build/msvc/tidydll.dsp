@@ -105,6 +105,10 @@ SOURCE=..\..\src\attrask.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\src\attrdict.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\attrget.c
 # End Source File
 # Begin Source File
@@ -182,6 +186,10 @@ SOURCE=..\..\src\utf8.c
 # Begin Source File
 
 SOURCE=..\..\src\access.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\src\attrdict.h
 # End Source File
 # Begin Source File
 

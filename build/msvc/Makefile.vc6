@@ -4,8 +4,8 @@
 #  CVS Info :
 #
 #     $Author: creitzel $
-#     $Date: 2003/03/19 18:37:40 $
-#     $Revision: 1.3 $
+#     $Date: 2003/04/17 14:33:52 $
+#     $Revision: 1.4 $
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -87,7 +87,7 @@ CFLAGS=/nologo /TC /W4 /Za /FD /c /D "WIN32" /D "_CONSOLE" /D "_MBCS" $(TIDYEXT)
 # /MTd	Uses debug version of statically linked, multi-threaded CRT.
 # /MDd	Uses debug version of multi-threaded CRT DLL.
 
-CDEBUG=/Gm /GZ /Zi /Od /MD /D "DEBUG" /D "_DEBUG"
+CDEBUG=/Gm /GZ /Zi /Od /MTd /D "DEBUG" /D "_DEBUG"
 
 ## Additional flags for release compilation
 # /O1	Creates small code
@@ -96,7 +96,7 @@ CDEBUG=/Gm /GZ /Zi /Od /MD /D "DEBUG" /D "_DEBUG"
 # /MT	Use statically linked, multi-threaded C runtime library
 # /MD 	Uses multi-threaded CRT DLL.
 
-CNDEBUG=/Ox /MD /D "NDEBUG"
+CNDEBUG=/Ox /MT /D "NDEBUG"
 
 
 NAMEFLAG=/Fo
@@ -132,7 +132,8 @@ OBJFILES=$(OBJDIR)\access.obj   $(OBJDIR)\attrs.obj    $(OBJDIR)\istack.obj\
 	$(OBJDIR)\localize.obj  $(OBJDIR)\config.obj   $(OBJDIR)\alloc.obj\
         $(OBJDIR)\attrask.obj   $(OBJDIR)\attrget.obj  $(OBJDIR)\buffio.obj\
         $(OBJDIR)\tagask.obj    $(OBJDIR)\fileio.obj   $(OBJDIR)\streamio.obj\
-        $(OBJDIR)\tmbstr.obj    $(OBJDIR)\utf8.obj     $(OBJDIR)\tidylib.obj
+        $(OBJDIR)\tmbstr.obj    $(OBJDIR)\utf8.obj     $(OBJDIR)\tidylib.obj\
+	$(OBJDIR)\attrdict.obj
 
 CFILES=	$(SRCDIR)access.c       $(SRCDIR)attrs.c        $(SRCDIR)istack.c \
         $(SRCDIR)parser.c       $(SRCDIR)tags.c         $(SRCDIR)entities.c \
@@ -140,14 +141,15 @@ CFILES=	$(SRCDIR)access.c       $(SRCDIR)attrs.c        $(SRCDIR)istack.c \
 	$(SRCDIR)localize.c     $(SRCDIR)config.c       $(SRCDIR)alloc.c \
         $(SRCDIR)attrask.c      $(SRCDIR)attrget.c      $(SRCDIR)buffio.c \
         $(SRCDIR)tagask.c       $(SRCDIR)fileio.c       $(SRCDIR)streamio.c\
-        $(SRCDIR)tmbstr.c       $(SRCDIR)utf8.c         $(SRCDIR)tidylib.c
+        $(SRCDIR)tmbstr.c       $(SRCDIR)utf8.c         $(SRCDIR)tidylib.c\
+	$(SRCDIR)\attrdict.c
 
 HFILES=	$(INCLDIR)platform.h $(INCLDIR)buffio.h \
         $(INCLDIR)fileio.h $(INCLDIR)tidy.h $(INCLDIR)tidyenum.h
 
 LIBHFILES= \
         $(SRCDIR)access.h \
-        $(SRCDIR)attrs.h        $(SRCDIR)clean.h \
+        $(SRCDIR)attrs.h        $(SRCDIR)attrdict.h     $(SRCDIR)clean.h \
         $(SRCDIR)config.h       $(SRCDIR)entities.h     \
         $(SRCDIR)forward.h      $(SRCDIR)lexer.h        $(SRCDIR)message.h \
         $(SRCDIR)parser.h       $(SRCDIR)pprint.h       $(SRCDIR)streamio.h \
