@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/02 13:54:55 $ 
-    $Revision: 1.20 $ 
+    $Date: 2005/03/02 16:16:56 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -2621,7 +2621,8 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
             }
         }
 
-        ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_LINK );
+        if (HasRel && HasType)
+            ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_LINK );
     }
 }
 
@@ -2949,7 +2950,6 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
 {
     Bool HasHttpEquiv = no;
     Bool HasContent = no;
-    Bool HasRel = no;
     Bool ContainsAttr = no;
     Bool HasMetaData = no;
 
@@ -3021,7 +3021,6 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
 
             if (AttrContains(av, "stylesheet"))
             {
-                HasRel = yes;
                 ReportAccessError( doc, node, METADATA_MISSING_LINK );
             }
         }
