@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/14 05:38:57 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -846,6 +846,7 @@ CheckAttribs CheckSCRIPT;
 CheckAttribs CheckSTYLE;
 CheckAttribs CheckHTML;
 CheckAttribs CheckFORM;
+CheckAttribs CheckMETA;
 
 /* used to control printing of null attributes */
 Bool IsBoolAttribute(AttVal *attval);

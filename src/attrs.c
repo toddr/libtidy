@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.20 $ 
+    $Date: 2001/07/14 05:38:57 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -1109,3 +1109,18 @@ void CheckFORM(Lexer *lexer, Node *node)
     if (!action)
         ReportMissingAttr(lexer, node, "action");
 }
+
+/* reports missing content attribute */
+void CheckMETA(Lexer *lexer, Node *node)
+{
+    AttVal *content = GetAttrByName(node, "content");
+
+    CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
+
+    if (!content)
+        ReportMissingAttr(lexer, node, "content");
+
+    /* name or http-equiv attribute must also be set */
+}
+

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 05:13:02 $ 
-    $Revision: 1.9 $ 
+    $Date: 2001/07/14 05:38:57 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -104,7 +104,7 @@ static struct tag
     {"title",      VERS_ALL,     CM_HEAD, ParseTitle, null},
     {"base",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, null},
     {"link",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, CheckLINK},
-    {"meta",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, null},
+    {"meta",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, CheckMETA},
     {"style",      VERS_FROM32,  CM_HEAD, ParseScript, CheckSTYLE},
     {"script",     VERS_FROM32,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
     {"server",     VERS_NETSCAPE,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, null},
