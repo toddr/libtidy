@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 04:01:14 $ 
-    $Revision: 1.82 $ 
+    $Date: 2003/05/09 03:55:56 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -185,6 +185,24 @@ static const Attribute attribute_defs [] =
   /* this must be the final entry */
   { N_TIDY_ATTRIBS,             NULL,                VERS_UNKNOWN,      NULL,       no }
 };
+
+uint AttributeVersions(Node* node, AttVal* attval)
+{
+    uint i;
+
+    if (!attval || !attval->dict)
+        return VERS_UNKNOWN;
+
+    if (!node || !node->tag || !node->tag->attrvers)
+        return attval->dict->versions;
+
+    for (i = 0; node->tag->attrvers[i].attribute; ++i)
+        if (node->tag->attrvers[i].attribute == (uint)attval->dict->id)
+            return node->tag->attrvers[i].versions;
+
+    return attval->dict->versions;
+
+}
 
 /* used by CheckColor() */
 struct _colors
@@ -913,11 +931,10 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
         {
             if ( !(cfgBool(doc, TidyXmlTags) || cfgBool(doc, TidyXmlOut)) )
                 ReportAttrError( doc, node, attval, XML_ATTRIBUTE_VALUE);
-        } /* title first appeared in HTML 4.0 except for a/link */
-        else if ( attribute->id != TidyAttr_TITLE ||
-                  !(nodeIsA(node) || nodeIsLINK(node)) )
+        }
+        else
         {
-            ConstrainVersion( doc, attribute->versions );
+            ConstrainVersion(doc, AttributeVersions(node, attval));
         }
         
         if (attribute->attrchk)
@@ -1162,8 +1179,6 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     if ( IsAnchorElement(doc, node) )
     {
-        ConstrainVersion( doc, ~VERS_XHTML11 );
-
         if (doc->lexer->isvoyager && !IsValidNMTOKEN(attval->value))
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 
@@ -1311,9 +1326,6 @@ void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
-
-    /* No target attribute in strict HTML versions */
-    ConstrainVersion( doc, ~VERS_HTML40_STRICT);
 
     /* target names must begin with A-Za-z ... */
     if (IsLetter(attval->value[0]))
@@ -1562,7 +1574,4 @@ void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
         }
         return;
     }
-
-    if (attrIsLANG(attval))
-        ConstrainVersion(doc, ~VERS_XHTML11);
 }

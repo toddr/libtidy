@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 01:57:15 $ 
-    $Revision: 1.40 $ 
+    $Date: 2003/05/09 03:55:56 $ 
+    $Revision: 1.41 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -280,6 +280,7 @@ static Dict *install(TidyTagImpl* tags, const Dict* old)
     np->model    = old->model;
     np->parser   = old->parser;
     np->chkattrs = old->chkattrs;
+    np->attrvers = old->attrvers;
 
     return np;
 }
@@ -347,6 +348,7 @@ static void declare( TidyTagImpl* tags,
           np->model   |= model;
           np->parser   = parser;
           np->chkattrs = chkattrs;
+          np->attrvers = NULL;
         }
     }
 }
@@ -477,6 +479,7 @@ void InitTags( TidyDocImpl* doc )
     xml->model = CM_BLOCK;
     xml->parser = NULL;
     xml->chkattrs = NULL;
+    xml->attrvers = NULL;
     tags->xml_tags = xml;
 }
 
