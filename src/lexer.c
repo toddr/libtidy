@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:54:30 $ 
-    $Revision: 1.134 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/02/29 04:51:48 $ 
+    $Revision: 1.135 $ 
 
 */
 
@@ -1247,7 +1247,7 @@ static Node *CDATAToken(Lexer *lexer)
 void AddStringLiteral( Lexer* lexer, ctmbstr str )
 {
     byte c;
-    while(NULL != (c = *str++) )
+    while(0 != (c = *str++) )
         AddCharToLexer( lexer, c );
 }
 

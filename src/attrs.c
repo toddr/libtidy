@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:58:38 $ 
-    $Revision: 1.93 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/02/29 04:51:48 $ 
+    $Revision: 1.94 $ 
 
 */
 
@@ -1031,7 +1031,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     p = attval->value;
     
-    for (i = 0; NULL != (c = p[i]); ++i)
+    for (i = 0; 0 != (c = p[i]); ++i)
     {
         if (c == '\\')
         {
@@ -1048,7 +1048,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
         len = tmbstrlen(p) + escape_count * 2 + 1;
         dest = (tmbstr) MemAlloc(len);
         
-        for (i = 0; NULL != (c = p[i]); ++i)
+        for (i = 0; 0 != (c = p[i]); ++i)
         {
             if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
                 pos += sprintf( dest + pos, "%%%02X", (byte)c );
@@ -1468,7 +1468,7 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 
         cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
         *cp++ = '#';
-        while (NULL != (*cp++ = *given++))
+        while (0 != (*cp++ = *given++))
         	continue;
 
         ReportAttrError(doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);

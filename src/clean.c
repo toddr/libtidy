@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:56:52 $ 
-    $Revision: 1.53 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/02/29 04:51:48 $ 
+    $Revision: 1.54 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -907,7 +907,7 @@ static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
     tmbchar buf[128], *p;
 
     tmbstrcpy( buf, "text-align: " );
-    for ( p = buf + 12; (NULL != (*p++ = (tmbchar)ToLower(*align++))); /**/ )
+    for ( p = buf + 12; (0 != (*p++ = (tmbchar)ToLower(*align++))); /**/ )
     {
     	/**/
 	}
