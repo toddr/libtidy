@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 02:42:42 $ 
-    $Revision: 1.16 $ 
+    $Date: 2001/09/16 01:13:09 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -48,21 +48,25 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Mac OS"
 #endif
-#endif
-#if defined(linux) && defined(powerpc)
+
+#elif defined(__linux__) && defined(__powerpc__)
+#if #system(linux)
 /* MkLinux on PPC  - gcc (egcs) compiler */
 #define MAC_OS_MKLINUX
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "MkLinux"
 #endif
 #endif
-#if defined(__APPLE__) && defined(__MACH__)
+
+#elif defined(__APPLE__) && defined(__MACH__)
 /* Mac OS X (client) 10.x (or server 1.x/10.x) - gcc or Metrowerks MachO compilers */
 #define MAC_OS_X
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Mac OS X"
 #endif
+
 #endif
+
 #if defined(MAC_OS_CLASSIC) || defined(MAC_OS_MKLINUX) || defined(MAC_OS_X)
 /* Any OS on Mac platform */
 #define MAC_OS
@@ -75,18 +79,25 @@
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "FreeBSD"
 #endif
-#endif
-#if defined(__NetBSD__)
+
+#elif defined(__NetBSD__)
 #define BSD_BASED_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "NetBSD"
 #endif
-#endif
-#if defined(__OpenBSD__)
+
+#elif defined(__OpenBSD__)
 #define BSD_BASED_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OpenBSD"
 #endif
+
+#elif defined(__MINT__)
+#define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "FreeMiNT"
+#endif
+
 #endif
 
 /* Convenience defines for Windows platforms */
@@ -98,11 +109,41 @@
 
 /* Convenience defines for Linux platforms */
  
-#if defined(__linux__)
+#if defined(linux) && defined(__alpha__)
+/* Linux on Alpha - gcc compiler */
+#define LINUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Linux/Alpha"
+#endif
+
+#elif defined(linux) && defined(__sparc__)
+/* Linux on Sparc - gcc compiler */
+#define LINUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Linux/Sparc"
+#endif
+
+#elif defined(linux) && (defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__))
+/* Linux on x86 - gcc compiler */
+#define LINUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Linux/x86"
+#endif
+
+#elif defined(linux) && defined(__powerpc__)
+/* Linux on PPC - gcc compiler */
+#define LINUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Linux/PPC"
+#endif
+
+#elif defined(linux) || defined(__linux__)
+/* generic Linux */
 #define LINUX_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Linux"
 #endif
+
 #endif
 
 /* Convenience defines for Solaris platforms */
@@ -173,7 +214,7 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(SOLARIS_OS) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
