@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/04 07:26:42 $ 
-    $Revision: 1.141 $ 
+    $Date: 2004/03/04 09:08:07 $ 
+    $Revision: 1.142 $ 
 
 */
 
@@ -77,26 +77,31 @@ struct _doctypes
     ctmbstr si;
 } const W3C_Doctypes[] =
 {
-  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                      },
-  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
-  {  2, HT20, "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                      },
-  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                      },
-  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                      },
-  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Draft//EN",         NULL,                                                      },
-  {  6, H40S, "HTML 4.0 Strict",        "-//W3C//DTD HTML 4.0//EN",               "http://www.w3.org/TR/REC-html40/strict.dtd"               },
-  {  8, H40T, "HTML 4.0 Transitional",  "-//W3C//DTD HTML 4.0 Transitional//EN",  "http://www.w3.org/TR/REC-html40/loose.dtd"                },
-  {  7, H40F, "HTML 4.0 Frameset",      "-//W3C//DTD HTML 4.0 Frameset//EN",      "http://www.w3.org/TR/REC-html40/frameset.dtd"             },
-  {  3, H41S, "HTML 4.01 Strict",       "-//W3C//DTD HTML 4.01//EN",              "http://www.w3.org/TR/html4/strict.dtd"                    },
-  {  5, H41T, "HTML 4.01 Transitional", "-//W3C//DTD HTML 4.01 Transitional//EN", "http://www.w3.org/TR/html4/loose.dtd"                     },
-  {  4, H41F, "HTML 4.01 Frameset",     "-//W3C//DTD HTML 4.01 Frameset//EN",     "http://www.w3.org/TR/html4/frameset.dtd"                  },
-  {  9, X10S, "XHTML 1.0 Strict",       "-//W3C//DTD XHTML 1.0 Strict//EN",       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"        },
-  { 11, X10T, "XHTML 1.0 Transitional", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"  },
-  { 10, X10F, "XHTML 1.0 Frameset",     "-//W3C//DTD XHTML 1.0 Frameset//EN",     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"      },
-  { 12, XH11, "XHTML 1.1",              "-//W3C//DTD XHTML 1.1//EN",              "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"             },
-  { 13, XB10, "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"       },
+  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                       },
+  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                       },
+  {  2, HT20, "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                       },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                       },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                       },
+  {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Draft//EN",         NULL,                                                       },
+  {  6, H40S, "HTML 4.0 Strict",        "-//W3C//DTD HTML 4.0//EN",               "http://www.w3.org/TR/REC-html40/strict.dtd"                },
+  {  8, H40T, "HTML 4.0 Transitional",  "-//W3C//DTD HTML 4.0 Transitional//EN",  "http://www.w3.org/TR/REC-html40/loose.dtd"                 },
+  {  7, H40F, "HTML 4.0 Frameset",      "-//W3C//DTD HTML 4.0 Frameset//EN",      "http://www.w3.org/TR/REC-html40/frameset.dtd"              },
+  {  3, H41S, "HTML 4.01 Strict",       "-//W3C//DTD HTML 4.01//EN",              "http://www.w3.org/TR/html4/strict.dtd"                     },
+  {  5, H41T, "HTML 4.01 Transitional", "-//W3C//DTD HTML 4.01 Transitional//EN", "http://www.w3.org/TR/html4/loose.dtd"                      },
+  {  4, H41F, "HTML 4.01 Frameset",     "-//W3C//DTD HTML 4.01 Frameset//EN",     "http://www.w3.org/TR/html4/frameset.dtd"                   },
+  {  9, X10S, "XHTML 1.0 Strict",       "-//W3C//DTD XHTML 1.0 Strict//EN",       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"         },
+  { 11, X10T, "XHTML 1.0 Transitional", "-//W3C//DTD XHTML 1.0 Transitional//EN", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"   },
+  { 10, X10F, "XHTML 1.0 Frameset",     "-//W3C//DTD XHTML 1.0 Frameset//EN",     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"       },
+  { 12, XH11, "XHTML 1.1",              "-//W3C//DTD XHTML 1.1//EN",              "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"              },
+  { 13, XB10, "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"        },
 
+  /* reminder to add XHTML Print 1.0 support, see http://www.w3.org/TR/xhtml-print */
+#if 0
+  { 14, XP10, "XHTML Print 1.0",        "-//W3C//DTD XHTML-Print 1.0//EN",         "http://www.w3.org/MarkUp/DTD/xhtml-print10.dtd"           },
+  { 14, XP10, "XHTML Print 1.0",        "-//PWG//DTD XHTML-Print 1.0//EN",         "http://www.xhtml-print.org/xhtml-print/xhtml-print10.dtd" },
+#endif
   /* final entry */
-  {  0,    0, NULL,                     NULL,                                     NULL                                                       }
+  {  0,    0, NULL,                     NULL,                                     NULL                                                        }
 };
 
 int HTMLVersion(TidyDocImpl* doc)
