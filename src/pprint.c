@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/23 08:43:13 $ 
-    $Revision: 1.28 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:44:58 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -470,7 +470,9 @@ static void PPrintChar(uint c, uint mode)
 
         if (c == 160 && CharEncoding != RAW)
         {
-            if (QuoteNbsp)
+            if (MakeBare)
+                AddC(' ', linelen++);
+            else if (QuoteNbsp)
             {
                 AddC('&', linelen++);
 
@@ -631,7 +633,7 @@ static void PPrintChar(uint c, uint mode)
      Andrzej Novosiolov for his help with this code.
     */
 
-    if (MakeClean && AsciiChars)
+    if ( (MakeClean && AsciiChars) || MakeBare )
     {
         if (c >= 0x2013 && c <= 0x201E)
         {
@@ -1981,46 +1983,6 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
     }
 }
 
-Node *FindHead(Node *root)
-{
-    Node *node;
-
-    node = root->content;
-
-    while (node && node->tag != tag_html)
-        node = node->next;
-
-    if (node == null)
-        return null;
-
-    node = node->content;
-
-    while (node && node->tag != tag_head)
-        node = node->next;
-
-    return node;
-}
-
-Node *FindBody(Node *root)
-{
-    Node *node;
-
-    node = root->content;
-
-    while (node && node->tag != tag_html)
-        node = node->next;
-
-    if (node == null)
-        return null;
-
-    node = node->content;
-
-    while (node && node->tag != tag_body)
-        node = node->next;
-
-    return node;
-}
-
 /* split parse tree by h2 elements and output to separate files */
 
 /* counts number of h2 children (if any) belonging to node */
@@ -2193,7 +2155,7 @@ Add meta element for page transition effect, this works on IE but not NS
 
 void AddTransitionEffect(Lexer *lexer, Node *root, int effect, float duration)
 {
-    Node *head = FindHead(root);
+    Node *head = FindHEAD(root);
     char transition[128];
 
     if (0 <= effect && effect <= 23)
