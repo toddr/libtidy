@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/03/16 01:00:47 $ 
-    $Revision: 1.16 $ 
+    $Date: 2004/03/19 02:42:19 $ 
+    $Revision: 1.17 $ 
 */
 
 #include "tidy.h"
@@ -714,10 +714,12 @@ int main( int argc, char** argv )
         if ( status >= 0 )
             status = tidyRunDiagnostics( tdoc );
 
-        if ( status >= 0 )
+        if ( status > 1 ) /* If errors, do we want to force output? */
+            status = ( tidyOptGetBool(tdoc, TidyForceOutput) ? status : -1 );
+
+        if ( status >= 0 && tidyOptGetBool(tdoc, TidyShowMarkup) )
         {
-            if ( tidyOptGetBool(tdoc, TidyWriteBack) &&
-                 tidyOptGetBool(tdoc, TidyShowMarkup) && argc > 1 )
+            if ( tidyOptGetBool(tdoc, TidyWriteBack) && argc > 1 )
                 status = tidySaveFile( tdoc, htmlfil );
             else
             {
