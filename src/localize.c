@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/02 08:52:42 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/06/02 08:58:00 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -588,7 +588,7 @@ void ErrorSummary(Lexer *lexer)
         {
             tidy_out(lexer->errout, "You are recommended to use CSS to specify the font and\n");
             tidy_out(lexer->errout, "properties such as its size and color. This will reduce\n");
-            tidy_out(lexer->errout, "the size of HTML files and make them easier maintain\n");
+            tidy_out(lexer->errout, "the size of HTML files and make them easier to maintain\n");	/* #427674 - fix by Andrew Billington 22 Aug 00 */
             tidy_out(lexer->errout, "compared with using <FONT> elements.\n\n");
         }
 
