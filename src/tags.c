@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/11 06:58:25 $ 
-    $Revision: 1.8 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -130,7 +130,7 @@ static struct tag
     {"plaintext",  VERS_ALL,     (CM_BLOCK|CM_OBSOLETE), ParsePre, null},
     {"address",    VERS_ALL,     CM_BLOCK, ParseBlock, null},
     {"blockquote", VERS_ALL,     CM_BLOCK, ParseBlock, null},
-    {"form",       VERS_ALL,     CM_BLOCK, ParseBlock, null},
+    {"form",       VERS_ALL,     CM_BLOCK, ParseBlock, CheckFORM},
     {"isindex",    VERS_LOOSE,   (CM_BLOCK|CM_EMPTY), null, null},
     {"fieldset",   VERS_HTML40,  CM_BLOCK, ParseBlock, null},
     {"table",      VERS_FROM32,  CM_BLOCK, ParseTableTag, CheckTABLE},

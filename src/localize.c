@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 01:03:33 $ 
-    $Revision: 1.12 $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -736,7 +736,7 @@ void HelloMessage(FILE *errout, char *date, char *filename)
 
 void ReportVersion(FILE *errout, Lexer *lexer, char *filename, Node *doctype)
 {
-    unsigned int i, c;
+    uint i, c;
     int state = 0;
     char *vers = HTMLVersionName(lexer);
 

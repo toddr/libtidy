@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 02:43:09 $ 
-    $Revision: 1.19 $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -1096,4 +1096,16 @@ void CheckLINK(Lexer *lexer, Node *node)
             AddAttribute(node, "type", "text/css");
         }
     }
+}
+
+/* reports missing action attribute */
+void CheckFORM(Lexer *lexer, Node *node)
+{
+    AttVal *action = GetAttrByName(node, "rel");
+
+    CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
+
+    if (!action)
+        ReportMissingAttr(lexer, node, "action");
 }

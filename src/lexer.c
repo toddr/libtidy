@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 09:52:12 $ 
-    $Revision: 1.22 $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -77,7 +77,7 @@ struct _vers
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */
-void ConstrainVersion(Lexer *lexer, unsigned int vers)
+void ConstrainVersion(Lexer *lexer, uint vers)
 {
     lexer->versions &= (vers | VERS_PROPRIETARY);
 }

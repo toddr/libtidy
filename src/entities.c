@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/08 06:59:24 $ 
-    $Revision: 1.2 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -301,10 +301,10 @@ static struct nlist *lookup(char *s)
 {
     struct nlist *np;
 
-    for (np = hashtab[hash(s)]; np != NULL; np = np->next)
+    for (np = hashtab[hash(s)]; np != null; np = np->next)
         if (wstrcmp(s, np->name) == 0)
             return np;
-    return NULL;
+    return null;
 }
 
 static struct nlist *install(char *name, uint code)
@@ -312,12 +312,12 @@ static struct nlist *install(char *name, uint code)
     struct nlist *np;
     uint hashval;
 
-    if ((np = lookup(name)) == NULL)
+    if ((np = lookup(name)) == null)
     {
         np = (struct nlist *)MemAlloc(sizeof(*np));
 
-        if (np == NULL || (np->name = wstrdup(name)) == NULL)
-            return NULL;
+        if (np == null || (np->name = wstrdup(name)) == null)
+            return null;
 
         hashval = hash(name);
         np->next = hashtab[hashval];

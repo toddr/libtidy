@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 05:04:19 $ 
-    $Revision: 1.7 $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -367,9 +367,9 @@ const char *ExpandTilde(const char *filename)
     static char *expanded_filename;
 
     char *home_dir, *p;
-    struct passwd *passwd = NULL;
+    struct passwd *passwd = null;
 
-    if (!filename) return(NULL);
+    if (!filename) return(null);
 
     if (filename[0] != '~')
         return(filename);

@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/13 07:32:00 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/14 05:13:02 $ 
+    $Revision: 1.7 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1782,7 +1782,7 @@ static void NormalizeSpaces(Lexer *lexer, Node *node)
 
         if (node->type == TextNode)
         {
-            unsigned int i, c;
+            uint i, c;
             char *p = lexer->lexbuf + node->start;
 
             for (i = node->start; i < node->end; ++i)
