@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/05/07 15:28:47 $ 
-    $Revision: 1.50 $ 
+    $Author: krusch $ 
+    $Date: 2002/05/23 23:19:35 $ 
+    $Revision: 1.51 $ 
 
 */
 
@@ -1149,7 +1149,9 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
     */
     if ((element->tag->model & CM_BLOCK) || (element->tag == tag_dt))
         InlineDup(lexer, null);
-    else if (element->tag->model & CM_INLINE && element->tag != tag_span)
+    else if (element->tag->model & CM_INLINE
+        /* && element->tag != tag_span #540571 Inconsistent behaviour with span inline element */
+        )
         PushInline(lexer, element);
 
     if (element->tag == tag_nobr)
