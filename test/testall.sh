@@ -1,8 +1,6 @@
 #! /bin/sh
 
-set -x
-
-REPORTWARN=$1
+# set -x
 
 BUGS="426885 427633 427662 427664 427671 427672 427675 427676 427677\
  427810 427811 427813 427816 427818 427819 427820 427821 427822 427823\
@@ -16,5 +14,7 @@ BUGS="426885 427633 427662 427664 427671 427672 427675 427676 427677\
 
 for bugNo in ${BUGS}
 do
-  ./testone.sh $bugNo $REPORTWARN
+#  echo Testing $bugNo | tee -a testall.log
+  ./testone.sh $bugNo "$@" | tee -a testall.log
 done
+

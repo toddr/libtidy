@@ -1,7 +1,8 @@
 #! /bin/sh
 
-set -x
+# set -x
 
+echo Testing $1
 INHTML=./input/in_$1.html
 CFGFILE=./input/cfg_$1.txt
 TIDYHTML=./tmp/out_$1.html
@@ -11,6 +12,11 @@ MSGFILE=./tmp/msg_$1.txt
 DIFFOUT=./tmp/diff_$1.txt
 
 REPORTWARN=$2
+shift
+if [ $REPORTWARN ]
+then
+  shift
+fi
 
 # Remove any pre-exising test outputs
 for INFIL in $MSGFILE $TIDYHTML $DIFFOUT
@@ -24,10 +30,10 @@ done
 # If no test specific config file, use default.
 if [ ! -f $CFGFILE ]
 then
-  CFGFILE=./tidy.cfg
+  CFGFILE=./input/cfg_default.txt
 fi
 
-../tidy -config $CFGFILE $INHTML > $TIDYHTML 2> $MSGFILE
+../tidy -config $CFGFILE "$@" $INHTML > $TIDYHTML 2> $MSGFILE
 STATUS=$?
 
 if [ $STATUS -gt 1 ]
