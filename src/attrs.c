@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 00:57:13 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/07/09 07:19:48 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -239,7 +239,7 @@ static struct _attrlist
     {"showgridy",        VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive*/
     {"size",             VERS_LOOSE,             NUMBER},   /* HR, FONT, BASEFONT, SELECT */
     {"span",             VERS_HTML40,            NUMBER},   /* COL, COLGROUP */
-    {"src",              (VERS_ALL|VERS_FRAMESET), URL},      /* IMG, FRAME, IFRAME */
+    {"src",              VERS_ALL,               URL},      /* IMG, FRAME, IFRAME */
     {"standby",          VERS_HTML40,            TEXT},     /* OBJECT */
     {"start",            VERS_ALL,               NUMBER},   /* OL */
     {"style",            VERS_HTML40,            TEXT},
