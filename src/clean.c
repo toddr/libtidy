@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.38 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/12 05:15:15 $ 
+    $Revision: 1.39 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -318,7 +318,7 @@ static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
 */
 void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
 {
-    AttVal *classattr = GetAttrByName(node, "class");
+    AttVal *classattr = AttrGetById(node, TidyAttr_CLASS);;
 
     /*
      if there already is a class attribute
@@ -354,12 +354,12 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
     AttVal *styleattr, *classattr;
     ctmbstr classname;
 
-    styleattr = GetAttrByName(node, "style");
+    styleattr = AttrGetById(node, TidyAttr_STYLE);
 
     if (styleattr)
     {
         classname = FindStyle( doc, node->element, styleattr->value );
-        classattr = GetAttrByName(node, "class");
+        classattr = AttrGetById(node, TidyAttr_CLASS);
 
         /*
          if there already is a class attribute
@@ -416,21 +416,21 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
     tmbstr color   = NULL;
     AttVal* attr;
     
-    if ( attr = GetAttrByName(body, "background") )
+    if (attr = AttrGetById(body, TidyAttr_BACKGROUND))
     {
         bgurl = attr->value;
         attr->value = NULL;
         RemoveAttribute( body, attr );
     }
 
-    if ( attr = GetAttrByName(body, "bgcolor") )
+    if (attr = AttrGetById(body, TidyAttr_BGCOLOR))
     {
         bgcolor = attr->value;
         attr->value = NULL;
         RemoveAttribute( body, attr );
     }
 
-    if ( attr = GetAttrByName(body, "text") )
+    if (attr = AttrGetById(body, TidyAttr_TEXT))
     {
         color = attr->value;
         attr->value = NULL;
@@ -465,19 +465,19 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
         AddStringLiteral(lexer, " }\n");
     }
 
-    if ( attr = GetAttrByName(body, "link") )
+    if (attr = AttrGetById(body, TidyAttr_LINK))
     {
         AddColorRule(lexer, " :link", attr->value);
         RemoveAttribute(body, attr);
     }
 
-    if ( attr = GetAttrByName(body, "vlink") )
+    if (attr = AttrGetById(body, TidyAttr_VLINK))
     {
         AddColorRule(lexer, " :visited", attr->value);
         RemoveAttribute(body, attr);
     }
 
-    if ( attr = GetAttrByName(body, "alink") )
+    if (attr = AttrGetById(body, TidyAttr_ALINK))
     {
         AddColorRule(lexer, " :active", attr->value);
         RemoveAttribute(body, attr);
@@ -486,16 +486,15 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
 
 static Bool NiceBody( TidyDocImpl* doc )
 {
-    Node* body = FindBody( doc );
-    if ( body )
+    Node* node = FindBody(doc);
+    if (node)
     {
-        if ( GetAttrByName(body, "background") ||
-             GetAttrByName(body, "bgcolor") ||
-             GetAttrByName(body, "text") ||
-             GetAttrByName(body, "link") ||
-             GetAttrByName(body, "vlink") ||
-             GetAttrByName(body, "alink")
-           )
+        if (AttrGetById(node, TidyAttr_BACKGROUND) ||
+            AttrGetById(node, TidyAttr_BGCOLOR)    ||
+            AttrGetById(node, TidyAttr_TEXT)       ||
+            AttrGetById(node, TidyAttr_LINK)       ||
+            AttrGetById(node, TidyAttr_VLINK)      ||
+            AttrGetById(node, TidyAttr_ALINK))
         {
             doc->badLayout |= USING_BODY;
             return no;
@@ -676,7 +675,7 @@ static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
 */
 static void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
 {
-    AttVal *av = GetAttrByName( node, "style" );
+    AttVal *av = AttrGetById(node, TidyAttr_STYLE);
 
 
     /* if style attribute already exists then insert property */
@@ -1548,7 +1547,7 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
 
             RenameElem( node, TidyTag_DIV );
 
-            attval = GetAttrByName( node, "style" );
+            attval = AttrGetById(node, TidyAttr_STYLE);
             if (attval)
             {
                 tmbstr s = (tmbstr) MemAlloc(len + 3 + tmbstrlen(attval->value));
@@ -1777,7 +1776,7 @@ static void NormalizeSpaces( Lexer *lexer, Node *node )
 /* used to hunt for hidden preformatted sections */
 Bool NoMargins(Node *node)
 {
-    AttVal *attval = GetAttrByName(node, "style");
+    AttVal *attval = AttrGetById(node, TidyAttr_STYLE);
 
     if ( !AttrHasValue(attval) )
         return no;
@@ -1906,7 +1905,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
 
         if ( nodeIsLINK(node) )
         {
-            AttVal *attr = GetAttrByName(node, "rel");
+            AttVal *attr = AttrGetById(node, TidyAttr_REL);
 
             if (attr && tmbstrcmp(attr->value, "File-List") == 0)
             {
@@ -1928,8 +1927,8 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         {
             AttVal *attr, *atrStyle;
             
-            attr = GetAttrByName(node, "class");
-            atrStyle = GetAttrByName(node, "style");
+            attr = AttrGetById(node, TidyAttr_CLASS);
+            atrStyle = AttrGetById(node, TidyAttr_STYLE);
             /*
                (JES) Sometimes Word marks a list item with the following hokie syntax
                <p class="MsoNormal" style="...;mso-list:l1 level1 lfo1;
@@ -2143,8 +2142,8 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
     /* Find any <meta http-equiv='Content-Type' content='...' /> */
     for (pNode = head->content; NULL != pNode; pNode = pNode->next)
     {
-        AttVal* httpEquiv = GetAttrByName(pNode, "http-equiv");
-        AttVal* metaContent = GetAttrByName(pNode, "content");
+        AttVal* httpEquiv = AttrGetById(pNode, TidyAttr_HTTP_EQUIV);
+        AttVal* metaContent = AttrGetById(pNode, TidyAttr_CONTENT);
 
         if (!nodeIsMETA(pNode) || !httpEquiv || !metaContent ||
             (0 != tmbstrcasecmp(httpEquiv->value, "Content-Type")))
