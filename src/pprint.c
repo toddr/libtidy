@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/04/19 15:21:06 $ 
-    $Revision: 1.65 $ 
+    $Date: 2003/04/19 16:16:11 $ 
+    $Revision: 1.66 $ 
 
 */
 
@@ -592,7 +592,6 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 {
     tmbchar entity[128];
     ctmbstr p;
-    BreakChar brk = NoBreak;
     TidyPrintImpl* pprint  = &doc->pprint;
     uint outenc = cfg( doc, TidyOutCharEncoding );
     Bool qmark = cfgBool( doc, TidyQuoteMarks );
@@ -689,22 +688,26 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
         /* Chinese doesn't have spaces, so it needs other kinds of breaks */
         /* This will also help documents using nice Unicode punctuation */
         /* But we leave the ASCII range punctuation untouched */
-        brk = isBreakableUnicode( c, mode );
-        if ( brk == BreakBefore )
-            pprint->wraphere = pprint->linelen;
-        else if ( brk == BreakAfter )
-            pprint->wraphere = pprint->linelen + 1;
+        {
+            BreakChar brk = isBreakableUnicode( c, mode );
+            if ( brk == BreakBefore )
+                pprint->wraphere = pprint->linelen;
+            else if ( brk == BreakAfter )
+                pprint->wraphere = pprint->linelen + 1;
+        }
         break;
 
     case BIG5:
         /* Allow linebreak at Chinese punctuation characters */
         /* There are not many spaces in Chinese */
         AddChar( pprint, c );
-        brk = isBreakableBig5( c, mode );
-        if ( brk == BreakBefore )
-            pprint->wraphere = pprint->linelen;
-        else if ( brk == BreakAfter )
-            pprint->wraphere = pprint->linelen + 1;
+        {
+            BreakChar brk = isBreakableBig5( c, mode );
+            if ( brk == BreakBefore )
+                pprint->wraphere = pprint->linelen;
+            else if ( brk == BreakAfter )
+                pprint->wraphere = pprint->linelen + 1;
+        }
         return;
 
     case SHIFTJIS:
