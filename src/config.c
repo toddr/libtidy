@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/25 04:26:10 $ 
-    $Revision: 1.60 $ 
+    $Date: 2003/04/30 04:23:24 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -176,7 +176,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyDoctypeMode,    MU, "doctype-mode",      IN, TidyDoctypeAuto, NULL,  doctypePicks },
   { TidyDoctype,        MU, "doctype",           ST, 0, ParseDocType,  doctypePicks },
 
-  { TidyDuplicateAttrs, MU, "repeated-attributes",  IN,    0, ParseRepeatAttr, repeatAttrPicks },
+  { TidyDuplicateAttrs, MU, "repeated-attributes",  IN,    TidyKeepLast, ParseRepeatAttr, repeatAttrPicks },
   { TidyAltText,        MU, "alt-text",             ST,    0, ParseString,   NULL },
   { TidySlideStyle,     MS, "slide-style",          ST,    0, ParseName,     NULL },
   { TidyErrFile,        MS, "error-file",           ST,    0, ParseString,   NULL },

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 02:57:39 $ 
-    $Revision: 1.68 $ 
+    $Date: 2003/04/30 04:23:24 $ 
+    $Revision: 1.69 $ 
 
 */
 
@@ -681,52 +681,50 @@ void FreeAttrTable( TidyDocImpl* doc )
 */
 void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 {
-    AttVal *attval;
+    AttVal *first;
 
-    for (attval = node->attributes; attval != NULL;)
+    for (first = node->attributes; first != NULL;)
     {
-        AttVal *current;
+        AttVal *second;
 
-        if (!(attval->asp == NULL && attval->php == NULL))
+        if (!(first->asp == NULL && first->php == NULL))
         {
-            attval = attval->next;
+            first = first->next;
             continue;
         }
 
-        for (current = attval->next; current != NULL;)
+        for (second = first->next; second != NULL;)
         {
             AttVal *temp;
 
-            if (!(current->asp == NULL && current->php == NULL &&
-                tmbstrcasecmp(attval->attribute, current->attribute) == 0))
+            if (!(second->asp == NULL && second->php == NULL &&
+                tmbstrcasecmp(first->attribute, second->attribute) == 0))
             {
-                current = current->next;
+                second = second->next;
                 continue;
             }
 
-            if ( tmbstrcasecmp(current->attribute, "class") == 0 
+            /* first and second attribute have same local name */
+            /* now determine what to do with this duplicate... */
+
+            if ( tmbstrcasecmp(first->attribute, "class") == 0 
                 && cfgBool(doc, TidyJoinClasses) )
             {
                 /* concatenate classes */
 
-                current->value = (tmbstr) MemRealloc(current->value, tmbstrlen(current->value) +
-                    tmbstrlen(attval->value)  + 2);
-                tmbstrcat(current->value, " ");
-                tmbstrcat(current->value, attval->value);
+                first->value = (tmbstr) MemRealloc(first->value, tmbstrlen(first->value) +
+                    tmbstrlen(second->value)  + 2);
+                tmbstrcat(first->value, " ");
+                tmbstrcat(first->value, second->value);
 
-                temp = attval->next;
+                temp = second->next;
 
-                if (temp->next == NULL)
-                    current = NULL;
-                else
-                    current = current->next;
+                ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
+                RemoveAttribute(node, second);
 
-                ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
-
-                RemoveAttribute(node, attval);
-                attval = temp;
+                second = temp;
             }
-            else if ( tmbstrcasecmp(current->attribute, "style") == 0 
+            else if ( tmbstrcasecmp(first->attribute, "style") == 0 
                 && cfgBool(doc, TidyJoinStyles) )
             {
                 /* concatenate styles */
@@ -737,75 +735,67 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                 see http://www.w3.org/TR/css-style-attr
                 */
 
-                uint end = tmbstrlen(current->value);
+                uint end = tmbstrlen(first->value);
 
-                if (current->value[end] == ';')
+                if (first->value[end] == ';')
                 {
                     /* attribute ends with declaration seperator */
 
-                    current->value = (tmbstr) MemRealloc(current->value,
-                        end + tmbstrlen(attval->value) + 2);
+                    first->value = (tmbstr) MemRealloc(first->value,
+                        end + tmbstrlen(second->value) + 2);
 
-                    tmbstrcat(current->value, " ");
-                    tmbstrcat(current->value, attval->value);
+                    tmbstrcat(first->value, " ");
+                    tmbstrcat(first->value, second->value);
                 }
-                else if (current->value[end] == '}')
+                else if (first->value[end] == '}')
                 {
                     /* attribute ends with rule set */
 
-                    current->value = (tmbstr) MemRealloc(current->value,
-                        end + tmbstrlen(attval->value) + 6);
+                    first->value = (tmbstr) MemRealloc(first->value,
+                        end + tmbstrlen(second->value) + 6);
 
-                    tmbstrcat(current->value, " { ");
-                    tmbstrcat(current->value, attval->value);
-                    tmbstrcat(current->value, " }");
+                    tmbstrcat(first->value, " { ");
+                    tmbstrcat(first->value, second->value);
+                    tmbstrcat(first->value, " }");
                 }
                 else
                 {
                     /* attribute ends with property value */
 
-                    current->value = (tmbstr) MemRealloc(current->value,
-                        end + tmbstrlen(attval->value) + 3);
+                    first->value = (tmbstr) MemRealloc(first->value,
+                        end + tmbstrlen(second->value) + 3);
 
-                    tmbstrcat(current->value, "; ");
-                    tmbstrcat(current->value, attval->value);
+                    tmbstrcat(first->value, "; ");
+                    tmbstrcat(first->value, second->value);
                 }
 
-                temp = attval->next;
+                temp = second->next;
 
-                if (temp->next == NULL)
-                    current = NULL;
-                else
-                    current = current->next;
+                ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
 
-                ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
-
-                RemoveAttribute(node, attval);
-                attval = temp;
+                RemoveAttribute(node, second);
+                second = temp;
 
             }
             else if ( cfg(doc, TidyDuplicateAttrs) == TidyKeepLast )
             {
-                temp = current->next;
-                ReportAttrError( doc, node, current, REPEATED_ATTRIBUTE);
-                RemoveAttribute(node, current);
-                current = temp;
+                temp = first->next;
+                ReportAttrError( doc, node, first, REPEATED_ATTRIBUTE);
+                RemoveAttribute(node, first);
+                first = temp;
+                second = second->next;
             }
-            else
+            else /* TidyDuplicateAttrs == TidyKeepFirst */
             {
-                temp = attval->next;
+                temp = second->next;
 
-                if (attval->next == NULL)
-                    current = NULL;
-                else
-                    current = current->next;
+                ReportAttrError( doc, node, second, REPEATED_ATTRIBUTE);
+                RemoveAttribute(node, second);
 
-                ReportAttrError( doc, node, attval, REPEATED_ATTRIBUTE);
-                RemoveAttribute(node, attval);
-                attval = temp;
+                second = temp;
             }
         }
-        attval = attval->next;
+        first = first->next;
     }
 }
 
