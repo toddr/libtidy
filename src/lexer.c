@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/03/31 20:04:26 $ 
-    $Revision: 1.59 $ 
+    $Author: creitzel $ 
+    $Date: 2002/04/09 03:56:28 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -1210,15 +1210,15 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
             fpi = "-//W3C//DTD XHTML 1.0 Strict//EN";
             sysid = voyager_strict;
         }
-        else if (lexer->versions & VERS_LOOSE)
-        {
-            fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
-            sysid = voyager_loose;
-        }
         else if (lexer->versions & VERS_FRAMESET)
         {   /* use XHTML frames */
             fpi = "-//W3C//DTD XHTML 1.0 Frameset//EN";
             sysid = voyager_frameset;
+        }
+        else if (lexer->versions & VERS_LOOSE)
+        {
+            fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+            sysid = voyager_loose;
         }
         else /* proprietary */
         {
