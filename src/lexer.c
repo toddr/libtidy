@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/06/10 05:00:03 $ 
-    $Revision: 1.7 $ 
+    $Date: 2001/06/16 14:06:34 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -1156,9 +1156,6 @@ Bool FixDocType(Lexer *lexer, Node *root)
     if (lexer->bad_doctype)
         ReportWarning(lexer, null, null, MALFORMED_DOCTYPE);
 
-    if (XmlOut)
-        return yes;
-
     doctype = FindDocType(root);
 
     if (doctype_mode == doctype_omit)
@@ -1168,6 +1165,9 @@ Bool FixDocType(Lexer *lexer, Node *root)
 
         return yes;
     }
+
+    if (XmlOut)
+        return yes;
 
     if (doctype_mode == doctype_strict)
     {
