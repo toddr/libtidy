@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/02 02:32:21 $ 
-    $Revision: 1.7 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 15:05:29 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -74,7 +74,11 @@ tmbstr tmbstrtoupper(tmbstr s);
 
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 );
 
-int tmbvsnprintf(tmbstr buffer, size_t count, ctmbstr format, va_list args);
+int tmbvsnprintf(tmbstr buffer, size_t count, ctmbstr format, va_list args)
+#ifdef __GNUC__
+__attribute__((format(printf, 3, 0)))
+#endif
+;
 int tmbsnprintf(tmbstr buffer, size_t count, ctmbstr format, ...)
 #ifdef __GNUC__
 __attribute__((format(printf, 3, 4)))

@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/09/12 02:32:04 $ 
-    $Revision: 1.121 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 15:05:28 $ 
+    $Revision: 1.122 $ 
 
 */
 
@@ -402,6 +402,12 @@ static char* ReportPosition(TidyDocImpl* doc, int line, int col, char* buf, size
 ** filter routine.
 */
 
+static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
+                        int line, int col, ctmbstr msg, va_list args )
+#ifdef __GNUC__
+__attribute__((format(printf, 5, 0)))
+#endif
+;
 static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
                         int line, int col, ctmbstr msg, va_list args )
 {
