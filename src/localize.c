@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/09 19:58:43 $ 
-    $Revision: 1.43 $ 
+    $Date: 2001/09/23 19:09:39 $ 
+    $Revision: 1.44 $ 
 
 */
 
@@ -1001,57 +1001,58 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "You can also use --blah for any config file option blah\n");
     tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
 #else
-    tidy_out(out, "%s: file1 file2 ...\n", prog);
-    tidy_out(out, "Utility to clean up & pretty print HTML files\n");
+    tidy_out(out, "%s [option...] [file...]\n", prog);
+    tidy_out(out, "Utility to clean up and pretty print HTML/XHTML/XML\n");
     tidy_out(out, "see http://www.w3.org/People/Raggett/tidy/\n");
+    tidy_out(out, "\n");
 #ifdef PLATFORM_NAME
-    tidy_out(out, "options for HTML Tidy for %s released on %s\n", PLATFORM_NAME, release_date);
+    tidy_out(out, "Options for HTML Tidy for %s released on %s:\n", PLATFORM_NAME, release_date);
 #else
-    tidy_out(out, "options for HTML Tidy released on %s\n", release_date);
+    tidy_out(out, "Options for HTML Tidy released on %s:\n", release_date);
 #endif
     tidy_out(out, "\n");
 
     tidy_out(out, "Processing directives\n");
     tidy_out(out, "---------------------\n");
-    tidy_out(out, "  -indent or -i   indent element content\n");
-    tidy_out(out, "  -omit   or -o   omit optional end tags\n");
-    tidy_out(out, "  -wrap 72        wrap text at column 72 (default is 68)\n");
-    tidy_out(out, "  -upper  or -u   force tags to upper case (default is lower)\n");
-    tidy_out(out, "  -clean  or -c   replace FONT, NOBR & CENTER tags by CSS\n");
-    tidy_out(out, "  -bare   or -b   strip out smart quotes and em dashes, etc.\n");
-    tidy_out(out, "  -numeric or -n  output numeric rather than named entities\n");
-    tidy_out(out, "  -errors or -e   only show errors\n");
-    tidy_out(out, "  -quiet or -q    suppress nonessential output\n");
-    tidy_out(out, "  -xml            use this when input is well formed XML\n");
-    tidy_out(out, "  -asxml          to convert HTML to well formed XHTML\n");
-    tidy_out(out, "  -asxhtml        to convert HTML to well formed XHTML\n");
-    tidy_out(out, "  -slides         to burst into slides on H2 elements\n");
+    tidy_out(out, "  -indent  or -i    to indent element content\n");
+    tidy_out(out, "  -omit    or -o    to omit optional end tags\n");
+    tidy_out(out, "  -wrap <column>    to wrap text at the specified <column> (default is 68)\n");
+    tidy_out(out, "  -upper   or -u    to force tags to upper case (default is lower case)\n");
+    tidy_out(out, "  -clean   or -c    to replace FONT, NOBR and CENTER tags by CSS\n");
+    tidy_out(out, "  -bare    or -b    to strip out smart quotes and em dashes, etc.\n");
+    tidy_out(out, "  -numeric or -n    to output numeric rather than named entities\n");
+    tidy_out(out, "  -errors  or -e    to only show errors\n");
+    tidy_out(out, "  -quiet   or -q    to suppress nonessential output\n");
+    tidy_out(out, "  -xml              to specify the input is well formed XML\n");
+    tidy_out(out, "  -asxml            to convert HTML to well formed XHTML\n");
+    tidy_out(out, "  -asxhtml          to convert HTML to well formed XHTML\n");
+    tidy_out(out, "  -slides           to burst into slides on H2 elements\n");
     tidy_out(out, "\n");
 
     tidy_out(out, "Character encodings\n");
     tidy_out(out, "-------------------\n");
-    tidy_out(out, "  -raw            leave chars > 128 unchanged upon output\n");
-    tidy_out(out, "  -ascii          use US-ASCII for output, ISO-8859-1 for input\n");
-    tidy_out(out, "  -latin1         use ISO-8859-1 for both input and output\n");
-    tidy_out(out, "  -iso2022        use ISO-2022 for both input and output\n");
-    tidy_out(out, "  -utf8           use UTF-8 for both input and output\n");
-    tidy_out(out, "  -mac            use MacRoman for input, US-ASCII for output\n");
+    tidy_out(out, "  -raw              to output values above 127 without conversion to entities\n");
+    tidy_out(out, "  -ascii            to use US-ASCII for output, ISO-8859-1 for input\n");
+    tidy_out(out, "  -latin1           to use ISO-8859-1 for both input and output\n");
+    tidy_out(out, "  -iso2022          to use ISO-2022 for both input and output\n");
+    tidy_out(out, "  -utf8             to use UTF-8 for both input and output\n");
+    tidy_out(out, "  -mac              to use MacRoman for input, US-ASCII for output\n");
 
 #if SUPPORT_UTF16_ENCODINGS
 
-    tidy_out(out, "  -utf16le        use UTF-16LE for both input and output\n");
-    tidy_out(out, "  -utf16be        use UTF-16BE for both input and output\n");
-    tidy_out(out, "  -utf16          use UTF-16 for both input and output\n");
+    tidy_out(out, "  -utf16le          to use UTF-16LE for both input and output\n");
+    tidy_out(out, "  -utf16be          to use UTF-16BE for both input and output\n");
+    tidy_out(out, "  -utf16            to use UTF-16 for both input and output\n");
 
 #endif
 
-    tidy_out(out, "  -win1252        use Windows-1252 for input, US-ASCII for output\n");
+    tidy_out(out, "  -win1252          to use Windows-1252 for input, US-ASCII for output\n");
 
 #if SUPPORT_ASIAN_ENCODINGS
 
-    tidy_out(out, "  -big5           use Big5 for both input and output\n"); /* #431953 - RJ */
-    tidy_out(out, "  -shiftjis       use Shift_JIS for both input and output\n"); /* #431953 - RJ */
-    tidy_out(out, "  -language       set the two-letter language code (for future use)\n"); /* #431953 - RJ */
+    tidy_out(out, "  -big5             to use Big5 for both input and output\n"); /* #431953 - RJ */
+    tidy_out(out, "  -shiftjis         to use Shift_JIS for both input and output\n"); /* #431953 - RJ */
+    tidy_out(out, "  -language <lang>  to set the two-letter language code <lang> (for future use)\n"); /* #431953 - RJ */
 
 #endif
 
@@ -1059,18 +1060,19 @@ void HelpText(FILE *out, char *prog)
 
     tidy_out(out, "File manipulation\n");
     tidy_out(out, "-----------------\n");
-    tidy_out(out, "  -config <file>  set options from config file\n");
-    tidy_out(out, "  -f <file>       write errors to named <file>\n");
-    tidy_out(out, "  -modify or -m   to modify original files\n");
+    tidy_out(out, "  -config <file>    to set configuration options from the specified <file>\n");
+    tidy_out(out, "  -f      <file>    to write errors to the specified <file>\n");
+    tidy_out(out, "  -modify or -m     to modify the original input files\n");
     tidy_out(out, "\n");
 
     tidy_out(out, "Miscellaneous\n");
     tidy_out(out, "-------------\n");
-    tidy_out(out, "  -version or -v  show version\n");
-    tidy_out(out, "  -help   or -h   list command line options\n");
-    tidy_out(out, "  -help-config    list all configuration file options\n");
-    tidy_out(out, "  -show-config    list the current configuration settings\n");
-    tidy_out(out, "You can also use --blah for any config file option blah\n");
+    tidy_out(out, "  -version  or -v   to show the version of Tidy\n");
+    tidy_out(out, "  -help, -h or -?   to list the command line options\n");
+    tidy_out(out, "  -help-config      to list all configuration options\n");
+    tidy_out(out, "  -show-config      to list the current configuration settings\n");
+    tidy_out(out, "\n");
+    tidy_out(out, "You can also use --blah for any configuration option blah\n");
     tidy_out(out, "\n");
 
     tidy_out(out, "Input/Output default to stdin/stdout respectively\n");
