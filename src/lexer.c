@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 04:35:02 $ 
-    $Revision: 1.83 $ 
+    $Date: 2003/04/09 07:04:20 $ 
+    $Revision: 1.84 $ 
 
 */
 
@@ -1933,6 +1933,142 @@ static Bool IsQuote( int c )
   return ( c == '\'' || c == '\"' );
 }
 
+#ifndef OLD_CDATA_CODE
+#define CDATA_INTERMEDIATE 1
+#define CDATA_STARTTAG     2
+#define CDATA_ENDTAG       3
+
+Node *GetCDATA( TidyDocImpl* doc, Node *container )
+{
+    Lexer* lexer = doc->lexer;
+    int start = 0;
+    int nested = 0;
+    int state = CDATA_INTERMEDIATE;
+    int i;
+    uint c;
+
+    lexer->lines = doc->docIn->curline;
+    lexer->columns = doc->docIn->curcol;
+    lexer->waswhite = no;
+    lexer->txtstart = lexer->txtend = lexer->lexsize;
+
+    /* seen start tag, look for matching end tag */
+    while ((c = ReadChar(doc->docIn)) != EndOfStream)
+    {
+        /* treat \r\n as \n and \r as \n */
+        if (c == '\r')
+        {
+            c = ReadChar(doc->docIn);
+
+            if (c != '\n')
+                UngetChar(c, doc->docIn);
+
+            c = '\n';
+        }
+
+        AddCharToLexer(lexer, (uint)c);
+        lexer->txtend = lexer->lexsize;
+
+        if (state == CDATA_INTERMEDIATE)
+        {
+            if (c != '<')
+                continue;
+
+            c = ReadChar(doc->docIn);
+
+            if (IsLetter(c))
+            {
+                AddCharToLexer(lexer, (uint)c);
+                start = lexer->lexsize - 1;
+                state = CDATA_STARTTAG;
+            }
+            else if (c == '/')
+            {
+                AddCharToLexer(lexer, (uint)c);
+
+                c = ReadChar(doc->docIn);
+                
+                if (!IsLetter(c))
+                {
+                    UngetChar(c, doc->docIn);
+                    continue;
+                }
+                UngetChar(c, doc->docIn);
+
+                start = lexer->lexsize;
+                state = CDATA_ENDTAG;
+            }
+            else
+            {
+                UngetChar(c, doc->docIn);
+            }
+        }
+        /* '<' + Letter found */
+        else if (state == CDATA_STARTTAG)
+        {
+            if (IsLetter(c))
+                continue;
+
+            if (tmbstrncasecmp(container->element,
+                lexer->lexbuf + start,
+                tmbstrlen(container->element)) == 0)
+            {
+                nested++;
+            }
+            state = CDATA_INTERMEDIATE;
+        }
+        /* '<' + '/' + Letter found */
+        else if (state == CDATA_ENDTAG)
+        {
+            if (IsLetter(c))
+                continue;
+
+            if (tmbstrncasecmp(container->element, lexer->lexbuf + start,
+                tmbstrlen(container->element)) == 0 && nested-- <= 0)
+            {
+                /* skip trailing white space in end tag */
+                while (IsWhite(c))
+                    c = ReadChar(doc->docIn);
+
+                /* <script>...</script<p>... */
+                if (c == '<')
+                    UngetChar(c, doc->docIn);
+
+                lexer->lexsize -= (lexer->lexsize - start) + 2;
+                break;
+            }
+            else
+            {
+                lexer->lines = doc->docIn->curline;
+                lexer->columns = doc->docIn->curcol - 3;
+                ReportWarning(doc, NULL, NULL, BAD_CDATA_CONTENT);
+
+                /* if javascript insert backslash before / */
+                if (IsJavaScript(container))
+                {
+                    for (i = lexer->lexsize; i > start-1; --i)
+                        lexer->lexbuf[i] = lexer->lexbuf[i-1];
+
+                    lexer->lexbuf[start-1] = '\\';
+                    lexer->lexsize++;
+                }
+            }
+            state = CDATA_INTERMEDIATE;
+        }
+    }
+    lexer->txtend = lexer->lexsize;
+
+    if (c == EndOfStream)
+        ReportWarning( doc, container, NULL, MISSING_ENDTAG_FOR );
+
+    if (lexer->txtend > lexer->txtstart)
+        return lexer->token = TextToken(lexer);
+
+    return NULL;
+}
+
+#else /* defined(OLD_CDATA_CODE) */
+
 Node *GetCDATA( TidyDocImpl* doc, Node *container )
 {
     Lexer* lexer = doc->lexer;
@@ -2066,6 +2202,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
 
     return NULL;
 }
+#endif /* defined(OLD_CDATA_CODE) */
 
 void UngetToken( TidyDocImpl* doc )
 {
