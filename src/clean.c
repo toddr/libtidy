@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/10/26 14:09:55 $ 
-    $Revision: 1.68 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/06 11:50:14 $ 
+    $Revision: 1.69 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1151,6 +1151,10 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 
         if (list->tag != node->tag)
             return no;
+
+        /* check list has no peers */
+        if (list->next)
+	    return no;
 
         *pnode = list;  /* Set node to resume iteration */
 
