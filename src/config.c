@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/08/29 02:13:30 $ 
-    $Revision: 1.25 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/09/01 00:50:58 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -16,6 +16,7 @@
   config files associate a property name with a value.
 
   // comments can start at the beginning of a line
+  # comments can start at the beginning of a line
   name: short values fit onto one line
   name: a really long value that
    continues on the next line
@@ -43,7 +44,7 @@ ParseProperty ParseBool;    /* parser for 'true' or 'false' or 'yes' or 'no' */
 ParseProperty ParseInvBool; /* parser for 'true' or 'false' or 'yes' or 'no' */
 ParseProperty ParseName;    /* a string excluding whitespace */
 ParseProperty ParseString;  /* a string including whitespace */
-ParseProperty ParseTagNames; /* a space separated list of tag names */
+ParseProperty ParseTagNames; /* a space or comma separated list of tag names */
 /* RAW, ASCII, LATIN1, UTF8, ISO2022, MACROMAN, UTF16LE, UTF16BE, UTF16, WIN1252, BIG5, SHIFTJIS */
 ParseProperty ParseCharEncoding;
 ParseProperty ParseIndent;   /* specific to the indent option */
@@ -59,7 +60,7 @@ DocTypeMode doctype_mode = doctype_auto; /* see doctype property */
 DupAttrMode DuplicateAttrs = keep_last; /* Keep first or last duplicate attribute */
 
 char *alt_text = null;      /* default text for alt attribute */
-char *slide_style = null;   /* style sheet for slides */
+char *slide_style = null;   /* style sheet for slides: not used for anything yet */
 char *Language = null;      /* #431953 - RJ language property: not used for anything yet */
 char *doctype_str = null;   /* user specified doctype */
 char *errfile = null;       /* file name to write errors to */
@@ -120,8 +121,6 @@ Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
 Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text */
 Bool NCR = yes;             /* #431953 - RJ allow numeric character references */
-
-typedef struct _lex PLex;
 
 static uint c;      /* current char in input stream */
 static FILE *fin;   /* file pointer for input stream */
@@ -714,7 +713,10 @@ void ParseTagNames(Location location, char *option)
         }
 
         buf[i] = '\0';
-
+        if (i == 0)
+        /* we shouldn't be here, but there is a bug when there is a trailing space on the line */
+            continue;
+            
         /* add tag to dictionary */
 
         if(location.string == &inline_tags)
