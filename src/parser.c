@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/21 11:17:28 $ 
-    $Revision: 1.143 $ 
+    $Date: 2005/03/21 12:30:46 $ 
+    $Revision: 1.144 $ 
 
 */
 
@@ -1386,6 +1386,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
              && !nodeIsBIG(node)
              && !nodeIsSMALL(node)
              && !nodeIsQ(node)
+             && !nodeIsSPAN(node)
            )
         {
             if (element->content != NULL && node->attributes == NULL)
@@ -1396,7 +1397,8 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 continue;
             }
 
-            ReportWarning(doc, element, node, NESTED_EMPHASIS);
+            if (node->attributes == NULL || element->attributes == NULL)
+                ReportWarning(doc, element, node, NESTED_EMPHASIS);
         }
         else if ( IsPushed(doc, node) && node->type == StartTag && 
                   nodeIsQ(node) )
