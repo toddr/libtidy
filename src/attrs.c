@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 05:49:43 $ 
-    $Revision: 1.7 $ 
+    $Date: 2001/07/11 06:52:11 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -531,19 +531,54 @@ Bool IsBoolAttribute(AttVal *attval)
 
 void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
 {
-    char c, *p = attval->value;
-
+    char c, *dest, *p = attval->value;
+    uint FixUri = 1; /* make this a global variable! */
+    uint i, pos = 0;
+    uint escape_count = 0, backslash_count = 0;
+    size_t len;
+    
     if (p == null)
-        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
-    else if (FixBackslash)
     {
-        while ((c = *p))
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        return;
+    }
+    
+    for (i = 0; c = p[i]; ++i)
+    {
+        if (c == '\\')
         {
-            if (c =='\\')
-                *p = '/';
-
-            ++p;
+            ++backslash_count;
+            if (FixBackslash)
+                p[i] = '/';
         }
+        else if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
+            ++escape_count;
+    }
+    
+    if (FixUri && escape_count)
+    {
+        len = strlen(p) + escape_count * 2 + 1;
+        dest = (char *)MemAlloc(len);
+        
+        for (i = 0; c = p[i]; ++i)
+        {
+            if ((c > 0x7e) || (c < 0x1f) || (strchr(" <>", c)))
+                pos += sprintf(dest + pos, "%%%02X", (unsigned char)c);
+            else
+                dest[pos++] = c;
+        }
+        dest[pos++] = 0;
+
+        MemFree(attval->value);
+        attval->value = dest;
+    }
+    if (backslash_count)
+    {
+        /* shout: backslash in URI */
+    }
+    if (escape_count)
+    {
+        /* shout: illegal characters in URI */
     }
 }
 
