@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 20:17:43 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.10 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1151,7 +1151,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
               RemoveNode( node );  
             if ( node = FindHTML(doc) )
             {
-              AttVal* av = AttrGetById( node, TidyAttr_XMLNS );
+              AttVal* av = AttrGetById( node, TidyAttr_xmlns );
               if ( av )
                   RemoveAttribute( node, av );
             }
@@ -1380,7 +1380,7 @@ Bool tidyNodeIsProp( TidyDoc tdoc, TidyNode tnod )
 TidyTagId tidyNodeGetId( TidyNode tnod )
 {
   Node* nimp = tidyNodeToImpl( tnod );
-  TidyTagId tagId = TidyTag_UNKNOWN;
+  TidyTagId tagId = TidyElem_UNKNOWN;
   if ( nimp )
     tagId = nimp->tag->id;
   return tagId;
@@ -1449,7 +1449,7 @@ ctmbstr       tidyAttrNsUri( TidyAttr tattr )
 TidyAttrId tidyAttrGetId( TidyAttr tattr )
 {
   AttVal* attval = tidyAttrToImpl( tattr );
-  TidyAttrId attrId = TidyAttr_UNKNOWN;
+  TidyAttrId attrId = TidyAttr_unknown;
   if ( attval && attval->dict )
     attrId = attval->dict->id;
   return attrId;

@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 20:32:49 $ 
-    $Revision: 1.74 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -816,7 +816,7 @@ void ReportError( TidyDocImpl* doc, Node *element, Node *node, uint code)
 #if defined(__arm)
         if (!element)
 #else
-	    else
+        else
 #endif
             messageNode( doc, TidyError, node, "unexpected </%s>",
                          node->element );

@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:46 $ 
-    $Revision: 1.61 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.62 $ 
 
 */
 
@@ -529,7 +529,7 @@ static Bool InsertMisc(Node *element, Node *node)
     */
     if ( node->tag &&
          (node->type == StartTag || node->type == StartEndTag) &&
-         nodeCMIsEmpty(node) && TagId(node) == TidyTag_UNKNOWN &&
+         nodeCMIsEmpty(node) && TagId(node) == TidyElem_UNKNOWN &&
          (node->tag->versions & VERS_PROPRIETARY) != 0 )
     {
         InsertNodeAtEnd(element, node);
@@ -671,7 +671,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         return;
 
     if ( nodeIsFORM(element) && 
-         DescendantOf(element, TidyTag_FORM) )
+         DescendantOf(element, TidyElem_FORM) )
         ReportWarning( doc, element, NULL, ILLEGAL_NESTING );
 
     /*
@@ -736,7 +736,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode( doc, node, TidyElem_BR );
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( element, node );
                 node = InferredTag( doc, "br" );
@@ -1007,7 +1007,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         node = element->parent;
                         MemFree(node->element);
                         node->element = tmbstrdup("th");
-                        node->tag = LookupTagDef( TidyTag_TH );
+                        node->tag = LookupTagDef( TidyElem_TH );
                         continue;
                     }
                 }
@@ -1300,11 +1300,11 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
              node->type == StartTag &&
              ( (mode & Preformatted) ||
                nodeIsDT(element) || 
-               DescendantOf(element, TidyTag_DT )
+               DescendantOf(element, TidyElem_DT )
              )
            )
         {
-            node->tag = LookupTagDef( TidyTag_BR );
+            node->tag = LookupTagDef( TidyElem_BR );
             MemFree(node->element);
             node->element = tmbstrdup("br");
             TrimSpaces(doc, element);
@@ -1331,9 +1331,9 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
            else if ( nodeIsP(node) )
            {
                /* coerce unmatched </p> to <br><br> */
-                if ( !DescendantOf(element, TidyTag_P) )
+                if ( !DescendantOf(element, TidyElem_P) )
                 {
-                    CoerceNode( doc, node, TidyTag_BR );
+                    CoerceNode( doc, node, TidyElem_BR );
                     TrimSpaces( doc, element );
                     InsertNodeAtEnd( element, node );
                     node = InferredTag(doc, "br");
@@ -1413,7 +1413,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         /* #427827 - fix by Randy Waki and Bjoern Hoehrmann 23 Aug 00 */
         /* if (node->tag == doc->tags.tag_a && !node->implicit && IsPushed(doc, node)) */
         if ( nodeIsA(node) && !node->implicit && 
-             (nodeIsA(element) || DescendantOf(element, TidyTag_A)) )
+             (nodeIsA(element) || DescendantOf(element, TidyElem_A)) )
         {
             /* coerce <a> to </a> unless it has some attributes */
             /* #427827 - fix by Randy Waki and Bjoern Hoehrmann 23 Aug 00 */
@@ -1810,7 +1810,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             FreeNode( doc, node);
 
             if (list->tag->model & CM_OBSOLETE)
-                CoerceNode( doc, list, TidyTag_UL );
+                CoerceNode( doc, list, TidyElem_UL );
 
             list->closed = yes;
             TrimEmptyElement( doc, list);
@@ -1858,7 +1858,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                     UngetToken( doc );
 
                     if (list->tag->model & CM_OBSOLETE)
-                        CoerceNode( doc, list, TidyTag_UL );
+                        CoerceNode( doc, list, TidyElem_UL );
 
                     TrimEmptyElement( doc, list);
                     return;
@@ -1892,7 +1892,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
     }
 
     if (list->tag->model & CM_OBSOLETE)
-        CoerceNode( doc, list, TidyTag_UL );
+        CoerceNode( doc, list, TidyElem_UL );
 
     ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
     TrimEmptyElement( doc, list);
@@ -2474,7 +2474,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         return;
 
     if (pre->tag->model & CM_OBSOLETE)
-        CoerceNode( doc, pre, TidyTag_PRE );
+        CoerceNode( doc, pre, TidyElem_PRE );
 
     InlineDup( doc, NULL ); /* tell lexer to insert inlines if needed */
 
@@ -2540,7 +2540,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
                 TrimSpaces(doc, pre);
             
                 /* coerce both <p> and </p> to <br> */
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode( doc, node, TidyElem_BR );
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( pre, node );
             }
@@ -3131,7 +3131,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode( doc, node, TidyElem_BR );
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd(body, node);
                 node = InferredTag(doc, "br");
@@ -3241,7 +3241,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
 
             if (seen_body)
             {
-                CoerceNode(doc, node, TidyTag_DIV );
+                CoerceNode(doc, node, TidyElem_DIV );
                 MoveNodeToBody(doc, node);
             }
             continue;

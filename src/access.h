@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:42 $ 
-    $Revision: 1.3 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -57,7 +57,7 @@ typedef struct AreaLinks
 } AreaLinks;
 */
 
-#define TEXTBUF_SIZE	128
+#define TEXTBUF_SIZE    128
 
 struct _TidyAccessImpl;
 typedef struct _TidyAccessImpl TidyAccessImpl;

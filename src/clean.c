@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:43 $ 
-    $Revision: 1.23 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.24 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -988,7 +988,7 @@ static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
             return no;
 
         /* coerce dir to div */
-        node->tag = LookupTagDef( TidyTag_DIV );
+        node->tag = LookupTagDef( TidyElem_DIV );
         MemFree( node->element );
         node->element = tmbstrdup("div");
         AddStyleProperty( doc, node, "margin-left: 2em" );
@@ -1054,7 +1054,7 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
             return yes;
         }
 
-        RenameElem( node, TidyTag_DIV );
+        RenameElem( node, TidyElem_DIV );
         AddStyleProperty( doc, node, "text-align: center" );
         return yes;
     }
@@ -1331,7 +1331,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
         }
 
         node->attributes = style;
-        RenameElem( node, TidyTag_SPAN );
+        RenameElem( node, TidyElem_SPAN );
         return yes;
     }
 
@@ -1472,9 +1472,9 @@ void EmFromI( TidyDocImpl* doc, Node* node )
     while (node)
     {
         if ( nodeIsI(node) )
-            RenameElem( node, TidyTag_EM );
+            RenameElem( node, TidyElem_EM );
         else if ( nodeIsB(node) )
-            RenameElem( node, TidyTag_STRONG );
+            RenameElem( node, TidyElem_STRONG );
 
         if ( node->content )
             EmFromI( doc, node->content );
@@ -1506,7 +1506,7 @@ void List2BQ( TidyDocImpl* doc, Node* node )
              HasOneChild(node) && node->content->implicit )
         {
             StripOnlyChild( doc, node );
-            RenameElem( node, TidyTag_BLOCKQUOTE );
+            RenameElem( node, TidyElem_BLOCKQUOTE );
             node->implicit = yes;
         }
 
@@ -1546,7 +1546,7 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
 
             len = sprintf(indent_buf, "margin-left: %dem", 2*indent);
 
-            RenameElem( node, TidyTag_DIV );
+            RenameElem( node, TidyElem_DIV );
 
             attval = GetAttrByName( node, "style" );
             if (attval)
@@ -1856,7 +1856,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             if (NoMargins(node))
             {
                 Node *pre, *next;
-                CoerceNode( doc, node, TidyTag_PRE );
+                CoerceNode( doc, node, TidyElem_PRE );
 
                 PurgeWord2000Attributes( doc, node );
 
@@ -1941,11 +1941,11 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                  AttrMatches(attr, "MsoListNumber") ||
                  AttrContains(atrStyle, "mso-list:") )
             {
-                TidyTagId listType = TidyTag_UL;
+                TidyTagId listType = TidyElem_UL;
                 if ( attr && tmbstrcmp(attr->value, "MsoListNumber") == 0 )
-                    listType = TidyTag_OL;
+                    listType = TidyElem_OL;
 
-                CoerceNode( doc, node, TidyTag_LI );
+                CoerceNode( doc, node, TidyElem_LI );
 
                 if ( !list || TagId(list) != listType )
                 {
@@ -1970,7 +1970,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 Node *br = NewLineNode(lexer);
                 NormalizeSpaces(lexer, node);
 
-                if ( !list || TagId(list) != TidyTag_PRE )
+                if ( !list || TagId(list) != TidyElem_PRE )
                 {
                     list = InferredTag( doc, "pre" );
                     InsertNodeBeforeElement(node, list);
@@ -2019,12 +2019,12 @@ Bool IsWord2000( TidyDocImpl* doc )
             if ( !nodeIsMETA(node) )
                 continue;
 
-            attval = AttrGetById( node, TidyAttr_NAME );
+            attval = AttrGetById( node, TidyAttr_name );
 
             if ( !AttrMatches(attval, "generator") )
                 continue;
 
-            attval =  AttrGetById( node, TidyAttr_CONTENT );
+            attval =  AttrGetById( node, TidyAttr_content );
 
             if ( AttrContains(attval, "Microsoft") )
                 return yes;
@@ -2235,14 +2235,14 @@ static Bool AttrCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
         {
             switch ( TagId(node) )
             {
-            case TidyTag_COL:
-            case TidyTag_COLGROUP:
-            case TidyTag_TBODY:
-            case TidyTag_TD:
-            case TidyTag_TFOOT:
-            case TidyTag_TH:
-            case TidyTag_THEAD:
-            case TidyTag_TR:
+            case TidyElem_COL:
+            case TidyElem_COLGROUP:
+            case TidyElem_TBODY:
+            case TidyElem_TD:
+            case TidyElem_TFOOT:
+            case TidyElem_TH:
+            case TidyElem_THEAD:
+            case TidyElem_TR:
                 break;
 
             default:
@@ -2296,49 +2296,49 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
             AttVal* attr = NULL;
             switch ( TagId(node) )
             {
-            case TidyTag_BR: /* no clear */
-                attr = AttrGetById( node, TidyAttr_CLEAR );
+            case TidyElem_BR: /* no clear */
+                attr = AttrGetById( node, TidyAttr_clear );
                 break;
 
-            case TidyTag_HR: /* no size, shade */
-                attr = AttrGetById( node, TidyAttr_SIZE );
+            case TidyElem_HR: /* no size, shade */
+                attr = AttrGetById( node, TidyAttr_size );
                 if ( !attr )
-                    attr = AttrGetById( node, TidyAttr_NOSHADE );
+                    attr = AttrGetById( node, TidyAttr_noshade );
                 break;
 
-            case TidyTag_IMG: /* no border */
-                attr = AttrGetById( node, TidyAttr_BORDER );
+            case TidyElem_IMG: /* no border */
+                attr = AttrGetById( node, TidyAttr_border );
                 break;
 
-            case TidyTag_LI: /* no value, type */
-                attr = AttrGetById( node, TidyAttr_TYPE );
+            case TidyElem_LI: /* no value, type */
+                attr = AttrGetById( node, TidyAttr_type );
                 if ( !attr )
-                    attr = AttrGetById( node, TidyAttr_VALUE );
+                    attr = AttrGetById( node, TidyAttr_value );
                 break;
 
-            case TidyTag_OL: /* no start, type */
-                attr = AttrGetById( node, TidyAttr_TYPE );
+            case TidyElem_OL: /* no start, type */
+                attr = AttrGetById( node, TidyAttr_type );
                 if ( !attr )
-                    attr = AttrGetById( node, TidyAttr_START );
+                    attr = AttrGetById( node, TidyAttr_start );
                 break;
 
-            case TidyTag_PRE: /* no width */
-                attr = AttrGetById( node, TidyAttr_WIDTH );
+            case TidyElem_PRE: /* no width */
+                attr = AttrGetById( node, TidyAttr_width );
                 break;
 
-            case TidyTag_SCRIPT: /* no language */
-                attr = AttrGetById( node, TidyAttr_LANGUAGE );
+            case TidyElem_SCRIPT: /* no language */
+                attr = AttrGetById( node, TidyAttr_language );
                 break;
 
-            case TidyTag_TD: /* no width, height */
-            case TidyTag_TH:
-                attr = AttrGetById( node, TidyAttr_WIDTH );
+            case TidyElem_TD: /* no width, height */
+            case TidyElem_TH:
+                attr = AttrGetById( node, TidyAttr_width );
                 if ( !attr )
-                    attr = AttrGetById( node, TidyAttr_HEIGHT );
+                    attr = AttrGetById( node, TidyAttr_height );
                 break;
 
-            case TidyTag_TABLE: /* want summary */
-                attr = AttrGetById( node, TidyAttr_SUMMARY );
+            case TidyElem_TABLE: /* want summary */
+                attr = AttrGetById( node, TidyAttr_summary );
                 if ( !attr )
                 {
                     doc->badAccess |= MISSING_SUMMARY;
@@ -2347,8 +2347,8 @@ static Bool NodeCompliance( TidyDocImpl* doc, Node* node, uint versWanted )
                 attr = NULL;
                 break;
 
-            case TidyTag_UL: /* no type */
-                attr = AttrGetById( node, TidyAttr_TYPE );
+            case TidyElem_UL: /* no type */
+                attr = AttrGetById( node, TidyAttr_type );
                 break;
             }
             if ( attr )

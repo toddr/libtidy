@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.10 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/30 23:57:25 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -132,7 +132,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
                     MemFree(av);
                 }
 
-                if ( istack->tag->id == TidyTag_A )
+                if ( istack->tag->id == TidyElem_A )
                 {
                     MemFree(istack->element);
                     break;
