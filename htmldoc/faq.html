@@ -19,6 +19,8 @@ mailing lists. If you don't see your question addressed here, see
 <a href="#support">How To Get Support</a> below.</p>
 
 <ul>
+<li><a href="#what-now">What Now?</a></li>
+
 <li><a href="#support">How to Get Support?</a></li>
 
 <li><a href="#bug">How to Submit A Bug Report</a></li>
@@ -30,6 +32,47 @@ mailing lists. If you don't see your question addressed here, see
 
 <hr />
 <dl>
+<dt><a name="what-now" id="what-now"></a>What Now?</dt>
+
+<dd><p>If you have a popup screen that reads as follows:
+<pre>
+HTML Tidy for Windows &lt;vers 1st August 2002; built on Aug 8 2002, at 15:41:13&gt;
+Parsing Console input &lt;stdin&gt;
+</pre>
+
+<p>and do not know what to do next, read on.</p>
+
+<p>Tidy is waiting for your HTML to come in, so it can parse it.
+ Tidy is fundamentally a tool that reads in HTML cleans it up and
+writes it out again. It was developed as a program you run from the
+console prompt, but there are GUI encapsulations available, e.g.
+HTML-Kit, which you might prefer.</p>
+
+<p>If you are using Windows, the first step is to unzip the zip file
+and place the tidy.exe file in a folder somewhere on your executables
+path. You may also want to set up a config file to save having to type
+lots of options each time you run Tidy. From the console prompt you can
+run Tidy like this:</p>
+
+<pre>
+C> tidy -m mywebpage.html
+</pre>
+
+<p>In this case, the <code>-m</code> option requests Tidy to write
+the tidied file back to the same filename as it read from
+(mywebpage.html). Tidy will give you a breakdown of the problems it
+found and the version of HTML the file appears to be using.</p>
+
+<p>See also Dave Raggett's <a href="http://tidy.sourceforge.net/docs/Overview.html">User Guide</a>.</p>
+
+<p>If you're not comfortable with the DOS command line, you should
+try one of the GUI versions:<br /><br />
+
+   <a href="http://users.rcn.com/creitzel/tidy.html">Windows</a><br />
+   <a href="http://www.geocities.com/terry_teague/tidy.html">MacIntosh</a><br />
+</p>
+</dd>
+
 <dt><a name="support" id="support"></a>How To Get Support</dt>
 
 <dd>
@@ -144,10 +187,6 @@ deployment, however.</p>
 </dd>
 
 <!--
-        <dt><a name="" id=""></a></dt>
-        <dd>
-        </dd>
-
         <dt><a name="" id=""></a></dt>
         <dd>
         </dd>
