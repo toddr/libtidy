@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/07/08 03:23:18 $ 
-    $Revision: 1.31 $ 
+    $Date: 2002/08/04 22:20:53 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -205,12 +205,31 @@
 
 /* Convenience defines for OS/2 + icc/gcc platforms */
 
-#if defined(__OS2__) || defined(__IBMC__) || defined(__EMX__)
+#if defined(__OS2__) || defined(__EMX__)
 #define OS2_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OS/2"
 #endif
 #endif
+
+/* Convenience defines for IRIX */
+
+#if defined(__sgi)
+#define IRIX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "SGI IRIX"
+#endif
+#endif
+
+/* Convenience defines for AIX */
+
+#if defined(_AIX)
+#define AIX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "IBM AIX"
+#endif
+#endif
+
 
 /* Convenience defines for BeOS platforms */
 
@@ -301,7 +320,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(CYGWIN_OS) || defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(CYGWIN_OS) || defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__) || defined(IRIX_OS) || defined(AIX_OS)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
@@ -352,7 +371,7 @@
 /* you may need to delete the #ifndef and #endif on your system */
 
 #ifndef __USE_MISC
-#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS)
+#if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(MAC_OS_X) || defined(OSF_OS) || defined(IRIX_OS) || defined(AIX_OS)
 #include <sys/types.h>
 #else
 #if !defined(HPUX_OS) && !defined(CYGWIN_OS)
