@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 18:36:04 $ 
-    $Revision: 1.27 $ 
+    $Date: 2001/07/16 21:21:36 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -53,10 +53,11 @@ uint lexmap[128];
 #define voyager_strict   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
 #define voyager_frameset "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"
 
-/* URI for XHTML 1.1 */
+/* URI for XHTML 1.1 and XHTML Basic 1.0 */
 #define voyager_11       "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+#define voyager_basic    "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"
 
-#define W3C_VERSIONS 12
+#define W3C_VERSIONS 10
 
 struct _vers
 {
@@ -66,11 +67,9 @@ struct _vers
     int code;
 } W3C_Version[] =
 {
-    {"HTML 4.01", "XHTML 1.1", voyager_11, VERS_XHTML11},
     {"HTML 4.01", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
     {"HTML 4.01 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
     {"HTML 4.01 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
-    {"HTML 4.0", "XHTML 1.1", voyager_11, VERS_XHTML11},
     {"HTML 4.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
     {"HTML 4.0 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
     {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
@@ -1171,12 +1170,6 @@ int ApparentVersion(Lexer *lexer)
             return VERS_HTML32;
 
         break; /* to replace old version by new */
-
-    case VERS_XHTML11:
-        if (lexer->versions & VERS_XHTML11)
-            return VERS_XHTML11;
-
-        break;
 
     case VERS_HTML40_STRICT:
         if (lexer->versions & VERS_HTML40_STRICT)

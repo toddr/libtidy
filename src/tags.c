@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 16:37:44 $ 
-    $Revision: 1.14 $ 
+    $Date: 2001/07/16 21:21:36 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -106,8 +106,8 @@ static struct tag
     {"base",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, null},
     {"link",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, CheckLINK},
     {"meta",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, CheckMETA},
-    {"style",      VERS_FROM32,  CM_HEAD, ParseScript, CheckSTYLE},
-    {"script",     VERS_FROM32,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
+    {"style",      (VERS_FROM32)&~VERS_BASIC,  CM_HEAD, ParseScript, CheckSTYLE},
+    {"script",     (VERS_FROM32)&~VERS_BASIC,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
     {"server",     VERS_NETSCAPE,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, null},
 
     {"body",       VERS_ALL,     (CM_HTML|CM_OPT|CM_OMITST), ParseBody, null},
@@ -133,9 +133,9 @@ static struct tag
     {"blockquote", VERS_ALL,     CM_BLOCK, ParseBlock, null},
     {"form",       VERS_ALL,     CM_BLOCK, ParseBlock, CheckFORM},
     {"isindex",    VERS_LOOSE,   (CM_BLOCK|CM_EMPTY), null, null},
-    {"fieldset",   VERS_HTML40,  CM_BLOCK, ParseBlock, null},
+    {"fieldset",   (VERS_HTML40)&~VERS_BASIC,  CM_BLOCK, ParseBlock, null},
     {"table",      VERS_FROM32,  CM_BLOCK, ParseTableTag, CheckTABLE},
-    {"hr",         VERS_ALL,     (CM_BLOCK|CM_EMPTY),  null, CheckHR},
+    {"hr",         (VERS_ALL)&~VERS_BASIC,     (CM_BLOCK|CM_EMPTY),  null, CheckHR},
     {"div",        VERS_FROM32,  CM_BLOCK, ParseBlock, null},
     {"multicol",   VERS_NETSCAPE,  CM_BLOCK, ParseBlock, null},
     {"nosave",     VERS_NETSCAPE, CM_BLOCK, ParseBlock, null},
@@ -144,8 +144,8 @@ static struct tag
     {"nolayer",    VERS_NETSCAPE, (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"align",      VERS_NETSCAPE, CM_BLOCK, ParseBlock, null},
     {"center",     VERS_LOOSE,   CM_BLOCK, ParseBlock, null},
-    {"ins",        VERS_HTML40,  (CM_INLINE|CM_BLOCK|CM_MIXED), ParseInline, null},
-    {"del",        VERS_HTML40,  (CM_INLINE|CM_BLOCK|CM_MIXED), ParseInline, null},
+    {"ins",        (VERS_HTML40)&~VERS_BASIC,  (CM_INLINE|CM_BLOCK|CM_MIXED), ParseInline, null},
+    {"del",        (VERS_HTML40)&~VERS_BASIC,  (CM_INLINE|CM_BLOCK|CM_MIXED), ParseInline, null},
 
     {"li",         VERS_ALL,     (CM_LIST|CM_OPT|CM_NO_INDENT), ParseBlock, null},
     {"dt",         VERS_ALL,     (CM_DEFLIST|CM_OPT|CM_NO_INDENT), ParseInline, null},
@@ -154,9 +154,9 @@ static struct tag
     {"caption",    VERS_FROM32,  CM_TABLE, ParseInline, CheckCaption},
     {"colgroup",   VERS_HTML40,  (CM_TABLE|CM_OPT), ParseColGroup, null},
     {"col",        VERS_HTML40,  (CM_TABLE|CM_EMPTY),  null, null},
-    {"thead",      VERS_HTML40,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
-    {"tfoot",      VERS_HTML40,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
-    {"tbody",      VERS_HTML40,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
+    {"thead",      (VERS_HTML40)&~VERS_BASIC,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
+    {"tfoot",      (VERS_HTML40)&~VERS_BASIC,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
+    {"tbody",      (VERS_HTML40)&~VERS_BASIC,  (CM_TABLE|CM_ROWGRP|CM_OPT), ParseRowGroup, null},
     {"tr",         VERS_FROM32,  (CM_TABLE|CM_OPT), ParseRow, null},
     {"td",         VERS_FROM32,  (CM_ROW|CM_OPT|CM_NO_INDENT), ParseBlock, CheckTableCell},
     {"th",         VERS_FROM32,  (CM_ROW|CM_OPT|CM_NO_INDENT), ParseBlock, CheckTableCell},
@@ -174,17 +174,17 @@ static struct tag
     {"iframe",     VERS_IFRAME,  CM_INLINE, ParseBlock, null},
     {"frame",      VERS_FRAMESET, (CM_FRAMES|CM_EMPTY), null, null},
     {"noframes",   VERS_IFRAME,  (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
-    {"noscript",   VERS_HTML40,  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
-    {"b",          VERS_ALL,     CM_INLINE, ParseInline, null},
-    {"i",          VERS_ALL,     CM_INLINE, ParseInline, null},
+    {"noscript",   (VERS_HTML40)&~VERS_BASIC,  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
+    {"b",          (VERS_ALL)&~VERS_BASIC,     CM_INLINE, ParseInline, null},
+    {"i",          (VERS_ALL)&~VERS_BASIC,     CM_INLINE, ParseInline, null},
     {"u",          VERS_LOOSE,   CM_INLINE, ParseInline, null},
-    {"tt",         VERS_ALL,     CM_INLINE, ParseInline, null},
+    {"tt",         (VERS_ALL)&~VERS_BASIC,     CM_INLINE, ParseInline, null},
     {"s",          VERS_LOOSE,   CM_INLINE, ParseInline, null},
     {"strike",     VERS_LOOSE,   CM_INLINE, ParseInline, null},
-    {"big",        VERS_FROM32,  CM_INLINE, ParseInline, null},
-    {"small",      VERS_FROM32,  CM_INLINE, ParseInline, null},
-    {"sub",        VERS_FROM32,  CM_INLINE, ParseInline, null},
-    {"sup",        VERS_FROM32,  CM_INLINE, ParseInline, null},
+    {"big",        (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
+    {"small",      (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
+    {"sub",        (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
+    {"sup",        (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
     {"em",         VERS_ALL,     CM_INLINE, ParseInline, null},
     {"strong",     VERS_ALL,     CM_INLINE, ParseInline, null},
     {"dfn",        VERS_ALL,     CM_INLINE, ParseInline, null},
@@ -206,19 +206,19 @@ static struct tag
     {"keygen",     VERS_NETSCAPE, (CM_INLINE|CM_EMPTY), null, null},
     {"nolayer",    VERS_NETSCAPE, (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"ilayer",     VERS_NETSCAPE, CM_INLINE, ParseInline, null},
-    {"map",        VERS_FROM32,  CM_INLINE, ParseBlock, CheckMap},
-    {"area",       VERS_ALL,     (CM_BLOCK|CM_EMPTY), null, CheckAREA},
+    {"map",        (VERS_FROM32)&~VERS_BASIC,  CM_INLINE, ParseBlock, CheckMap},
+    {"area",       (VERS_ALL)&~VERS_BASIC,     (CM_BLOCK|CM_EMPTY), null, CheckAREA},
     {"input",      VERS_ALL,     (CM_INLINE|CM_IMG|CM_EMPTY), null, null},
     {"select",     VERS_ALL,     (CM_INLINE|CM_FIELD), ParseSelect, null},
     {"option",     VERS_ALL,     (CM_FIELD|CM_OPT), ParseText, null},
-    {"optgroup",   VERS_HTML40,  (CM_FIELD|CM_OPT), ParseOptGroup, null},
+    {"optgroup",   (VERS_HTML40)&~VERS_BASIC,  (CM_FIELD|CM_OPT), ParseOptGroup, null},
     {"textarea",   VERS_ALL,     (CM_INLINE|CM_FIELD), ParseText, null},
     {"label",      VERS_HTML40,  CM_INLINE, ParseInline, null},
-    {"legend",     VERS_HTML40,  CM_INLINE, ParseInline, null},
-    {"button",     VERS_HTML40,  CM_INLINE, ParseInline, null},
+    {"legend",     (VERS_HTML40)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
+    {"button",     (VERS_HTML40)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
     {"basefont",   VERS_LOOSE,   (CM_INLINE|CM_EMPTY), null, null},
     {"font",       VERS_LOOSE,   CM_INLINE, ParseInline, null},
-    {"bdo",        VERS_HTML40,  CM_INLINE, ParseInline, null},
+    {"bdo",        (VERS_HTML40)&~VERS_BASIC,  CM_INLINE, ParseInline, null},
 
   /* elements for XHTML 1.1 */
 
