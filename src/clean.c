@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:36:03 $ 
-    $Revision: 1.94 $ 
+    $Date: 2005/03/23 12:52:09 $ 
+    $Revision: 1.95 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1568,9 +1568,7 @@ void List2BQ( TidyDocImpl* doc, Node* node )
 void BQ2Div( TidyDocImpl* doc, Node *node )
 {
     tmbchar indent_buf[ 32 ];
-    int indent;
-    uint len;
-    AttVal *attval;
+    uint indent;
 
     while (node)
     {
@@ -1589,25 +1587,11 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
             if (node->content)
                 BQ2Div( doc, node->content );
 
-            len = tmbsnprintf(indent_buf, sizeof(indent_buf), "margin-left: %dem", 2*indent);
+            tmbsnprintf(indent_buf, sizeof(indent_buf), "margin-left: %dem",
+                        2*indent);
 
             RenameElem( node, TidyTag_DIV );
-
-            attval = AttrGetById(node, TidyAttr_STYLE);
-            if (AttrHasValue(attval))
-            {
-                tmbstr s = (tmbstr) MemAlloc(len + 3 + tmbstrlen(attval->value));
-                tmbstrcpy(s, indent_buf);
-                tmbstrcat(s, "; ");
-                tmbstrcat(s, attval->value);
-
-                MemFree(attval->value);
-                attval->value = s;
-            }
-            else
-            {
-                AddAttribute( doc, node, "style", indent_buf );
-            }
+            AddStyleProperty(doc, node, indent_buf );
         }
         else if (node->content)
             BQ2Div( doc, node->content );
