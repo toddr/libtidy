@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/03 07:17:16 $ 
-    $Revision: 1.157 $ 
+    $Date: 2004/08/11 09:12:33 $ 
+    $Revision: 1.158 $ 
 
 */
 
@@ -1726,7 +1726,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     /* seen start tag, look for matching end tag */
     while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
-        AddCharToLexer(lexer, (uint)c);
+        AddCharToLexer(lexer, c);
         lexer->txtend = lexer->lexsize;
 
         if (state == CDATA_INTERMEDIATE)
@@ -1751,13 +1751,13 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                     UngetChar('<', doc->docIn);
                     return NULL;
                 }
-                AddCharToLexer(lexer, (uint)c);
+                AddCharToLexer(lexer, c);
                 start = lexer->lexsize - 1;
                 state = CDATA_STARTTAG;
             }
             else if (c == '/')
             {
-                AddCharToLexer(lexer, (uint)c);
+                AddCharToLexer(lexer, c);
 
                 c = ReadChar(doc->docIn);
                 
@@ -1774,7 +1774,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             else if (c == '\\')
             {
                 /* recognize document.write("<script><\/script>") */
-                AddCharToLexer(lexer, (uint)c);
+                AddCharToLexer(lexer, c);
 
                 c = ReadChar(doc->docIn);
 
@@ -1784,7 +1784,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                     continue;
                 }
 
-                AddCharToLexer(lexer, (uint)c);
+                AddCharToLexer(lexer, c);
                 c = ReadChar(doc->docIn);
                 
                 if (!IsLetter(c))
@@ -1955,7 +1955,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
         if (c == 160 && (mode & Preformatted))
             c = ' ';
 
-        AddCharToLexer(lexer, (uint)c);
+        AddCharToLexer(lexer, c);
 
         switch (lexer->state)
         {
@@ -3527,7 +3527,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
         {
             if (!lexer->waswhite)
             {
-                AddCharToLexer(lexer, (uint)c);
+                AddCharToLexer(lexer, c);
                 lexer->waswhite = yes;
             }
             else
@@ -3538,7 +3538,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
         }
         else
         {
-            AddCharToLexer(lexer, (uint)c);
+            AddCharToLexer(lexer, c);
             lexer->waswhite = no;
         }
 
