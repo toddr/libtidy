@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/06 22:37:00 $ 
-    $Revision: 1.27 $ 
+    $Date: 2003/04/07 04:45:43 $ 
+    $Revision: 1.28 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2414,10 +2414,16 @@ Bool  HTMLVersionCompliance( TidyDocImpl* doc )
     if (dtver == VERS_UNKNOWN)
         return no;
 
+#if 0
     if ( TidyDoctypeStrict == dtmode || VERS_HTML40_STRICT == dtver )
         versWanted = VERS_HTML40_STRICT;
     else if ( TidyDoctypeLoose == dtmode || VERS_HTML40_LOOSE == dtver )
         versWanted = VERS_HTML40_LOOSE;
+#endif
+
+    /* for now, only validate against given doctype, old code validated
+       HTML 4.01 Frameset against HTML 3.2... */
+    versWanted = doc->lexer->doctype;
 
     compliant = ( (versWanted & contver) != 0 );
     if ( !compliant )
