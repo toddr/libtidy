@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/08 02:59:48 $ 
-    $Revision: 1.11 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 05:12:58 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -457,7 +457,10 @@ static void InsertDocType(Lexer *lexer, Node *element, Node *doctype)
     InsertNodeBeforeElement(element, doctype);
 }
 
-/* duplicate name attribute as an id */
+/*
+ duplicate name attribute as an id
+ and check if id and name match
+*/
 void FixId(Lexer *lexer, Node *node)
 {
     AttVal *name = GetAttrByName(node, "name");
