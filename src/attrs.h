@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:44 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/10 14:50:09 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -99,7 +99,7 @@ AttrCheck CheckScroll;
 AttrCheck CheckTextDir;
 AttrCheck CheckLang;
 
-#define TEXT        NULL
+#define PCDATA      NULL
 #define CHARSET     NULL
 #define TYPE        NULL
 #define CHARACTER   NULL
