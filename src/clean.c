@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:26:42 $ 
-    $Revision: 1.71 $ 
+    $Date: 2004/12/06 12:37:06 $ 
+    $Revision: 1.72 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -968,15 +968,10 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
             else
                 node->attributes = av->next;
 
-            MemFree(av->attribute);
-
             if (av->value)
-            {
                 AddAlign( doc, node, av->value );
-                MemFree(av->value);
-            }
 
-            MemFree(av);
+	    FreeAttribute(doc, av);
             break;
         }
 
