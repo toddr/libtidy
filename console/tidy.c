@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/03 07:15:33 $ 
-    $Revision: 1.20 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/02/24 10:31:02 $ 
+    $Revision: 1.21 $ 
 */
 
 #include "tidy.h"
@@ -123,6 +123,24 @@ static const char* valfmt = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
 static const char* ul 
         = "=================================================================";
 
+static Bool isAutoBool( TidyOption topt )
+{
+    TidyIterator pos;
+    ctmbstr def;
+
+    if ( tidyOptGetType( topt ) != TidyInteger)
+        return no;
+
+    pos = tidyOptGetPickList( topt );
+    while ( pos )
+    {
+        def = tidyOptGetNextPick( topt, &pos );
+        if (0==strcmp(def,"yes"))
+           return yes;
+    }
+    return no;
+}
+
 static void optionhelp( TidyDoc tdoc, ctmbstr prog )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
@@ -155,14 +173,6 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
         */
         switch ( optId )
         {
-        case TidyIndentContent:
-#if SUPPORT_UTF16_ENCODINGS
-        case TidyOutputBOM:
-#endif
-            type = "AutoBool";
-            vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
-            break;
-
         case TidyDuplicateAttrs:
             type = "enum";
             vals = "keep-first, keep-last";
@@ -225,11 +235,19 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
                 break;
 
             case TidyInteger:
-                type = "Integer";
-                if ( optId == TidyWrapLen )
-                    vals = "0 (no wrapping), 1, 2, ...";
+                if (isAutoBool(topt))
+                {
+                    type = "AutoBool";
+                    vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
+                }
                 else
-                    vals = "0, 1, 2, ...";
+                {
+                    type = "Integer";
+                    if ( optId == TidyWrapLen )
+                        vals = "0 (no wrapping), 1, 2, ...";
+                    else
+                        vals = "0, 1, 2, ...";
+                }
                 break;
 
             case TidyString:
@@ -272,14 +290,6 @@ static void optionvalues( TidyDoc tdoc, ctmbstr prog )
         */
         switch ( optId )
         {
-        case TidyIndentContent:
-#if SUPPORT_UTF16_ENCODINGS
-        case TidyOutputBOM:
-#endif
-            type = "AutoBool";
-            vals = (tmbstr) tidyOptGetCurrPick( tdoc, optId );
-            break;
-
         case TidyDuplicateAttrs:
             type = "enum";
             vals = (tmbstr) tidyOptGetCurrPick( tdoc, optId );
@@ -344,9 +354,17 @@ static void optionvalues( TidyDoc tdoc, ctmbstr prog )
                 break;
 
             case TidyInteger:
-                type = "Integer";
-                ival = tidyOptGetInt( tdoc, optId );
-                sprintf( tempvals, "%u", ival );
+                if (isAutoBool(topt))
+                {
+                    type = "AutoBool";
+                    vals = tidyOptGetCurrPick( tdoc, optId );
+                }
+                else
+                {
+                    type = "Integer";
+                    ival = tidyOptGetInt( tdoc, optId );
+                    sprintf( tempvals, "%u", ival );
+                }
                 break;
 
             case TidyString:
