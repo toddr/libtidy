@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:24:34 $ 
-    $Revision: 1.33 $ 
+    $Date: 2001/09/04 08:34:08 $ 
+    $Revision: 1.34 $ 
 
   Contributing Author(s):
 
@@ -1900,23 +1900,38 @@ int main(int argc, char **argv)
                      argv[1][1] == '?')
             {
                 HelpText(stdout, prog);
-                return 1;
+
+                DeInitTidy(); /* called to free hash tables etc. */
+                return 0; /* was return 1 */
             }
             else if (wstrcasecmp(arg, "help-config") == 0)
             {
                 PrintConfigOptions(stdout, no);
-                /* break; */ /* should this be "return 1" like "-help"? */
+
+                DeInitTidy(); /* called to free hash tables etc. */
+                return 0;
+
+                /* break; */
+                /*
                 --argc;
                 ++argv;
                 continue;
+                */
             }
             else if (wstrcasecmp(arg, "show-config") == 0)
             {
                 AdjustConfig(); /* ensure config is self-consistent */
                 PrintConfigOptions(errout, yes);
+
+                DeInitTidy(); /* called to free hash tables etc. */
+                return 0;
+
+                /* break; */
+                /*
                 --argc;
                 ++argv;
                 continue;
+                */
             }
             else if (wstrcasecmp(arg, "config") == 0)
             {
@@ -1978,7 +1993,7 @@ int main(int argc, char **argv)
                 return 0;
 
             }
-            else if(strncmp(argv[1],"--",2)==0)
+            else if (strncmp(argv[1],"--",2)==0)
             {
                 if (ParseConfig(argv[1]+2, argv[2]))
                 {
@@ -2096,6 +2111,9 @@ int main(int argc, char **argv)
 
             SetFilename(file); /* #431895 - fix by Dave Bryan 04 Jan 01 */
             
+            if (!Quiet)
+                HelloMessage(errout, release_date, file);
+
             /* skip byte order mark */
             if (lexer->in->encoding == UTF8
 
@@ -2119,13 +2137,18 @@ int main(int argc, char **argv)
             
             /* Tidy doesn't alter the doctype for generic XML docs */
             if (XmlTags)
+            {
                 document = ParseXMLDocument(lexer);
+                
+                if (!CheckNodeIntegrity(document))
+                {
+                    fprintf(stderr, "\nPanic - tree has lost its integrity\n");
+                    exit(1);
+                }
+            }
             else
             {
                 lexer->warnings = 0;
-
-                if (!Quiet)
-                    HelloMessage(errout, release_date, file);
 
                 document = ParseDocument(lexer);
 
