@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/23 03:49:18 $ 
-    $Revision: 1.26 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/30 00:36:18 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -357,8 +357,28 @@ static Node *EscapeTag(Lexer *lexer, Node *element)
     if (element->type == EndTag)
         AddByte(lexer, '/');
 
-    for (p = element->element; *p != '\0'; ++p)
-        AddByte(lexer, *p);
+    if (element->element)
+    {
+        for (p = element->element; *p != '\0'; ++p)
+            AddByte(lexer, *p);
+    }
+    else if (element->type == DocTypeTag)
+    {
+        uint i;
+
+        AddByte(lexer, '!');
+        AddByte(lexer, 'D');
+        AddByte(lexer, 'O');
+        AddByte(lexer, 'C');
+        AddByte(lexer, 'T');
+        AddByte(lexer, 'Y');
+        AddByte(lexer, 'P');
+        AddByte(lexer, 'E');
+        AddByte(lexer, ' ');
+
+        for (i = element->start; i < element->end; ++i)
+            AddByte(lexer, lexer->lexbuf[i]);
+    }
 
     if (element->type == StartEndTag)
         AddByte(lexer, '/');
