@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.33 $ 
+    $Date: 2003/05/26 00:28:37 $ 
+    $Revision: 1.34 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -926,7 +926,7 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
          out->encoding == UTF16LE ||
          out->encoding == UTF16BE )
     {
-      ReportWarning( doc, NULL, doc->root, ENCODING_IO_CONFLICT );
+      ReportError(doc, NULL, doc->root, ENCODING_IO_CONFLICT );
     }
 #endif
 

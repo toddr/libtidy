@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 00:54:17 $ 
-    $Revision: 1.101 $ 
+    $Date: 2003/05/26 00:28:37 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -83,7 +83,7 @@ void CoerceNode( TidyDocImpl* doc, Node *node, TidyTagId tid )
 {
     const Dict* tag = LookupTagDef( tid );
     Node* tmp = InferredTag( doc, tag->name );
-    ReportWarning( doc, node, tmp, OBSOLETE_ELEMENT );
+    ReportError(doc, node, tmp, OBSOLETE_ELEMENT );
     MemFree( tmp->element );
     MemFree( tmp );
 
@@ -303,7 +303,7 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
     if ( CanPrune(doc, element) )
     {
        if ( element->type != TextNode )
-            ReportWarning( doc, element, NULL, TRIM_EMPTY_ELEMENT);
+            ReportError(doc, element, NULL, TRIM_EMPTY_ELEMENT);
         return DiscardElement(doc, element);
     }
     else if ( nodeIsP(element) && element->content == NULL )
@@ -752,12 +752,12 @@ static void InsertDocType( TidyDocImpl* doc, Node *element, Node *doctype )
     Node* existing = FindDocType( doc );
     if ( existing )
     {
-        ReportWarning( doc, element, doctype, DISCARDING_UNEXPECTED );
+        ReportError(doc, element, doctype, DISCARDING_UNEXPECTED );
         FreeNode( doc, doctype );
     }
     else
     {
-        ReportWarning( doc, element, doctype, DOCTYPE_AFTER_TAGS );
+        ReportError(doc, element, doctype, DOCTYPE_AFTER_TAGS );
         while ( !nodeIsHTML(element) )
             element = element->parent;
         InsertNodeBeforeElement( element, doctype );
@@ -820,7 +820,7 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
 
     if ( node->type == StartTag || node->type == StartEndTag )
     {
-        ReportWarning( doc, element, node, TAG_NOT_ALLOWED_IN );
+        ReportError(doc, element, node, TAG_NOT_ALLOWED_IN );
 
         head = FindHEAD(doc);
         assert(head != NULL);
@@ -832,7 +832,7 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
     }
     else
     {
-        ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, element, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node );
     }
 }
@@ -862,7 +862,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 
     if ( nodeIsFORM(element) && 
          DescendantOf(element, TidyTag_FORM) )
-        ReportWarning( doc, element, NULL, ILLEGAL_NESTING );
+        ReportError(doc, element, NULL, ILLEGAL_NESTING );
 
     /*
      InlineDup() asks the lexer to insert inline emphasis tags
@@ -907,7 +907,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         if ( nodeIsHTML(node) || nodeIsHEAD(node) || nodeIsBODY(node) )
         {
             if ( node->type == StartTag || node->type == StartEndTag )
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED );
             FreeNode( doc, node );
             continue;
         }
@@ -917,7 +917,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         {
             if (node->tag == NULL)
             {
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                 FreeNode( doc, node );
                 continue;
             }
@@ -943,7 +943,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                     if (node->tag == parent->tag)
                     {
                         if (!(element->tag->model & CM_OPT))
-                            ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE );
+                            ReportError(doc, element, node, MISSING_ENDTAG_BEFORE );
 
                         UngetToken( doc );
 
@@ -1019,7 +1019,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
             }
 
             /* otherwise discard it */
-            ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+            ReportError(doc, element, node, DISCARDING_UNEXPECTED );
             FreeNode( doc, node );
             continue;
         }
@@ -1035,7 +1035,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
             }
 
             /* otherwise discard it */
-            ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+            ReportError(doc, element, node, DISCARDING_UNEXPECTED );
             FreeNode( doc, node );
             continue;
         }
@@ -1043,7 +1043,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         /* ignore unknown start/end tags */
         if ( node->tag == NULL )
         {
-            ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+            ReportError(doc, element, node, DISCARDING_UNEXPECTED );
             FreeNode( doc, node );
             continue;
         }
@@ -1066,7 +1066,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 if ( nodeIsFORM(node) )
                     BadForm( doc );
 
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                 FreeNode( doc, node );
                 continue;
             }
@@ -1094,7 +1094,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                      nodeIsOPTGROUP(node) ||
                      nodeIsOPTION(node) )
                 {
-                    ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                    ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                     FreeNode( doc, node );  /* DSR - 27Apr02 avoid memory leak */
                     continue;
                 }
@@ -1137,7 +1137,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 if ( lexer->excludeBlocks )
                 {
                     if ( !nodeHasCM(element, CM_OPT) )
-                        ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE );
+                        ReportError(doc, element, node, MISSING_ENDTAG_BEFORE );
 
                     UngetToken( doc );
 
@@ -1167,14 +1167,14 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 {
                     if ( nodeIsTD(node) )
                     {
-                        ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                        ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                         FreeNode( doc, node );
                         continue;
                     }
 
                     if ( nodeIsTH(node) )
                     {
-                        ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                        ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                         FreeNode( doc, node );
                         node = element->parent;
                         MemFree(node->element);
@@ -1185,7 +1185,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 }
 
                 if ( !nodeHasCM(element, CM_OPT) && !element->implicit )
-                    ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE );
+                    ReportError(doc, element, node, MISSING_ENDTAG_BEFORE );
 
                 UngetToken( doc );
 
@@ -1264,7 +1264,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
             InsertNodeAtEnd(element, node);
             
             if (node->implicit)
-                ReportWarning( doc, element, node, INSERTING_TAG );
+                ReportError(doc, element, node, INSERTING_TAG );
 
             ParseTag( doc, node, IgnoreWhitespace /*MixedContent*/ );
             continue;
@@ -1274,13 +1274,13 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         if (node->type == EndTag)
             PopInline( doc, node );  /* if inline end tag */
 
-        ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+        ReportError(doc, element, node, DISCARDING_UNEXPECTED );
         FreeNode( doc, node );
         continue;
     }
 
     if (!(element->tag->model & CM_OPT))
-        ReportWarning( doc, element, node, MISSING_ENDTAG_FOR);
+        ReportError(doc, element, node, MISSING_ENDTAG_FOR);
 
     if (element->tag->model & CM_OBJECT)
     {
@@ -1406,18 +1406,18 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         {
             if ( element->content != NULL && node->attributes == NULL )
             {
-                ReportWarning( doc, element, node, COERCE_TO_ENDTAG );
+                ReportError(doc, element, node, COERCE_TO_ENDTAG );
                 node->type = EndTag;
                 UngetToken( doc );
                 continue;
             }
 
-            ReportWarning( doc, element, node, NESTED_EMPHASIS );
+            ReportError(doc, element, node, NESTED_EMPHASIS );
         }
         else if ( IsPushed(doc, node) && node->type == StartTag && 
                   nodeIsQ(node) )
         {
-            ReportWarning( doc, element, node, NESTED_QUOTATION );
+            ReportError(doc, element, node, NESTED_QUOTATION );
         }
 
         if ( node->type == TextNode )
@@ -1445,7 +1445,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         {
             if ( node->type == StartTag || node->type == StartEndTag )
             {
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED );
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                 FreeNode( doc, node );
                 continue;
             }
@@ -1479,7 +1479,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         /* ignore unknown and PARAM tags */
         if ( node->tag == NULL || nodeIsPARAM(node) )
         {
-            ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, element, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node );
             continue;
         }
@@ -1516,12 +1516,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 {
                     if ( nodeIsA(node) && node->tag != element->tag )
                     {
-                       ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE );
+                       ReportError(doc, element, node, MISSING_ENDTAG_BEFORE );
                        UngetToken( doc );
                     }
                     else
                     {
-                        ReportWarning( doc, element, node, NON_MATCHING_ENDTAG);
+                        ReportError(doc, element, node, NON_MATCHING_ENDTAG);
                         FreeNode( doc, node);
                     }
 
@@ -1532,7 +1532,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 }
 
                 /* if parent is <a> then discard unexpected inline end tag */
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }  /* special case </tr> etc. for stuff moved in front of table */
@@ -1552,12 +1552,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
 
             if ( node->tag == element->tag )
             {
-                ReportWarning( doc, element, node, NON_MATCHING_ENDTAG );
+                ReportError(doc, element, node, NON_MATCHING_ENDTAG );
                 FreeNode( doc, node);
             }
             else
             {
-                ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE );
+                ReportError(doc, element, node, MISSING_ENDTAG_BEFORE );
                 UngetToken( doc );
             }
 
@@ -1583,14 +1583,14 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if (node->type != EndTag && node->attributes == NULL)
             {
                 node->type = EndTag;
-                ReportWarning( doc, element, node, COERCE_TO_ENDTAG);
+                ReportError(doc, element, node, COERCE_TO_ENDTAG);
                 /* PopInline( doc, node ); */
                 UngetToken( doc );
                 continue;
             }
 
             UngetToken( doc );
-            ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE);
+            ReportError(doc, element, node, MISSING_ENDTAG_BEFORE);
             /* PopInline( doc, element ); */
 
             if (!(mode & Preformatted))
@@ -1605,12 +1605,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             {
                 if (node->type != StartTag && node->type != StartEndTag)
                 {
-                    ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+                    ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
                     continue;
                 }
 
-                ReportWarning( doc, element, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, element, node, TAG_NOT_ALLOWED_IN);
 
                 /* insert center as parent if heading is empty */
                 if (element->content == NULL)
@@ -1634,12 +1634,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             {
                 if ( node->type != StartTag && node->type != StartEndTag )
                 {
-                    ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+                    ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
                     continue;
                 }
 
-                ReportWarning( doc, element, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, element, node, TAG_NOT_ALLOWED_IN);
 
                 /* insert hr before heading if heading is empty */
                 if (element->content == NULL)
@@ -1667,12 +1667,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 Node *dd;
                 if (node->type != StartTag && node->type != StartEndTag)
                 {
-                    ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+                    ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
                     continue;
                 }
 
-                ReportWarning( doc, element, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, element, node, TAG_NOT_ALLOWED_IN);
                 dd = InferredTag(doc, "dd");
 
                 /* insert hr within dd before dt if dt is empty */
@@ -1709,7 +1709,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 if (node->tag == parent->tag)
                 {
                     if (!(element->tag->model & CM_OPT) && !element->implicit)
-                        ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE);
+                        ReportError(doc, element, node, MISSING_ENDTAG_BEFORE);
 
                     PopInline( doc, element );
                     UngetToken( doc );
@@ -1728,13 +1728,13 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         {
             if (node->type != StartTag && node->type != StartEndTag)
             {
-                ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
 
             if (!(element->tag->model & CM_OPT))
-                ReportWarning( doc, element, node, MISSING_ENDTAG_BEFORE);
+                ReportError(doc, element, node, MISSING_ENDTAG_BEFORE);
 
             if (node->tag->model & CM_HEAD && !(node->tag->model & CM_BLOCK))
             {
@@ -1770,7 +1770,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         if (node->type == StartTag || node->type == StartEndTag)
         {
             if (node->implicit)
-                ReportWarning( doc, element, node, INSERTING_TAG);
+                ReportError(doc, element, node, INSERTING_TAG);
 
             /* trim white space before <br> */
             if ( nodeIsBR(node) )
@@ -1782,13 +1782,13 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, element, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, element, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
         continue;
     }
 
     if (!(element->tag->model & CM_OPT))
-        ReportWarning( doc, element, node, MISSING_ENDTAG_FOR);
+        ReportError(doc, element, node, MISSING_ENDTAG_FOR);
 
 }
 
@@ -1801,7 +1801,7 @@ void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
         if ( node &&
              !(node->type == EndTag && node->tag == element->tag) )
         {
-            ReportWarning( doc, element, node, ELEMENT_NOT_EMPTY);
+            ReportError(doc, element, node, ELEMENT_NOT_EMPTY);
             UngetToken( doc );
         }
     }
@@ -1834,12 +1834,12 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         {
             UngetToken( doc );
             node = InferredTag( doc, "dt");
-            ReportWarning( doc, list, node, MISSING_STARTTAG);
+            ReportError(doc, list, node, MISSING_STARTTAG);
         }
 
         if (node->tag == NULL)
         {
-            ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, list, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -1853,7 +1853,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
             if ( nodeIsFORM(node) )
             {
                 BadForm( doc );
-                ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, list, node, DISCARDING_UNEXPECTED);
                 continue;
             }
 
@@ -1862,7 +1862,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
             {
                 if (node->tag == parent->tag)
                 {
-                    ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
+                    ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
 
                     UngetToken( doc );
                     return;
@@ -1917,7 +1917,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
 
             if (!(node->tag->model & (CM_BLOCK | CM_INLINE)))
             {
-                ReportWarning( doc, list, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, list, node, TAG_NOT_ALLOWED_IN);
                 return;
             }
 
@@ -1926,12 +1926,12 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
                 return;
 
             node = InferredTag( doc, "dd");
-            ReportWarning( doc, list, node, MISSING_STARTTAG);
+            ReportError(doc, list, node, MISSING_STARTTAG);
         }
 
         if (node->type == EndTag)
         {
-            ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, list, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -1941,7 +1941,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         ParseTag( doc, node, IgnoreWhitespace);
     }
 
-    ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, list, node, MISSING_ENDTAG_FOR);
 }
 
 void ParseList(TidyDocImpl* doc, Node *list, uint mode)
@@ -1969,7 +1969,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
 
         if (node->type != TextNode && node->tag == NULL)
         {
-            ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, list, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -1983,13 +1983,13 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             if ( nodeIsFORM(node) )
             {
                 BadForm( doc );
-                ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, list, node, DISCARDING_UNEXPECTED);
                 continue;
             }
 
             if (node->tag && node->tag->model & CM_INLINE)
             {
-                ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, list, node, DISCARDING_UNEXPECTED);
                 PopInline( doc, node );
                 FreeNode( doc, node);
                 continue;
@@ -2000,13 +2000,13 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             {
                 if (node->tag == parent->tag)
                 {
-                    ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
+                    ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
                     UngetToken( doc );
                     return;
                 }
             }
 
-            ReportWarning( doc, list, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, list, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2017,13 +2017,13 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
 
             if (node->tag && (node->tag->model & CM_BLOCK) && lexer->excludeBlocks)
             {
-                ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
+                ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
                 return;
             }
 
             node = InferredTag( doc, "li" );
             AddAttribute( doc, node, "style", "list-style: none" );
-            ReportWarning( doc, list, node, MISSING_STARTTAG );
+            ReportError(doc, list, node, MISSING_STARTTAG );
         }
 
         /* node should be <LI> */
@@ -2031,7 +2031,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         ParseTag( doc, node, IgnoreWhitespace);
     }
 
-    ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, list, node, MISSING_ENDTAG_FOR);
 }
 
 /*
@@ -2077,7 +2077,7 @@ static void FixEmptyRow(TidyDocImpl* doc, Node *row)
     {
         cell = InferredTag( doc, "td");
         InsertNodeAtEnd(row, cell);
-        ReportWarning( doc, row, cell, MISSING_STARTTAG);
+        ReportError(doc, row, cell, MISSING_STARTTAG);
     }
 }
 
@@ -2125,14 +2125,14 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
                 if ( nodeIsFORM(node) )
                     BadForm( doc );
 
-                ReportWarning( doc, row, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, row, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
 
             if ( nodeIsTD(node) || nodeIsTH(node) )
             {
-                ReportWarning( doc, row, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, row, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -2145,7 +2145,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL && node->type != TextNode)
         {
-            ReportWarning( doc, row, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, row, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2153,7 +2153,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
         /* discard unexpected <table> element */
         if ( nodeIsTABLE(node) )
         {
-            ReportWarning( doc, row, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, row, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2167,7 +2167,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
 
         if (node->type == EndTag)
         {
-            ReportWarning( doc, row, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, row, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2183,13 +2183,13 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
             {
                 UngetToken( doc );
                 node = InferredTag( doc, "td");
-                ReportWarning( doc, row, node, MISSING_STARTTAG);
+                ReportError(doc, row, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node)
                       || nodeHasCM(node, CM_BLOCK | CM_INLINE) )
             {
                 MoveBeforeTable( doc, row, node );
-                ReportWarning( doc, row, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, row, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
 
                 if (node->type != TextNode)
@@ -2200,7 +2200,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
             }
             else if (node->tag->model & CM_HEAD)
             {
-                ReportWarning( doc, row, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, row, node, TAG_NOT_ALLOWED_IN);
                 MoveToHead( doc, row, node);
                 continue;
             }
@@ -2208,7 +2208,7 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
 
         if ( !(nodeIsTD(node) || nodeIsTH(node)) )
         {
-            ReportWarning( doc, row, node, TAG_NOT_ALLOWED_IN);
+            ReportError(doc, row, node, TAG_NOT_ALLOWED_IN);
             FreeNode( doc, node);
             continue;
         }
@@ -2265,7 +2265,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL && node->type != TextNode)
         {
-            ReportWarning( doc, rowgroup, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, rowgroup, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2282,13 +2282,13 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
             {
                 UngetToken( doc );
                 node = InferredTag(doc, "tr");
-                ReportWarning( doc, rowgroup, node, MISSING_STARTTAG);
+                ReportError(doc, rowgroup, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node)
                       || nodeHasCM(node, CM_BLOCK|CM_INLINE) )
             {
                 MoveBeforeTable( doc, rowgroup, node );
-                ReportWarning( doc, rowgroup, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, rowgroup, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
 
                 if (node->type != TextNode)
@@ -2299,7 +2299,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
             }
             else if (node->tag->model & CM_HEAD)
             {
-                ReportWarning( doc, rowgroup, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, rowgroup, node, TAG_NOT_ALLOWED_IN);
                 MoveToHead(doc, rowgroup, node);
                 continue;
             }
@@ -2316,14 +2316,14 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
                 if ( nodeIsFORM(node) )
                     BadForm( doc );
 
-                ReportWarning( doc, rowgroup, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, rowgroup, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
 
             if ( nodeIsTR(node) || nodeIsTD(node) || nodeIsTH(node) )
             {
-                ReportWarning( doc, rowgroup, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, rowgroup, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -2354,7 +2354,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
 
         if (node->type == EndTag)
         {
-            ReportWarning( doc, rowgroup, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, rowgroup, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2362,7 +2362,7 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
         if ( !nodeIsTR(node) )
         {
             node = InferredTag(doc, "tr");
-            ReportWarning( doc, rowgroup, node, MISSING_STARTTAG);
+            ReportError(doc, rowgroup, node, MISSING_STARTTAG);
             UngetToken( doc );
         }
 
@@ -2398,7 +2398,7 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
             if ( nodeIsFORM(node) )
             {
                 BadForm( doc );
-                ReportWarning( doc, colgroup, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, colgroup, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -2428,7 +2428,7 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL)
         {
-            ReportWarning( doc, colgroup, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, colgroup, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2441,7 +2441,7 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
 
         if (node->type == EndTag)
         {
-            ReportWarning( doc, colgroup, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, colgroup, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2479,7 +2479,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL && node->type != TextNode)
         {
-            ReportWarning( doc, table, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, table, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -2492,12 +2492,12 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             {
                 UngetToken( doc );
                 node = InferredTag(doc, "tr");
-                ReportWarning( doc, table, node, MISSING_STARTTAG);
+                ReportError(doc, table, node, MISSING_STARTTAG);
             }
             else if ( nodeIsText(node) ||nodeHasCM(node,CM_BLOCK|CM_INLINE) )
             {
                 InsertNodeBeforeElement(table, node);
-                ReportWarning( doc, table, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, table, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
 
                 if (node->type != TextNode) 
@@ -2522,7 +2522,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             if ( nodeIsFORM(node) )
             {
                 BadForm( doc );
-                ReportWarning( doc, table, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, table, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -2531,7 +2531,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             if ( nodeHasCM(node, CM_TABLE|CM_ROW) ||
                  nodeHasCM(node, CM_BLOCK|CM_INLINE) )
             {
-                ReportWarning( doc, table, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, table, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -2542,7 +2542,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             {
                 if (node->tag == parent->tag)
                 {
-                    ReportWarning( doc, table, node, MISSING_ENDTAG_BEFORE );
+                    ReportError(doc, table, node, MISSING_ENDTAG_BEFORE );
                     UngetToken( doc );
                     lexer->istackbase = istackbase;
                     return;
@@ -2553,7 +2553,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
         if (!(node->tag->model & CM_TABLE))
         {
             UngetToken( doc );
-            ReportWarning( doc, table, node, TAG_NOT_ALLOWED_IN);
+            ReportError(doc, table, node, TAG_NOT_ALLOWED_IN);
             lexer->istackbase = istackbase;
             return;
         }
@@ -2566,11 +2566,11 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
         }
 
         /* discard unexpected text nodes and end tags */
-        ReportWarning( doc, table, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, table, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
-    ReportWarning( doc, table, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, table, node, MISSING_ENDTAG_FOR);
     lexer->istackbase = istackbase;
 }
 
@@ -2606,7 +2606,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         {
             if (nodeIsBODY(node) || nodeIsHTML(node))
             {
-                ReportWarning(doc, pre, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, pre, node, DISCARDING_UNEXPECTED);
                 FreeNode(doc, node);
                 continue;
             }
@@ -2616,7 +2616,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             }
             else
             {
-                ReportWarning( doc, pre, node, MISSING_ENDTAG_BEFORE );
+                ReportError(doc, pre, node, MISSING_ENDTAG_BEFORE );
                 UngetToken( doc );
             }
             pre->closed = yes;
@@ -2636,7 +2636,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
 
         if (node->tag == NULL)
         {
-            ReportWarning(doc, pre, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, pre, node, DISCARDING_UNEXPECTED);
             FreeNode(doc, node);
             continue;
         }
@@ -2683,11 +2683,11 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
               Todo: discarding </p> is abviously a bug, it should be replaced by <br>.
             */
             InsertNodeAfterElement(pre, node);
-            ReportWarning(doc, pre, node, MISSING_ENDTAG_BEFORE);
+            ReportError(doc, pre, node, MISSING_ENDTAG_BEFORE);
             ParseTag(doc, node, IgnoreWhitespace);
 
             newnode = InferredTag(doc, "pre");
-            ReportWarning(doc, pre, newnode, INSERTING_TAG);
+            ReportError(doc, pre, newnode, INSERTING_TAG);
             pre = newnode;
             InsertNodeAfterElement(node, pre);
 
@@ -2698,7 +2698,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         {
             if (node->type == StartTag)
             {
-                ReportWarning( doc, pre, node, USING_BR_INPLACE_OF);
+                ReportError(doc, pre, node, USING_BR_INPLACE_OF);
 
                 /* trim white space before <p> in <pre>*/
                 TrimSpaces(doc, pre);
@@ -2710,7 +2710,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             }
             else
             {
-                ReportWarning( doc, pre, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, pre, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
             }
             continue;
@@ -2728,11 +2728,11 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, pre, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, pre, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
-    ReportWarning( doc, pre, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, pre, node, MISSING_ENDTAG_FOR);
 }
 
 void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
@@ -2760,7 +2760,7 @@ void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
              (nodeIsOPTION(node) || nodeIsOPTGROUP(node)) )
         {
             if ( nodeIsOPTGROUP(node) )
-                ReportWarning( doc, field, node, CANT_BE_NESTED);
+                ReportError(doc, field, node, CANT_BE_NESTED);
 
             InsertNodeAtEnd(field, node);
             ParseTag(doc, node, MixedContent);
@@ -2768,7 +2768,7 @@ void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, field, node, DISCARDING_UNEXPECTED );
+        ReportError(doc, field, node, DISCARDING_UNEXPECTED );
         FreeNode( doc, node);
     }
 }
@@ -2807,11 +2807,11 @@ void ParseSelect(TidyDocImpl* doc, Node *field, uint mode)
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, field, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, field, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
-    ReportWarning( doc, field, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, field, node, MISSING_ENDTAG_FOR);
 }
 
 void ParseText(TidyDocImpl* doc, Node *field, uint mode)
@@ -2863,14 +2863,14 @@ void ParseText(TidyDocImpl* doc, Node *field, uint mode)
             && node->tag->model & CM_INLINE
             && !(node->tag->model & CM_FIELD)) /* #487283 - fix by Lee Passey 25 Jan 02 */
         {
-            ReportWarning( doc, field, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, field, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
 
         /* terminate element on other tags */
         if (!(field->tag->model & CM_OPT))
-            ReportWarning( doc, field, node, MISSING_ENDTAG_BEFORE);
+            ReportError(doc, field, node, MISSING_ENDTAG_BEFORE);
 
         UngetToken( doc );
         TrimSpaces(doc, field);
@@ -2878,7 +2878,7 @@ void ParseText(TidyDocImpl* doc, Node *field, uint mode)
     }
 
     if (!(field->tag->model & CM_OPT))
-        ReportWarning( doc, field, node, MISSING_ENDTAG_FOR);
+        ReportError(doc, field, node, MISSING_ENDTAG_FOR);
 }
 
 
@@ -2889,7 +2889,7 @@ void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
     {
         if (node->tag == title->tag && node->type == StartTag)
         {
-            ReportWarning( doc, title, node, COERCE_TO_ENDTAG);
+            ReportError(doc, title, node, COERCE_TO_ENDTAG);
             node->type = EndTag;
             UngetToken( doc );
             continue;
@@ -2925,19 +2925,19 @@ void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL)
         {
-            ReportWarning( doc, title, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, title, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
 
         /* pushback unexpected tokens */
-        ReportWarning( doc, title, node, MISSING_ENDTAG_BEFORE);
+        ReportError(doc, title, node, MISSING_ENDTAG_BEFORE);
         UngetToken( doc );
         TrimSpaces(doc, title);
         return;
     }
 
-    ReportWarning( doc, title, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, title, node, MISSING_ENDTAG_FOR);
 }
 
 /*
@@ -2995,14 +2995,14 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         /* find and discard <html> in <head> elements */
         if ((node->tag == head->tag || nodeIsHTML(node)) && node->type == StartTag)
         {
-            ReportWarning(doc, head, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, head, node, DISCARDING_UNEXPECTED);
             FreeNode(doc, node);
             continue;
         }
 
         if (node->type == TextNode)
         {
-            ReportWarning( doc, head, node, TAG_NOT_ALLOWED_IN);
+            ReportError(doc, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken( doc );
             break;
         }
@@ -3010,7 +3010,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         if (node->type == ProcInsTag &&
             tmbstrcmp(node->element, "xml-stylesheet") == 0)
         {
-            ReportWarning(doc, head, node, TAG_NOT_ALLOWED_IN);
+            ReportError(doc, head, node, TAG_NOT_ALLOWED_IN);
             InsertNodeBeforeElement(FindHTML(doc), node);
             continue;
         }
@@ -3028,7 +3028,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         /* discard unknown tags */
         if (node->tag == NULL)
         {
-            ReportWarning( doc, head, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, head, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -3042,7 +3042,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         {
             /* #545067 Implicit closing of head broken - warn only for XHTML input */
             if ( lexer->isvoyager )
-                ReportWarning( doc, head, node, TAG_NOT_ALLOWED_IN );
+                ReportError(doc, head, node, TAG_NOT_ALLOWED_IN );
             UngetToken( doc );
             break;
         }
@@ -3055,9 +3055,9 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
 
                 if (HasTitle > 1)
                     if (head)
-                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS_IN);
+                        ReportError(doc, head, node, TOO_MANY_ELEMENTS_IN);
                     else
-                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
+                        ReportError(doc, head, node, TOO_MANY_ELEMENTS);
             }
             else if ( nodeIsBASE(node) )
             {
@@ -3065,13 +3065,13 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
 
                 if (HasBase > 1)
                     if (head)
-                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS_IN);
+                        ReportError(doc, head, node, TOO_MANY_ELEMENTS_IN);
                     else
-                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
+                        ReportError(doc, head, node, TOO_MANY_ELEMENTS);
             }
             else if ( nodeIsNOSCRIPT(node) )
             {
-                ReportWarning( doc, head, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, head, node, TAG_NOT_ALLOWED_IN);
             }
 
 #ifdef AUTO_INPUT_ENCODING
@@ -3123,7 +3123,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         }
 
         /* discard unexpected text nodes and end tags */
-        ReportWarning( doc, head, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, head, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 }
@@ -3144,7 +3144,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         /* find and discard multiple <body> elements */
         if (node->tag == body->tag && node->type == StartTag)
         {
-            ReportWarning(doc, body, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, body, node, DISCARDING_UNEXPECTED);
             FreeNode(doc, node);
             continue;
         }
@@ -3153,7 +3153,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         if ( nodeIsHTML(node) )
         {
             if (node->type == StartTag || node->type == StartEndTag || lexer->seenEndHtml) 
-                ReportWarning( doc, body, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, body, node, DISCARDING_UNEXPECTED);
             else
                 lexer->seenEndHtml = 1;
 
@@ -3166,7 +3166,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                node->type == EndTag   ||
                node->type == StartEndTag ) )
         {
-            ReportWarning( doc, body, node, CONTENT_AFTER_BODY );
+            ReportError(doc, body, node, CONTENT_AFTER_BODY );
         }
 
         if ( node->tag == body->tag && node->type == EndTag )
@@ -3224,7 +3224,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         if ( lexer->seenEndBody == 1 && !iswhitenode )
         {
             ++lexer->seenEndBody;
-            ReportWarning( doc, body, node, CONTENT_AFTER_BODY);
+            ReportError(doc, body, node, CONTENT_AFTER_BODY);
         }
 #endif
 
@@ -3261,7 +3261,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         /* discard unknown  and PARAM tags */
         if ( node->tag == NULL || nodeIsPARAM(node) )
         {
-            ReportWarning( doc, body, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, body, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -3280,7 +3280,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         {
             /* avoid this error message being issued twice */
             if (!(node->tag->model & CM_HEAD))
-                ReportWarning( doc, body, node, TAG_NOT_ALLOWED_IN);
+                ReportError(doc, body, node, TAG_NOT_ALLOWED_IN);
 
             if (node->tag->model & CM_HTML)
             {
@@ -3383,7 +3383,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
             }
 
             if (node->implicit)
-                ReportWarning( doc, body, node, INSERTING_TAG);
+                ReportError(doc, body, node, INSERTING_TAG);
 
             InsertNodeAtEnd(body, node);
             ParseTag(doc, node, mode);
@@ -3391,7 +3391,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, body, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, body, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 }
@@ -3424,12 +3424,12 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
             TrimSpaces(doc, noframes);
             if (node->type == EndTag)
             {
-                ReportWarning( doc, noframes, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);       /* Throw it away */
             }
             else
             {
-                ReportWarning( doc, noframes, node, MISSING_ENDTAG_BEFORE);
+                ReportError(doc, noframes, node, MISSING_ENDTAG_BEFORE);
                 UngetToken( doc );
             }
             return;
@@ -3438,7 +3438,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
         if ( nodeIsHTML(node) )
         {
             if (node->type == StartTag || node->type == StartEndTag)
-                ReportWarning( doc, noframes, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);
 
             FreeNode( doc, node);
             continue;
@@ -3472,7 +3472,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
                 {
                     UngetToken( doc );
                     node = InferredTag( doc, "p" );
-                    ReportWarning( doc, noframes, node, CONTENT_AFTER_BODY );
+                    ReportError(doc, noframes, node, CONTENT_AFTER_BODY );
                 }
                 InsertNodeAtEnd( body, node );
             }
@@ -3481,7 +3481,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
                 UngetToken( doc );
                 node = InferredTag( doc, "body" );
                 if ( cfgBool(doc, TidyXmlOut) )
-                    ReportWarning( doc, noframes, node, INSERTING_TAG);
+                    ReportError(doc, noframes, node, INSERTING_TAG);
                 InsertNodeAtEnd( noframes, node );
             }
 
@@ -3490,11 +3490,11 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
         }
 
         /* discard unexpected end tags */
-        ReportWarning( doc, noframes, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
-    ReportWarning( doc, noframes, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, noframes, node, MISSING_ENDTAG_FOR);
 }
 
 void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
@@ -3523,7 +3523,7 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
 
         if (node->tag == NULL)
         {
-            ReportWarning( doc, frameset, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, frameset, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue; 
         }
@@ -3541,7 +3541,7 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
         {
             UngetToken( doc );
             node = InferredTag(doc, "noframes");
-            ReportWarning( doc, frameset, node, INSERTING_TAG);
+            ReportError(doc, frameset, node, INSERTING_TAG);
         }
 
         if (node->type == StartTag && (node->tag->model & CM_FRAMES))
@@ -3558,11 +3558,11 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
         }
 
         /* discard unexpected tags */
-        ReportWarning( doc, frameset, node, DISCARDING_UNEXPECTED);
+        ReportError(doc, frameset, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
 
-    ReportWarning( doc, frameset, node, MISSING_ENDTAG_FOR);
+    ReportError(doc, frameset, node, MISSING_ENDTAG_FOR);
 }
 
 void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
@@ -3588,7 +3588,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
 
         if (node->tag == html->tag && node->type == EndTag)
         {
-            ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, html, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -3596,7 +3596,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         /* find and discard multiple <html> elements */
         if (node->tag == html->tag && node->type == StartTag)
         {
-            ReportWarning(doc, html, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, html, node, DISCARDING_UNEXPECTED);
             FreeNode(doc, node);
             continue;
         }
@@ -3634,7 +3634,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         if (node->tag == html->tag)
         {
             if (node->type != StartTag && frameset == NULL)
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
 
             FreeNode( doc, node);
             continue;
@@ -3649,7 +3649,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             if (node->type != StartTag)
             {
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
@@ -3664,7 +3664,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
                     {
                         noframes = InferredTag(doc, "noframes");
                         InsertNodeAtEnd(frameset, noframes);
-                        ReportWarning( doc, html, noframes, INSERTING_TAG);
+                        ReportError(doc, html, noframes, INSERTING_TAG);
                     }
 
                     ParseTag(doc, noframes, mode);
@@ -3681,13 +3681,13 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             if (node->type != StartTag)
             {
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
 
             if (frameset != NULL)
-                ReportError(doc, html, node, DUPLICATE_FRAMESET);
+                ReportFatal(doc, html, node, DUPLICATE_FRAMESET);
             else
                 frameset = node;
 
@@ -3712,14 +3712,14 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             if (node->type != StartTag)
             {
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 continue;
             }
 
             if (frameset == NULL)
             {
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
                 node = InferredTag(doc, "body");
                 break;
@@ -3748,7 +3748,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             /* discard illegal frame element following a frameset */
             if ( frameset != NULL && nodeIsFRAME(node) )
             {
-                ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, html, node, DISCARDING_UNEXPECTED);
                 continue;
             }
         }
@@ -3765,7 +3765,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
                 InsertNodeAtEnd(frameset, noframes);
             }
             else
-                ReportWarning( doc, html, node, NOFRAMES_CONTENT);
+                ReportError(doc, html, node, NOFRAMES_CONTENT);
 
             ConstrainVersion(doc, VERS_FRAMESET);
             ParseTag(doc, noframes, mode);
@@ -3918,13 +3918,13 @@ void ParseDocument(TidyDocImpl* doc)
         {
             if (FindXmlDecl(doc) && doc->root.content)
             {
-                ReportWarning(doc, &doc->root, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, &doc->root, node, DISCARDING_UNEXPECTED);
                 FreeNode(doc, node);
                 continue;
             }
             if (node->line != 1 || (node->line == 1 && node->column != 1))
             {
-                ReportWarning(doc, &doc->root, node, SPACE_PRECEDING_XMLDECL);
+                ReportError(doc, &doc->root, node, SPACE_PRECEDING_XMLDECL);
             }
         }
 #ifdef AUTO_INPUT_ENCODING
@@ -3957,7 +3957,7 @@ void ParseDocument(TidyDocImpl* doc)
             }
             else
             {
-                ReportWarning( doc, RootNode, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
             }
             continue;
@@ -3965,7 +3965,7 @@ void ParseDocument(TidyDocImpl* doc)
 
         if (node->type == EndTag)
         {
-            ReportWarning( doc, RootNode, node, DISCARDING_UNEXPECTED);
+            ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
             continue;
         }
@@ -3979,7 +3979,7 @@ void ParseDocument(TidyDocImpl* doc)
             html = node;
 
         if (!FindDocType(doc))
-            ReportWarning(doc, NULL, NULL, MISSING_DOCTYPE);
+            ReportError(doc, NULL, NULL, MISSING_DOCTYPE);
 
         InsertNodeAtEnd( &doc->root, html);
         ParseHTML( doc, html, no );
@@ -3997,7 +3997,7 @@ void ParseDocument(TidyDocImpl* doc)
     if (!FindTITLE(doc))
     {
         Node* head = FindHEAD(doc);
-        ReportWarning(doc, head, NULL, MISSING_TITLE_ELEMENT);
+        ReportError(doc, head, NULL, MISSING_TITLE_ELEMENT);
         InsertNodeAtEnd(head, InferredTag(doc, "title"));
     }
 
@@ -4071,9 +4071,9 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
         if (node->type == EndTag)
         {
             if (element)
-                ReportError(doc, element, node, UNEXPECTED_ENDTAG_IN);
+                ReportFatal(doc, element, node, UNEXPECTED_ENDTAG_IN);
             else
-                ReportError(doc, element, node, UNEXPECTED_ENDTAG);
+                ReportFatal(doc, element, node, UNEXPECTED_ENDTAG);
 
             FreeNode( doc, node);
             continue;
@@ -4135,7 +4135,7 @@ void ParseXMLDocument(TidyDocImpl* doc)
         /* discard unexpected end tags */
         if (node->type == EndTag)
         {
-            ReportWarning( doc, NULL, node, UNEXPECTED_ENDTAG);
+            ReportError(doc, NULL, node, UNEXPECTED_ENDTAG);
             FreeNode( doc, node);
             continue;
         }
@@ -4153,7 +4153,7 @@ void ParseXMLDocument(TidyDocImpl* doc)
             }
             else
             {
-                ReportWarning( doc, RootNode, node, DISCARDING_UNEXPECTED);
+                ReportError(doc, RootNode, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
             }
             continue;

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 02:48:59 $ 
-    $Revision: 1.128 $ 
+    $Date: 2003/05/26 00:28:36 $ 
+    $Revision: 1.129 $ 
 
 */
 
@@ -1465,7 +1465,7 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
         {
             if ( tmbstrcmp(attr->value, profile) != 0 )
             {
-                ReportWarning( doc, node, NULL, INCONSISTENT_NAMESPACE );
+                ReportError(doc, node, NULL, INCONSISTENT_NAMESPACE );
                 MemFree( attr->value );
                 attr->value = tmbstrdup( profile );
             }
@@ -1808,7 +1808,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 /* <head><script src=foo><meta name=foo content=bar>*/
                 if (hasSrc && isEmpty && nodeIsSCRIPT(container))
                 {
-                    ReportWarning(doc, container, NULL, MISSING_ENDTAG_FOR);
+                    ReportError(doc, container, NULL, MISSING_ENDTAG_FOR);
                     lexer->lexsize = lexer->txtstart;
                     UngetChar(c, doc->docIn);
                     UngetChar('<', doc->docIn);
@@ -1902,7 +1902,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 node->implicit = yes;
                 FindTag(doc, node);
 
-                ReportWarning(doc, container, NULL, MISSING_ENDTAG_FOR);
+                ReportError(doc, container, NULL, MISSING_ENDTAG_FOR);
                 lexer->lexsize -= (lexer->lexsize - start) + 2;
 
                 assert(lexer->pushed == no);
@@ -1931,7 +1931,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 /* if the end tag is not already escaped using backslash */
                 lexer->lines = doc->docIn->curline;
                 lexer->columns = doc->docIn->curcol - 3;
-                ReportWarning(doc, NULL, NULL, BAD_CDATA_CONTENT);
+                ReportError(doc, NULL, NULL, BAD_CDATA_CONTENT);
 
                 /* if javascript insert backslash before / */
                 if (IsJavaScript(container))
@@ -1952,7 +1952,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
         lexer->txtend = lexer->lexsize;
 
     if (c == EndOfStream)
-        ReportWarning( doc, container, NULL, MISSING_ENDTAG_FOR );
+        ReportError(doc, container, NULL, MISSING_ENDTAG_FOR );
 
     if (lexer->txtend > lexer->txtstart)
         return TextToken(lexer);
@@ -2152,7 +2152,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             continue;
                         }
 
-                        ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
+                        ReportError(doc, NULL, NULL, MALFORMED_COMMENT );
                     }
                     else if (c == 'd' || c == 'D')
                     {
@@ -2380,7 +2380,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                 lexer->state = LEX_CONTENT;
                 if (lexer->token->tag == NULL)
-                    ReportError( doc, NULL, lexer->token, UNKNOWN_ELEMENT );
+                    ReportFatal( doc, NULL, lexer->token, UNKNOWN_ELEMENT );
                 else if ( !cfgBool(doc, TidyXmlTags) )
                 {
                     Node* curr = lexer->token;
@@ -2391,7 +2391,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         if ( !cfgBool(doc, TidyMakeClean) ||
                              ( !nodeIsNOBR(curr) && !nodeIsWBR(curr) ) )
                         {
-                            ReportWarning( doc, NULL, curr, PROPRIETARY_ELEMENT );
+                            ReportError(doc, NULL, curr, PROPRIETARY_ELEMENT );
 
                             if ( nodeIsLAYER(curr) )
                                 doc->badLayout |= USING_LAYER;
@@ -2423,7 +2423,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 if (c == '>')
                 {
                     if (badcomment)
-                        ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
+                        ReportError(doc, NULL, NULL, MALFORMED_COMMENT );
 
                     /* do not store closing -- in lexbuf */
                     lexer->lexsize -= 2;
@@ -2517,7 +2517,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                     if (c == EndOfStream)
                     {
-                        ReportWarning( doc, NULL, NULL, UNEXPECTED_END_OF_FILE );
+                        ReportError(doc, NULL, NULL, UNEXPECTED_END_OF_FILE );
                         UngetChar(c, doc->docIn);
                         continue;
                     }
@@ -2754,7 +2754,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
     else if (lexer->state == LEX_COMMENT) /* comment */
     {
         if (c == EndOfStream)
-            ReportWarning( doc, NULL, NULL, MALFORMED_COMMENT );
+            ReportError(doc, NULL, NULL, MALFORMED_COMMENT );
 
         lexer->txtend = lexer->lexsize;
         lexer->lexbuf[lexer->lexsize] = '\0';
@@ -3355,7 +3355,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
              !(IsUrl(doc, name) && tmbstrncmp(lexer->lexbuf+start, "javascript:", 11) == 0) &&
              !(tmbstrncmp(lexer->lexbuf+start, "<xml ", 5) == 0)
            )
-            ReportError( doc, NULL, NULL, SUSPECTED_MISSING_QUOTE ); 
+            ReportFatal( doc, NULL, NULL, SUSPECTED_MISSING_QUOTE ); 
     }
 
     len = lexer->lexsize - start;

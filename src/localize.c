@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 00:54:17 $ 
-    $Revision: 1.96 $ 
+    $Date: 2003/05/26 00:28:36 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -53,25 +53,25 @@ struct _msgfmt
 /* ReportEntityError */
   { MISSING_SEMICOLON,            "entity \"%s\" doesn't end in ';'"                                        }, /* Warning in HTML, Error in XML/XHTML */
   { MISSING_SEMICOLON_NCR,        "numeric character reference \"%s\" doesn't end in ';'"                   }, /* Warning in HTML, Error in XML/XHTML */
-  { UNKNOWN_ENTITY,               "unescaped & or unknown entity \"%s\""                                    }, /* Error */
   { UNESCAPED_AMPERSAND,          "unescaped & which should be written as &amp;"                            }, /* Warning in HTML, Error in XHTML */
+  { UNKNOWN_ENTITY,               "unescaped & or unknown entity \"%s\""                                    }, /* Error */
   { APOS_UNDEFINED,               "named entity &apos; only defined in XML/XHTML"                           }, /* Error in HTML (should only occur for HTML input) */
 
 /* ReportAttrError */
 
   /* attribute name */
-  { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             }, /* Error */
   { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           }, /* Warning in CheckLINK, Error otherwise */
   { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         }, /* Warning in CheckUrl, Error otherwise */
-  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             }, /* Error (but defuncted) */
+  { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             }, /* Error */
   { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         }, /* Error */
   { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          }, /* Error */
+  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             }, /* Error (but defuncted) */
 
   /* attribute value */
+  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         }, /* Warning if XHTML, Error if HTML */
+  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  }, /* Error if XHTML input, Notice if HTML input and XHTML outout */
   { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   }, /* Error */
   { ANCHOR_NOT_UNIQUE,            "%s anchor \"%s\" already defined"                                        }, /* Error */
-  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  }, /* Error if XHTML input, Notice if HTML input and XHTML outout */
-  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         }, /* Warning if XHTML, Error if HTML */
 
   /* attribute name, attribute value */
   { BAD_ATTRIBUTE_VALUE,          "%s attribute \"%s\" has invalid value \"%s\""                            }, /* Error */
@@ -82,7 +82,8 @@ struct _msgfmt
   { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  }, /* Error */
 
   /* no arguments */
-  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but defuncted) */
+  { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     }, /* Warning */
+  { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           }, /* Warning if HTML, Error if XML/XHTML */
   { UNEXPECTED_QUOTEMARK,         "%s unexpected or duplicate quote mark"                                   }, /* Error */
   { MISSING_QUOTEMARK,            "%s attribute with missing trailing quote mark"                           }, /* Error */
   { UNEXPECTED_END_OF_FILE_ATTR,  "%s end of file while parsing attributes"                                 }, /* Error */
@@ -93,15 +94,16 @@ struct _msgfmt
   { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     }, /* Error */
   { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  }, /* Error */
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              }, /* Error */
-  { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           }, /* Warning if HTML, Error if XML/XHTML */
-  { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     }, /* Warning */
+  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but defuncted) */
 
-/* ReportWarning */
+/* ReportError */
+  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
+  { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
+  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Warning, Error, Error (occurence in parser.c) */
+  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Warning from ReplaceObsoleteElements, Error otherwise */
   { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           }, /* Error */
   { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 }, /* Error */
   { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                }, /* Error */
-  { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
-  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Warning, Error, Error (occurence in parser.c) */
   { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        }, /* Error */
   { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       }, /* Error */
   { MISSING_STARTTAG,             "missing <%s>"                                                            }, /* Error */
@@ -111,34 +113,32 @@ struct _msgfmt
   { INSERTING_TAG,                "inserting implicit <%s>"                                                 }, /* Error */
   { CANT_BE_NESTED,               "%s can't be nested"                                                      }, /* Error */
   { PROPRIETARY_ELEMENT,          "%s is not approved by W3C"                                               }, /* Error */
-  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Warning from ReplaceObsoleteElements, Error otherwise */
-  { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             }, /* Error (but defuncted) */
-  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
   { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  }, /* Error */
-  { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        }, /* Error? */
+  { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        }, /* Error */
   { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               }, /* Error */
   { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      }, /* Error */
   { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                }, /* Error */
   { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            }, /* Error */
+  { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             }, /* Error (but defuncted) */
 
   /* no arguments */
+  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
   { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 }, /* Error */
   { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       }, /* Error */
   { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      }, /* Error */
-  { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             }, /* Error (but defuncted) */
   { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          }, /* Error */
   { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        }, /* Error */
   { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         }, /* Error */
   { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       }, /* Error */
-  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           }, /* Error (but defuncted) */
   { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     }, /* Error */
   { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    }, /* Error */
-  { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         }, /* Error (but defuncted) */
-  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
-  { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      }, /* Error (but defuncted) */
   { SPACE_PRECEDING_XMLDECL,      "removing whitespace preceding XML Declaration"                           }, /* Error */
+  { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             }, /* Error (but defuncted) */
+  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           }, /* Error (but defuncted) */
+  { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         }, /* Error (but defuncted) */
+  { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      }, /* Error (but defuncted) */
 
-/* ReportError */
+/* ReportFatal */
   { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  }, /* Error? (not really sometimes) */
   { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               }, /* Error */
   { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   }, /* Error */
@@ -481,21 +481,22 @@ void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
         messageLexer( doc, TidyWarning, fmt, entityname );
 }
 
-void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
+void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 {
-    char *name = "NULL", *value = "NULL", tagdesc[ 64 ];
+    char *name = "NULL", *value = "NULL", tagdesc[64];
     ctmbstr fmt = GetFormatFromCode(code);
 
-    TagToString( node, tagdesc );
-    if ( av )
+    TagToString(node, tagdesc);
+
+    if (av)
     {
-        if ( av->attribute )
+        if (av->attribute)
             name = av->attribute;
-        if ( av->value )
+        if (av->value)
             value = av->value;
     }
 
-    switch ( code )
+    switch (code)
     {
     case UNKNOWN_ATTRIBUTE:
     case INSERTING_ATTRIBUTE:
@@ -561,7 +562,7 @@ void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
                  "%s lacks \"%s\" attribute", tagdesc, name );
 }
 
-void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
+void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code )
 {
     char nodedesc[ 256 ] = {0};
     char elemdesc[ 256 ] = {0};
@@ -661,7 +662,7 @@ void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
     }
 }
 
-void ReportError( TidyDocImpl* doc, Node *element, Node *node, uint code)
+void ReportFatal( TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     char nodedesc[ 256 ] = {0};
     Node* rpt = ( element ? element : node );
