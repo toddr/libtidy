@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:34 $ 
-    $Revision: 1.26 $ 
+    $Date: 2005/03/30 10:01:40 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -2913,10 +2913,10 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
         if ( HasOnMouseMove == 1 )
             ReportAccessError( doc, node, SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE);
 
-	/* Recursively check all child nodes.
-	 */
-	for ( content = node->content; content != NULL; content = content->next )
-	    CheckScriptKeyboardAccessible( doc, content );
+        /* Recursively check all child nodes.
+         */
+        for ( content = node->content; content != NULL; content = content->next )
+            CheckScriptKeyboardAccessible( doc, content );
     }
 }
 
@@ -3040,20 +3040,22 @@ static void MetaDataPresent( TidyDocImpl* doc, Node* node )
 * '!DOCTYPE' before the root node. ie.  <HTML>
 *****************************************************/
 
-static void CheckDocType( TidyDocImpl* doc, Node* node )
+static void CheckDocType( TidyDocImpl* doc )
 {
     if (Level2_Enabled( doc ))
     {
-        if (node->tag == NULL)
+        Node* DTnode = FindDocType(doc);
+        if (DTnode)
         {
-            ctmbstr word = textFromOneNode( doc, node->content);
-                
+            /* If the doctype has been added by tidy, word
+               will be NULL as DTnode->end will be 0. */
+            ctmbstr word = textFromOneNode( doc, DTnode);
             if ((strstr (word, "HTML PUBLIC") == NULL) &&
                 (strstr (word, "html PUBLIC") == NULL))
-            {
-                ReportAccessError( doc, node, DOCTYPE_MISSING);
-            }
+                DTnode = NULL;
         }
+        if (!DTnode)
+           ReportAccessError( doc, &doc->root, DOCTYPE_MISSING);
     }
 }
 
@@ -3481,7 +3483,7 @@ void AccessibilityChecks( TidyDocImpl* doc )
     CheckForStyleAttribute( doc, &doc->root );
 
     /* Checks for '!DOCTYPE' */
-    CheckDocType( doc, &doc->root );
+    CheckDocType( doc );
 
     
     /* Checks to see if stylesheets are used to control the layout */
