@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/19 12:11:35 $ 
-    $Revision: 1.37 $ 
+    $Date: 2001/07/19 15:48:39 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -1496,6 +1496,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
                 wstrncasecmp(lexer->lexbuf+start, container->element, len) == 0)
             {
                 lexer->txtend = start - 2;
+                lexer->lexsize = start - 2; /* #433857 - fix by Huajun Zeng */
                 break;
             }
 
