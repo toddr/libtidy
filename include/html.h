@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/12/28 23:41:25 $ 
-    $Revision: 1.61 $ 
+    $Date: 2002/01/14 04:17:16 $ 
+    $Revision: 1.62 $ 
 
 */
 
@@ -935,6 +935,7 @@ extern Bool EscapeCdata;
 extern Bool NCR; /* #431953 - RJ */
 extern Bool OutputBOM;
 extern Bool SmartBOM;
+extern Bool ReplaceColor; /* #477643 - replace hex color attribute values with names */
 
 /* Parser methods for tags */
 

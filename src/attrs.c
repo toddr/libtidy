@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/01/10 08:54:20 $ 
-    $Revision: 1.41 $ 
+    $Date: 2002/01/14 04:18:16 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -1190,7 +1190,7 @@ void CheckNumber(Lexer *lexer, Node *node, AttVal *attval)
 /* check color syntax and beautify value by option */
 void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
 {
-    Bool ReplaceColor = yes;
+    /* Bool ReplaceColor = yes; */ /* #477643 - replace hex color attribute values with names */
     Bool HexUppercase = yes;
     Bool invalid = no;
     Bool found = no;

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/12/08 07:51:32 $ 
-    $Revision: 1.34 $ 
+    $Date: 2002/01/14 04:18:51 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -128,6 +128,7 @@ Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text *
 Bool NCR = yes;             /* #431953 - RJ allow numeric character references */
 Bool OutputBOM = no;        /* output a Byte Order Mark (BOM) when using UTF-8/UTF-16 encodings */
 Bool SmartBOM = yes;        /* if input stream has BOM, do we automatically output a BOM? */
+Bool ReplaceColor = no;     /* #477643 - replace hex color attribute values with names */
 
 static uint c;      /* current char in input stream */
 static FILE *fin;   /* file pointer for input stream */
@@ -258,6 +259,7 @@ static struct Flag
     {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
     {"output-bom",      {(int *)&OutputBOM},        ParseBOM},
+    {"replace-color",   {(int *)&ReplaceColor},     ParseBool}, /* #477643 - replace hex color attribute values with names */
 
   /* this must be the final entry */
     {0,          0,             0}
