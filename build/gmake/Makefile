@@ -2,11 +2,11 @@
 #
 #  CVS Info :
 #
-#     $Author: creitzel $ 
-#     $Date: 2003/02/16 21:05:58 $ 
-#     $Revision: 1.2 $ 
+#     $Author: terry_teague $ 
+#     $Date: 2003/02/18 07:16:39 $ 
+#     $Revision: 1.3 $ 
 #
-#  Copyright (c) 1998-2002 World Wide Web Consortium
+#  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, Institut National de
 #  Recherche en Informatique et en Automatique, Keio University).
 #  All Rights Reserved.
@@ -55,13 +55,15 @@
 
 SHELL=/bin/sh
 
+PROJECT=tidy
+
 # Installation variables.  Spaces OK, only dir create and file copy operations.
-runinst_prefix=/usr
-devinst_prefix=/usr
+runinst_prefix=/usr/local
+devinst_prefix=/usr/local
 
 bininst = ${runinst_prefix}/bin
 libinst = ${devinst_prefix}/lib
-incinst = ${devinst_prefix}/include
+incinst = ${devinst_prefix}/include/$(PROJECT)
 maninst = ${devinst_prefix}/man
 
 # Internal variables. - No spaces allowed: libtool chokes on spaces in directory names.
@@ -104,10 +106,10 @@ TIDY_MINOR = 0
 LIBPREFIX = lib
 LIBSUFFIX = .a
 
-LIBRARY = $(LIBDIR)/$(LIBPREFIX)tidy$(LIBSUFFIX)
+LIBRARY = $(LIBDIR)/$(LIBPREFIX)$(PROJECT)$(LIBSUFFIX)
 AR=ar -r
 
-EXES = $(BINDIR)/tidy $(BINDIR)/tab2space
+EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
 OBJFILES=\
         $(OBJDIR)/access.o     $(OBJDIR)/attrs.o      $(OBJDIR)/istack.o\
@@ -156,9 +158,9 @@ $(OBJDIR)/%.o:		$(SRCDIR)/%.c $(HFILES) $(LIBHFILES) Makefile
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 	$(CC) -o $@ -c $(CFLAGS) $(OTHERCFLAGS) $<
 
-$(BINDIR)/tidy:	$(APPDIR)/tidy.c $(HFILES) $(LIBRARY)
+$(BINDIR)/$(PROJECT):	$(APPDIR)/tidy.c $(HFILES) $(LIBRARY)
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
-	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tidy.c -I$(INCDIR) -L$(LIBDIR) -ltidy
+	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tidy.c -I$(INCDIR) -L$(LIBDIR) -l$(PROJECT)
 
 $(BINDIR)/tab2space: $(APPDIR)/tab2space.c
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
