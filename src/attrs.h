@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.13 $ 
+    $Date: 2004/06/20 22:11:05 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -210,7 +210,7 @@ AttVal* AttrGetById( Node* node, TidyAttrId id );
 #define AttrIsId(av, atid) ((av) && (av)->dict && ((av)->dict->id == atid))
 
 #define AttrHasValue(attr)      ((attr) && (attr)->value)
-#define AttrValueIs(attr, val)  (tmbstrcasecmp(attr->value, val) == 0)
+#define AttrValueIs(attr, val)  AttrMatches(attr, val)
 #define AttrMatches(attr, val)  (AttrHasValue(attr) && \
                                  tmbstrcasecmp((attr)->value, val) == 0)
 #define AttrContains(attr, val) (AttrHasValue(attr) && \
