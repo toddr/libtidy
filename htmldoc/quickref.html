@@ -4,7 +4,7 @@
 <head>
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy Configuration Options Quick Reference</title>
-<meta name="version" content="$Id: quickref.html,v 1.10 2004/12/06 15:23:18 arnaud02 Exp $" />
+<meta name="version" content="$Id: quickref.html,v 1.11 2005/03/03 16:42:31 arnaud02 Exp $" />
 </head>
 <body>
 <h1 id="top">Quick Reference</h1>
@@ -163,8 +163,8 @@
 </tr>
 <tr>
 <td><a href="#merge-divs">merge-divs</a></td>
-<td>Boolean</td>
-<td>yes</td>
+<td>AutoBool</td>
+<td>auto</td>
 </tr>
 <tr>
 <td><a href="#ncr">ncr</a></td>
@@ -1056,16 +1056,21 @@ documents. </td>
 </tr>
 <tr>
 <td valign="top">
-  Type: <b>Boolean</b><br />
-  Default: <b>yes</b><br />
-  Example: <b>y/n, yes/no, t/f, true/false, 1/0</b></td>
+  Type: <b>AutoBool</b><br />
+  Default: <b>auto</b><br />
+  Example: <b>auto, y/n, yes/no, t/f, true/false, 1/0</b></td>
 <td align="right" valign="top">
 </td>
 </tr>
 <tr>
 <td colspan="2">Can be used to modify behavior of -c (--clean yes) option.
 This option specifies if Tidy should merge nested &lt;div&gt; such as
-"&lt;div&gt;&lt;div&gt;...&lt;/div&gt;&lt;/div&gt;".</td>
+"&lt;div&gt;&lt;div&gt;...&lt;/div&gt;&lt;/div&gt;".
+If set to "auto", the attributes of the inner &lt;div&gt; are moved
+to the outer one. As well, nested &lt;div&gt; with ID attributes are
+not merged.
+If set to "yes", the attributes of the inner &lt;div&gt; are
+discarded with the exception of "class" and "style".</td>
 </tr>
 <tr>
 <td><br /></td>

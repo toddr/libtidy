@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 13:45:03 $ 
-    $Revision: 1.82 $ 
+    $Date: 2005/03/03 16:42:32 $ 
+    $Revision: 1.83 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1071,6 +1071,47 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
     return no;
 }
 
+/* Copy child attributes to node. Duplicate attributes are overwritten.
+   Unique attributes (such as ID) disable the action.
+   Attributes style and class are not dealt with. A call to MergeStyles
+   will do that.
+*/
+static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
+{
+    AttVal *av1, *av2;
+    TidyAttrId id;
+
+    /* Detect attributes that cannot be merged or overwritten. */
+    if (AttrGetById(child, TidyAttr_ID) != NULL
+        && AttrGetById(node, TidyAttr_ID) != NULL)
+        return no;
+
+    /* Move child attributes to node. Attributes in node
+     can be overwritten or merged. */
+    for (av2 = child->attributes; av2; )
+    {
+        /* Dealt by MergeStyles. */
+        if (attrIsSTYLE(av2) || attrIsCLASS(av2))
+        {
+            av2 = av2->next;
+            continue;
+        }
+        /* Avoid duplicates in node */
+        if ((id=AttrId(av2)) != TidyAttr_UNKNOWN
+            && (av1=AttrGetById(node, id))!= NULL)
+        RemoveAttribute( doc, node, av1 );
+
+        /* Move attribute from child to node */
+        DetachAttribute( doc, child, av2 );
+        av1 = av2;
+        av2 = av2->next;
+        av1->next = NULL;
+        InsertAttributeAtEnd( node, av1 );
+    }
+
+    return yes;
+}
+
 /*
     Symptom <div><div>...</div></div>
     Action: merge the two divs
@@ -1096,6 +1137,10 @@ static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
         return no;
 
     if (child->next != NULL)
+        return no;
+
+    if (cfgBool(doc, TidyMergeDivs) == TidyAutoState
+        && CopyAttrs(doc, node, child) == no)
         return no;
 
     MergeStyles( doc, node, child );
