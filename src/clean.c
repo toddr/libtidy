@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:37:06 $ 
-    $Revision: 1.72 $ 
+    $Date: 2004/12/13 12:33:58 $ 
+    $Revision: 1.73 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -229,7 +229,7 @@ static tmbstr CreatePropString(StyleProp *props)
         s = prop->name;
 
         while((*p++ = *s++))
-        	continue;
+            continue;
 
         if (prop->value)
         {
@@ -239,7 +239,7 @@ static tmbstr CreatePropString(StyleProp *props)
 
             s = prop->value;
             while((*p++ = *s++))
-            	continue;
+                continue;
         }
         if (prop->next == NULL)
             break;
@@ -360,7 +360,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
 
     if (styleattr)
     {
-		/* fix for http://tidy.sf.net/bug/850215 */
+        /* fix for http://tidy.sf.net/bug/850215 */
         if (!styleattr->value)
         {
             RemoveAttribute(doc, node, styleattr);
@@ -920,11 +920,12 @@ static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
     tmbchar buf[128];
 
     tmbstrcpy( buf, "text-align: " );
-	for ( i = 12; i < sizeof(buf)/sizeof(buf[0])-1; ++i ) {
-		if ( (buf[i] = (tmbchar)ToLower(*align++)) == '\0' )
-			break;
- 	}
-	buf[i] = '\0';
+    for ( i = 12; i < sizeof(buf)/sizeof(buf[0])-1; ++i )
+    {
+        if ( (buf[i] = (tmbchar)ToLower(*align++)) == '\0' )
+            break;
+    }
+    buf[i] = '\0';
     AddStyleProperty( doc, node, buf );
 }
 
@@ -971,7 +972,7 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
             if (av->value)
                 AddAlign( doc, node, av->value );
 
-	    FreeAttribute(doc, av);
+            FreeAttribute(doc, av);
             break;
         }
 
@@ -1149,7 +1150,7 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 
         /* check list has no peers */
         if (list->next)
-	    return no;
+            return no;
 
         *pnode = list;  /* Set node to resume iteration */
 
@@ -2224,12 +2225,12 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
             if (0 != tmbstrncasecmp( prop->name, "charset", 7 ))
                 continue;
 
- 			MemFree( prop->name );
- 			prop->name = MemAlloc( 8 + tmbstrlen(enc) + 1 );
- 			tmbstrcpy(prop->name, "charset=");
- 			tmbstrcpy(prop->name+8, enc);
- 			s = CreatePropString( pFirstProp );
- 			MemFree( metaContent->value );
+            MemFree( prop->name );
+            prop->name = MemAlloc( 8 + tmbstrlen(enc) + 1 );
+            tmbstrcpy(prop->name, "charset=");
+            tmbstrcpy(prop->name+8, enc);
+            s = CreatePropString( pFirstProp );
+            MemFree( metaContent->value );
             metaContent->value = s;
             break;
         }

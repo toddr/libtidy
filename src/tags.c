@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/10/06 01:50:01 $ 
-    $Revision: 1.52 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/13 12:33:58 $ 
+    $Revision: 1.53 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -877,7 +877,7 @@ uint nodeHeaderLevel( Node* node )
         return 6;
     default:
     {
-    	/* fall through */
+        /* fall through */
     }
     }
     return 0;

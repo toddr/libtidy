@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/03 07:20:12 $ 
-    $Revision: 1.46 $ 
+    $Author: arnaud02 $ 
+    $Date: 2004/12/13 12:33:59 $ 
+    $Revision: 1.47 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -214,7 +214,7 @@ int         tidySetCharEncoding( TidyDoc tdoc, ctmbstr encnam )
     return -EINVAL;
 }
 
-int		tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam )
+int           tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )
@@ -228,7 +228,7 @@ int		tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam )
     return -EINVAL;
 }
 
-int		tidySetOutCharEncoding( TidyDoc tdoc, ctmbstr encnam )
+int           tidySetOutCharEncoding( TidyDoc tdoc, ctmbstr encnam )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 14:44:08 $ 
-    $Revision: 1.101 $ 
+    $Date: 2004/12/13 12:33:56 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -640,7 +640,7 @@ Bool IsCSS1Selector( ctmbstr buf )
                 esclen > 0                       /* Escaped? Anything goes. */
                 || ( pos>0 && c == '-' )         /* Dash cannot be 1st char */
                 || isalpha(c)                    /* a-z, A-Z anywhere */
-                || ( c >= 161 )      			 /* Unicode 161-255 anywhere */
+                || ( c >= 161 )                  /* Unicode 161-255 anywhere */
             );
             esclen = 0;
         }
@@ -1485,7 +1485,7 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
         cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
         *cp++ = '#';
         while (0 != (*cp++ = *given++))
-        	continue;
+            continue;
 
         ReportAttrError(doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
 
