@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/03 05:09:21 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/05/12 09:28:59 $ 
+    $Revision: 1.9 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -44,7 +44,6 @@ typedef enum
 struct _StreamIn
 {
     int  state;     /* FSM for ISO2022 */
-    Bool lookingForBOM;
     Bool pushed;
     uint charbuf[ CHARBUF_SIZE ];
     int  bufpos;
@@ -69,6 +68,7 @@ StreamIn* FileInput( TidyDocImpl* doc, FILE* fp, int encoding );
 StreamIn* BufferInput( TidyDocImpl* doc, TidyBuffer* content, int encoding );
 StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding );
 
+int       ReadBOMEncoding(StreamIn *in);
 uint      ReadChar( StreamIn* in );
 void      UngetChar( uint c, StreamIn* in );
 uint      PopChar( StreamIn *in );

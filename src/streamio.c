@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 02:24:48 $ 
-    $Revision: 1.11 $ 
+    $Date: 2003/05/12 09:28:58 $ 
+    $Revision: 1.12 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -115,7 +115,6 @@ static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
     in->curcol = 1;
     in->encoding = encoding;
     in->state = FSM_ASCII;
-    in->lookingForBOM = yes;
     in->doc = doc;
     return in;
 }
@@ -142,6 +141,68 @@ StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding )
     memcpy( &in->source, source, sizeof(TidyInputSource) );
     in->iotype = UserIO;
     return in;
+}
+
+int ReadBOMEncoding(StreamIn *in)
+{
+    uint c, c1, bom;
+
+    if (IsEOF(in))
+        return -1;
+    
+    c = ReadByte( in );
+
+    if (IsEOF(in))
+    {
+        UngetByte(in, c);
+        return -1;
+    }
+        
+    c1 = ReadByte( in );
+
+    /* todo: dont warn about mismatch for auto input encoding */
+    /* todo: let the user override the encoding found here */
+
+#if SUPPORT_UTF16_ENCODINGS
+    bom = (c << 8) + c1;
+
+    if ( bom == UNICODE_BOM_BE )
+    {
+        /* big-endian UTF-16 */
+        if ( in->encoding != UTF16 && in->encoding != UTF16BE )
+            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16BE ); /* non-fatal error */
+
+        return UTF16BE; /* return decoded BOM */
+    }
+    else if (bom == UNICODE_BOM_LE)
+    {
+        /* little-endian UTF-16 */
+        if (in->encoding != UTF16 && in->encoding != UTF16LE)
+            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16LE );
+
+        return UTF16LE; /* return decoded BOM */
+    }
+    else
+#endif /* SUPPORT_UTF16_ENCODINGS */
+    {
+        uint c2 = ReadByte( in );
+
+        if (((c << 16) + (c1 << 8) + c2) == UNICODE_BOM_UTF8)
+        {
+            /* UTF-8 */
+            if (in->encoding != UTF8)
+                ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF8 );
+
+            return UTF8;
+        }
+        else
+            UngetByte( in, c2 );
+    }
+
+    UngetByte(in, c1);
+    UngetByte(in, c);
+
+    return -1;
 }
 
 uint ReadChar( StreamIn *in )
@@ -958,83 +1019,6 @@ uint ReadCharFromStream( StreamIn* in )
     if (c == EndOfStream)
         return c;
 
-    if ( in->lookingForBOM &&
-         (
-#if SUPPORT_UTF16_ENCODINGS
-           in->encoding == UTF16   ||
-           in->encoding == UTF16LE ||
-           in->encoding == UTF16BE ||
-#endif
-           in->encoding == UTF8) )
-    {
-        /* check for a Byte Order Mark */
-        uint c1;
-#if SUPPORT_UTF16_ENCODINGS
-        uint bom;
-#endif
-        in->lookingForBOM = no;
-        if ( IsEOF(in) )
-            return EndOfStream;
-        
-        c1 = ReadByte( in );
-        
-#if SUPPORT_UTF16_ENCODINGS
-        bom = (c << 8) + c1;
-        
-        if ( bom == UNICODE_BOM_BE )
-        {
-            /* big-endian UTF-16 */
-            if ( in->encoding != UTF16 && in->encoding != UTF16BE )
-            {
-                /* fprintf(stderr, "Input is encoded as UTF16BE\n"); */
-                ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16BE ); /* non-fatal error */
-            }
-            in->encoding = UTF16BE;
-            SetOptionInt( in->doc, TidyInCharEncoding, UTF16BE );
-            return UNICODE_BOM; /* return decoded BOM */
-        }
-        else if (bom == UNICODE_BOM_LE)
-        {
-            /* little-endian UTF-16 */
-            if (in->encoding != UTF16 && in->encoding != UTF16LE)
-            {
-                /* fprintf(stderr, "Input is encoded as UTF16LE\n"); */ /* debug */
-                ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16LE );
-            }
-            in->encoding = UTF16LE;
-            SetOptionInt( in->doc, TidyInCharEncoding, UTF16LE );
-            return UNICODE_BOM; /* return decoded BOM */
-        }
-        else
-
-#endif
-        {
-            uint c2 = ReadByte( in );
-            if ( ((c << 16) + (c1 << 8) + c2) == UNICODE_BOM_UTF8 )
-            {
-                /* UTF-8 */
-                if (in->encoding != UTF8)
-                {
-                    /* fprintf(stderr, "Input is encoded as UTF8\n"); */ /* debug */
-                    ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF8 );
-                }
-                in->encoding = UTF8;
-                SetOptionInt( in->doc, TidyInCharEncoding, UTF8 );
-                return UNICODE_BOM; /* return decoded BOM */
-            }
-            else
-            {
-                /* the 2nd and/or 3rd bytes weren't what we were */
-                /* expecting, so unget the extra 2 bytes */
-                UngetByte( in, c2 );
-                UngetByte( in, c1 );
-               /* drop through to code below, with the original char */
-           }
-        }
-    }
-    
-    in->lookingForBOM = no;
-    
 #ifndef NO_NATIVE_ISO2022_SUPPORT
     /*
        A document in ISO-2022 based encoding uses some ESC sequences

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/09 21:17:16 $ 
-    $Revision: 1.24 $ 
+    $Date: 2003/05/12 09:28:59 $ 
+    $Revision: 1.25 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1036,6 +1036,7 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
 {
     int status = -EINVAL;
     Bool xmlIn = cfgBool( doc, TidyXmlTags );
+    int bomEnc;
 
     assert( doc != NULL && in != NULL );
     assert( doc->docIn == NULL );
@@ -1055,20 +1056,12 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     doc->root.column = doc->lexer->columns;
     doc->inputHadBOM = no;
 
-    /* skip byte order mark */
-    if ( in->encoding == UTF8
-#if SUPPORT_UTF16_ENCODINGS
-         || in->encoding == UTF16LE
-         || in->encoding == UTF16BE
-         || in->encoding == UTF16
-#endif
-       )
+    bomEnc = ReadBOMEncoding(in);
+
+    if (bomEnc != -1)
     {
-        uint c = ReadChar( in );
-        if ( c == UNICODE_BOM )
-            doc->inputHadBOM = yes;
-        else
-            UngetChar( c, in );
+        in->encoding = bomEnc;
+        SetOptionInt(doc, TidyInCharEncoding, bomEnc);
     }
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
