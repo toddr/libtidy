@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:53 $ 
-    $Revision: 1.5 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/07 22:56:59 $ 
+    $Revision: 1.6 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -18,6 +18,7 @@
 */
 
 #include "forward.h"
+#include "attrdict.h"
 
 #define TAG_HASHSIZE 357
 
@@ -39,6 +40,7 @@ struct _Dict
     TidyTagId       id;
     tmbstr          name;
     uint            versions;
+    AttrVersion*    attrvers;
     uint            model;
     Parser*         parser;
     CheckAttribs*   chkattrs;
