@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/08 13:43:45 $ 
-    $Revision: 1.10 $ 
+    $Date: 2005/03/31 13:10:33 $ 
+    $Revision: 1.11 $ 
 
   Contributing Author(s):
 
@@ -363,6 +363,16 @@ TIDY_EXPORT TidyIterator  tidyOptGetDeclTagList( TidyDoc tdoc );
 TIDY_EXPORT ctmbstr       tidyOptGetNextDeclTag( TidyDoc tdoc, 
                                                  TidyOptionId optId,
                                                  TidyIterator* iter );
+/** Get option description */
+TIDY_EXPORT ctmbstr       tidyOptGetDoc( TidyDoc tdoc, TidyOption opt );
+
+/** Iterate over a list of related options */
+TIDY_EXPORT TidyIterator  tidyOptGetDocLinksList( TidyDoc tdoc,
+                                                  TidyOption opt );
+/** Get next related option */
+TIDY_EXPORT TidyOption    tidyOptGetNextDocLinks( TidyDoc tdoc,
+                                                  TidyIterator* pos );
+
 /** @} end Configuration group */
 
 /** @defgroup IO  I/O and Messages
