@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/25 00:56:08 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/08/29 02:13:30 $ 
+    $Revision: 1.10 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
