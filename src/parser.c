@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/05 04:02:20 $ 
-    $Revision: 1.49 $ 
+    $Author: creitzel $ 
+    $Date: 2002/05/07 15:28:47 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -255,6 +255,9 @@ static Bool CanPrune(Node *element)
     if (element->tag == tag_object)
         return no;
 
+    if (element->tag == tag_script && GetAttrByName(element, "src"))
+        return no;
+
     /* #540555 Empty title tag is trimmed */
     if (element->tag == tag_title)
         return no;
@@ -262,10 +265,9 @@ static Bool CanPrune(Node *element)
     /* #433359 - fix by Randy Waki 12 Mar 01 */
     if (element->tag == tag_iframe)
         return no;
-                                
-    if ( element->attributes != null &&
-            (GetAttrByName(element, "id") ||
-               GetAttrByName(element, "name")) )
+
+    if ( GetAttrByName(element, "id") ||
+         GetAttrByName(element, "name") )
         return no;
 
     return yes;
@@ -2764,11 +2766,8 @@ void ParseTitle(Lexer *lexer, Node *title, uint mode)
 
 void ParseScript(Lexer *lexer, Node *script, uint mode)
 {
-    Node *node;
-
-    node = GetCDATA(lexer, script);
-
-    if (node)
+    Node *node = GetCDATA(lexer, script);
+    if ( node )
         InsertNodeAtEnd(script, node);
 }
 

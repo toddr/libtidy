@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/05/06 22:51:16 $ 
-    $Revision: 1.67 $ 
+    $Author: creitzel $ 
+    $Date: 2002/05/07 15:28:47 $ 
+    $Revision: 1.68 $ 
 
 */
 
@@ -1961,10 +1961,19 @@ Bool ExpectsContent(Node *node)
   a CDATA element like style or script
   which ends with </foo> for some foo.
 */
+static Bool IsQuote( int c )
+{
+  return ( c == '\'' || c == '\"' );
+}
+
 Node *GetCDATA(Lexer *lexer, Node *container)
 {
-    int c, lastc, start, i, len;
+    int c, lastc, start, i, len, qt = 0, esc = 0;
     Bool endtag = no;
+    Bool begtag = no;
+
+    if ( IsJavaScript(container) )
+      esc = '\\';
 
     lexer->lines = lexer->in->curline;
     lexer->columns = lexer->in->curcol;
@@ -1974,56 +1983,83 @@ Node *GetCDATA(Lexer *lexer, Node *container)
     lastc = '\0';
     start = -1;
 
-    while ((c = ReadChar(lexer->in)) != EndOfStream)
+    while ( (c = ReadChar(lexer->in)) != EndOfStream )
     {
         /* treat \r\n as \n and \r as \n */
-
-        if (c == '/' && lastc == '<')
+        if ( qt > 0 )
         {
-            if (endtag)
+            if ( c == qt && (!esc || lastc != esc) )
+            {
+                qt = 0;
+            }
+            else if (c == '/' && lastc == '<')
+            {
+                start = lexer->lexsize + 1;  /* to first letter */
+            }
+            else if (c == '>' && start >= 0)
             {
                 lexer->lines = lexer->in->curline;
                 lexer->columns = lexer->in->curcol - 3;
 
                 ReportWarning(lexer, null, null, BAD_CDATA_CONTENT);
-            }
 
+                /* if javascript insert backslash before / */
+                if ( esc )
+                {
+                    for (i = lexer->lexsize; i > start-1; --i)
+                        lexer->lexbuf[i] = lexer->lexbuf[i-1];
+
+                    lexer->lexbuf[start-1] = esc;
+                    lexer->lexsize++;
+                }
+
+                start = -1;
+            }
+        }
+        else if ( IsQuote(c) && (!esc || lastc != esc) )
+        {
+          qt = c;
+        }
+        else if (c == '<' )
+        {
+            start = lexer->lexsize + 1;  /* to first letter */
+            endtag = no;
+            begtag = yes;
+        }
+        else if (c == '/' && lastc == '<')
+        {
             start = lexer->lexsize + 1;  /* to first letter */
             endtag = yes;
+            begtag = no;
         }
-        else if (c == '>' && start >= 0)
+        else if (c == '>' && start >= 0)  /* End of begin or end tag */
         {
-            if (((len = lexer->lexsize - start) == wstrlen(container->element)) &&
-                wstrncasecmp(lexer->lexbuf+start, container->element, len) == 0)
+            int decr = 2;
+            if ( endtag && 
+                 ((len = lexer->lexsize - start) == wstrlen(container->element)) &&
+                 wstrncasecmp(lexer->lexbuf+start, container->element, len) == 0 )
             {
-                lexer->txtend = start - 2;
-                lexer->lexsize = start - 2; /* #433857 - fix by Huajun Zeng 26 Apr 01 */
+                lexer->txtend = start - decr;
+                lexer->lexsize = start - decr; /* #433857 - fix by Huajun Zeng 26 Apr 01 */
                 break;
             }
 
+            /* Unquoted markup will end SCRIPT or STYLE elements 
+            */
             lexer->lines = lexer->in->curline;
             lexer->columns = lexer->in->curcol - 3;
 
             ReportWarning(lexer, null, null, BAD_CDATA_CONTENT);
-
-            /* if javascript insert backslash before / */
-
-            if (IsJavaScript(container))
-            {
-                for (i = lexer->lexsize; i > start-1; --i)
-                    lexer->lexbuf[i] = lexer->lexbuf[i-1];
-
-                lexer->lexbuf[start-1] = '\\';
-                lexer->lexsize++;
-            }
-
-            start = -1;
-            endtag = no;
+            if ( begtag )
+              decr = 1;
+            lexer->txtend = start - decr;
+            lexer->lexsize = start - decr;
+            break;
         }
         /* #427844 - fix by Markus Hoenicka 21 Oct 00 */
         else if (c == '\r')
         {
-            if (endtag) 
+            if (begtag || endtag) 
             { 
                 continue; /* discard whitespace in endtag */ 
             } 
@@ -2037,7 +2073,7 @@ Node *GetCDATA(Lexer *lexer, Node *container)
                 c = '\n';
             }
         } 
-        else if ((c == '\n' || c == '\t' || c == ' ') && endtag) 
+        else if ((c == '\n' || c == '\t' || c == ' ') && (begtag||endtag) )
         { 
             continue; /* discard whitespace in endtag */ 
         }
