@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 17:20:15 $ 
-    $Revision: 1.17 $ 
+    $Date: 2005/02/22 12:46:49 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -205,6 +205,8 @@ Bool IsBoolAttribute( AttVal* attval );
 Bool attrIsEvent( AttVal* attval );
 
 AttVal* AttrGetById( Node* node, TidyAttrId id );
+
+uint NodeAttributeVersions( Node* node, TidyAttrId id );
 
 /* 0 == TidyAttr_UNKNOWN  */
 #define AttrId(av) ((av) && (av)->dict ? (av)->dict->id : TidyAttr_UNKNOWN)

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 14:28:41 $ 
-    $Revision: 1.166 $ 
+    $Date: 2005/02/22 12:46:50 $ 
+    $Revision: 1.167 $ 
 
 */
 
@@ -1481,6 +1481,8 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
     ctmbstr pub = "PUBLIC";
     ctmbstr sys = "SYSTEM";
 
+    lexer->versionEmitted = ApparentVersion( doc );
+
     if (dtmode == TidyDoctypeOmit)
     {
         if (doctype)
@@ -1507,11 +1509,13 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
         /* XHTML 1.0 Strict */
         RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10S));
         RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10S));
+        lexer->versionEmitted = X10S;
         break;
     case TidyDoctypeLoose:
         /* XHTML 1.0 Transitional */
         RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10T));
         RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10T));
+        lexer->versionEmitted = X10T;
         break;
     case TidyDoctypeUser:
         /* user defined document type declaration */
@@ -1523,33 +1527,39 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
         {
             if (!GetAttrByName(doctype, sys))
                 RepairAttrValue(doc, doctype, sys, GetSIFromVers(XH11));
+            lexer->versionEmitted = XH11;
             return yes;
         }
         else if (lexer->versions & XH11 && !(lexer->versions & VERS_HTML40))
         {
             RepairAttrValue(doc, doctype, pub, GetFPIFromVers(XH11));
             RepairAttrValue(doc, doctype, sys, GetSIFromVers(XH11));
+            lexer->versionEmitted = XH11;
         }
         else if (lexer->versions & XB10 && lexer->doctype == XB10)
         {
             if (!GetAttrByName(doctype, sys))
                 RepairAttrValue(doc, doctype, sys, GetSIFromVers(XB10));
+            lexer->versionEmitted = XB10;
             return yes;
         }
         else if (lexer->versions & VERS_HTML40_STRICT)
         {
             RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10S));
             RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10S));
+            lexer->versionEmitted = X10S;
         }
         else if (lexer->versions & VERS_FRAMESET)
         {
             RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10F));
             RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10F));
+            lexer->versionEmitted = X10F;
         }
         else if (lexer->versions & VERS_LOOSE)
         {
             RepairAttrValue(doc, doctype, pub, GetFPIFromVers(X10T));
             RepairAttrValue(doc, doctype, sys, GetSIFromVers(X10T));
+            lexer->versionEmitted = X10T;
         }
         else
         {
@@ -1576,12 +1586,16 @@ Bool FixDocType( TidyDocImpl* doc )
         lexer->versions & lexer->doctype &&
         !(VERS_XHTML & lexer->doctype && !lexer->isvoyager)
         && FindDocType(doc))
+    {
+        lexer->versionEmitted = lexer->doctype;
         return yes;
+    }
 
     if (dtmode == TidyDoctypeOmit)
     {
         if (doctype)
             DiscardElement( doc, doctype );
+        lexer->versionEmitted = ApparentVersion( doc );
         return yes;
     }
 
@@ -1594,8 +1608,8 @@ Bool FixDocType( TidyDocImpl* doc )
     if ((dtmode == TidyDoctypeStrict ||
          dtmode == TidyDoctypeLoose) && doctype)
     {
-            DiscardElement(doc, doctype);
-            doctype = NULL;
+        DiscardElement(doc, doctype);
+        doctype = NULL;
     }
 
     switch (dtmode)
@@ -1611,6 +1625,7 @@ Bool FixDocType( TidyDocImpl* doc )
         break;
     }
 
+    lexer->versionEmitted = guessed;
     if (guessed == VERS_UNKNOWN)
         return no;
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 17:20:13 $ 
-    $Revision: 1.106 $ 
+    $Date: 2005/02/22 12:46:47 $ 
+    $Revision: 1.107 $ 
 
 */
 
@@ -206,6 +206,22 @@ static uint AttributeVersions(Node* node, AttVal* attval)
              ? VERS_UNKNOWN
              : attval->dict->versions;
 
+}
+
+
+/* return the version of the attribute "id" of element "node" */
+uint NodeAttributeVersions( Node* node, TidyAttrId id )
+{
+    uint i;
+
+    if (!node || !node->tag || !node->tag->attrvers)
+        return VERS_UNKNOWN;
+
+    for (i = 0; node->tag->attrvers[i].attribute; ++i)
+        if (node->tag->attrvers[i].attribute == id)
+            return node->tag->attrvers[i].versions;
+
+    return VERS_UNKNOWN;
 }
 
 /* returns true if the element is a W3C defined element */

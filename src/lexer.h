@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 14:28:41 $ 
-    $Revision: 1.27 $ 
+    $Date: 2005/02/22 12:46:52 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -325,6 +325,7 @@ struct _Lexer
     Bool isvoyager;         /* true if xmlns attribute on html element */
     uint versions;          /* bit vector of HTML versions */
     uint doctype;           /* version as given by doctype (if any) */
+    uint versionEmitted;    /* version of doctype emitted */
     Bool bad_doctype;       /* e.g. if html or PUBLIC is missing */
     uint txtstart;          /* start of current node */
     uint txtend;            /* end of current node */

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 17:20:17 $ 
-    $Revision: 1.79 $ 
+    $Date: 2005/02/22 12:46:49 $ 
+    $Revision: 1.80 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2546,19 +2546,25 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
             }
             else if (name && wantId)
             {
-                if (IsValidHTMLID(name->value))
+                if (NodeAttributeVersions( node, TidyAttr_ID )
+                    & doc->lexer->versionEmitted)
                 {
-                    RepairAttrValue(doc, node, "id", name->value);
-                }
-                else
-                {
-                    ReportAttrError(doc, node, name, INVALID_XML_ID);
-                }
+                    if (IsValidHTMLID(name->value))
+                    {
+                        RepairAttrValue(doc, node, "id", name->value);
+                    }
+                    else
+                    {
+                        ReportAttrError(doc, node, name, INVALID_XML_ID);
+                    }
+                 }
             }
             else if (id && wantName)
             {
-                /* todo: do not assume id is valid */
-                RepairAttrValue(doc, node, "name", id->value);
+                if (NodeAttributeVersions( node, TidyAttr_NAME )
+                    & doc->lexer->versionEmitted)
+                    /* todo: do not assume id is valid */
+                    RepairAttrValue(doc, node, "name", id->value);
             }
 
             if (id && !wantId)
