@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 19:52:57 $ 
-    $Revision: 1.6 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/04/02 08:33:35 $ 
+    $Revision: 1.7 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -949,7 +949,10 @@ uint ReadCharFromStream( StreamIn* in )
            in->encoding == UTF8) )
     {
         /* check for a Byte Order Mark */
-        uint c1, bom;
+        uint c1;
+#if SUPPORT_UTF16_ENCODINGS
+        uint bom;
+#endif
         in->lookingForBOM = no;
         if ( IsEOF(in) )
             return EndOfStream;

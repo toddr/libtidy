@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/03/30 23:57:25 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/04/02 08:34:10 $ 
+    $Revision: 1.11 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -913,12 +913,14 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
 
 #if defined(_WIN32) || defined(OS2_OS)
     oldmode = _setmode( _fileno(stdout), _O_BINARY );
+#if SUPPORT_UTF16_ENCODINGS
     if ( out->encoding == UTF16   ||
          out->encoding == UTF16LE ||
          out->encoding == UTF16BE )
     {
       ReportWarning( doc, NULL, doc->root, ENCODING_IO_CONFLICT );
     }
+#endif
 #endif
 
     if ( 0 == status )
