@@ -1,0 +1,18 @@
+<html>
+<head>
+  <title>Test Input For Bug #501228</title>
+</head>
+<body>
+  <p>Hello &nbsp;!</p> 
+
+  <p>Tidy is converting &amp;nbsp; to a numeric entity for 
+  XHTML output.  It shouldn't do that.</p>
+
+  <p>Run with following config:</p>
+  <pre>
+  output-xhtml: yes
+  doctype: strict
+  numeric-entities: no
+  </pre>
+</body>
+</html>
