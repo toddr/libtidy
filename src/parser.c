@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 16:34:50 $ 
-    $Revision: 1.85 $ 
+    $Date: 2003/05/12 16:54:43 $ 
+    $Revision: 1.86 $ 
 
 */
 
@@ -2899,6 +2899,14 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
             ReportWarning( doc, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken( doc );
             break;
+        }
+
+        if (node->type == ProcInsTag &&
+            tmbstrcmp(node->element, "xml-stylesheet") == 0)
+        {
+            ReportWarning(doc, head, node, TAG_NOT_ALLOWED_IN);
+            InsertNodeBeforeElement(FindHTML(doc), node);
+            continue;
         }
 
         /* deal with comments etc. */
