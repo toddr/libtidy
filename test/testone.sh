@@ -10,9 +10,9 @@
 #
 # CVS Info:
 #
-#    $Author: krusch $
-#    $Date: 2002/01/14 21:33:48 $
-#    $Revision: 1.4 $
+#    $Author: creitzel $
+#    $Date: 2002/04/26 17:45:55 $
+#    $Revision: 1.5 $
 #
 # set -x
 
@@ -62,7 +62,7 @@ then
   CFGFILE=./input/cfg_default.txt
 fi
 
-../tidy -f $MSGFILE -config $CFGFILE "$@" $INFILE > $TIDYFILE
+../tidy -f $MSGFILE -config $CFGFILE "$@" --tidy-mark no $INFILE > $TIDYFILE
 STATUS=$?
 
 if [ $STATUS -gt 1 ]
