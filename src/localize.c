@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 10:56:56 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/07/17 15:59:58 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -331,6 +331,10 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " Anchor \"%s\" already defined", av->value);
+        }
+        else if (code == ENTITY_IN_ID)
+        {
+            tidy_out(lexer->errout, "Warning: No entities allowed in id attribute, discarding \"&\"");
         }
 
         tidy_out(lexer->errout, "\n");
