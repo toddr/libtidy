@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/07/07 01:09:21 $ 
-    $Revision: 1.120 $ 
+    $Author: lpassey $ 
+    $Date: 2004/07/28 18:08:06 $ 
+    $Revision: 1.121 $ 
 
 */
 
@@ -79,14 +79,14 @@ Bool IsNewNode(Node *node)
     return yes;
 }
 
-void CoerceNode(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete, Bool expected)
+void CoerceNode(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete, Bool unexpected)
 {
     const Dict* tag = LookupTagDef(tid);
     Node* tmp = InferredTag(doc, tag->id);
 
     if (obsolete)
         ReportWarning(doc, node, tmp, OBSOLETE_ELEMENT);
-    else if (expected)
+    else if (unexpected)
         ReportError(doc, node, tmp, REPLACING_UNEX_ELEMENT);
     else
         ReportNotice(doc, node, tmp, REPLACING_ELEMENT);
@@ -820,7 +820,7 @@ static void MoveNodeToBody( TidyDocImpl* doc, Node* node )
 void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 {
     Lexer* lexer = doc->lexer;
-    Node *node, *parent;
+    Node *node;
     Bool checkstack = yes;
     uint istackbase = 0;
 
@@ -871,6 +871,14 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
             return;
         }
 
+        if ( nodeIsBODY( node ) && DescendantOf( element, TidyTag_HEAD ))
+        {
+            //  If we're in the HEAD, close it before proceeding.
+            //  This is an extremely rare occurance, but has been observed.
+            UngetToken( doc );
+            break;
+        }
+
         if ( nodeIsHTML(node) || nodeIsHEAD(node) || nodeIsBODY(node) )
         {
             if ( node->type == StartTag || node->type == StartEndTag )
@@ -892,17 +900,30 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
+                // Cannot have a block inside a paragraph, so no checking
+                // for an ancestor is necessary -- but we _can_ have
+                // paragraphs inside a block, so change it to an implicit
+                // empty paragraph, to be dealt with according to the user's
+                // options
+                node->type = StartEndTag;
+                node->implicit = yes;
+#if OBSOLETE
                 CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( element, node );
                 node = InferredTag(doc, TidyTag_BR);
+#endif
             }
-            else
+            else if (DescendantOf( element, node->tag->id ))
             {
                 /* 
                   if this is the end tag for an ancestor element
                   then infer end tag for this element
                 */
+                UngetToken( doc );
+                break;
+#if OBSOLETE
+                Node *parent;
                 for ( parent = element->parent;
                       parent != NULL; 
                       parent = parent->parent )
@@ -926,7 +947,10 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         return;
                     }
                 }
-
+#endif
+            }
+            else
+            {
                 /* special case </tr> etc. for stuff moved in front of table */
                 if ( lexer->exiled
                      && node->tag->model
@@ -3070,7 +3094,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         
         /*
          if it doesn't belong in the head then
-         treat as implicit head of head and deal
+         treat as implicit end of head and deal
          with as part of the body
         */
         if (!(node->tag->model & CM_HEAD))
@@ -3382,10 +3406,14 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
+                node->type = StartEndTag;
+                node->implicit = yes;
+#if OBSOLETE
                 CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd(body, node);
                 node = InferredTag(doc, TidyTag_BR);
+#endif
             }
             else if ( nodeHasCM(node, CM_INLINE) )
                 PopInline( doc, node );
