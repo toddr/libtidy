@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/23 08:40:16 $ 
-    $Revision: 1.48 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:58:52 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -461,6 +461,10 @@ Node *InferredTag(Lexer *lexer, char *name);
    when cleaning the augean stables (Word2000) */
 Node *NewLineNode(Lexer *lexer);
 
+/* used for adding a &nbsp; for Word2000 */
+Node *NewLiteralTextNode(Lexer *lexer, char* txt );
+
+
 /* Parser calls this to create RootNode */
 Node *NewNode(void);
 AttVal *NewAttribute(void);
@@ -499,6 +503,7 @@ uint ToUpper(uint c);
 Node *FindDocType(Node *root);
 Node *FindHTML(Node *root);
 Node *FindHEAD(Node *root);
+Node *FindBody(Node *root);
 Bool AddGenerator(Lexer *lexer, Node *root);
 void DiscardDocType(Node *root);
 Bool FixDocType(Lexer *lexer, Node *node);
@@ -619,8 +624,6 @@ void PFlushLine(Out *out, uint indent);
 void PCondFlushLine(Out *out, uint indent);
 void PrintBody(Out *fout, Lexer *lexer, Node *root); /* Feature request #434940 - fix by Dave Raggett/Ignacio Vazquez-Abrams 21 Jun 01 */
 void AddTransitionEffect(Lexer *lexer, Node *root, int effect, float duration);
-Node *FindHead(Node *root);
-Node *FindBody(Node *root);
 
 /* tidy.c */
 #define EndOfStream EOF
@@ -819,6 +822,7 @@ void FreeConfig(void);
 void ParseConfigFile(char *file);
 Bool ParseConfig(char *option, char *parameter);
 void AdjustConfig(void);
+void PrintConfigOptions(FILE *errout);
 
 extern uint spaces;         /* default indentation */
 extern uint wraplen;        /* default wrap margin */
@@ -850,6 +854,7 @@ extern Bool XmlSpace;
 extern Bool RawOut;
 extern Bool UpperCaseTags;
 extern Bool UpperCaseAttrs;
+extern Bool MakeBare;
 extern Bool MakeClean;
 extern Bool LogicalEmphasis;
 extern Bool DropEmptyParas;
