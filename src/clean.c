@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/15 19:36:44 $ 
-    $Revision: 1.12 $ 
+    $Date: 2001/09/21 08:28:53 $ 
+    $Revision: 1.13 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1985,13 +1985,21 @@ void CleanWord2000(Lexer *lexer, Node *node)
 
         if (node->tag == tag_p)
         {
-            AttVal *attr = GetAttrByName(node, "class");
-
+            AttVal *attr, *atrStyle;
+            
+            attr = GetAttrByName(node, "class");
+            atrStyle = GetAttrByName(node, "style");
+            /*
+               (JES) Sometimes Word marks a list item with the following hokie syntax
+               <p class="MsoNormal" style="...;mso-list:l1 level1 lfo1;
+                translate these into <li>
+            */
             /* map sequence of <p class="MsoListBullet"> to <ul>...</ul> */
             /* map <p class="MsoListNumber"> to <ol>...</ol> */
-            if (attr && 
-                ( wstrcmp(attr->value, "MsoListBullet") == 0 ||
-                  wstrcmp(attr->value, "MsoListNumber") == 0 ) )
+            if ((attr && 
+                (wstrcmp(attr->value, "MsoListBullet") == 0 ||
+                 wstrcmp(attr->value, "MsoListNumber") == 0 )) ||
+                (atrStyle && (strstr(atrStyle->value,"mso-list:") != null))) /* 463066 - fix by Joel Shafer 19 Sep 01 */
             {
                 Dict* listType = tag_ul;
                 if ( wstrcmp(attr->value, "MsoListNumber") == 0 )
