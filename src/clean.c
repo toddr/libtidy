@@ -1,14 +1,14 @@
 /*
   clean.c -- clean up misuse of presentation markup
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/06/14 04:17:58 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/13 07:32:00 $ 
+    $Revision: 1.6 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -702,10 +702,67 @@ static char *MergeProperties(char *s1, char *s2)
     return s;
 }
 
+static void MergeClasses(Node *node, Node *child)
+{
+    AttVal *av;
+    char *s1, *s2, *names;
+
+    for (s2 = null, av = child->attributes; av; av = av->next)
+    {
+        if (wstrcmp(av->attribute, "class") == 0)
+        {
+            s2 = av->value;
+            break;
+        }
+    }
+
+    for (s1 = null, av = node->attributes; av; av = av->next)
+    {
+        if (wstrcmp(av->attribute, "class") == 0)
+        {
+            s1 = av->value;
+            break;
+        }
+    }
+
+    if (s1)
+    {
+        if (s2)  /* merge class names from both */
+        {
+            int l1, l2;
+            l1 = wstrlen(s1);
+            l2 = wstrlen(s2);
+            names = (char *)MemAlloc(l1 + l2 + 2);
+            wstrcpy(names, s1);
+            names[l1] = ' ';
+            wstrcpy(names+l1+1, s2);
+            MemFree(av->value);
+            av->value = names;
+        }
+    }
+    else if (s2)  /* copy class names from child */
+    {
+        av = NewAttribute();
+        av->attribute = wstrdup("class");
+        av->value = wstrdup(s2);
+        av->delim = '"';
+        av->dict = FindAttribute(av);
+        av->next = node->attributes;
+        node->attributes = av;
+    }
+}
+
 static void MergeStyles(Node *node, Node *child)
 {
     AttVal *av;
     char *s1, *s2, *style;
+
+    /*
+       the child may have a class attribute used
+       for attaching styles, if so the class name
+       needs to be copied to node's class
+    */
+    MergeClasses(node, child);
 
     for (s2 = null, av = child->attributes; av; av = av->next)
     {
@@ -1869,4 +1926,50 @@ Bool IsWord2000(Node *root)
     Node *html = FindHTML(root);
 
     return (html && GetAttrByName(html, "xmlns:o"));
+}
+
+/* where appropriate move object elements from head to body */
+void BumpObject(Lexer *lexer, Node *html)
+{
+    Node *node, *next, *head = null, *body = null;
+
+    for (node = html->content; node != null; node = node->next)
+    {
+        if (node->tag == tag_head)
+            head = node;
+
+        if (node->tag == tag_body)
+            body = node;
+    }
+
+    if (head != null && body != null)
+    {
+        for (node = head->content; node != null; node = next)
+        {
+            next = node->next;
+
+            if (node->tag == tag_object)
+            {
+                Node *child;
+                Bool bump = no;
+
+                for (child = node->content; child != null; child = child->next)
+                {
+                    /* bump to body unless content is param */
+                    if ((child->type == TextNode && !IsBlank(lexer, node))
+                        || child->tag != tag_param)
+                    {
+                            bump = yes;
+                            break;
+                    }
+                }
+
+                if (bump)
+                {
+                    RemoveNode(node);
+                    InsertNodeAtStart(body, node);
+                }
+            }
+        }
+    }
 }
