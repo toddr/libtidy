@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 05:12:58 $ 
-    $Revision: 1.12 $ 
+    $Date: 2001/07/11 05:49:07 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -3379,11 +3379,6 @@ Bool XMLPreserveWhiteSpace(Node *element)
 static void ParseXMLElement(Lexer *lexer, Node *element, uint mode)
 {
     Node *node;
-
-    /* Jeff Young's kludge for XSL docs */
-
-    if (wstrcasecmp(element->element, "xsl:text") == 0)
-        return;
 
     /* if node is pre or has xml:space="preserve" then do so */
 
