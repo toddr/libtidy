@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/18 22:51:31 $ 
-    $Revision: 1.25 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/23 03:49:18 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -133,6 +133,10 @@ void InsertNodeAtStart(Node *element, Node *node)
 
     if (element->content == null)
         element->last = node;
+#if 1
+    else
+        element->content->prev = node; // AQ added 13 Apr 2000
+#endif
 
     node->next = element->content;
     node->prev = null;
@@ -209,6 +213,18 @@ void InsertNodeAfterElement(Node *element, Node *node)
     parent = element->parent;
     node->parent = parent;
 
+#if 1
+    // AQ - 13Jan2000 fix for parent == null
+    if (parent != null && parent->last == element)
+        parent->last = node;
+    else
+    {
+        node->next = element->next;
+        // AQ - 13Jan2000 fix for node->next == null
+        if (node->next != null)
+            node->next->prev = node;
+    }
+#else
     if (parent->last == element)
         parent->last = node;
     else
@@ -216,6 +232,7 @@ void InsertNodeAfterElement(Node *element, Node *node)
         node->next = element->next;
         node->next->prev = node;
     }
+#endif
 
     element->next = node;
     node->prev = element;
@@ -414,7 +431,7 @@ static void TrimInitialSpace(Lexer *lexer, Node *element, Node *text)
             }
         }
 
-        /* discard the space  in current node */
+        /* discard the space in current node */
         ++(text->start);
     }
 }
@@ -479,6 +496,19 @@ static Bool InsertMisc(Node *element, Node *node)
 
 static void ParseTag(Lexer *lexer, Node *node, uint mode)
 {
+   // Local fix by GLP 2000-12-21.  Need to reset insertspace if this 
+   // is both a non-inline and empty tag (base, link, meta, isindex, hr, area).
+   // Remove this code once the fix is made in Tidy.
+#if 0
+	if (!(node->tag->model & CM_INLINE))
+        lexer->insertspace = no;
+        
+    if (node->tag->model & CM_EMPTY)
+    {
+        lexer->waswhite = no;
+        return;
+    }
+#else
     if (node->tag->model & CM_EMPTY)
     {
         lexer->waswhite = no;
@@ -486,6 +516,7 @@ static void ParseTag(Lexer *lexer, Node *node, uint mode)
     }
     else if (!(node->tag->model & CM_INLINE))
         lexer->insertspace = no;
+#endif
 
     if (node->tag->parser == null || node->type == StartEndTag)
         return;
@@ -987,8 +1018,11 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
                 {
                     checkstack = no;
 
-                    if (InlineDup(lexer, node) > 0)
-                        continue;
+                    if (!(element->tag->model & CM_MIXED))	/* #431731 - fix by Randy Waki 25 Dec 00 */
+                    {
+                        if (InlineDup(lexer, node) > 0)
+                            continue;
+                    }
                 }
 
                 mode = MixedContent;
