@@ -1,6 +1,6 @@
 /* localize.c -- text strings and routines to handle errors and general messages
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   Portions Copyright University of Toronto
   See tidy.h and access.h for the copyright notice.
 
@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/12/09 00:54:39 $ 
-    $Revision: 1.123 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/01/18 11:10:14 $ 
+    $Revision: 1.124 $ 
 
 */
 
@@ -99,6 +99,8 @@ static struct _msgfmt
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              }, /* Error */
   { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but deprecated) */
 
+/* ReportMissingAttr */
+  { MISSING_ATTRIBUTE,            "%s lacks \"%s\" attribute"                                               }, /* Error */
 /* ReportWarning */
   { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
   { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
@@ -719,11 +721,12 @@ void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 
 void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
 {
-    /* ReportAttrError( doc, node, NULL, MISSING_ATTRIBUTE ); */
     char tagdesc[ 64 ];
+    ctmbstr fmt = GetFormatFromCode(MISSING_ATTRIBUTE);
+
+    assert( fmt != NULL );
     TagToString(node, tagdesc, sizeof(tagdesc));
-    messageNode( doc, TidyWarning, node,
-                 "%s lacks \"%s\" attribute", tagdesc, name );
+    messageNode( doc, TidyWarning, node, fmt, tagdesc, name );
 }
 
 #if SUPPORT_ACCESSIBILITY_CHECKS
