@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/03 19:45:31 $ 
-    $Revision: 1.57 $ 
+    $Date: 2003/03/05 18:04:16 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -1639,7 +1639,8 @@ void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
     if ( lexer->isvoyager )
     {
         Node *node = GetToken( doc, mode);
-        if (!(node->type == EndTag && node->tag == element->tag))
+        if ( node &&
+             !(node->type == EndTag && node->tag == element->tag) )
         {
             ReportWarning( doc, element, node, ELEMENT_NOT_EMPTY);
             UngetToken( doc );
