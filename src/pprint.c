@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/21 21:51:28 $ 
-    $Revision: 1.67 $ 
+    $Date: 2003/05/04 03:04:10 $ 
+    $Revision: 1.68 $ 
 
 */
 
@@ -2208,13 +2208,8 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 }
             }
 
-            /*
-            */
-            if ( !indcont && !hideend && node->next != NULL &&
-                 nodeHasCM(node, CM_BLOCK|CM_LIST|CM_DEFLIST|CM_TABLE) )
-            {
+            if (!indcont && !hideend && !nodeIsHTML(node) && !classic)
                 PFlushLine( doc, indent );
-            }
         }
     }
 }
