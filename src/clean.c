@@ -1,14 +1,14 @@
 /*
   clean.c -- clean up misuse of presentation markup
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/11 13:14:14 $ 
-    $Revision: 1.75 $ 
+    $Date: 2005/02/11 14:46:59 $ 
+    $Revision: 1.76 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1206,6 +1206,20 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 }
 
 /*
+  Some necessary conditions to apply BlockStyle().
+ */
+
+static Bool CanApplyBlockStyle( Node *node )
+{
+    if (node->tag->model & (CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE)
+        && !nodeIsTABLE(node) && !nodeIsTR(node) && !nodeIsLI(node) )
+    {
+        return yes;
+    }
+    return no;
+}
+
+/*
   Symptom: the only child of a block-level element is a
   presentation element such as B, I or FONT
 
@@ -1234,45 +1248,42 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 
     Node *child;
 
-    if (node->tag->model & (CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE))
+    if (CanApplyBlockStyle(node))
     {
-        if ( !nodeIsTABLE(node) && !nodeIsTR(node) && !nodeIsLI(node) )
+        /* check for align attribute */
+        if ( !nodeIsCAPTION(node) )
+            TextAlign( doc, node );
+
+        child = node->content;
+        if (child == NULL)
+            return no;
+
+        /* check child has no peers */
+        if (child->next)
+            return no;
+
+        if ( nodeIsB(child) )
         {
-            /* check for align attribute */
-            if ( !nodeIsCAPTION(node) )
-                TextAlign( doc, node );
+            MergeStyles( doc, node, child );
+            AddStyleProperty( doc, node, "font-weight: bold" );
+            StripOnlyChild( doc, node );
+            return yes;
+        }
 
-            child = node->content;
-            if (child == NULL)
-                return no;
+        if ( nodeIsI(child) )
+        {
+            MergeStyles( doc, node, child );
+            AddStyleProperty( doc, node, "font-style: italic" );
+            StripOnlyChild( doc, node );
+            return yes;
+        }
 
-            /* check child has no peers */
-            if (child->next)
-                return no;
-
-            if ( nodeIsB(child) )
-            {
-                MergeStyles( doc, node, child );
-                AddStyleProperty( doc, node, "font-weight: bold" );
-                StripOnlyChild( doc, node );
-                return yes;
-            }
-
-            if ( nodeIsI(child) )
-            {
-                MergeStyles( doc, node, child );
-                AddStyleProperty( doc, node, "font-style: italic" );
-                StripOnlyChild( doc, node );
-                return yes;
-            }
-
-            if ( nodeIsFONT(child) )
-            {
-                MergeStyles( doc, node, child );
-                AddFontStyles( doc, node, child->attributes );
-                StripOnlyChild( doc, node );
-                return yes;
-            }
+        if ( nodeIsFONT(child) )
+        {
+            MergeStyles( doc, node, child );
+            AddFontStyles( doc, node, child->attributes );
+            StripOnlyChild( doc, node );
+            return yes;
         }
     }
 
@@ -1343,8 +1354,10 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
             return yes;
         }
 
-        /* if FONT is only child of parent element then leave alone */
-        if ( node->parent->content == node && node->next == NULL )
+        /* if FONT is only child of parent element then leave alone
+          Do so only if BlockStyle may be succesful. */
+        if ( node->parent->content == node && node->next == NULL &&
+             CanApplyBlockStyle(node->parent) )
             return no;
 
         AddFontStyles( doc, node, node->attributes );
