@@ -1,15 +1,36 @@
 #! /bin/sh
 
+#
+# testone.sh - execute a single testcase
+#
+# (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+# See tidy.c for the copyright notice.
+#
+# <URL:http://tidy.sourceforge.net/>
+#
+# CVS Info:
+#
+#    $Author: krusch $
+#    $Date: 2002/01/14 21:33:48 $
+#    $Revision: 1.4 $
+#
 # set -x
 
-echo Testing $1
-INHTML=./input/in_$1.html
-CFGFILE=./input/cfg_$1.txt
-TIDYHTML=./tmp/out_$1.html
-OUTHTML=./output/out_$1.html
+VERSION='$Id'
 
+echo Testing $1
+
+set +f
+
+INFILES=./input/in_$1.*ml
+CFGFILE=./input/cfg_$1.txt
+OUTFILE=./output/out_$1.html
+
+TIDYFILE=./tmp/out_$1.html
 MSGFILE=./tmp/msg_$1.txt
 DIFFOUT=./tmp/diff_$1.txt
+
+unset HTML_TIDY
 
 REPORTWARN=$2
 shift
@@ -19,12 +40,20 @@ then
 fi
 
 # Remove any pre-exising test outputs
-for INFIL in $MSGFILE $TIDYHTML $DIFFOUT
+for INFIL in $MSGFILE $TIDYFILE $DIFFOUT
 do
   if [ -f $INFIL ]
   then
     rm $INFIL
   fi
+done
+
+for INFILE in $INFILES
+do
+    if [ -r $INFILE ]
+    then
+      break
+    fi
 done
 
 # If no test specific config file, use default.
@@ -33,7 +62,7 @@ then
   CFGFILE=./input/cfg_default.txt
 fi
 
-../tidy -f $MSGFILE -config $CFGFILE "$@" $INHTML > $TIDYHTML
+../tidy -f $MSGFILE -config $CFGFILE "$@" $INFILE > $TIDYFILE
 STATUS=$?
 
 if [ $STATUS -gt 1 ]
@@ -52,15 +81,15 @@ then
 fi
 
 
-if [ ! -s $TIDYHTML ]
+if [ ! -s $TIDYFILE ]
 then
   cat $MSGFILE
   exit 1
 fi
 
-if [ -f $OUTHTML ]
+if [ -f $OUTFILE ]
 then
-  diff $TIDYHTML $OUTHTML > $DIFFOUT
+  diff $TIDYFILE $OUTFILE > $DIFFOUT
 
   # Not a valid shell test
   if [ -s diff.txt ]
