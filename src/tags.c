@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/01 04:15:40 $ 
-    $Revision: 1.19 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/04 23:15:25 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -50,6 +50,7 @@ Dict *tag_td;
 Dict *tag_th;
 Dict *tag_tr;
 Dict *tag_col;
+Dict *tag_colgroup;
 Dict *tag_br;
 Dict *tag_a;
 Dict *tag_link;
@@ -462,6 +463,7 @@ void InitTags(void)
     tag_th = lookup("th");
     tag_tr = lookup("tr");
     tag_col = lookup("col");
+    tag_colgroup = lookup("colgroup");
     tag_br = lookup("br");
     tag_a = lookup("a");
     tag_link = lookup("link");

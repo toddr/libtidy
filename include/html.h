@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/04/19 10:43:05 $ 
-    $Revision: 1.65 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/05/04 23:14:24 $ 
+    $Revision: 1.66 $ 
 
 */
 
@@ -1016,6 +1016,7 @@ extern Dict *tag_td;
 extern Dict *tag_th;
 extern Dict *tag_tr;
 extern Dict *tag_col;
+extern Dict *tag_colgroup;
 extern Dict *tag_br;
 extern Dict *tag_a;
 extern Dict *tag_link;
