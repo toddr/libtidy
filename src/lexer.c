@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/06/16 20:26:16 $ 
-    $Revision: 1.9 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/06/25 02:18:34 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -1271,7 +1271,11 @@ Bool FixDocType(Lexer *lexer, Node *root)
     AddStringLiteral(lexer, "html PUBLIC ");
 
     if (doctype_mode == doctype_user && doctype_str)
-        AddStringLiteral(lexer, doctype_str);
+    { 
+       AddStringLiteral(lexer, "\"");	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+       AddStringLiteral(lexer, doctype_str); 
+       AddStringLiteral(lexer, "\"");	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+    }
     else if (guessed == VERS_HTML20)
         AddStringLiteral(lexer, "\"-//IETF//DTD HTML 2.0//EN\"");
     else

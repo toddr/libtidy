@@ -3,6 +3,13 @@
   
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/25 02:17:20 $ 
+    $Revision: 1.3 $ 
+
 */
 
 /*
@@ -685,10 +692,15 @@ void ParseString(Location location, char *option)
     SkipWhite();
 
     if (c == '"' || c == '\'')
-        delim = c;
-
-    while (i < 8190 && c != EOF)
     {
+        delim = c;
+        AdvanceChar();	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+    }
+
+    while (i < 8190 && c != EOF && c != '\r' && c != '\n')	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+    {
+/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+#if 0
         /* treat  \r\n   \r  or  \n as line ends */
         if (c == '\r')
         {
@@ -705,6 +717,7 @@ void ParseString(Location location, char *option)
             if (!IsWhite(c))
                 break;
         }
+#endif
 
         if (c == delim && delim != '\0')
             break;
@@ -735,6 +748,7 @@ void ParseString(Location location, char *option)
         ReportBadArgument(option);
 #endif
     *location.string = wstrdup(buf);
+    NextProperty();	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
 }
 
 void ParseCharEncoding(Location location, char *option)
