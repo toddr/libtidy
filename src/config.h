@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 12:49:24 $ 
-    $Revision: 1.8 $ 
+    $Date: 2005/03/07 16:27:04 $ 
+    $Revision: 1.9 $ 
 
   config files associate a property name with a value.
 
@@ -126,10 +126,12 @@ void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename );
 /* Debug lookup functions will be type-safe and assert option type match */
 ulong   _cfgGet( TidyDocImpl* doc, TidyOptionId optId );
 Bool    _cfgGetBool( TidyDocImpl* doc, TidyOptionId optId );
+TidyTriState _cfgGetAutoBool( TidyDocImpl* doc, TidyOptionId optId );
 ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
 
 #define cfg(doc, id)            _cfgGet( (doc), (id) )
 #define cfgBool(doc, id)        _cfgGetBool( (doc), (id) )
+#define cfgAutoBool(doc, id)    _cfgGetAutoBool( (doc), (id) )
 #define cfgStr(doc, id)         _cfgGetString( (doc), (id) )
 
 #else
@@ -137,6 +139,7 @@ ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
 /* Release build macros for speed */
 #define cfg(doc, id)            ((doc)->config.value[ (id) ])
 #define cfgBool(doc, id)        ((Bool) cfg(doc, id))
+#define cfgAutoBool(doc, id)    ((TidyTriState) cfg(doc, id))
 #define cfgStr(doc, id)         ((ctmbstr) cfg(doc, id))
 
 #endif /* _DEBUG */

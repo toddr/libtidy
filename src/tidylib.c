@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/07 12:28:21 $ 
-    $Revision: 1.51 $ 
+    $Date: 2005/03/07 16:27:06 $ 
+    $Revision: 1.52 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1275,8 +1275,8 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
     Bool showMarkup  = cfgBool( doc, TidyShowMarkup );
     Bool forceOutput = cfgBool( doc, TidyForceOutput );
 #if SUPPORT_UTF16_ENCODINGS
-    Bool outputBOM   = ( cfg(doc, TidyOutputBOM) == yes );
-    Bool smartBOM    = ( cfg(doc, TidyOutputBOM) == TidyAutoState );
+    Bool outputBOM   = ( cfgAutoBool(doc, TidyOutputBOM) == TidyYesState );
+    Bool smartBOM    = ( cfgAutoBool(doc, TidyOutputBOM) == TidyAutoState );
 #endif
     Bool xmlOut      = cfgBool( doc, TidyXmlOut );
     Bool xhtmlOut    = cfgBool( doc, TidyXhtmlOut );

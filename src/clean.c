@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/04 17:27:40 $ 
-    $Revision: 1.87 $ 
+    $Date: 2005/03/07 16:26:59 $ 
+    $Revision: 1.88 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1116,7 +1116,7 @@ static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
     if (child->next != NULL)
         return no;
 
-    if (cfg(doc, TidyMergeDivs) == TidyAutoState
+    if (cfgAutoBool(doc, TidyMergeDivs) == TidyAutoState
         && CopyAttrs(doc, node, child) == no)
         return no;
 
@@ -1421,7 +1421,8 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
         if ( Center2Div(doc, node, &next) )
             continue;
 
-        if (cfg(doc, TidyMergeDivs) && MergeDivs(doc, node, &next))
+        if (cfgAutoBool(doc, TidyMergeDivs) != TidyNoState
+            && MergeDivs(doc, node, &next))
             continue;
 
         if ( BlockStyle(doc, node, &next) )
