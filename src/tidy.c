@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/15 21:31:18 $ 
-    $Revision: 1.36 $ 
+    $Date: 2001/09/23 19:11:07 $ 
+    $Revision: 1.37 $ 
 
   Contributing Author(s):
 
@@ -1839,7 +1839,8 @@ int main(int argc, char **argv)
                 IndentContent = yes;
             else */ if (wstrcasecmp(arg, "xml") == 0)
                 XmlTags = yes;
-            else if (wstrcasecmp(arg, "asxml") == 0 || wstrcasecmp(arg, "asxhtml") == 0)
+            else if (wstrcasecmp(arg,   "asxml") == 0 ||
+                     wstrcasecmp(arg, "asxhtml") == 0)
                 xHTML = yes;
             else if (wstrcasecmp(arg, "indent") == 0)
             {
@@ -1883,9 +1884,9 @@ int main(int argc, char **argv)
 
 #if SUPPORT_ASIAN_ENCODINGS
 
-            else if (wstrcasecmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
+            else if (wstrcasecmp(arg, "shiftjis") == 0) /* #431953 - RJ */
                 AdjustCharEncoding(SHIFTJIS);
-            else if (wstrcasecmp(argv[1], "-big5") == 0) /* #431953 - RJ */
+            else if (wstrcasecmp(arg, "big5") == 0) /* #431953 - RJ */
                 AdjustCharEncoding(BIG5);
 
 #endif
@@ -1905,8 +1906,8 @@ int main(int argc, char **argv)
             else if (wstrcasecmp(arg, "slides") == 0)
                 BurstSlides = yes;
             else if (wstrcasecmp(arg, "help") == 0 ||
-                     wstrcasecmp(arg, "h") == 0 ||
-                     argv[1][1] == '?')
+                     wstrcasecmp(arg,    "h") == 0 ||
+                                 *arg == '?')
             {
                 HelpText(stdout, prog);
 
@@ -1955,8 +1956,8 @@ int main(int argc, char **argv)
 #if SUPPORT_ASIAN_ENCODINGS
 
             /* #431953 - start RJ */
-            else if (wstrcasecmp(argv[1], "-language") == 0 ||
-                     wstrcasecmp(argv[1], "-lang") == 0)
+            else if (wstrcasecmp(arg, "language") == 0 ||
+                     wstrcasecmp(arg,     "lang") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1969,9 +1970,9 @@ int main(int argc, char **argv)
 
 #endif
 
-            else if (wstrcasecmp(argv[1], "-file") == 0 ||
-                     wstrcasecmp(argv[1], "--file") == 0 ||
-                        wstrcasecmp(argv[1], "-f") == 0)
+            else if (wstrcasecmp(arg,  "file") == 0 ||
+                     wstrcasecmp(arg, "-file") == 0 ||
+                     wstrcasecmp(arg,     "f") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1981,9 +1982,9 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
-            else if (wstrcasecmp(argv[1], "-wrap") == 0 ||
-                        wstrcasecmp(argv[1], "--wrap") == 0 ||
-                        wstrcasecmp(argv[1], "-w") == 0)
+            else if (wstrcasecmp(arg,  "wrap") == 0 ||
+                     wstrcasecmp(arg, "-wrap") == 0 ||
+                     wstrcasecmp(arg,     "w") == 0)
             {
                 if (argc >= 3)
                 {
@@ -1992,9 +1993,9 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
-            else if (wstrcasecmp(argv[1], "-version") == 0 ||
-                        wstrcasecmp(argv[1], "--version") == 0 ||
-                        wstrcasecmp(argv[1], "-v") == 0)
+            else if (wstrcasecmp(arg,  "version") == 0 ||
+                     wstrcasecmp(arg, "-version") == 0 ||
+                     wstrcasecmp(arg,        "v") == 0)
             {
                 ShowVersion(errout);
                 /* called to free hash tables etc. */
@@ -2002,9 +2003,9 @@ int main(int argc, char **argv)
                 return 0;
 
             }
-            else if (strncmp(argv[1],"--",2)==0)
+            else if (strncmp(argv[1], "--", 2) == 0)
             {
-                if (ParseConfig(argv[1]+2, argv[2]))
+                if (ParseConfig(argv[1] + 2, argv[2]))
                 {
                     ++argv;
                     --argc;
