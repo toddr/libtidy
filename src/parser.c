@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/06 19:24:27 $ 
-    $Revision: 1.64 $ 
+    $Date: 2003/04/06 19:55:11 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -1151,8 +1151,8 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
      onto the inline stack provided they aren't implicit or OBJECT/APPLET.
      This test is carried out in PushInline and PopInline, see istack.c
 
-     InlineDup(...) is not called for elements with a block and inline
-     content model, e.g. <del> or <ins>, otherwise constructs like 
+     InlineDup(...) is not called for elements with a CM_MIXED (inline and
+     block) content model, e.g. <del> or <ins>, otherwise constructs like 
 
        <p>111<a name='foo'>222<del>333</del>444</a>555</p>
        <p>111<span>222<del>333</del>444</span>555</p>
@@ -1161,7 +1161,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
      will get corrupted.
     */
     if ((nodeHasCM(element, CM_BLOCK) || nodeIsDT(element)) &&
-        !nodeHasCM(element, CM_INLINE))
+        !nodeHasCM(element, CM_MIXED))
         InlineDup(doc, NULL);
     else if (nodeHasCM(element, CM_INLINE))
         PushInline(doc, element);
@@ -1573,7 +1573,8 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         }
 
         /* block level tags end this element */
-        if (!(node->tag->model & CM_INLINE))
+        if (!(node->tag->model & CM_INLINE) &&
+            !(element->tag->model & CM_MIXED))
         {
             if (node->type != StartTag)
             {
