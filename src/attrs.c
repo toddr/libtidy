@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/02/29 04:51:48 $ 
-    $Revision: 1.94 $ 
+    $Date: 2004/03/06 13:41:33 $ 
+    $Revision: 1.95 $ 
 
 */
 
@@ -519,9 +519,14 @@ AttVal* AddAttribute( TidyDocImpl* doc,
 {
     AttVal *av = NewAttribute();
     av->delim = '"';
-    av->attribute = tmbstrdup( name );
-    av->value = tmbstrdup( value );
-    av->dict = lookup( &doc->attribs, name );
+    av->attribute = tmbstrdup(name);
+
+    if (value)
+        av->value = tmbstrdup(value);
+    else
+        av->value = NULL;
+
+    av->dict = lookup(&doc->attribs, name);
 
     if ( node->attributes == NULL )
         node->attributes = av;
@@ -543,7 +548,11 @@ AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr valu
     {
         if (old->value)
             MemFree(old->value);
-        old->value = tmbstrdup(value);
+        if (value)
+            old->value = tmbstrdup(value);
+        else
+            old->value = NULL;
+
         return old;
     }
     else

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/05 16:18:20 $ 
-    $Revision: 1.57 $ 
+    $Date: 2004/03/06 13:41:34 $ 
+    $Revision: 1.58 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2418,3 +2418,141 @@ void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
         node = next;
     }
 }
+
+#if 0
+/*
+  FixLanguageInformation ensures that the document contains (only)
+  the attributes for language information desired by the output
+  document type. For example, for XHTML 1.0 documents both
+  'xml:lang' and 'lang' are desired, for XHTML 1.1 only 'xml:lang'
+  is desired and for HTML 4.01 only 'lang' is desired.
+*/
+void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool wantLang)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        /* todo: report modifications made here to the report system */
+
+        if (nodeIsElement(node))
+        {
+            AttVal* lang = AttrGetById(node, TidyAttr_LANG);
+            AttVal* xmlLang = AttrGetById(node, TidyAttr_XML_LANG);
+
+            if (lang && xmlLang)
+            {
+                /*
+                  todo: check whether both attributes are in sync,
+                  here or elsewhere, where elsewhere is probably
+                  preferable.
+                */
+            }
+            else if (lang && wantXmlLang)
+            {
+                RepairAttrValue(doc, node, "xml:lang", lang->value);
+            }
+            else if (xmlLang && wantLang)
+            {
+                RepairAttrValue(doc, node, "lang", xmlLang->value);
+            }
+
+            if (lang && !wantLang)
+                RemoveAttribute(doc, node, lang);
+            
+            if (xmlLang && !wantXmlLang)
+                RemoveAttribute(doc, node, xmlLang);
+        }
+
+        if (node->content)
+            FixLanguageInformation(doc, node->content, addXmlLang, addLang);
+
+        node = next;
+    }
+}
+
+/*
+  Set/fix/remove <html xmlns='...'>
+*/
+void FixXhtmlNamespace(TidyDocImpl* doc, Bool wantXmlns)
+{
+    Node* html = FindHTML(doc);
+    AttVal* xmlns;
+
+    if (!html)
+        return;
+
+    xmlns = AttrGetById(html, TidyAttr_XMLNS);
+
+    if (wantXmlns)
+    {
+        if (!AttrMatches(xmlns, XHTML_NAMESPACE))
+            RepairAttrValue(doc, html, "xmlns", XHTML_NAMESPACE);
+    }
+    else if (xmlns)
+    {
+        RemoveAttribute(doc, html, xmlns);
+    }
+}
+
+/*
+  ...
+*/
+void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId, Bool xmlId)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (IsAnchorElement(doc, node))
+        {
+            AttVal *name = AttrGetById(node, TidyAttr_NAME);
+            AttVal *id = AttrGetById(node, TidyAttr_ID);
+
+            /* todo: how are empty name/id attributes handled? */
+
+            if (name && id)
+            {
+                /*
+                  todo: check whether both attributes are in sync,
+                  here or elsewhere, where elsewhere is probably
+                  preferable.
+                */
+            }
+            else if (name && wantId)
+            {
+                if (IsValidXMLID(name->value) || !xmlId)
+                {
+                    RepairAttrValue(doc, node, "id", name->value);
+                }
+                else
+                {
+                    ReportAttrError(doc, node, name, INVALID_XML_ID);
+                }
+            }
+            else if (id and wantName)
+            {
+                /* todo: do not assume id is valid */
+                RepairAttrValue(doc, node, "name", id->value);
+            }
+
+            if (id && !wantId)
+                RemoveAttribute(doc, node, id);
+            
+            if (name && !wantName)
+                RemoveAttribute(doc, node, name);
+
+        }
+
+        if (node->content)
+            ConvertCDATANodes(doc, node->content);
+
+        node = next;
+    }
+}
+
+#endif /* 0 */
