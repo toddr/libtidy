@@ -7,15 +7,15 @@
   CVS Info :
 
     $Author: krusch $ 
-    $Date: 2002/04/18 21:05:05 $ 
-    $Revision: 1.45 $ 
+    $Date: 2002/04/18 21:48:13 $ 
+    $Revision: 1.46 $ 
 
 */
 
 #include "platform.h"   /* platform independent stuff */
 #include "html.h"       /* to pull in definition of nodes */
 
-int SeenBodyEndTag;  /* could be moved into lexer structure */
+int SeenBodyEndTag = 0;  /* could be moved into lexer structure */
 
 Bool CheckNodeIntegrity(Node *node)
 {
@@ -2875,6 +2875,12 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
 
     while ((node = GetToken(lexer, mode)) != null)
     {
+        /* #538536 Extra endtags not detected */
+        if (SeenBodyEndTag == 1 && (node->type == StartTag || node->type == StartEndTag))
+        {
+            ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
+        }
+
         if (node->tag == body->tag && node->type == EndTag)
         {
             body->closed = yes;
@@ -3267,7 +3273,6 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
     Node *noframes = null;
 
     XmlTags = no;
-    SeenBodyEndTag = 0;
 
     for (;;)
     {
