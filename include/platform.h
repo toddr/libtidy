@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/16 01:13:09 $ 
-    $Revision: 1.17 $ 
+    $Date: 2002/01/06 19:35:17 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -155,6 +155,15 @@
 #endif
 #endif
 
+/* Convenience defines for HPUX + gcc platforms */
+
+#if defined(__hpux)
+#define HPUX_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "HPUX"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -206,7 +215,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
