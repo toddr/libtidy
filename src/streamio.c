@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/26 04:25:15 $ 
-    $Revision: 1.16 $ 
+    $Author: krusch $ 
+    $Date: 2003/06/29 21:46:21 $ 
+    $Revision: 1.17 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -148,7 +148,7 @@ int ReadBOMEncoding(StreamIn *in)
     uint c, c1;
 #if SUPPORT_UTF16_ENCODINGS
     uint bom;
-#endif;
+#endif
 
     if (IsEOF(in))
         return -1;
