@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 22:12:48 $ 
-    $Revision: 1.76 $ 
+    $Date: 2003/04/18 17:25:52 $ 
+    $Revision: 1.77 $ 
 
 */
 
@@ -270,6 +270,10 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
         return no;
 
     if ( attrGetID(element) || attrGetNAME(element) )
+        return no;
+
+    /* fix for bug 723772, don't trim new-...-tags */
+    if (element->tag->id == TidyTag_UNKNOWN)
         return no;
 
     return yes;
