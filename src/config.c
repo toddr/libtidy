@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 16:00:32 $ 
-    $Revision: 1.12 $ 
+    $Date: 2001/07/20 15:31:02 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -107,6 +107,7 @@ Bool FixUri = yes;          /* applies URI encoding if necessary */
 Bool LowerLiterals = yes;   /* folds known attribute values to lower case */
 Bool HideComments = no;     /* hides all (real) comments in output */
 Bool IndentCdata = no;      /* indent <!CDATA[ ... ]]> section */
+Bool ForceOutput = no;      /* output document even if errors were found */
 
 typedef struct _lex PLex;
 
@@ -205,6 +206,7 @@ static struct Flag
     {"lower-literals",  {(int *)&LowerLiterals},    ParseBool},
     {"hide-comments",   {(int *)&HideComments},     ParseBool},
     {"indent-cdata",    {(int *)&IndentCdata},      ParseBool},
+    {"force-output",    {(int *)&ForceOutput},      ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 22:51:31 $ 
-    $Revision: 1.10 $ 
+    $Date: 2001/07/20 15:31:02 $ 
+    $Revision: 1.11 $ 
 
   Contributing Author(s):
 
@@ -1069,13 +1069,13 @@ int main(int argc, char **argv)
 
             MemFree(lexer->in);
 
-            if (lexer->errors > 0)
+            if (lexer->errors > 0 && !ForceOutput)
                 NeedsAuthorIntervention(errout);
 
             out.state = FSM_ASCII;
             out.encoding = CharEncoding;
 
-            if (!OnlyErrors && lexer->errors == 0)
+            if (!OnlyErrors && (lexer->errors == 0 || ForceOutput))
             {
                 if (BurstSlides)
                 {
