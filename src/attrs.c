@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 15:56:56 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/07/18 19:52:44 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -204,24 +204,24 @@ static struct _attrlist
     {"noshade",          VERS_LOOSE,             BOOL},     /* HR */
     {"nowrap",           VERS_LOOSE,             BOOL},     /* table cells */
     {"object",           VERS_HTML40_LOOSE,      TEXT},     /* APPLET */
-    {"onblur",           VERS_HTML40,            SCRIPT},   /* event */
-    {"onchange",         VERS_HTML40,            SCRIPT},   /* event */
-    {"onclick",          VERS_HTML40,            SCRIPT},   /* event */
-    {"ondblclick",       VERS_HTML40,            SCRIPT},   /* event */
-    {"onkeydown",        VERS_HTML40,            SCRIPT},   /* event */
-    {"onkeypress",       VERS_HTML40,            SCRIPT},   /* event */
-    {"onkeyup",          VERS_HTML40,            SCRIPT},   /* event */
-    {"onload",           VERS_HTML40,            SCRIPT},   /* event */
-    {"onmousedown",      VERS_HTML40,            SCRIPT},   /* event */
-    {"onmousemove",      VERS_HTML40,            SCRIPT},   /* event */
-    {"onmouseout",       VERS_HTML40,            SCRIPT},   /* event */
-    {"onmouseover",      VERS_HTML40,            SCRIPT},   /* event */
-    {"onmouseup",        VERS_HTML40,            SCRIPT},   /* event */
-    {"onsubmit",         VERS_HTML40,            SCRIPT},   /* event */
-    {"onreset",          VERS_HTML40,            SCRIPT},   /* event */
-    {"onselect",         VERS_HTML40,            SCRIPT},   /* event */
-    {"onunload",         VERS_HTML40,            SCRIPT},   /* event */
-    {"onfocus",          VERS_HTML40,            SCRIPT},   /* event */
+    {"onblur",           VERS_EVENTS,            SCRIPT},   /* event */
+    {"onchange",         VERS_EVENTS,            SCRIPT},   /* event */
+    {"onclick",          VERS_EVENTS,            SCRIPT},   /* event */
+    {"ondblclick",       VERS_EVENTS,            SCRIPT},   /* event */
+    {"onkeydown",        VERS_EVENTS,            SCRIPT},   /* event */
+    {"onkeypress",       VERS_EVENTS,            SCRIPT},   /* event */
+    {"onkeyup",          VERS_EVENTS,            SCRIPT},   /* event */
+    {"onload",           VERS_EVENTS,            SCRIPT},   /* event */
+    {"onmousedown",      VERS_EVENTS,            SCRIPT},   /* event */
+    {"onmousemove",      VERS_EVENTS,            SCRIPT},   /* event */
+    {"onmouseout",       VERS_EVENTS,            SCRIPT},   /* event */
+    {"onmouseover",      VERS_EVENTS,            SCRIPT},   /* event */
+    {"onmouseup",        VERS_EVENTS,            SCRIPT},   /* event */
+    {"onsubmit",         VERS_EVENTS,            SCRIPT},   /* event */
+    {"onreset",          VERS_EVENTS,            SCRIPT},   /* event */
+    {"onselect",         VERS_EVENTS,            SCRIPT},   /* event */
+    {"onunload",         VERS_EVENTS,            SCRIPT},   /* event */
+    {"onfocus",          VERS_EVENTS,            SCRIPT},   /* event */
     {"onafterupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */
     {"onbeforeupdate",   VERS_MICROSOFT,         SCRIPT},   /* form fields */
     {"onerrorupdate",    VERS_MICROSOFT,         SCRIPT},   /* form fields */

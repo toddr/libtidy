@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 16:00:32 $ 
-    $Revision: 1.30 $ 
+    $Date: 2001/07/18 19:52:44 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -252,6 +252,9 @@ typedef struct _anchor Anchor;
 
 /* tags/attrs in all versions from HTML 3.2 onwards */
 #define VERS_FROM32 (VERS_HTML32|VERS_HTML40)
+
+/* versions with on... attributes */
+#define VERS_EVENTS (VERS_HTML40|VERS_XHTML11)
 
 #define VERS_ALL (VERS_HTML20|VERS_HTML32|VERS_HTML40|VERS_XHTML11|VERS_BASIC)
 
