@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/02/01 09:20:15 $ 
-    $Revision: 1.52 $ 
+    $Date: 2002/03/01 09:49:57 $ 
+    $Revision: 1.53 $ 
 
 */
 
@@ -21,7 +21,7 @@
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
 
-char *release_date = "1st February 2002";
+char *release_date = "1st March 2002";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
