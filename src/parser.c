@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/11 16:45:20 $ 
-    $Revision: 1.131 $ 
+    $Date: 2005/02/11 16:59:40 $ 
+    $Revision: 1.132 $ 
 
 */
 
@@ -3538,16 +3538,19 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
             if ( lexer->seenEndBody )
             {
                 Node *body = FindBody( doc );
+                if ( body == NULL )
+                {
+                    ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);
+                    FreeNode( doc, node);
+                    continue;
+                }
                 if ( node->type == TextNode )
                 {
                     UngetToken( doc );
                     node = InferredTag(doc, TidyTag_P);
                     ReportError(doc, noframes, node, CONTENT_AFTER_BODY );
                 }
-                if ( body )
-                {
-                    InsertNodeAtEnd( body, node );
-                }
+                InsertNodeAtEnd( body, node );
             }
             else
             {
