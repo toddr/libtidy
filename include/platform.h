@@ -2,6 +2,8 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+
+  $Id: platform.h,v 1.2 2001/06/07 06:03:35 creitzel Exp $
 */
 
 /*
@@ -98,9 +100,14 @@ typedef enum
   in pprint.c for deleting superfluous slides.
 
   Win32 defines _unlink as per Unix unlink function.
+  Except, MSVC will not recognize unlink() w/ 
+  language extensions disable (i.e. pure ANSI mode).
+
+  WINDOWS automatically set by Win16 compilers.
+  _WIN32 automatically set by Win32 compilers.
 */
 
-#ifdef WINDOWS
+#if  defined(WINDOWS) || defined(_WIN32)
 #define unlink _unlink
 #endif
 
