@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/10 06:42:24 $ 
-    $Revision: 1.8 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/11 05:18:42 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -442,6 +442,11 @@ char FoldCase(char c, Bool tocaps);
 Bool IsLetter(uint c);
 Bool IsDigit(uint c);
 Bool IsWhite(uint c);
+Bool IsNamechar(uint c);
+Bool IsLower(uint c);
+Bool IsUpper(uint c);
+uint ToLower(uint c);
+uint ToUpper(uint c);
 
 /* used to fixup doctype to match contents */
 Node *FindDocType(Node *root);
