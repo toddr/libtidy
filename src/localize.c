@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/29 08:16:45 $ 
-    $Revision: 1.32 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/29 17:44:57 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -360,6 +360,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " joining values of repeated attribute \"%s\"", name);
+        }
+        else if (code == UNEXPECTED_EQUALSIGN)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " unexpected '=', expected attribute name");
         }
 
         tidy_out(lexer->errout, "\n");
