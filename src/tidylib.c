@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/03/19 19:33:16 $ 
-    $Revision: 1.8 $ 
+    $Date: 2003/03/19 20:17:43 $ 
+    $Revision: 1.9 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -751,6 +751,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
 #if PRESERVE_FILE_TIMES
     struct stat sbuf = {0};
     /* get last modified time */
+    ClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
     if ( fin && cfgBool(doc,TidyKeepFileTimes) &&
          fstat(fileno(fin), &sbuf) != -1 )
     {
