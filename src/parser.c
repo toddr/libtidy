@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 16:06:40 $ 
-    $Revision: 1.67 $ 
+    $Date: 2003/04/07 16:31:29 $ 
+    $Revision: 1.68 $ 
 
 */
 
@@ -3396,6 +3396,14 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
         {
             ReportWarning( doc, html, node, DISCARDING_UNEXPECTED);
             FreeNode( doc, node);
+            continue;
+        }
+
+        /* find and discard multiple <html> elements */
+        if (node->tag == html->tag && node->type == StartTag)
+        {
+            ReportWarning(doc, html, node, DISCARDING_UNEXPECTED);
+            FreeNode(doc, node);
             continue;
         }
 
