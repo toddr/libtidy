@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:02 $ 
-    $Revision: 1.106 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/01/05 03:56:36 $ 
+    $Revision: 1.107 $ 
 
 */
 
@@ -2664,6 +2664,14 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         if ( !PreContent(doc, node) )
         {
             Node *newnode;
+
+            /* fix for http://tidy.sf.net/bug/772205 */
+            if (node->type == EndTag)
+            {
+               ReportError(doc, pre, node, DISCARDING_UNEXPECTED);
+               FreeNode(doc, node);
+               continue;
+            }
             /*
               This is basically what Tidy 04 August 2000 did and far more accurate
               with respect to browser behaivour than the code commented out above.
