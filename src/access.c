@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/02 02:19:05 $ 
-    $Revision: 1.12 $ 
+    $Date: 2004/12/09 01:07:18 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -1714,16 +1714,11 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
             {
                 if ( hasValue(av) )
                 {
-                    if (!AttrContains(av, "summary") && 
-                        !AttrContains(av, "table"))
-                    {
-                        HasSummary = yes;
-                    }
+                    HasSummary = yes;
 
                     if (AttrContains(av, "summary") && 
                         AttrContains(av, "table"))
                     {
-                        HasSummary = yes;
                         ReportAccessError( doc, node, TABLE_SUMMARY_INVALID_PLACEHOLDER );
                     }
                 }
