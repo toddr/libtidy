@@ -3,7 +3,7 @@
 #
 # testone.sh - execute a single testcase
 #
-# (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+# (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
 # See tidy.c for the copyright notice.
 #
 # <URL:http://tidy.sourceforge.net/>
@@ -11,8 +11,8 @@
 # CVS Info:
 #
 #    $Author: creitzel $
-#    $Date: 2003/02/16 19:33:12 $
-#    $Revision: 1.6 $
+#    $Date: 2003/03/19 18:33:12 $
+#    $Revision: 1.7 $
 #
 # set -x
 
@@ -22,6 +22,8 @@ echo Testing $1
 
 set +f
 
+TESTNO=$1
+EXPECTED=$2
 TIDY=../bin/tidy
 INFILES=./input/in_$1.*ml
 CFGFILE=./input/cfg_$1.txt
@@ -31,12 +33,8 @@ MSGFILE=./tmp/msg_$1.txt
 
 unset HTML_TIDY
 
-REPORTWARN=$2
 shift
-if [ $REPORTWARN ]
-then
-  shift
-fi
+shift
 
 # Remove any pre-exising test outputs
 for INFIL in $MSGFILE $TIDYFILE
@@ -64,23 +62,7 @@ fi
 $TIDY -f $MSGFILE -config $CFGFILE "$@" --tidy-mark no -o $TIDYFILE $INFILE
 STATUS=$?
 
-if [ $STATUS -gt 1 ]
-then
-  cat $MSGFILE
-  exit $STATUS
-fi
-
-if [ $REPORTWARN ] 
-then
-  if [ $STATUS -gt 0 ]
-  then
-    cat $MSGFILE
-    exit $STATUS
-  fi
-fi
-
-
-if [ ! -s $TIDYFILE ]
+if [ $STATUS -ne $EXPECTED ]
 then
   cat $MSGFILE
   exit 1

@@ -3,7 +3,7 @@
 #
 # testall.sh - execute all testcases for regression testing
 #
-# (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+# (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
 # See tidy.c for the copyright notice.
 #
 # <URL:http://tidy.sourceforge.net/>
@@ -11,8 +11,8 @@
 # CVS Info:
 #
 #    $Author: creitzel $
-#    $Date: 2003/03/19 02:01:20 $
-#    $Revision: 1.17 $
+#    $Date: 2003/03/19 18:33:12 $
+#    $Revision: 1.18 $
 #
 # set -x
 
@@ -31,9 +31,11 @@ BUGS="426885 427633 427662 427664 427671 427672 427675 427676 427677\
  620531 629885 634889 640473 640474 646946 647255 647900 649812 655338\
  656889 658230 660397 661606 676156 676205 688746 695408 696799"
 
-for bugNo in ${BUGS}
+# for bugNo in ${BUGS}
+
+while read bugNo expected
 do
 #  echo Testing $bugNo | tee -a testall.log
-  ./testone.sh $bugNo "$@" | tee -a testall.log
-done
+  ./testone.sh $bugNo $expected "$@" | tee -a testall.log
+done < testcases.txt
 
