@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 20:58:54 $ 
-    $Revision: 1.33 $ 
+    $Date: 2001/07/18 22:51:31 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -41,6 +41,8 @@
 
 AttVal *ParseAttrs(Lexer *lexer, Bool *isempty);  /* forward references */
 Node *CommentToken(Lexer *lexer);
+char *ParseAttribute(Lexer *lexer, Bool *isempty, Node **asp, Node **php);
+char *ParseValue(Lexer *lexer, char *name, Bool foldCase, Bool *isempty, int *pdelim);
 
 /* used to classify chars for lexical purposes */
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)
@@ -1377,45 +1379,51 @@ Bool FixDocType(Lexer *lexer, Node *root)
 
 /* ensure XML document starts with <?XML version="1.0"?> */
 /* add encoding attribute if not using ASCII or UTF-8 */
-Bool FixXMLPI(Lexer *lexer, Node *root)
+Bool FixXmlDecl(Lexer *lexer, Node *root)
 {
     Node *xml;
-    char *s;
+    AttVal *version, *encoding;
 
-    if( root->content && root->content->type == XmlDecl)
+    if (root->content && root->content->type == XmlDecl)
     {
-        s = &lexer->lexbuf[root->content->start];
-
-        if (s[0] == 'x' && s[1] == 'm' && s[2] == 'l')
-            return yes;
+        xml = root->content;
     }
-
-    xml = NewNode();
-    xml->type = XmlDecl;
-    xml->next = root->content;
-
-    if (root->content)
+    else
     {
-        root->content->prev = xml;
+        xml = NewNode();
+        xml->type = XmlDecl;
         xml->next = root->content;
+        
+        if (root->content)
+        {
+            root->content->prev = xml;
+            xml->next = root->content;
+        }
+        
+        root->content = xml;
     }
-    
-    root->content = xml;
 
-    lexer->txtstart = lexer->txtend = lexer->lexsize;
-    AddStringLiteral(lexer, "xml version=\"1.0\"");
+    version = GetAttrByName(xml, "version");
+    encoding = GetAttrByName(xml, "encoding");
 
-    /* #427837 - fix by Dave Raggett 02 Jun 01 */
-    if (CharEncoding == LATIN1)
-        AddStringLiteral(lexer, " encoding=\"iso-8859-1\"");
-    else if (CharEncoding == ISO2022)
-        AddStringLiteral(lexer, " encoding=\"iso-2022\"");
+    if (version == null)
+        AddAttribute(xml, "version", "1.0");
 
-    lexer->txtend = lexer->lexsize;
+    /*
+      We need to insert a check if declared encoding 
+      and output encoding mismatch and fix the Xml
+      declaration accordingly!!!
+    */
 
-    xml->start = lexer->txtstart;
-    xml->end = lexer->txtend;
-    return no;
+    if (encoding == null && CharEncoding != UTF8)
+    {
+        if (CharEncoding == LATIN1)
+            encoding->value = "iso-8859-1";
+        if (CharEncoding == ISO2022)
+            encoding->value = "iso-2022";
+    }
+
+    return yes;
 }
 
 Node *InferredTag(Lexer *lexer, char *name)
@@ -2121,6 +2129,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     if (wstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0)
                     {
                         lexer->state = LEX_XMLDECL;
+                        attributes = null;
                         continue;
                     }
                 }
@@ -2217,8 +2226,31 @@ Node *GetToken(Lexer *lexer, uint mode)
                 return lexer->token = PhpToken(lexer);
 
             case LEX_XMLDECL: /* seen "<?xml" so look for "?>" */
-                if (c != '?')
+
+                if (IsWhite(c) && c != '?')
                     continue;
+
+                /* get pseudo-attribute */
+                if (c != '?')
+                {
+                    char *name;
+                    Node *asp, *php;
+                    AttVal *av = NewAttribute();
+                    uint pdelim;
+                    isempty = no;
+
+                    UngetChar(c, lexer->in);
+
+                    name = ParseAttribute(lexer, &isempty, &asp, &php);
+
+                    av->attribute = name;
+                    av->value = ParseValue(lexer, name, yes, &isempty, &pdelim);
+                    av->delim = pdelim;
+                    av->next = attributes;
+
+                    attributes = av;
+                    continue;
+                }
 
                 /* now look for '>' */
                 c = ReadChar(lexer->in);
@@ -2228,13 +2260,14 @@ Node *GetToken(Lexer *lexer, uint mode)
                     UngetChar(c, lexer->in);
                     continue;
                 }
-
                 lexer->lexsize -= 1;
-                lexer->txtend = lexer->lexsize;
-                lexer->lexbuf[lexer->lexsize] = '\0';
+                lexer->txtend = lexer->txtstart;
+                lexer->lexbuf[lexer->txtend] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-                return lexer->token = XmlDeclToken(lexer);
+                lexer->token = XmlDeclToken(lexer);
+                lexer->token->attributes = attributes;
+                return lexer->token;
 
             case LEX_SECTION: /* seen "<![" so look for "]>" */
                 if (c == '[')

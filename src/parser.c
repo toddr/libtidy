@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 20:58:54 $ 
-    $Revision: 1.24 $ 
+    $Date: 2001/07/18 22:51:31 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -3589,7 +3589,7 @@ Node *ParseXMLDocument(Lexer *lexer)
 
     /* ensure presence of initial <?XML version="1.0"?> */
     if (XmlPi)
-        FixXMLPI(lexer, document);
+        FixXmlDecl(lexer, document);
 
     return document;
 }

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 20:58:54 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/18 22:51:31 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -1044,6 +1044,28 @@ static void PPrintPI(Out *fout, uint indent,
     PCondFlushLine(fout, indent);
 }
 
+static void PPrintXmlDecl(Out *fout, uint indent,
+                   Lexer *lexer, Node *node)
+{
+    if (indent + linelen < wraplen)
+        wraphere = linelen;
+
+    AddC('<', linelen++);
+    AddC('?', linelen++);
+    AddC('x', linelen++);
+    AddC('m', linelen++);
+    AddC('l', linelen++);
+
+    PPrintAttrs(fout, indent, lexer, node, node->attributes);
+
+    if (lexer->lexbuf[node->end - 1] != '?')
+        AddC('?', linelen++);
+
+    AddC('>', linelen++);
+
+    PCondFlushLine(fout, indent);
+}
+
 /* note ASP and JSTE share <% ... %> syntax */
 static void PPrintAsp(Out *fout, uint indent,
                    Lexer *lexer, Node *node)
@@ -1265,7 +1287,7 @@ void PPrintTree(Out *fout, uint mode, uint indent,
     else if (node->type == ProcInsTag)
         PPrintPI(fout, indent, lexer, node);
     else if (node->type == XmlDecl)
-        PPrintPI(fout, indent, lexer, node);
+        PPrintXmlDecl(fout, indent, lexer, node);
     else if (node->type == CDATATag)
         PPrintCDATA(fout, indent, lexer, node);
     else if (node->type == SectionTag)
@@ -1503,7 +1525,7 @@ void PPrintXMLTree(Out *fout, uint mode, uint indent,
     else if (node->type == ProcInsTag)
         PPrintPI(fout, indent, lexer, node);
     else if (node->type == XmlDecl)
-        PPrintPI(fout, indent, lexer, node);
+        PPrintXmlDecl(fout, indent, lexer, node);
     else if (node->type == CDATATag)
         PPrintCDATA(fout, indent, lexer, node);
     else if (node->type == SectionTag)

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 20:58:53 $ 
-    $Revision: 1.32 $ 
+    $Date: 2001/07/18 22:51:30 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -490,7 +490,7 @@ void DiscardDocType(Node *root);
 Bool FixDocType(Lexer *lexer, Node *node);
 char *HTMLVersionName(Lexer *lexer);
 int ApparentVersion(Lexer *lexer);
-Bool FixXMLPI(Lexer *lexer, Node *root);
+Bool FixXmlDecl(Lexer *lexer, Node *root);
 Bool SetXHTMLDocType(Lexer *lexer, Node *root);
 void FixId(Lexer *lexer, Node *node);
 Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype);

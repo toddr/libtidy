@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 04:22:12 $ 
-    $Revision: 1.9 $ 
+    $Date: 2001/07/18 22:51:31 $ 
+    $Revision: 1.10 $ 
 
   Contributing Author(s):
 
@@ -1049,7 +1049,7 @@ int main(int argc, char **argv)
 
                 /* ensure presence of initial <?XML version="1.0"?> */
                 if (XmlOut && XmlPi)
-                    FixXMLPI(lexer, document);
+                    FixXmlDecl(lexer, document);
 
                 totalwarnings += lexer->warnings;
                 totalerrors += lexer->errors;
