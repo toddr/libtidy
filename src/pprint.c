@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/09 00:11:02 $ 
-    $Revision: 1.9 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 00:43:35 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -1391,7 +1391,10 @@ void PPrintTree(Out *fout, uint mode, uint indent,
             if (SmartIndent && node->prev != null)
                 PFlushLine(fout, indent);
 
-            if (HideEndTags == no || !(node->tag && (node->tag->model & CM_OMITST)))
+            /* do not omit elements with attributes */
+            if (HideEndTags == no ||
+                !(node->tag && (node->tag->model & CM_OMITST)) ||
+                node->attributes != null)
             {
                 PPrintTag(lexer, fout, mode, indent, node);
 
