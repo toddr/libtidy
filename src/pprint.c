@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:59:42 $ 
-    $Revision: 1.32 $ 
+    $Date: 2001/09/07 07:12:37 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -745,7 +745,7 @@ static void PPrintChar(uint c, uint mode)
     }
 
     /* default treatment for ASCII */
-    if (c > 126 || (c < ' ' && c != '\t'))
+    if ((outCharEncoding == ASCII) && (c > 126 || (c < ' ' && c != '\t')))
     {
         if (!NumEntities && (p = EntityName(c)) != null)
             sprintf(entity, "&%s;", p);
