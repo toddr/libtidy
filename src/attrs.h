@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 05:58:06 $ 
-    $Revision: 1.12 $ 
+    $Date: 2003/05/24 16:19:36 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -25,8 +25,6 @@ struct _Attribute
     tmbstr      name;
     unsigned    versions;
     AttrCheck*  attrchk;
-    Bool        nowrap;
-    Bool        literal;
 
     struct _Attribute* next;
 };
@@ -158,8 +156,6 @@ Bool IsBool( TidyDocImpl* doc, ctmbstr attrname );
 
 Bool IsScript( TidyDocImpl* doc, ctmbstr attrname );
 
-Bool IsLiteralAttribute( TidyDocImpl* doc, ctmbstr attrname );
-
 /* may id or name serve as anchor? */
 Bool IsAnchorElement( TidyDocImpl* doc, Node* node );
 
@@ -197,14 +193,6 @@ void FreeAnchors( TidyDocImpl* doc );
 /* public methods for inititializing/freeing attribute dictionary */
 void InitAttrs( TidyDocImpl* doc );
 void FreeAttrTable( TidyDocImpl* doc );
-
-/*
-Henry Zrepa reports that some folk are
-using embed with script attributes where
-newlines are signficant. These need to be
-declared and handled specially!
-*/
-void DeclareLiteralAttrib( TidyDocImpl* doc, ctmbstr name );
 
 /*
  the same attribute name can't be used

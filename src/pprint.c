@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 03:25:24 $ 
-    $Revision: 1.82 $ 
+    $Date: 2003/05/24 16:19:36 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -1153,7 +1153,7 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
     {
         if ( IsScript(doc, name) )
             wrappable = cfgBool( doc, TidyWrapScriptlets );
-        else if ( !attr->dict->nowrap && wrapAttrs )
+        else if (!(attrIsCONTENT(attr) || attrIsVALUE(attr) || attrIsALT(attr)) && wrapAttrs )
             wrappable = yes;
     }
 

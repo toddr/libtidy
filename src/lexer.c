@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:05:37 $ 
-    $Revision: 1.125 $ 
+    $Date: 2003/05/24 16:19:36 $ 
+    $Revision: 1.126 $ 
 
 */
 
@@ -78,8 +78,8 @@ struct _doctypes
     ctmbstr si;
 } const W3C_Doctypes[] =
 {
-  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
   {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML 2.0//EN",              NULL,                                                      },
+  {  2, HT20, "HTML 2.0",               "-//IETF//DTD HTML//EN",                  NULL,                                                      },
   {  2, HT20, "HTML 2.0",               "-//W3C//DTD HTML 2.0//EN",               NULL,                                                      },
   {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2//EN",               NULL,                                                      },
   {  1, HT32, "HTML 3.2",               "-//W3C//DTD HTML 3.2 Final//EN",         NULL,                                                      },
@@ -2431,17 +2431,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                                 doc->badLayout |= USING_NOBR;
                         }
                     }
-#if 0
-                    if ( curr->tag->chkattrs )
-                        curr->tag->chkattrs( doc, curr );
-                    else
-                        CheckAttributes( doc, curr );
 
-                    if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
-                        FixXmlLang(doc, curr);
-#endif
-
-                    /* should this be called before attribute checks? */
                     RepairDuplicateAttributes( doc, curr );
                 }
                 return lexer->token;  /* return start tag */
@@ -3558,19 +3548,7 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             av = NewAttribute();
             av->attribute = attribute;
             av->value = value;
-            /* #427664 - fix by Gary Peskin 04 Aug 00; other fixes by Dave Raggett */
-            /*
-            if (value == NULL)
-                ReportAttrError(lexer, lexer->token, av, MISSING_ATTR_VALUE);
-            else
-                ReportAttrError(lexer, lexer->token, av, BAD_ATTRIBUTE_VALUE);
-            if (value != NULL)
-                ReportAttrError( doc, lexer->token, av, BAD_ATTRIBUTE_VALUE);
-            else if (LastChar(attribute) == '"')
-                ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
-            else
-                ReportAttrError( doc, lexer->token, av, UNKNOWN_ATTRIBUTE);
-            */
+
             if (LastChar(attribute) == '"')
                 ReportAttrError( doc, lexer->token, av, MISSING_QUOTEMARK);
             else if (value == NULL)

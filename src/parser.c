@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 00:09:26 $ 
-    $Revision: 1.98 $ 
+    $Date: 2003/05/24 16:19:36 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -824,19 +824,6 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
 
         head = FindHEAD(doc);
         assert(head != NULL);
-
-#if 0
-        /* fix for bug 723206; a better fix would avoid to insert    */
-        /* the empty <title> element, but that would require to move */
-        /* the relevant code after ParseDocument(), this is simpler  */
-        if (nodeIsTITLE(node))
-        {
-            Node *title = FindTITLE(doc);
-
-            if (title && title->implicit)
-                RemoveNode(title);
-        }
-#endif
 
         InsertNodeAtEnd(head, node);
 
@@ -1972,12 +1959,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         if (node->tag == list->tag && node->type == EndTag)
         {
             FreeNode( doc, node);
-
-#if 0
-            if (list->tag->model & CM_OBSOLETE)
-                CoerceNode( doc, list, TidyTag_UL );
-#endif
-
             list->closed = yes;
             return;
         }
@@ -2021,12 +2002,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                 {
                     ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
                     UngetToken( doc );
-
-#if 0
-                    if (list->tag->model & CM_OBSOLETE)
-                        CoerceNode( doc, list, TidyTag_UL );
-#endif
-
                     return;
                 }
             }
@@ -2055,11 +2030,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         InsertNodeAtEnd(list,node);
         ParseTag( doc, node, IgnoreWhitespace);
     }
-
-#if 0
-    if (list->tag->model & CM_OBSOLETE)
-        CoerceNode( doc, list, TidyTag_UL );
-#endif
 
     ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
 }
@@ -2627,11 +2597,6 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
     if (pre->tag->model & CM_EMPTY)
         return;
 
-#if 0
-    if (pre->tag->model & CM_OBSOLETE)
-        CoerceNode( doc, pre, TidyTag_PRE );
-#endif
-
     InlineDup( doc, NULL ); /* tell lexer to insert inlines if needed */
 
     while ((node = GetToken(doc, Preformatted)) != NULL)
@@ -2661,21 +2626,6 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
 
         if (node->type == TextNode)
         {
-            /* if first check for inital newline */
-            /* GetToken() does this already */
-#if 0
-            if (pre->content == NULL)
-            {
-                if ( lexer->lexbuf[node->start] == '\n' )
-                    ++(node->start);
-
-                if (node->start >= node->end)
-                {
-                    FreeNode( doc, node);
-                    continue;
-                }
-            }
-#endif
             InsertNodeAtEnd(pre, node);
             continue;
         }
@@ -2695,45 +2645,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         if ( !PreContent(doc, node) )
         {
             Node *newnode;
-#if 0
             /*
-              <pre>...<hr>...</pre> ==
-              <pre>...&lt;hr&gt;...</pre>
-
-              <pre>...<div>...</div>...</pre> ==
-              <pre>...&lt;div&gt;...&lt;/div&gt;...</pre>
-
-              <pre>...<pre>...</pre>...</pre> ==
-              <pre>...&lt;pre&gt;...</pre>...
-
-              <pre>...<div>...<pre>...</pre>...</div>...</pre> ==
-              <pre>...&lt;div&gt;...&lt;/div&gt;...</pre>
-
-              <pre>...<table><tr><td>...</td></tr></table>...</pre> ==
-              <pre>...&lt;table&gt;&lt;tr&gt;&lt;td&gt;...
-                   &lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;...</pre>
-            */
-            ReportWarning( doc, pre, node, UNESCAPED_ELEMENT );
-            newnode = EscapeTag( lexer, node );
-            FreeNode( doc, node );
-            InsertNodeAtEnd(pre, newnode);
-#else
-            /*
-              <pre>...<hr>...</pre> ==
-              <pre>...</pre><hr><pre>...</pre> ==
-
-              <pre>...<div>...</div>...</pre> ==
-              <pre>...</pre><div>...</div><pre>...</pre>
-
-              <pre>...<pre>...</pre>...</pre> ==
-              <pre>...</pre><pre>...</pre><pre>...</pre>
-
-              <pre>...<div>...<pre>...</pre>...</div>...</pre> ==
-              <pre>...</pre><div>...<pre>...</pre>...</div><pre>...</pre>
-
-              <pre>...<table><tr><td>...</td></tr></table>...</pre> ==
-              <pre>...</pre><table><tr><td>...</td></tr></table><pre>...</pre>
-
               This is basically what Tidy 04 August 2000 did and far more accurate
               with respect to browser behaivour than the code commented out above.
               Tidy could try to propagate the <pre> into each disallowed child where
@@ -2778,7 +2690,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             ReportWarning(doc, pre, newnode, INSERTING_TAG);
             pre = newnode;
             InsertNodeAfterElement(node, pre);
-#endif
+
             continue;
         }
 
@@ -3214,17 +3126,6 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
         ReportWarning( doc, head, node, DISCARDING_UNEXPECTED);
         FreeNode( doc, node);
     }
-  
-#if 0
-    if ( HasTitle == 0 )
-    {
-        if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
-        {
-            ReportWarning( doc, head, NULL, MISSING_TITLE_ELEMENT);
-            InsertNodeAtEnd(head, InferredTag(doc, "title"));
-        }
-    }
-#endif
 }
 
 void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
@@ -4269,13 +4170,6 @@ void ParseXMLDocument(TidyDocImpl* doc)
         }
 
     }
-
-#if 0
-    /* ParseDocTypeDecl is responsible for PUBLIC/SYSTEM case */
-    /* Unknown FPIs should neither be fixed nor modified */
-    if ( doctype && !CheckDocTypeKeyWords(lexer, doctype) )
-        ReportWarning( doc, doctype, NULL, DTYPE_NOT_UPPER_CASE );
-#endif
 
     /* ensure presence of initial <?XML version="1.0"?> */
     if ( cfgBool(doc, TidyXmlDecl) )

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:55:02 $ 
-    $Revision: 1.94 $ 
+    $Date: 2003/05/24 16:19:36 $ 
+    $Revision: 1.95 $ 
 
 */
 
@@ -984,94 +984,4 @@ void ReportNumWarnings( TidyDocImpl* doc )
     }
     else
         tidy_out( doc, "No warnings or errors were found.\n\n" );
-}
-
-void HelpText( TidyDocImpl* doc, ctmbstr prog )
-{
-    tidy_out(doc, "%s [option...] [file...] [option...] [file...]\n", prog );
-    tidy_out(doc, "Utility to clean up and pretty print HTML/XHTML/XML\n");
-    tidy_out(doc, "see http://tidy.sourceforge.net/\n");
-    tidy_out(doc, "\n");
-
-#ifdef PLATFORM_NAME
-    tidy_out(doc, "Options for HTML Tidy for %s released on %s:\n",
-             PLATFORM_NAME, release_date);
-#else
-    tidy_out(doc, "Options for HTML Tidy released on %s:\n", release_date);
-#endif
-    tidy_out(doc, "\n");
-
-    tidy_out(doc, "File manipulation\n");
-    tidy_out(doc, "-----------------\n");
-    tidy_out(doc, "  -o <file>         to write output markup to specified <file>\n");
-    tidy_out(doc, "  -config <file>    to set configuration options from the specified <file>\n");
-    tidy_out(doc, "  -f <file>         to write errors to the specified <file>\n");
-    tidy_out(doc, "  -modify or -m     to modify the original input files\n");
-    tidy_out(doc, "\n");
-
-    tidy_out(doc, "Processing directives\n");
-    tidy_out(doc, "---------------------\n");
-    tidy_out(doc, "  -asxhtml          to convert HTML to well formed XHTML\n");
-    tidy_out(doc, "  -ashtml           to force XHTML to (non-XML) HTML\n");
-    tidy_out(doc, "  -xml              to specify the input is XML\n");
-    tidy_out(doc, "  -asxml            to convert input to well formed XML\n");
-    tidy_out(doc, "  -indent  or -i    to indent element content\n");
-    tidy_out(doc, "  -wrap <column>    to wrap text at the specified <column> (default is 68)\n");
-    tidy_out(doc, "  -upper   or -u    to force tags to upper case (default is lower case)\n");
-    tidy_out(doc, "  -clean   or -c    to replace FONT, NOBR and CENTER tags by CSS\n");
-    tidy_out(doc, "  -bare    or -b    to strip out smart quotes and em dashes, etc.\n");
-    tidy_out(doc, "  -numeric or -n    to output numeric rather than named entities\n");
-    tidy_out(doc, "  -errors  or -e    to only show errors\n");
-    tidy_out(doc, "  -quiet   or -q    to suppress nonessential output\n");
-    tidy_out(doc, "  -omit             to omit optional end tags\n");
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    tidy_out(doc, "  -access <level>   to do additional accessibility checks (<level> = 1, 2, 3)\n");
-#endif
-
-    tidy_out(doc, "\n");
-
-    tidy_out(doc, "Character encodings\n");
-    tidy_out(doc, "-------------------\n");
-    tidy_out(doc, "  -raw              to output values above 127 without conversion to entities\n");
-    tidy_out(doc, "  -ascii            to use US-ASCII for output, ISO-8859-1 for input\n");
-    tidy_out(doc, "  -latin0           to use ISO-8859-15 for input and US-ASCII for output\n");
-    tidy_out(doc, "  -latin1           to use ISO-8859-1 for both input and output\n");
-#ifndef NO_NATIVE_ISO2022_SUPPORT
-    tidy_out(doc, "  -iso2022          to use ISO-2022 for both input and output\n");
-#endif
-    tidy_out(doc, "  -utf8             to use UTF-8 for both input and output\n");
-    tidy_out(doc, "  -mac              to use MacRoman for input, US-ASCII for output\n");
-    tidy_out(doc, "  -win1252          to use Windows-1252 for input, US-ASCII for output\n");
-    tidy_out(doc, "  -ibm858           to use IBM-858 (CP850+Euro) for input, US-ASCII for output\n");
-
-#if SUPPORT_UTF16_ENCODINGS
-    tidy_out(doc, "  -utf16le          to use UTF-16LE for both input and output\n");
-    tidy_out(doc, "  -utf16be          to use UTF-16BE for both input and output\n");
-    tidy_out(doc, "  -utf16            to use UTF-16 for both input and output\n");
-#endif
-
-#if SUPPORT_ASIAN_ENCODINGS
-    tidy_out(doc, "  -big5             to use Big5 for both input and output\n"); /* #431953 - RJ */
-    tidy_out(doc, "  -shiftjis         to use Shift_JIS for both input and output\n"); /* #431953 - RJ */
-    tidy_out(doc, "  -language <lang>  to set the two-letter language code <lang> (for future use)\n"); /* #431953 - RJ */
-#endif
-    tidy_out(doc, "\n");
-
-    tidy_out(doc, "Miscellaneous\n");
-    tidy_out(doc, "-------------\n");
-    tidy_out(doc, "  -version  or -v   to show the version of Tidy\n");
-    tidy_out(doc, "  -help, -h or -?   to list the command line options\n");
-    tidy_out(doc, "  -help-config      to list all configuration options\n");
-    tidy_out(doc, "  -show-config      to list the current configuration settings\n");
-    tidy_out(doc, "\n");
-    tidy_out(doc, "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
-    tidy_out(doc, "\n");
-
-    tidy_out(doc, "Input/Output default to stdin/stdout respectively\n");
-    tidy_out(doc, "Single letter options apart from -f may be combined\n");
-    tidy_out(doc, "as in:  tidy -f errs.txt -imu foo.html\n");
-    tidy_out(doc, "For further info on HTML see http://www.w3.org/MarkUp\n");
-    tidy_out(doc, "\n");
 }
