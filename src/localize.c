@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/12/04 09:54:36 $ 
-    $Revision: 1.49 $ 
+    $Date: 2001/12/28 23:44:32 $ 
+    $Revision: 1.50 $ 
 
 */
 
@@ -405,6 +405,12 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " unexpected '=', expected attribute name");
+        }
+        else if (code == ATTR_VALUE_NOT_LCASE)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " attribute value \"%s\" must be lower case for XHTML", value);
         }
 
         if ((code != UNEXPECTED_GT))
