@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/17 22:56:08 $ 
-    $Revision: 1.45 $ 
+    $Date: 2001/08/18 09:11:00 $ 
+    $Revision: 1.46 $ 
 
 */
 
@@ -27,7 +27,13 @@
 #define MACROMAN    5
 #define UTF16LE     6
 #define UTF16BE     7
-#define WIN1252     8
+#define UTF16       8
+#define WIN1252     9
+#define	BIG5	    10  /* #431953 - RJ */
+#define SHIFTJIS    11  /* #431953 - RJ */
+/* RJ.  Note that Big5 and SHIFTJIS are not converted to ISO 10646
+codepoints (i.e., to Unicode) before being recoded into UTF-8. This
+may be confusing: usually UTF-8 implies ISO10646 codepoints. */
 
 typedef struct
 {
@@ -826,6 +832,7 @@ extern int tabsize;
 extern DocTypeMode doctype_mode;   /* see doctype property */
 extern char *doctype_str;   /* user specified doctype */
 extern char *slide_style;   /* style sheet for slides */
+extern char *Language;      /* #431953 - RJ language for line breaking */
 
 extern char *errfile;       /* file name to write errors to */
 extern Bool writeback;      /* if true then output tidied markup */
@@ -884,6 +891,7 @@ extern Bool JoinClasses;
 extern Bool JoinStyles;
 extern DupAttrMode DuplicateAttrs;
 extern Bool EscapeCdata;
+extern Bool NCR; /* #431953 - RJ */
 
 /* Parser methods for tags */
 

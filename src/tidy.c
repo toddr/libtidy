@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/17 23:02:36 $ 
-    $Revision: 1.19 $ 
+    $Date: 2001/08/18 09:17:52 $ 
+    $Revision: 1.20 $ 
 
   Contributing Author(s):
 
@@ -68,6 +68,22 @@ uint       optionerrors = 0;
 
 FILE *errout;  /* set to stderr or stdout */
 FILE *input;
+
+#define UNICODE_BOM_BE   0xFEFF   /* this is the big-endian (default) UNICODE BOM */
+#define UNICODE_BOM      UNICODE_BOM_BE
+#define UNICODE_BOM_LE   0xFFFE   /* this is the little-endian UNICODE BOM */
+#define UNICODE_BOM_UTF8 0xEFBBBF /* this is the UTF-8 UNICODE BOM */
+
+/*
+   Private unget buffer for the raw bytes read from the input stream.
+   Normally this will only be used by the UTF-8 decoder to resynchronize the
+   input stream after finding an illegal UTF-8 sequences.
+   But it can be used for other purposes when reading bytes in ReadCharFromStream.
+*/
+
+static unsigned char rawBytebuf[CHARBUF_SIZE];
+static int rawBufpos = 0;
+static Bool rawPushed = no;
 
 /* Mapping for Windows Western character set (128-159) to Unicode */
 int Win2Unicode[32] =
@@ -362,17 +378,6 @@ static struct validUTF8Sequence
     {0x100000, 0x10FFFF, 4, 0xF4, 0xF4, 0x80, 0x8F, 0x80, 0xBF, 0x80, 0xBF} 
 };
 
-/*
-   Private unget buffer for UTF-8 sequences, used by ReadCharFromStream.
-   We can't use the normal stream's unget buffer because it doesn't contain the raw bytes
-   needed by the UTF-8 decoder, and such bytes will probably get popped by the parser
-   before the UTF-8 decoder gets to them.
-*/
-
-static unsigned char utf8Bytebuf[CHARBUF_SIZE];
-static int utf8Bufpos = 0;
-static Bool utf8Pushed = no;
-
 int DecodeUTF8BytesToChar(uint *c, uint firstByte, unsigned char *successorBytes,
                            StreamIn *in, GetBytes getter, int *count)
 {
@@ -664,9 +669,12 @@ StreamIn *OpenInput(FILE *fp)
     return in;
 }
 
-/* read UTF-8 successor bytes from stream, return <= 0 if EOF */
-/* or if "unget" is true, Unget the bytes to re-synchronize the input stream */
-static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count, Bool unget)
+/*
+   Read raw bytes from stream, return <= 0 if EOF; or if
+   "unget" is true, Unget the bytes to re-synchronize the input stream
+   Normally UTF-8 successor bytes are read using this routine.
+*/
+static void ReadRawBytesFromStream(StreamIn *in, unsigned char *buf, int *count, Bool unget)
 {
     uint i;
     
@@ -674,21 +682,22 @@ static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count
     {
         if (unget)
         {
-            /* EOF fix by Terry Teague - 12 Aug 01 */
-            if (buf[i] == EndOfStream)
+            /* should never get here; testing for 0xFF, a valid char, is not a good idea */
+            if ((in && feof(in->file)) /* || buf[i] == (unsigned char)EndOfStream */)
             {
-	            /* tidy_out(errout, "Attempt to UngetChar EOF\n"); */ /* debug */
+	            /* tidy_out(errout, "Attempt to unget EOF in ReadRawBytesFromStream\n"); */ /* debug */
+                *count = -i;
 	            return;
             }
     
-            utf8Pushed = yes;
+            rawPushed = yes;
 
-            if (utf8Bufpos >= CHARBUF_SIZE)
+            if (rawBufpos >= CHARBUF_SIZE)
             {
-                memcpy(utf8Bytebuf, utf8Bytebuf + 1, CHARBUF_SIZE - 1);
-                utf8Bufpos--;
+                memcpy(rawBytebuf, rawBytebuf + 1, CHARBUF_SIZE - 1);
+                rawBufpos--;
             }
-            utf8Bytebuf[utf8Bufpos++] = buf[i];
+            rawBytebuf[rawBufpos++] = buf[i];
 
             if (buf[i] == '\n')
                 --(in->curline);
@@ -697,11 +706,11 @@ static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count
         }
         else
         {
-            if (utf8Pushed)
+            if (rawPushed)
             {
-                buf[i] = utf8Bytebuf[--utf8Bufpos];
-                if (utf8Bufpos == 0)
-                    utf8Pushed = no;
+                buf[i] = rawBytebuf[--rawBufpos];
+                if (rawBufpos == 0)
+                    rawPushed = no;
 
                 if (buf[i] == '\n')
                 {
@@ -713,14 +722,25 @@ static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count
             }
             else
             {
+                int c;
+                
                 if (feof(in->file))
                 {
                     *count = -i;
                     break;
                 }
 
-                buf[i] = getc(in->file);
-                in->curcol++;
+                c = getc(in->file);
+                if (c == EOF)
+                {
+                    *count = -i;
+                    break;
+                }
+                else
+                {
+                    buf[i] = c;
+                    in->curcol++;
+                }
             }
         }
     }
@@ -729,35 +749,99 @@ static void ReadUTF8BytesFromStream(StreamIn *in, unsigned char *buf, int *count
 /* read char from stream */
 static int ReadCharFromStream(StreamIn *in)
 {
+    static Bool lookingForBOM = yes;
     uint c, n;
-
-    /*
-       If there are any unprocessed UTF-8 bytes that were pushed onto the
-       private UTF-8 unget buffer because of an error in a previous UTF-8 byte
-       sequence, we need to get one byte now from the private UTF-8 unget buffer,
-       rather than from the stream's file.
-    */
-    if (utf8Pushed)
+    unsigned char tempchar;
+    int count;
+    
+    count = 1;
+    ReadRawBytesFromStream(in, &tempchar, &count, no);
+    if (count <= 0)
+        return EndOfStream;
+    c = (uint)tempchar;
+        
+    if (lookingForBOM &&
+       (in->encoding == UTF16   ||
+        in->encoding == UTF16LE ||
+        in->encoding == UTF16BE ||
+        in->encoding == UTF8))
     {
-        c = utf8Bytebuf[--utf8Bufpos];
-        if (utf8Bufpos == 0)
-            utf8Pushed = no;
-
-        if (c == '\n')
+        /* check for a Byte Order Mark */
+        uint c1, bom;
+        
+        lookingForBOM = no;
+        
+        if (feof(in->file))
         {
-            in->curcol = 1;
-            in->curline++;
+            lookingForBOM = no;
+            return EndOfStream;
+        }
+        
+        count = 1;
+        ReadRawBytesFromStream(in, &tempchar, &count, no);
+        c1 = (uint)tempchar;
+        
+        bom = (c << 8) + c1;
+        
+        if (bom == UNICODE_BOM_BE)
+        {
+            /* big-endian UTF-16 */
+            /* if (in->encoding != UTF16BE)
+                tidy_out(errout, "Input is encoded as UTF16BE\n"); */ /* debug */
+            in->encoding = UTF16BE;
+            CharEncoding = UTF16BE;
+            
+            return UNICODE_BOM; /* return decoded BOM */
+        }
+        else if (bom == UNICODE_BOM_LE)
+        {
+            /* little-endian UTF-16 */
+            /* if (in->encoding != UTF16LE)
+                tidy_out(errout, "Input is encoded as UTF16LE\n"); */ /* debug */
+            in->encoding = UTF16LE;
+            CharEncoding = UTF16LE;
+            
+            return UNICODE_BOM; /* return decoded BOM */
         }
         else
-            in->curcol++;
-    }
-    else
-    {
-        if (feof(in->file))
-            return EndOfStream;
+        {
+            uint c2;
 
-        c = getc(in->file);
+            count = 1;
+            ReadRawBytesFromStream(in, &tempchar, &count, no);
+            c2 = (uint)tempchar;
+       
+            if (((c << 16) + (c1 << 8) + c2) == UNICODE_BOM_UTF8)
+            {
+                /* UTF-8 */
+                /* if (in->encoding != UTF8)
+                    tidy_out(errout, "Input is encoded as UTF8\n"); */ /* debug */
+                in->encoding = UTF8;
+                CharEncoding = UTF8;
+                
+                return UNICODE_BOM; /* return decoded BOM */
+            }
+            else
+            {
+                /* the 2nd and/or 3rd bytes weren't what we were */
+                /* expecting, so unget the extra 2 bytes */
+                rawPushed = yes;
+
+                if ((rawBufpos + 1) >= CHARBUF_SIZE)
+                {
+                    memcpy(rawBytebuf, rawBytebuf + 2, CHARBUF_SIZE - 2);
+                    rawBufpos -= 2;
+                }
+                /* make sure the bytes are pushed in the right order */
+                rawBytebuf[rawBufpos++] = (unsigned char)c2;
+                rawBytebuf[rawBufpos++] = (unsigned char)c1;
+                
+               /* drop through to code below, with the original char */
+           }
+        }
     }
+    
+    lookingForBOM = no;
 
     /*
        A document in ISO-2022 based encoding uses some ESC sequences
@@ -822,22 +906,32 @@ static int ReadCharFromStream(StreamIn *in)
 
     if (in->encoding == UTF16LE)
     {
-        if (feof(in->file))
-            return -1;
+        uint c1;
+        
+        count = 1;
+        ReadRawBytesFromStream(in, &tempchar, &count, no);
+        if (count <= 0)
+            return EndOfStream;
+        c1 = (uint)tempchar;
+        
+        n = (c1 << 8) + c;
 
-        c = (getc(in->file) << 8) + c;
-
-        return c;
+        return n;
     }
 
-    if (in->encoding == UTF16BE)
+    if ((in->encoding == UTF16) || (in->encoding == UTF16BE)) /* UTF-16 is big-endian by default */
     {
-        if (feof(in->file))
-            return -1;
+        uint c1;
+        
+        count = 1;
+        ReadRawBytesFromStream(in, &tempchar, &count, no);
+        if (count <= 0)
+            return EndOfStream;
+        c1 = (uint)tempchar;
+        
+        n = (c << 8) + c1;
 
-        c = (c << 8) + getc(in->file);
-
-        return c;
+        return n;
     }
 
     if (in->encoding == UTF8)
@@ -847,44 +941,46 @@ static int ReadCharFromStream(StreamIn *in)
 
         uint i, count;
 
-    if ((c & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
-    {
-        n = c & 31;
-        count = 1;
-    }
-    else if ((c & 0xF0) == 0xE0)  /* 1110 XXXX  three bytes */
-    {
-        n = c & 15;
-        count = 2;
-    }
-    else if ((c & 0xF8) == 0xF0)  /* 1111 0XXX  four bytes */
-    {
-        n = c & 7;
-        count = 3;
-    }
-    else if ((c & 0xFC) == 0xF8)  /* 1111 10XX  five bytes */
-    {
-        n = c & 3;
-        count = 4;
-    }
-    else if ((c & 0xFE) == 0xFC)       /* 1111 110X  six bytes */
-    {
-        n = c & 1;
-        count = 5;
-    }
-    else  /* 0XXX XXXX one byte */
-        return c;
+        if ((c & 0xE0) == 0xC0)  /* 110X XXXX  two bytes */
+        {
+            n = c & 31;
+            count = 1;
+        }
+        else if ((c & 0xF0) == 0xE0)  /* 1110 XXXX  three bytes */
+        {
+            n = c & 15;
+            count = 2;
+        }
+        else if ((c & 0xF8) == 0xF0)  /* 1111 0XXX  four bytes */
+        {
+            n = c & 7;
+            count = 3;
+        }
+        else if ((c & 0xFC) == 0xF8)  /* 1111 10XX  five bytes */
+        {
+            n = c & 3;
+            count = 4;
+        }
+        else if ((c & 0xFE) == 0xFC)       /* 1111 110X  six bytes */
+        {
+            n = c & 1;
+            count = 5;
+        }
+        else  /* 0XXX XXXX one byte */
+            return c;
 
-    /* successor bytes should have the form 10XX XXXX */
-    for (i = 1; i <= count; ++i)
-    {
-        if (feof(in->file))
-            return -1;
+        /* successor bytes should have the form 10XX XXXX */
+        for (i = 1; i <= count; ++i)
+        {
+            if (feof(in->file))
+                 return = EndOfStream;
 
-        c = getc(in->file);
+            c = getc(in->file);
 
-        n = (n << 6) | (c & 0x3F);
-    }
+            n = (n << 6) | (c & 0x3F);
+        }
+        
+        return n;
     }
 #else
     {
@@ -893,16 +989,47 @@ static int ReadCharFromStream(StreamIn *in)
         int err, count = 0;
         
         /* first byte "c" is passed in separately */
-        err = DecodeUTF8BytesToChar(&n, c, NULL, in, ReadUTF8BytesFromStream, &count);
-        if (!err && (n == EndOfStream) && (count == 1)) /* EOF */
-            return -1;
+        err = DecodeUTF8BytesToChar(&n, c, NULL, in, ReadRawBytesFromStream, &count);
+        if (!err && (n == (uint)EndOfStream) && (count == 1)) /* EOF */
+            return EndOfStream;
         else if (err)
         {
             ReportEncodingError(in->lexer, ILLEGAL_UTF8, n);
             n = 0xFFFD; /* replacement char */
         }
+        
+        return n;
     }
 #endif
+    
+    /* #431953 - start RJ */ 
+    /*
+       This section is suitable for any "multibyte" variable-width 
+       character encoding in which a one-byte code is less than
+       128, and the first byte of a two-byte code is greater or
+       equal to 128. Note that Big5 and ShiftJIS fit into this
+       kind, even though their second byte may be less than 128
+    */
+    if ((in->encoding == BIG5) || (in->encoding == SHIFTJIS))
+    {
+        if (c < 128)
+            return c;
+	    else
+	    {
+            uint c1;
+		    
+            count = 1;
+            ReadRawBytesFromStream(in, &tempchar, &count, no);
+            if (count <= 0)
+                return EndOfStream;
+            c1 = (uint)tempchar;
+        
+		    n = (c << 8) + c1;
+        
+		    return n;
+	    }
+    }
+    /* #431953 - end RJ */
     else
         n = c;
 
@@ -967,7 +1094,12 @@ int ReadChar(StreamIn *in)
             c = ReadCharFromStream(in);
             if (c != '\n')
             {
-                UngetChar(c, in);
+                if (c == EndOfStream) /* EOF fix by Terry Teague 12 Aug 01 */
+                {
+                    /* c = EndOfStream; */ /* debug */
+                }
+                else
+                    UngetChar(c, in);
                 c = '\n';
             }
             in->curcol = 1;
@@ -987,9 +1119,11 @@ int ReadChar(StreamIn *in)
         /* IS02022, UTF-8 etc, that don't require further decoding */
 
         if (
-            in->encoding == RAW ||
-            in->encoding == ISO2022 ||
-            in->encoding == UTF8
+            in->encoding == RAW      ||
+            in->encoding == ISO2022  ||
+            in->encoding == UTF8     ||
+            in->encoding == SHIFTJIS || /* #431953 - RJ */
+            in->encoding == BIG5        /* #431953 - RJ */
            )
         {
             in->curcol++;
@@ -1020,6 +1154,11 @@ int ReadChar(StreamIn *in)
 
 void UngetChar(int c, StreamIn *in)
 {
+    if (c == EndOfStream)
+    {
+	    /* tidy_out(errout, "Attempt to UngetChar EOF\n"); */ /* debug */
+    }
+    
     in->pushed = yes;
 
     if (in->bufpos >= CHARBUF_SIZE)
@@ -1359,6 +1498,18 @@ void outc(uint c, Out *out)
 
         putc(c, out->fp);
     }
+    /* #431953 - start RJ */
+    else if (out->encoding == BIG5 || out->encoding == SHIFTJIS)
+    {
+        if (c < 128)
+            putc(c, out->fp);
+        else
+        {
+            ch = (c >> 8) & 0xFF; putc(ch, out->fp); 
+            ch = c & 0xFF; putc(ch, out->fp); 
+        }
+    }
+    /* #431953 - end RJ */
     else
         putc(c, out->fp);
 }
@@ -1476,6 +1627,14 @@ int main(int argc, char **argv)
                 CharEncoding = UTF16LE;
             else if (strcmp(arg, "utf16be") == 0)
                 CharEncoding = UTF16BE;
+            else if (strcmp(arg, "utf16") == 0)
+                CharEncoding = UTF16;
+            else if (strcmp(arg, "win1252") == 0)
+                CharEncoding = WIN1252;
+            else if (strcmp(argv[1], "-shiftjis") == 0) /* #431953 - RJ */
+                CharEncoding = SHIFTJIS; /* #431953 - RJ */
+            else if (strcmp(argv[1], "-big5") == 0) /* #431953 - RJ */
+                CharEncoding = BIG5; /* #431953 - RJ */
             else if (strcmp(arg, "numeric") == 0)
                 NumEntities = yes;
             else if (strcmp(arg, "modify") == 0)
@@ -1505,6 +1664,18 @@ int main(int argc, char **argv)
                     ++argv;
                 }
             }
+            /* #431953 - start RJ */
+            else if (strcmp(argv[1], "-language") == 0 ||
+                     strcmp(argv[1], "-lang") == 0)
+            {
+                if (argc >= 3)
+                {
+                    Language = argv[2];
+                    --argc;
+                    ++argv;
+                }
+            }
+            /* #431953 - end RJ */
             else if (strcmp(argv[1], "-file") == 0 ||
                      strcmp(argv[1], "--file") == 0 ||
                         strcmp(argv[1], "-f") == 0)
@@ -1651,13 +1822,14 @@ int main(int argc, char **argv)
             SetFilename(file);	/* #431895 - fix by Dave Bryan 04 Jan 01 */
 
             /* skip byte order mark */
-            if (lexer->in->encoding == UTF8 ||
+            if (lexer->in->encoding == UTF8    ||
                 lexer->in->encoding == UTF16LE ||
-                lexer->in->encoding == UTF16BE)
+                lexer->in->encoding == UTF16BE ||
+                lexer->in->encoding == UTF16)
             {
                 uint c = ReadChar(lexer->in);
                 
-                if (c != 0xfeff)
+                if (c != UNICODE_BOM)
                     UngetChar(c, lexer->in);
             }
             

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/17 22:59:18 $ 
-    $Revision: 1.25 $ 
+    $Date: 2001/08/18 09:14:51 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -862,7 +862,7 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "as in:  tidy -f errs.txt -imu foo.html\n");
     tidy_out(out, "You can also use --blah for any config file option blah\n");
     tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
-#endif
+#else
     tidy_out(out, "%s: file1 file2 ...\n", prog);
     tidy_out(out, "Utility to clean up & pretty print html files\n");
     tidy_out(out, "see http://www.w3.org/People/Raggett/tidy/\n");
@@ -887,11 +887,18 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "Character encodings\n");
     tidy_out(out, "------------------\n");
     tidy_out(out, "  -raw            leave chars > 128 unchanged upon output\n");
-    tidy_out(out, "  -ascii          use ASCII for output, Latin-1 for input\n");
+    tidy_out(out, "  -ascii          use US-ASCII for output, Latin-1 for input\n");
     tidy_out(out, "  -latin1         use Latin-1 for both input and output\n");
     tidy_out(out, "  -iso2022        use ISO2022 for both input and output\n");
     tidy_out(out, "  -utf8           use UTF-8 for both input and output\n");
-    tidy_out(out, "  -mac            use the Apple MacRoman character set\n");
+    tidy_out(out, "  -mac            use Mac OS Roman for input, US-ASCII for output\n");
+    tidy_out(out, "  -utf16le        use UTF-16LE for input, US-ASCII for output\n");
+    tidy_out(out, "  -utf16be        use UTF-16BE for input, US-ASCII for output\n");
+    tidy_out(out, "  -utf16          use UTF-16 for input, US-ASCII for output\n");
+    tidy_out(out, "  -win1252        use Windows CP 1252 for input, US-ASCII for output\n");
+    tidy_out(out, "  -big5           use Big5 for both input and output\n"); /* #431953 - RJ */
+    tidy_out(out, "  -shiftjis       use Shift-JIS for both input and output\n"); /* #431953 - RJ */
+    tidy_out(out, "  -language       set the two-letter language code (for future use)\n"); /* #431953 - RJ */
     tidy_out(out, "\n");
     tidy_out(out, "\n");
 
@@ -914,4 +921,5 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "as in:  tidy -f errs.txt -imu foo.html\n");
     tidy_out(out, "For further info on HTML see http://www.w3.org/MarkUp\n");
     tidy_out(out, "\n");
+#endif
 }

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/17 23:00:49 $ 
-    $Revision: 1.24 $ 
+    $Date: 2001/08/18 09:16:07 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -63,6 +63,25 @@ do {\
   for (cp=s; *cp; ++cp)\
     AddC( (uint) *cp, llen++ );\
 } while (0)
+
+/* #431953 - start RJ Wraplen adjusted for smooth international ride */
+uint CWrapLen(uint ind)
+{
+
+    if ( !wstrcasecmp(Language, "zh") )
+	/* Chinese characters take two positions on a fixed-width screen */ 
+        /* It would be more accurate to keep a parallel linelen and wraphere
+           incremented by 2 for Chinese characters and 1 otherwise, but this
+           is way simpler. */
+    	return (ind + (( wraplen - ind ) / 2)) ; 
+    
+    if ( !wstrcasecmp(Language, "ja") )
+	/* average Japanese text is 30% kanji */
+    	return (ind + ((( wraplen - ind ) * 7) / 10)) ; 
+    
+    return (wraplen);
+}
+/* #431953 - end RJ */
 
 /* return one less than the number of bytes used by the UTF-8 byte sequence */
 /* str points to the UTF-8 byte sequence */
@@ -353,6 +372,7 @@ void PCondFlushLine(Out *fout, uint indent)
 static void PPrintChar(uint c, uint mode)
 {
     char *p, entity[128];
+    Bool breakable=no; /* #431953 - RJ */
 
     if (c == ' ' && !(mode & (PREFORMATTED | COMMENT | ATTRIBVALUE | CDATA)))
     {
@@ -478,12 +498,121 @@ static void PPrintChar(uint c, uint mode)
         }
     }
 
-    /* otherwise ISO 2022 characters are passed raw */
-    if (CharEncoding == ISO2022 || CharEncoding == RAW)
+    /* #431953 - start RJ */
+    /* Handle encoding-specific issues */
+    switch (CharEncoding)
     {
+    case UTF8:
+    /* Chinese doesn't have spaces, so it needs other kinds of breaks */
+    /* This will also help documents using nice Unicode punctuation */
+    /* But we leave the ASCII range punctuation untouched */
+
+    /* Break after any punctuation or spaces characters */
+	if ((c >= 0x2000) && !(mode & PREFORMATTED))
+	{
+		if(((c >= 0x2000) && ( c<= 0x2006 ))
+		|| ((c >= 0x2008) && ( c<= 0x2010 ))
+		|| ((c >= 0x2011) && ( c<= 0x2046 ))
+		|| ((c >= 0x207D) && ( c<= 0x207E )) 
+		|| ((c >= 0x208D) && ( c<= 0x208E )) 
+		|| ((c >= 0x2329) && ( c<= 0x232A )) 
+		|| ((c >= 0x3001) && ( c<= 0x3003 )) 
+		|| ((c >= 0x3008) && ( c<= 0x3011 )) 
+		|| ((c >= 0x3014) && ( c<= 0x301F )) 
+		|| ((c >= 0xFD3E) && ( c<= 0xFD3F )) 
+		|| ((c >= 0xFE30) && ( c<= 0xFE44 )) 
+		|| ((c >= 0xFE49) && ( c<= 0xFE52 )) 
+		|| ((c >= 0xFE54) && ( c<= 0xFE61 )) 
+		|| ((c >= 0xFE6A) && ( c<= 0xFE6B )) 
+		|| ((c >= 0xFF01) && ( c<= 0xFF03 )) 
+		|| ((c >= 0xFF05) && ( c<= 0xFF0A )) 
+		|| ((c >= 0xFF0C) && ( c<= 0xFF0F )) 
+		|| ((c >= 0xFF1A) && ( c<= 0xFF1B )) 
+		|| ((c >= 0xFF1F) && ( c<= 0xFF20 )) 
+		|| ((c >= 0xFF3B) && ( c<= 0xFF3D )) 
+		|| ((c >= 0xFF61) && ( c<= 0xFF65 )))
+		{
+            wraphere = linelen + 2; /* 2, because AddChar is not till later */
+            breakable = yes;
+		} 
+		else switch (c)
+		{
+			case 0xFE63:
+			case 0xFE68:
+			case 0x3030:
+			case 0x30FB:
+			case 0xFF3F:
+			case 0xFF5B:
+			case 0xFF5D:
+                wraphere = linelen + 2;
+                breakable = yes;
+	    }
+		/* but break before a left punctuation */	
+		if (breakable == yes)
+		{ 
+			if (((c >= 0x201A) && (c <= 0x201C)) ||
+			    ((c >= 0x201E) && (c <= 0x201F)))
+			{
+				wraphere--;
+			}
+			else switch (c)
+			{
+			case 0x2018:
+			case 0x2039:
+			case 0x2045:
+			case 0x207D:
+			case 0x208D:
+			case 0x2329:
+			case 0x3008:
+			case 0x300A:
+			case 0x300C:
+			case 0x300E:
+			case 0x3010:
+			case 0x3014:
+			case 0x3016:
+			case 0x3018:
+			case 0x301A:
+			case 0x301D:
+			case 0xFD3E:
+			case 0xFE35:
+			case 0xFE37:
+			case 0xFE39:
+			case 0xFE3B:
+			case 0xFE3D:
+			case 0xFE3F:
+			case 0xFE41:
+			case 0xFE43:
+			case 0xFE59:
+			case 0xFE5B:
+			case 0xFE5D:
+			case 0xFF08:
+			case 0xFF3B:
+			case 0xFF5B:
+			case 0xFF62:
+				wraphere--; 
+			}
+		}
+	}
+    break;
+    case BIG5:
+    /* Allow linebreak at Chinese punctuation characters */
+    /* There are not many spaces in Chinese */
+    AddC(c, linelen++);
+	if (((c & 0xFF00) == 0xA100) & !(mode & PREFORMATTED))
+	{
+        wraphere = linelen;
+        /* opening brackets have odd codes: break before them */
+	    if ((c > 0x5C) && (c < 0xAD) && ((c & 1) == 1)) 
+		    wraphere--; 
+	}
+    return;
+    case SHIFTJIS:
+    case ISO2022: /* ISO 2022 characters are passed raw */
+    case RAW:
         AddC(c, linelen++);
         return;
     }
+    /* #431953 - end RJ */
 
     /* if preformatted text, map &nbsp; to space */
     if (c == 160 && (mode & PREFORMATTED))

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/05 01:06:28 $ 
-    $Revision: 1.20 $ 
+    $Date: 2001/08/18 09:11:50 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -44,7 +44,8 @@ ParseProperty ParseInvBool; /* parser for 'true' or 'false' or 'yes' or 'no' */
 ParseProperty ParseName;    /* a string excluding whitespace */
 ParseProperty ParseString;  /* a string including whitespace */
 ParseProperty ParseTagNames; /* a space separated list of tag names */
-ParseProperty ParseCharEncoding; /* RAW, ASCII, LATIN1, UTF8, ISO2022, or MACROMAN */
+/* RAW, ASCII, LATIN1, UTF8, ISO2022, MACROMAN, UTF16LE, UTF16BE, UTF16, WIN1252, BIG5, SHIFTJIS */
+ParseProperty ParseCharEncoding;
 ParseProperty ParseIndent;   /* specific to the indent option */
 ParseProperty ParseDocType;  /* omit | auto | strict | loose | <fpi> */
 ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
@@ -59,6 +60,7 @@ DupAttrMode DuplicateAttrs = keep_last; /* Keep first or last duplicate attribut
 
 char *alt_text = null;      /* default text for alt attribute */
 char *slide_style = null;   /* style sheet for slides */
+char *Language = null;      /* #431953 - RJ language property: not used for anything yet */
 char *doctype_str = null;   /* user specified doctype */
 char *errfile = null;       /* file name to write errors to */
 Bool writeback = no;        /* if true then output tidied markup */
@@ -116,6 +118,7 @@ Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char *
 Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
 Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text */
+Bool NCR = yes; 	        /* #431953 - RJ allow numeric character references */
 
 typedef struct _lex PLex;
 
@@ -207,6 +210,8 @@ static struct Flag
     {"new-empty-tags",  {(int *)&empty_tags},       ParseTagNames},
     {"new-pre-tags",    {(int *)&pre_tags},         ParseTagNames},
     {"char-encoding",   {(int *)&CharEncoding},     ParseCharEncoding},
+    {"language", 	    {(void *)&Language},	    ParseName},  /* #431953 - RJ */
+    {"ncr",   		    {(void *)&NCR},     	    ParseBool},  /* #431953 - RJ */
     {"doctype",         {(int *)&doctype_str},      ParseDocType},
     {"fix-backslash",   {(int *)&FixBackslash},     ParseBool},
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
@@ -823,6 +828,18 @@ void ParseCharEncoding(Location location, char *option)
         *location.number = ISO2022;
     else if (wstrcasecmp(buf, "mac") == 0)
         *location.number = MACROMAN;
+    else if (wstrcasecmp(buf, "utf16le") == 0)
+        *location.number = UTF16LE;
+    else if (wstrcasecmp(buf, "utf16be") == 0)
+        *location.number = UTF16BE;
+    else if (wstrcasecmp(buf, "utf16") == 0)
+        *location.number = UTF16;
+    else if (wstrcasecmp(buf, "win1252") == 0)
+        *location.number = WIN1252;
+    else if (wstrcasecmp(buf, "big5") == 0)	/* #431953 - RJ */
+        *location.number = BIG5;		/* #431953 - RJ */
+    else if (wstrcasecmp(buf, "shiftjis") == 0)	/* #431953 - RJ */
+        *location.number = SHIFTJIS;		/* #431953 - RJ */
     else
         ReportBadArgument(option);
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/17 22:57:22 $ 
-    $Revision: 1.42 $ 
+    $Date: 2001/08/18 09:13:02 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -391,6 +391,14 @@ static void ParseEntity(Lexer *lexer, int mode)
 
         if (first && c == '#')
         {
+	        /* #431953 - start RJ */
+            if ( NCR == no || CharEncoding == BIG5 || CharEncoding == SHIFTJIS )
+            {
+        	    UngetChar('#', lexer->in);
+                return;
+	        }
+            /* #431953 - end RJ */
+
             AddCharToLexer(lexer, c);
             first = no;
             continue;
