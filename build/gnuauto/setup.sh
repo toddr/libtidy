@@ -10,14 +10,23 @@ if ! test -f build/gnuauto/setup.sh; then
 
 else
 
+   for i in libtoolize glibtoolize 
+   do 
+      ( $i --version) < /dev/null > /dev/null 2>&1 && 
+      LIBTOOLIZE=$i 
+   done 
+   if test -z "$LIBTOOLIZE" ; then 
+      echo "You need libtoolize to continue" 
+      exit 1; 
+   fi
    top_srcdir=`pwd`
    echo ""
    echo "Generating the build system in $top_srcdir"
    echo ""
    echo "copying files into place: cd build/gnuauto && cp -R -f * $top_srcdir"
    (cd build/gnuauto && cp -R -f * $top_srcdir)
-   echo "running: libtoolize --force --copy"
-   libtoolize --force --copy
+   echo "running: $LIBTOOLIZE --force --copy"
+   $LIBTOOLIZE --force --copy
    echo "running: aclocal"
    aclocal
    echo "running: automake -a -c --foreign"
