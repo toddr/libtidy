@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/08/04 08:07:55 $ 
-    $Revision: 1.119 $ 
+    $Date: 2004/08/07 03:30:46 $ 
+    $Revision: 1.120 $ 
 
 */
 
@@ -118,8 +118,8 @@ static struct _msgfmt
   { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        }, /* Error */
   { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       }, /* Error */
   { MISSING_STARTTAG,             "missing <%s>"                                                            }, /* Error */
-  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                }, /* Error */
-  { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            }, /* Error */
+  { UNEXPECTED_ENDTAG,            "unexpected </%s>"                                                }, /* Error */
+  { TOO_MANY_ELEMENTS,            "too many %s elements"                                            }, /* Error */
   { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               }, /* Error */
   { INSERTING_TAG,                "inserting implicit <%s>"                                                 }, /* Error */
   { CANT_BE_NESTED,               "%s can't be nested"                                                      }, /* Error */
@@ -152,7 +152,7 @@ static struct _msgfmt
   { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  }, /* Error? (not really sometimes) */
   { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               }, /* Error */
   { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   }, /* Error */
-  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                }, /* Error */
+  { UNEXPECTED_ENDTAG,            "unexpected </%s>"                                                }, /* Error */
 
 #if SUPPORT_ACCESSIBILITY_CHECKS
 
