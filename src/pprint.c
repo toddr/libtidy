@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.84 $ 
+    $Date: 2003/08/16 01:44:08 $ 
+    $Revision: 1.85 $ 
 
 */
 
@@ -1463,7 +1463,7 @@ static void PPrintPI( TidyDocImpl* doc, uint indent, Node *node )
 
     s = node->element;
 
-    while (*s)
+    while (s && *s)
     {
         c = (unsigned char)*s;
         if (c > 0x7F)
