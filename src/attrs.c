@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 01:57:15 $ 
-    $Revision: 1.81 $ 
+    $Date: 2003/05/08 04:01:14 $ 
+    $Revision: 1.82 $ 
 
 */
 
@@ -15,6 +15,7 @@
 #include "attrs.h"
 #include "message.h"
 #include "tmbstr.h"
+#include "utf8.h"
 
 static const Attribute attribute_defs [] =
 {
@@ -1076,6 +1077,79 @@ void CheckScript( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
 }
 
+Bool IsValidHTMLID(tmbstr id)
+{
+    tmbstr s = id;
+
+    if (!s)
+        return no;
+
+    if (!IsLetter(*s++))
+        return no;
+
+    while (s)
+        if (!IsNamechar(*s++))
+            return no;
+
+    return yes;
+
+}
+
+Bool IsValidXMLID(tmbstr id)
+{
+    tmbstr s = id;
+    tchar c;
+
+    if (!s)
+        return no;
+
+    c = *s++;
+    if (c > 0x7F)
+        s += GetUTF8(s, &c);
+
+    if (!(IsXMLLetter(c) || c == '_' || c == ':'))
+        return no;
+
+    while (*s)
+    {
+        c = (unsigned char)*s;
+
+        if (c > 0x7F)
+            s += GetUTF8(s, &c);
+
+        ++s;
+
+        if (!IsXMLNamechar(c))
+            return no;
+    }
+
+    return yes;
+}
+
+Bool IsValidNMTOKEN(tmbstr name)
+{
+    tmbstr s = name;
+    tchar c;
+
+    if (!s)
+        return no;
+
+    while (*s)
+    {
+        c = (unsigned char)*s;
+
+        if (c > 0x7F)
+            s += GetUTF8(s, &c);
+
+        ++s;
+
+        if (!IsXMLNamechar(c))
+            return no;
+    }
+
+    return yes;
+}
+
 void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     Node *old;
@@ -1090,6 +1164,9 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
     {
         ConstrainVersion( doc, ~VERS_XHTML11 );
 
+        if (doc->lexer->isvoyager && !IsValidNMTOKEN(attval->value))
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+
         if ((old = GetNodeByAnchor(doc, attval->value)) &&  old != node)
         {
             ReportAttrError( doc, node, attval, ANCHOR_NOT_UNIQUE);
@@ -1102,40 +1179,20 @@ void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 void CheckId( TidyDocImpl* doc, Node *node, AttVal *attval )
 {
     Lexer* lexer = doc->lexer;
-    tmbstr p;
     Node *old;
-    uint s;
-    
+
     if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
         return;
     }
 
-    p = attval->value;
-    s = *p++;
-
-    
-    if (!IsLetter(s))
+    if (!IsValidHTMLID(attval->value))
     {
-        if (lexer->isvoyager && (IsXMLLetter(s) || s == '_' || s == ':'))
+        if (lexer->isvoyager && IsValidXMLID(attval->value))
             ReportAttrError( doc, node, attval, XML_ID_SYNTAX);
         else
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-    }
-    else
-    {
-        while(s = *p++)         /* #559774 tidy version rejects all id values */
-        {
-            if (!IsNamechar(s))
-            {
-                if (lexer->isvoyager && IsXMLNamechar(s))
-                    ReportAttrError( doc, node, attval, XML_ID_SYNTAX);
-                else
-                    ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-                break;
-            }
-        }
     }
 
     if ((old = GetNodeByAnchor(doc, attval->value)) &&  old != node)
