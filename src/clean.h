@@ -7,9 +7,9 @@
   See tidy.h for the copyright notice.
 
   CVS Info:
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:44 $ 
-    $Revision: 1.3 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/14 08:26:29 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -76,7 +76,5 @@ void BumpObject( TidyDocImpl* doc, Node *html );
 void FixBrakes( TidyDocImpl* pDoc, Node *pParent );
 
 void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pParent );
-
-Bool  HTMLVersionCompliance( TidyDocImpl* doc );
 
 #endif /* __CLEAN_H__ */

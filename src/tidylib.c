@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 11:06:10 $ 
-    $Revision: 1.26 $ 
+    $Date: 2003/05/14 08:26:29 $ 
+    $Revision: 1.27 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1097,8 +1097,6 @@ int         tidyDocRunDiagnostics( TidyDocImpl* doc )
     uint acclvl = cfg( doc, TidyAccessibilityCheckLevel );
     Bool quiet = cfgBool( doc, TidyQuiet );
     Bool force = cfgBool( doc, TidyForceOutput );
-
-    HTMLVersionCompliance( doc );
 
     if ( !quiet )
     {
