@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:03 $ 
-    $Revision: 1.86 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/01/24 21:52:35 $ 
+    $Revision: 1.87 $ 
 
 */
 
@@ -1381,7 +1381,7 @@ static void PPrintComment( TidyDocImpl* doc, uint indent, Node* node )
     SetWrap( doc, indent );
 #endif
 
-    PPrintText( doc, COMMENT, indent, node );
+    PPrintText(doc, COMMENT, 0, node);
 
 #if 0
     SetWrap( doc, indent );
