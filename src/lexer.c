@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.75 $ 
+    $Date: 2003/02/20 16:39:47 $ 
+    $Revision: 1.76 $ 
 
 */
 
@@ -578,7 +578,8 @@ Lexer* NewLexer()
 
 Bool EndOfInput( TidyDocImpl* doc )
 {
-    return doc->docIn->source.eof( doc->docIn->source.sourceData );
+    assert( doc->docIn != null );
+    return ( !doc->docIn->pushed && IsEOF(doc->docIn) );
 }
 
 void FreeLexer( TidyDocImpl* doc )
