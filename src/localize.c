@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.95 $ 
+    $Date: 2003/05/25 00:54:17 $ 
+    $Revision: 1.96 $ 
 
 */
 
@@ -61,8 +61,8 @@ struct _msgfmt
 
   /* attribute name */
   { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             }, /* Error */
-  { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           }, /* ambiguous? */
-  { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         }, /* ambiguous? */
+  { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           }, /* Warning in CheckLINK, Error otherwise */
+  { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         }, /* Warning in CheckUrl, Error otherwise */
   { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             }, /* Error (but defuncted) */
   { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         }, /* Error */
   { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          }, /* Error */
@@ -101,17 +101,17 @@ struct _msgfmt
   { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 }, /* Error */
   { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                }, /* Error */
   { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
-  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* ambiguous? */
+  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Warning, Error, Error (occurence in parser.c) */
   { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        }, /* Error */
   { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       }, /* Error */
   { MISSING_STARTTAG,             "missing <%s>"                                                            }, /* Error */
   { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                }, /* Error */
   { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            }, /* Error */
-  { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               }, /* Notice? */
-  { INSERTING_TAG,                "inserting implicit <%s>"                                                 }, /* Notice? */
+  { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               }, /* Error */
+  { INSERTING_TAG,                "inserting implicit <%s>"                                                 }, /* Error */
   { CANT_BE_NESTED,               "%s can't be nested"                                                      }, /* Error */
   { PROPRIETARY_ELEMENT,          "%s is not approved by W3C"                                               }, /* Error */
-  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Notice? */
+  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Warning from ReplaceObsoleteElements, Error otherwise */
   { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             }, /* Error (but defuncted) */
   { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
   { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  }, /* Error */
@@ -130,7 +130,7 @@ struct _msgfmt
   { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        }, /* Error */
   { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         }, /* Error */
   { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       }, /* Error */
-  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           }, /* Error? */
+  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           }, /* Error (but defuncted) */
   { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     }, /* Error */
   { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    }, /* Error */
   { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         }, /* Error (but defuncted) */

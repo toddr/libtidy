@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 23:32:51 $ 
-    $Revision: 1.100 $ 
+    $Date: 2003/05/25 00:54:17 $ 
+    $Revision: 1.101 $ 
 
 */
 
@@ -770,8 +770,8 @@ static void InsertDocType( TidyDocImpl* doc, Node *element, Node *doctype )
 */
 void FixId( TidyDocImpl* doc, Node *node )
 {
-    AttVal *name = GetAttrByName(node, "name");
-    AttVal *id = GetAttrByName(node, "id");
+    AttVal *name = AttrGetById(node, TidyAttr_NAME);
+    AttVal *id = AttrGetById(node, TidyAttr_ID);
 
     if (name)
     {

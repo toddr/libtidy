@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.126 $ 
+    $Date: 2003/05/25 00:54:17 $ 
+    $Revision: 1.127 $ 
 
 */
 
@@ -1385,12 +1385,12 @@ Bool AddGenerator( TidyDocImpl* doc )
         {
             if ( nodeIsMETA(node) )
             {
-                attval = GetAttrByName(node, "name");
+                attval = AttrGetById(node, TidyAttr_NAME);
 
                 if ( attval && attval->value &&
                      tmbstrcasecmp(attval->value, "generator") == 0 )
                 {
-                    attval = GetAttrByName(node, "content");
+                    attval = AttrGetById(node, TidyAttr_CONTENT);
 
                     if ( attval && attval->value &&
                          tmbstrncasecmp(attval->value, "HTML Tidy", 9) == 0 )
@@ -1460,7 +1460,7 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
     Node* node = FindHTML( doc );
     if ( node )
     {
-        AttVal *attr = GetAttrByName( node, "xmlns" );
+        AttVal *attr = AttrGetById(node, TidyAttr_XMLNS);
         if ( attr )
         {
             if ( tmbstrcmp(attr->value, profile) != 0 )
@@ -1779,7 +1779,7 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     Bool isEmpty = yes;
     Bool matches = no;
     uint c;
-    Bool hasSrc = GetAttrByName(container, "src") != NULL;
+    Bool hasSrc = AttrGetById(container, TidyAttr_SRC) != NULL;
 
     lexer->lines = doc->docIn->curline;
     lexer->columns = doc->docIn->curcol;
