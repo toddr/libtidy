@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/03/31 16:31:38 $ 
-    $Revision: 1.28 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/03 18:58:51 $ 
+    $Revision: 1.29 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -21,126 +21,126 @@
 
 static const Dict tag_defs[] =
 {
-  { TidyElem_UNKNOWN,    "unknown!",   0,                         (0),                                           NULL,          NULL           },
-  { TidyElem_A,          "a",          VERS_ALL,                  (CM_INLINE),                                   ParseInline,   CheckAnchor    },
-  { TidyElem_ABBR,       "abbr",       VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_ACRONYM,    "acronym",    VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_ADDRESS,    "address",    VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_ALIGN,      "align",      VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_APPLET,     "applet",     VERS_LOOSE,                (CM_OBJECT|CM_IMG|CM_INLINE|CM_PARAM),         ParseBlock,    NULL           },
-  { TidyElem_AREA,       "area",       (VERS_ALL)&~VERS_BASIC,    (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    CheckAREA      },
-  { TidyElem_B,          "b",          (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_BASE,       "base",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
-  { TidyElem_BASEFONT,   "basefont",   VERS_LOOSE,                (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_BDO,        "bdo",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_BGSOUND,    "bgsound",    VERS_MICROSOFT,            (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
-  { TidyElem_BIG,        "big",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_BLINK,      "blink",      VERS_PROPRIETARY,          (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_BLOCKQUOTE, "blockquote", VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_BODY,       "body",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseBody,     NULL           },
-  { TidyElem_BR,         "br",         VERS_ALL,                  (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_BUTTON,     "button",     (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_CAPTION,    "caption",    VERS_FROM32,               (CM_TABLE),                                    ParseInline,   CheckCaption   },
-  { TidyElem_CENTER,     "center",     VERS_LOOSE,                (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_CITE,       "cite",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_CODE,       "code",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_COL,        "col",        VERS_HTML40,               (CM_TABLE|CM_EMPTY),                           ParseEmpty,    NULL           },
-  { TidyElem_COLGROUP,   "colgroup",   VERS_HTML40,               (CM_TABLE|CM_OPT),                             ParseColGroup, NULL           },
-  { TidyElem_COMMENT,    "comment",    VERS_MICROSOFT,            (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_DD,         "dd",         VERS_ALL,                  (CM_DEFLIST|CM_OPT|CM_NO_INDENT),              ParseBlock,    NULL           },
-  { TidyElem_DEL,        "del",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE|CM_BLOCK|CM_MIXED),                 ParseInline,   NULL           },
-  { TidyElem_DFN,        "dfn",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_DIR,        "dir",        VERS_LOOSE,                (CM_BLOCK|CM_OBSOLETE),                        ParseList,     NULL           },
-  { TidyElem_DIV,        "div",        VERS_FROM32,               (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_DL,         "dl",         VERS_ALL,                  (CM_BLOCK),                                    ParseDefList,  NULL           },
-  { TidyElem_DT,         "dt",         VERS_ALL,                  (CM_DEFLIST|CM_OPT|CM_NO_INDENT),              ParseInline,   NULL           },
-  { TidyElem_EM,         "em",         VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_EMBED,      "embed",      VERS_NETSCAPE,             (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    NULL           },
-  { TidyElem_FIELDSET,   "fieldset",   (VERS_HTML40)&~VERS_BASIC, (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_FONT,       "font",       VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_FORM,       "form",       VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    CheckFORM      },
-  { TidyElem_FRAME,      "frame",      VERS_FRAMESET,             (CM_FRAMES|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_FRAMESET,   "frameset",   VERS_FRAMESET,             (CM_HTML|CM_FRAMES),                           ParseFrameSet, NULL           },
-  { TidyElem_H1,         "h1",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_H2,         "h2",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_H3,         "h3",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_H4,         "h4",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_H5,         "h5",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_H6,         "h6",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
-  { TidyElem_HEAD,       "head",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseHead,     NULL           },
-  { TidyElem_HR,         "hr",         (VERS_ALL)&~VERS_BASIC,    (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    CheckHR        },
-  { TidyElem_HTML,       "html",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseHTML,     CheckHTML      },
-  { TidyElem_I,          "i",          (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_IFRAME,     "iframe",     VERS_IFRAME,               (CM_INLINE),                                   ParseBlock,    NULL           },
-  { TidyElem_ILAYER,     "ilayer",     VERS_NETSCAPE,             (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_IMG,        "img",        VERS_ALL,                  (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    CheckIMG       },
-  { TidyElem_INPUT,      "input",      VERS_ALL,                  (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    NULL           },
-  { TidyElem_INS,        "ins",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE|CM_BLOCK|CM_MIXED),                 ParseInline,   NULL           },
-  { TidyElem_ISINDEX,    "isindex",    VERS_LOOSE,                (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    NULL           },
-  { TidyElem_KBD,        "kbd",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_KEYGEN,     "keygen",     VERS_NETSCAPE,             (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_LABEL,      "label",      VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_LAYER,      "layer",      VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_LEGEND,     "legend",     (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_LI,         "li",         VERS_ALL,                  (CM_LIST|CM_OPT|CM_NO_INDENT),                 ParseBlock,    NULL           },
-  { TidyElem_LINK,       "link",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckLINK      },
-  { TidyElem_LISTING,    "listing",    VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
-  { TidyElem_MAP,        "map",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseBlock,    CheckMap       },
-  { TidyElem_MARQUEE,    "marquee",    VERS_MICROSOFT,            (CM_INLINE|CM_OPT),                            ParseInline,   NULL           },
-  { TidyElem_MENU,       "menu",       VERS_LOOSE,                (CM_BLOCK|CM_OBSOLETE),                        ParseList,     NULL           },
-  { TidyElem_META,       "meta",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckMETA      },
-  { TidyElem_MULTICOL,   "multicol",   VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_NOBR,       "nobr",       VERS_PROPRIETARY,          (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_NOEMBED,    "noembed",    VERS_NETSCAPE,             (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_NOFRAMES,   "noframes",   VERS_IFRAME,               (CM_BLOCK|CM_FRAMES),                          ParseNoFrames, NULL           },
-  { TidyElem_NOLAYER,    "nolayer",    VERS_NETSCAPE,             (CM_BLOCK|CM_INLINE|CM_MIXED),                 ParseBlock,    NULL           },
-  { TidyElem_NOSAVE,     "nosave",     VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
-  { TidyElem_NOSCRIPT,   "noscript",   (VERS_HTML40)&~VERS_BASIC, (CM_BLOCK|CM_INLINE|CM_MIXED),                 ParseBlock,    NULL           },
-  { TidyElem_OBJECT,     "object",     VERS_HTML40,               (CM_OBJECT|CM_HEAD|CM_IMG|CM_INLINE|CM_PARAM), ParseBlock,    NULL           },
-  { TidyElem_OL,         "ol",         VERS_ALL,                  (CM_BLOCK),                                    ParseList,     NULL           },
-  { TidyElem_OPTGROUP,   "optgroup",   (VERS_HTML40)&~VERS_BASIC, (CM_FIELD|CM_OPT),                             ParseOptGroup, NULL           },
-  { TidyElem_OPTION,     "option",     VERS_ALL,                  (CM_FIELD|CM_OPT),                             ParseText,     NULL           },
-  { TidyElem_P,          "p",          VERS_ALL,                  (CM_BLOCK|CM_OPT),                             ParseInline,   NULL           },
-  { TidyElem_PARAM,      "param",      VERS_FROM32,               (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_PLAINTEXT,  "plaintext",  VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
-  { TidyElem_PRE,        "pre",        VERS_ALL,                  (CM_BLOCK),                                    ParsePre,      NULL           },
-  { TidyElem_Q,          "q",          VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RB,         "rb",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RBC,        "rbc",        VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RP,         "rp",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RT,         "rt",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RTC,        "rtc",        VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_RUBY,       "ruby",       VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_S,          "s",          VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_SAMP,       "samp",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_SCRIPT,     "script",     (VERS_FROM32)&~VERS_BASIC, (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE),         ParseScript,   CheckSCRIPT    },
-  { TidyElem_SELECT,     "select",     VERS_ALL,                  (CM_INLINE|CM_FIELD),                          ParseSelect,   NULL           },
-  { TidyElem_SERVER,     "server",     VERS_NETSCAPE,             (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE),         ParseScript,   NULL           },
-  { TidyElem_SERVLET,    "servlet",    VERS_SUN,                  (CM_OBJECT|CM_IMG|CM_INLINE|CM_PARAM),         ParseBlock,    NULL           },
-  { TidyElem_SMALL,      "small",      (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_SPACER,     "spacer",     VERS_NETSCAPE,             (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_SPAN,       "span",       VERS_FROM32,               (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_STRIKE,     "strike",     VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_STRONG,     "strong",     VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_STYLE,      "style",      (VERS_FROM32)&~VERS_BASIC, (CM_HEAD),                                     ParseScript,   CheckSTYLE     },
-  { TidyElem_SUB,        "sub",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_SUP,        "sup",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_TABLE,      "table",      VERS_FROM32,               (CM_BLOCK),                                    ParseTableTag, CheckTABLE     },
-  { TidyElem_TBODY,      "tbody",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
-  { TidyElem_TD,         "td",         VERS_FROM32,               (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
-  { TidyElem_TEXTAREA,   "textarea",   VERS_ALL,                  (CM_INLINE|CM_FIELD),                          ParseText,     NULL           },
-  { TidyElem_TFOOT,      "tfoot",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
-  { TidyElem_TH,         "th",         VERS_FROM32,               (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
-  { TidyElem_THEAD,      "thead",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
-  { TidyElem_TITLE,      "title",      VERS_ALL,                  (CM_HEAD),                                     ParseTitle,    NULL           },
-  { TidyElem_TR,         "tr",         VERS_FROM32,               (CM_TABLE|CM_OPT),                             ParseRow,      NULL           },
-  { TidyElem_TT,         "tt",         (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_U,          "u",          VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_UL,         "ul",         VERS_ALL,                  (CM_BLOCK),                                    ParseList,     NULL           },
-  { TidyElem_VAR,        "var",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
-  { TidyElem_WBR,        "wbr",        VERS_PROPRIETARY,          (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyElem_XMP,        "xmp",        VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
-  { TidyElem_NEXTID,     "nextid",     VERS_HTML20,               (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
+  { TidyTag_UNKNOWN,    "unknown!",   0,                         (0),                                           NULL,          NULL           },
+  { TidyTag_A,          "a",          VERS_ALL,                  (CM_INLINE),                                   ParseInline,   CheckAnchor    },
+  { TidyTag_ABBR,       "abbr",       VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_ACRONYM,    "acronym",    VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_ADDRESS,    "address",    VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_ALIGN,      "align",      VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_APPLET,     "applet",     VERS_LOOSE,                (CM_OBJECT|CM_IMG|CM_INLINE|CM_PARAM),         ParseBlock,    NULL           },
+  { TidyTag_AREA,       "area",       (VERS_ALL)&~VERS_BASIC,    (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    CheckAREA      },
+  { TidyTag_B,          "b",          (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_BASE,       "base",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
+  { TidyTag_BASEFONT,   "basefont",   VERS_LOOSE,                (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_BDO,        "bdo",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_BGSOUND,    "bgsound",    VERS_MICROSOFT,            (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
+  { TidyTag_BIG,        "big",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_BLINK,      "blink",      VERS_PROPRIETARY,          (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_BLOCKQUOTE, "blockquote", VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_BODY,       "body",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseBody,     NULL           },
+  { TidyTag_BR,         "br",         VERS_ALL,                  (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_BUTTON,     "button",     (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_CAPTION,    "caption",    VERS_FROM32,               (CM_TABLE),                                    ParseInline,   CheckCaption   },
+  { TidyTag_CENTER,     "center",     VERS_LOOSE,                (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_CITE,       "cite",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_CODE,       "code",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_COL,        "col",        VERS_HTML40,               (CM_TABLE|CM_EMPTY),                           ParseEmpty,    NULL           },
+  { TidyTag_COLGROUP,   "colgroup",   VERS_HTML40,               (CM_TABLE|CM_OPT),                             ParseColGroup, NULL           },
+  { TidyTag_COMMENT,    "comment",    VERS_MICROSOFT,            (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_DD,         "dd",         VERS_ALL,                  (CM_DEFLIST|CM_OPT|CM_NO_INDENT),              ParseBlock,    NULL           },
+  { TidyTag_DEL,        "del",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE|CM_BLOCK|CM_MIXED),                 ParseInline,   NULL           },
+  { TidyTag_DFN,        "dfn",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_DIR,        "dir",        VERS_LOOSE,                (CM_BLOCK|CM_OBSOLETE),                        ParseList,     NULL           },
+  { TidyTag_DIV,        "div",        VERS_FROM32,               (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_DL,         "dl",         VERS_ALL,                  (CM_BLOCK),                                    ParseDefList,  NULL           },
+  { TidyTag_DT,         "dt",         VERS_ALL,                  (CM_DEFLIST|CM_OPT|CM_NO_INDENT),              ParseInline,   NULL           },
+  { TidyTag_EM,         "em",         VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_EMBED,      "embed",      VERS_NETSCAPE,             (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    NULL           },
+  { TidyTag_FIELDSET,   "fieldset",   (VERS_HTML40)&~VERS_BASIC, (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_FONT,       "font",       VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_FORM,       "form",       VERS_ALL,                  (CM_BLOCK),                                    ParseBlock,    CheckFORM      },
+  { TidyTag_FRAME,      "frame",      VERS_FRAMESET,             (CM_FRAMES|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_FRAMESET,   "frameset",   VERS_FRAMESET,             (CM_HTML|CM_FRAMES),                           ParseFrameSet, NULL           },
+  { TidyTag_H1,         "h1",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_H2,         "h2",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_H3,         "h3",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_H4,         "h4",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_H5,         "h5",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_H6,         "h6",         VERS_ALL,                  (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
+  { TidyTag_HEAD,       "head",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseHead,     NULL           },
+  { TidyTag_HR,         "hr",         (VERS_ALL)&~VERS_BASIC,    (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    CheckHR        },
+  { TidyTag_HTML,       "html",       VERS_ALL,                  (CM_HTML|CM_OPT|CM_OMITST),                    ParseHTML,     CheckHTML      },
+  { TidyTag_I,          "i",          (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_IFRAME,     "iframe",     VERS_IFRAME,               (CM_INLINE),                                   ParseBlock,    NULL           },
+  { TidyTag_ILAYER,     "ilayer",     VERS_NETSCAPE,             (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_IMG,        "img",        VERS_ALL,                  (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    CheckIMG       },
+  { TidyTag_INPUT,      "input",      VERS_ALL,                  (CM_INLINE|CM_IMG|CM_EMPTY),                   ParseEmpty,    NULL           },
+  { TidyTag_INS,        "ins",        (VERS_HTML40)&~VERS_BASIC, (CM_INLINE|CM_BLOCK|CM_MIXED),                 ParseInline,   NULL           },
+  { TidyTag_ISINDEX,    "isindex",    VERS_LOOSE,                (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    NULL           },
+  { TidyTag_KBD,        "kbd",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_KEYGEN,     "keygen",     VERS_NETSCAPE,             (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_LABEL,      "label",      VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_LAYER,      "layer",      VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_LEGEND,     "legend",     (VERS_HTML40)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_LI,         "li",         VERS_ALL,                  (CM_LIST|CM_OPT|CM_NO_INDENT),                 ParseBlock,    NULL           },
+  { TidyTag_LINK,       "link",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckLINK      },
+  { TidyTag_LISTING,    "listing",    VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
+  { TidyTag_MAP,        "map",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseBlock,    CheckMap       },
+  { TidyTag_MARQUEE,    "marquee",    VERS_MICROSOFT,            (CM_INLINE|CM_OPT),                            ParseInline,   NULL           },
+  { TidyTag_MENU,       "menu",       VERS_LOOSE,                (CM_BLOCK|CM_OBSOLETE),                        ParseList,     NULL           },
+  { TidyTag_META,       "meta",       VERS_ALL,                  (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckMETA      },
+  { TidyTag_MULTICOL,   "multicol",   VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_NOBR,       "nobr",       VERS_PROPRIETARY,          (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_NOEMBED,    "noembed",    VERS_NETSCAPE,             (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_NOFRAMES,   "noframes",   VERS_IFRAME,               (CM_BLOCK|CM_FRAMES),                          ParseNoFrames, NULL           },
+  { TidyTag_NOLAYER,    "nolayer",    VERS_NETSCAPE,             (CM_BLOCK|CM_INLINE|CM_MIXED),                 ParseBlock,    NULL           },
+  { TidyTag_NOSAVE,     "nosave",     VERS_NETSCAPE,             (CM_BLOCK),                                    ParseBlock,    NULL           },
+  { TidyTag_NOSCRIPT,   "noscript",   (VERS_HTML40)&~VERS_BASIC, (CM_BLOCK|CM_INLINE|CM_MIXED),                 ParseBlock,    NULL           },
+  { TidyTag_OBJECT,     "object",     VERS_HTML40,               (CM_OBJECT|CM_HEAD|CM_IMG|CM_INLINE|CM_PARAM), ParseBlock,    NULL           },
+  { TidyTag_OL,         "ol",         VERS_ALL,                  (CM_BLOCK),                                    ParseList,     NULL           },
+  { TidyTag_OPTGROUP,   "optgroup",   (VERS_HTML40)&~VERS_BASIC, (CM_FIELD|CM_OPT),                             ParseOptGroup, NULL           },
+  { TidyTag_OPTION,     "option",     VERS_ALL,                  (CM_FIELD|CM_OPT),                             ParseText,     NULL           },
+  { TidyTag_P,          "p",          VERS_ALL,                  (CM_BLOCK|CM_OPT),                             ParseInline,   NULL           },
+  { TidyTag_PARAM,      "param",      VERS_FROM32,               (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_PLAINTEXT,  "plaintext",  VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
+  { TidyTag_PRE,        "pre",        VERS_ALL,                  (CM_BLOCK),                                    ParsePre,      NULL           },
+  { TidyTag_Q,          "q",          VERS_HTML40,               (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RB,         "rb",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RBC,        "rbc",        VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RP,         "rp",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RT,         "rt",         VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RTC,        "rtc",        VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_RUBY,       "ruby",       VERS_XHTML11,              (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_S,          "s",          VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_SAMP,       "samp",       VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_SCRIPT,     "script",     (VERS_FROM32)&~VERS_BASIC, (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE),         ParseScript,   CheckSCRIPT    },
+  { TidyTag_SELECT,     "select",     VERS_ALL,                  (CM_INLINE|CM_FIELD),                          ParseSelect,   NULL           },
+  { TidyTag_SERVER,     "server",     VERS_NETSCAPE,             (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE),         ParseScript,   NULL           },
+  { TidyTag_SERVLET,    "servlet",    VERS_SUN,                  (CM_OBJECT|CM_IMG|CM_INLINE|CM_PARAM),         ParseBlock,    NULL           },
+  { TidyTag_SMALL,      "small",      (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_SPACER,     "spacer",     VERS_NETSCAPE,             (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_SPAN,       "span",       VERS_FROM32,               (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_STRIKE,     "strike",     VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_STRONG,     "strong",     VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_STYLE,      "style",      (VERS_FROM32)&~VERS_BASIC, (CM_HEAD),                                     ParseScript,   CheckSTYLE     },
+  { TidyTag_SUB,        "sub",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_SUP,        "sup",        (VERS_FROM32)&~VERS_BASIC, (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_TABLE,      "table",      VERS_FROM32,               (CM_BLOCK),                                    ParseTableTag, CheckTABLE     },
+  { TidyTag_TBODY,      "tbody",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
+  { TidyTag_TD,         "td",         VERS_FROM32,               (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
+  { TidyTag_TEXTAREA,   "textarea",   VERS_ALL,                  (CM_INLINE|CM_FIELD),                          ParseText,     NULL           },
+  { TidyTag_TFOOT,      "tfoot",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
+  { TidyTag_TH,         "th",         VERS_FROM32,               (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
+  { TidyTag_THEAD,      "thead",      (VERS_HTML40)&~VERS_BASIC, (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
+  { TidyTag_TITLE,      "title",      VERS_ALL,                  (CM_HEAD),                                     ParseTitle,    NULL           },
+  { TidyTag_TR,         "tr",         VERS_FROM32,               (CM_TABLE|CM_OPT),                             ParseRow,      NULL           },
+  { TidyTag_TT,         "tt",         (VERS_ALL)&~VERS_BASIC,    (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_U,          "u",          VERS_LOOSE,                (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_UL,         "ul",         VERS_ALL,                  (CM_BLOCK),                                    ParseList,     NULL           },
+  { TidyTag_VAR,        "var",        VERS_ALL,                  (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_WBR,        "wbr",        VERS_PROPRIETARY,          (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
+  { TidyTag_XMP,        "xmp",        VERS_ALL,                  (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
+  { TidyTag_NEXTID,     "nextid",     VERS_HTML20,               (CM_HEAD|CM_EMPTY),                            ParseEmpty,    NULL           },
 
   /* this must be the final entry */
   { 0,                   NULL,         0,                         (0),                                           NULL,          NULL           }
@@ -227,7 +227,7 @@ static void declare( TidyTagImpl* tags,
         }
 
         /* Make sure we are not over-writing predefined tags */
-        if ( np->id == TidyElem_UNKNOWN )
+        if ( np->id == TidyTag_UNKNOWN )
         {
           np->versions = versions;
           np->model   |= model;
@@ -258,7 +258,7 @@ Bool FindTag( TidyDocImpl* doc, Node *node )
 
 const Dict* LookupTagDef( TidyTagId tid )
 {
-  if ( tid > TidyElem_UNKNOWN && tid < N_TIDY_TAGS )
+  if ( tid > TidyTag_UNKNOWN && tid < N_TIDY_TAGS )
       return tag_defs + tid;
   return NULL;
 }
@@ -454,17 +454,17 @@ void CheckIMG( TidyDocImpl* doc, Node *node )
         if ( dict )
         {
             TidyAttrId id = dict->id;
-            if ( id == TidyAttr_alt )
+            if ( id == TidyAttr_ALT )
                 HasAlt = yes;
-            else if ( id == TidyAttr_src )
+            else if ( id == TidyAttr_SRC )
                 HasSrc = yes;
-            else if ( id == TidyAttr_usemap )
+            else if ( id == TidyAttr_USEMAP )
                 HasUseMap = yes;
-            else if ( id == TidyAttr_ismap )
+            else if ( id == TidyAttr_ISMAP )
                 HasIsMap = yes;
-            else if ( id == TidyAttr_datafld )
+            else if ( id == TidyAttr_DATAFLD )
                 HasDataFld = yes;
-            else if ( id == TidyAttr_width || id == TidyAttr_height )
+            else if ( id == TidyAttr_WIDTH || id == TidyAttr_HEIGHT )
                 ConstrainVersion( doc, ~VERS_HTML20 );
         }
     }
@@ -584,9 +584,9 @@ void CheckAREA( TidyDocImpl* doc, Node *node )
         const Attribute* dict = CheckAttribute( doc, node, attval );
         if ( dict )
         {
-          if ( dict->id == TidyAttr_alt )
+          if ( dict->id == TidyAttr_ALT )
               HasAlt = yes;
-          else if ( dict->id == TidyAttr_href )
+          else if ( dict->id == TidyAttr_HREF )
               HasHref = yes;
         }
     }
@@ -612,7 +612,7 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
     for (attval = node->attributes; attval != NULL; attval = attval->next)
     {
         const Attribute* dict = CheckAttribute( doc, node, attval );
-        if ( dict && dict->id == TidyAttr_summary )
+        if ( dict && dict->id == TidyAttr_SUMMARY )
             HasSummary = yes;
     }
 
@@ -802,12 +802,12 @@ Bool nodeIsHeader( Node* node )
 {
     TidyTagId tid = TagId( node  );
     return ( tid && 
-             tid == TidyElem_H1 ||
-             tid == TidyElem_H2 ||
-             tid == TidyElem_H3 ||        
-             tid == TidyElem_H4 ||        
-             tid == TidyElem_H5 ||
-             tid == TidyElem_H6 );
+             tid == TidyTag_H1 ||
+             tid == TidyTag_H2 ||
+             tid == TidyTag_H3 ||        
+             tid == TidyTag_H4 ||        
+             tid == TidyTag_H5 ||
+             tid == TidyTag_H6 );
 }
 
 uint nodeHeaderLevel( Node* node )
@@ -815,17 +815,17 @@ uint nodeHeaderLevel( Node* node )
     TidyTagId tid = TagId( node  );
     switch ( tid )
     {
-    case TidyElem_H1:
+    case TidyTag_H1:
         return 1;
-    case TidyElem_H2:
+    case TidyTag_H2:
         return 2;
-    case TidyElem_H3:
+    case TidyTag_H3:
         return 3;
-    case TidyElem_H4:
+    case TidyTag_H4:
         return 4;
-    case TidyElem_H5:
+    case TidyTag_H5:
         return 5;
-    case TidyElem_H6:
+    case TidyTag_H6:
         return 6;
     }
     return 0;

@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/03/30 23:57:25 $ 
-    $Revision: 1.55 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/03 18:58:49 $ 
+    $Revision: 1.56 $ 
 
 */
 
@@ -1351,9 +1351,9 @@ static void PPrintXmlDecl( TidyDocImpl* doc, uint indent, Node *node )
 
     /* Force order of XML declaration attributes */
     /* PPrintAttrs( doc, indent, node ); */
-    if ( att = AttrGetById(node, TidyAttr_version) )
+    if ( att = AttrGetById(node, TidyAttr_VERSION) )
       PPrintAttribute( doc, indent, node, att );
-    if ( att = AttrGetById(node, TidyAttr_encoding) )
+    if ( att = AttrGetById(node, TidyAttr_ENCODING) )
       PPrintAttribute( doc, indent, node, att );
     if ( att = GetAttrByName(node, "standalone") )
       PPrintAttribute( doc, indent, node, att );
