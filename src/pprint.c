@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/01 22:56:40 $ 
-    $Revision: 1.6 $ 
+    $Author: uid54069 $ 
+    $Date: 2001/07/05 00:02:18 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -415,7 +415,7 @@ static void PPrintChar(uint c, uint mode)
             {
                 AddC('&', linelen++);
 
-                if (NumEntities)
+                if (NumEntities || XmlOut)	/* #433604 - fix by Bjšrn Hšhrmann 15 Jun 01 */
                 {
                     AddC('#', linelen++);
                     AddC('1', linelen++);
