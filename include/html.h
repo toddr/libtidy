@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/10/26 13:54:45 $ 
-    $Revision: 1.60 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/12/28 23:41:25 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -767,6 +767,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define ENTITY_IN_ID            20
 #define JOINING_ATTRIBUTE       21
 #define UNEXPECTED_EQUALSIGN    22
+#define ATTR_VALUE_NOT_LCASE    23
 
 /* page transition effects */
 
