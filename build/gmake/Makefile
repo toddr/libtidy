@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/03/07 11:21:02 $ 
-#     $Revision: 1.8 $ 
+#     $Date: 2005/03/22 10:52:05 $ 
+#     $Revision: 1.9 $ 
 #
 #  Copyright (c) 1998-2003 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -109,6 +109,7 @@ TIDY_MINOR = 0
 # This will come from autoconf again
 LIBPREFIX = lib
 LIBSUFFIX = .a
+OBJSUF = .o
 
 LIBRARY = $(LIBDIR)/$(LIBPREFIX)$(PROJECT)$(LIBSUFFIX)
 AR=ar -r
@@ -116,14 +117,14 @@ AR=ar -r
 EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
 OBJFILES=\
-        $(OBJDIR)/access.o     $(OBJDIR)/attrs.o      $(OBJDIR)/istack.o \
-        $(OBJDIR)/parser.o     $(OBJDIR)/tags.o       $(OBJDIR)/entities.o \
-        $(OBJDIR)/lexer.o      $(OBJDIR)/pprint.o     $(OBJDIR)/clean.o \
-        $(OBJDIR)/localize.o   $(OBJDIR)/config.o     $(OBJDIR)/alloc.o \
-        $(OBJDIR)/attrask.o    $(OBJDIR)/attrdict.o   $(OBJDIR)/attrget.o \
-        $(OBJDIR)/buffio.o     $(OBJDIR)/fileio.o     $(OBJDIR)/streamio.o \
-        $(OBJDIR)/tagask.o     $(OBJDIR)/tmbstr.o     $(OBJDIR)/utf8.o \
-        $(OBJDIR)/tidylib.o
+        $(OBJDIR)/access$(OBJSUF)     $(OBJDIR)/attrs$(OBJSUF)      $(OBJDIR)/istack$(OBJSUF) \
+        $(OBJDIR)/parser$(OBJSUF)     $(OBJDIR)/tags$(OBJSUF)       $(OBJDIR)/entities$(OBJSUF) \
+        $(OBJDIR)/lexer$(OBJSUF)      $(OBJDIR)/pprint$(OBJSUF)     $(OBJDIR)/clean$(OBJSUF) \
+        $(OBJDIR)/localize$(OBJSUF)   $(OBJDIR)/config$(OBJSUF)     $(OBJDIR)/alloc$(OBJSUF) \
+        $(OBJDIR)/attrask$(OBJSUF)    $(OBJDIR)/attrdict$(OBJSUF)   $(OBJDIR)/attrget$(OBJSUF) \
+        $(OBJDIR)/buffio$(OBJSUF)     $(OBJDIR)/fileio$(OBJSUF)     $(OBJDIR)/streamio$(OBJSUF) \
+        $(OBJDIR)/tagask$(OBJSUF)     $(OBJDIR)/tmbstr$(OBJSUF)     $(OBJDIR)/utf8$(OBJSUF) \
+        $(OBJDIR)/tidylib$(OBJSUF)
 
 CFILES= \
         $(SRCDIR)/access.c       $(SRCDIR)/attrs.c        $(SRCDIR)/istack.c \
@@ -157,9 +158,9 @@ ifdef RANLIB
 	$(RANLIB) $@
 endif
 
-$(OBJDIR)/%.o:		$(SRCDIR)/%.c $(HFILES) $(LIBHFILES) Makefile
+$(OBJDIR)/%$(OBJSUF):	$(SRCDIR)/%.c $(HFILES) $(LIBHFILES) Makefile
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
-	$(CC) -o $@ -c $(CFLAGS) $(OTHERCFLAGS) $<
+	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ -c $<
 
 $(BINDIR)/$(PROJECT):	$(APPDIR)/tidy.c $(HFILES) $(LIBRARY)
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
