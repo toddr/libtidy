@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/02/06 09:10:07 $ 
-    $Revision: 1.22 $ 
+    $Date: 2002/02/18 02:27:04 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -191,6 +191,15 @@
 #endif
 #endif
 
+/* Convenience defines for Cygwin platforms */
+
+#if defined(__CYGWIN__)
+#define CYGWIN_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "Cygwin"
+#endif
+#endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <setjmp.h>  /* for longjmp on error exit */
@@ -246,7 +255,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
+#if defined(CYGWIN_OS) || defined(BE_OS) || defined(OS2_OS) || defined(HPUX_OS) || defined(SOLARIS_OS) || defined(LINUX_OS) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
