@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 09:04:37 $ 
-    $Revision: 1.88 $ 
+    $Date: 2003/05/23 01:40:59 $ 
+    $Revision: 1.89 $ 
 
 */
 
@@ -1107,7 +1107,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
         else
             ReportAttrError( doc, node, attval, ILLEGAL_URI_REFERENCE);
 
-        doc->badChars |= INVALID_URI;
+        doc->badChars |= BC_INVALID_URI;
     }
 }
 

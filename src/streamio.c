@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/12 09:28:58 $ 
-    $Revision: 1.12 $ 
+    $Date: 2003/05/23 01:41:02 $ 
+    $Revision: 1.13 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -170,7 +170,7 @@ int ReadBOMEncoding(StreamIn *in)
     {
         /* big-endian UTF-16 */
         if ( in->encoding != UTF16 && in->encoding != UTF16BE )
-            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16BE ); /* non-fatal error */
+            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16BE, no ); /* non-fatal error */
 
         return UTF16BE; /* return decoded BOM */
     }
@@ -178,7 +178,7 @@ int ReadBOMEncoding(StreamIn *in)
     {
         /* little-endian UTF-16 */
         if (in->encoding != UTF16 && in->encoding != UTF16LE)
-            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16LE );
+            ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF16LE, no );
 
         return UTF16LE; /* return decoded BOM */
     }
@@ -191,7 +191,7 @@ int ReadBOMEncoding(StreamIn *in)
         {
             /* UTF-8 */
             if (in->encoding != UTF8)
-                ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF8 );
+                ReportEncodingError( in->doc, ENCODING_MISMATCH, UTF8, no );
 
             return UTF8;
         }
@@ -299,7 +299,7 @@ uint ReadChar( StreamIn *in )
             if ( !IsValidUTF16FromUCS4(c) )
             {
                 /* invalid UTF-16 value */
-                ReportEncodingError(in->doc, INVALID_UTF16 | DISCARDED_CHAR, c);
+                ReportEncodingError(in->doc, INVALID_UTF16, c, yes);
                 c = 0;
             }
             else if ( IsLowSurrogate(c) )
@@ -318,7 +318,7 @@ uint ReadChar( StreamIn *in )
                 }
                 /* not a valid pair */
                 if ( 0 == c )
-                    ReportEncodingError( in->doc, INVALID_UTF16 | DISCARDED_CHAR, c );
+                    ReportEncodingError( in->doc, INVALID_UTF16, c, yes );
             }
         }
 #endif
@@ -361,9 +361,9 @@ uint ReadChar( StreamIn *in )
                 replMode = REPLACED_CHAR;
                 
             if ( c1 == 0 && isVendorChar )
-                ReportEncodingError( in->doc, VENDOR_SPECIFIC_CHARS | replMode, c );
+                ReportEncodingError(in->doc, VENDOR_SPECIFIC_CHARS, c, replMode == DISCARDED_CHAR);
             else if ( ! isVendorChar )
-                ReportEncodingError( in->doc, INVALID_SGML_CHARS | replMode, c );
+                ReportEncodingError(in->doc, INVALID_SGML_CHARS, c, replMode == DISCARDED_CHAR);
                 
             c = c1;
         }
@@ -1118,7 +1118,7 @@ uint ReadCharFromStream( StreamIn* in )
             in->doc->lexer->lines = in->curline;
             in->doc->lexer->columns = in->curcol;
 
-            ReportEncodingError(in->doc, INVALID_UTF8 | REPLACED_CHAR, n);
+            ReportEncodingError(in->doc, INVALID_UTF8, n, no);
             n = 0xFFFD; /* replacement char */
         }
         

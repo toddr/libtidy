@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 00:10:04 $ 
-    $Revision: 1.11 $ 
+    $Date: 2003/05/23 01:41:02 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -65,7 +65,7 @@ void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file );
 void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level );
 
 void ErrorSummary( TidyDocImpl* doc );
-void ReportEncodingError( TidyDocImpl* doc, uint code, uint c );
+void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded);
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c );
 void ReportAttrError( TidyDocImpl* doc, Node* node, AttVal* av, uint code );
 void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name );
@@ -178,18 +178,26 @@ void ReportError( TidyDocImpl* doc, Node* element, Node* node, uint code );
 #define USING_BODY              16
 
 /* character encoding errors */
-/* "or" DISCARDED_CHAR with the other errors if discarding char;
-** otherwise default is replacing
-*/
+
+#define VENDOR_SPECIFIC_CHARS   1
+#define INVALID_SGML_CHARS      2
+#define INVALID_UTF8            3
+#define INVALID_UTF16           4
+#define ENCODING_MISMATCH       5 /* fatal error */
+#define INVALID_URI             6
+#define INVALID_NCR             7
+
 #define REPLACED_CHAR           0
 #define DISCARDED_CHAR          1
 
-#define VENDOR_SPECIFIC_CHARS   2
-#define INVALID_SGML_CHARS      4
-#define INVALID_UTF8            8
-#define INVALID_UTF16           16
-#define ENCODING_MISMATCH       32 /* fatal error */
-#define INVALID_URI             64
-#define INVALID_NCR             128
+/* badchar bit field */
+
+#define BC_VENDOR_SPECIFIC_CHARS   1
+#define BC_INVALID_SGML_CHARS      2
+#define BC_INVALID_UTF8            4
+#define BC_INVALID_UTF16           8
+#define BC_ENCODING_MISMATCH       16 /* fatal error */
+#define BC_INVALID_URI             32
+#define BC_INVALID_NCR             64
 
 #endif /* __MESSAGE_H__ */

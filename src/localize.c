@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 00:09:25 $ 
-    $Revision: 1.87 $ 
+    $Date: 2003/05/23 01:41:01 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -298,17 +298,16 @@ static void NtoS(int n, tmbstr str)
 }
 
 
-void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
+void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 {
     Lexer* lexer = doc->lexer;
     char buf[ 32 ];
 
-    uint reason = code & ~DISCARDED_CHAR;
-    ctmbstr action = code & DISCARDED_CHAR ? "discarding" : "replacing";
+    ctmbstr action = discarded ? "discarding" : "replacing";
     ctmbstr fmt = NULL;
 
     /* An encoding mismatch is currently treated as a non-fatal error */
-    switch ( reason )
+    switch (code)
     {
     case ENCODING_MISMATCH:
         /* actual encoding passed in "c" */
@@ -317,45 +316,46 @@ void ReportEncodingError( TidyDocImpl* doc, uint code, uint c )
                       "not match actual input encoding (%s)",
                        CharEncodingName( doc->docIn->encoding ),
                        CharEncodingName(c) );
+        doc->badChars |= BC_ENCODING_MISMATCH;
         break;
 
     case VENDOR_SPECIFIC_CHARS:
         NtoS(c, buf);
-        fmt = "Warning: %s invalid character code %s";
+        fmt = "%s invalid character code %s";
+        doc->badChars |= BC_VENDOR_SPECIFIC_CHARS;
         break;
 
     case INVALID_SGML_CHARS:
         NtoS(c, buf);
-        fmt = "Warning: %s invalid character code %s";
+        fmt = "%s invalid character code %s";
+        doc->badChars |= BC_INVALID_SGML_CHARS;
         break;
 
     case INVALID_UTF8:
         sprintf( buf, "U+%04X", c );
-        fmt = "Warning: %s invalid UTF-8 bytes (char. code %s)";
+        fmt = "%s invalid UTF-8 bytes (char. code %s)";
+        doc->badChars |= BC_INVALID_UTF8;
         break;
 
 #if SUPPORT_UTF16_ENCODINGS
     case INVALID_UTF16:
         sprintf( buf, "U+%04X", c );
-        fmt = "Warning: %s invalid UTF-16 surrogate pair (char. code %s)";
+        fmt = "%s invalid UTF-16 surrogate pair (char. code %s)";
+        doc->badChars |= BC_INVALID_UTF16;
         break;
 #endif
 
 #if SUPPORT_ASIAN_ENCODINGS
     case INVALID_NCR:
         NtoS(c, buf);
-        fmt = "Warning: %s invalid numeric character reference %s";
+        fmt = "%s invalid numeric character reference %s";
+        doc->badChars |= BC_INVALID_NCR;
         break;
 #endif
-    default:
-        reason = 0;
-        break;
     }
 
-    if ( fmt )
+    if (fmt)
         messageLexer( doc, TidyWarning, fmt, action, buf );
-    if ( reason )
-      doc->badChars |= reason;
 }
 
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
@@ -403,12 +403,12 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     {
     case UNKNOWN_ATTRIBUTE:
         messageNode( doc, TidyWarning, node,
-                     "unknown attribute \"%s\"", name );
+                     "%s unknown attribute \"%s\"", tagdesc, name );
         break;
 
     case INSERTING_ATTRIBUTE:
         messageNode( doc, TidyWarning, node,
-                     "inserting \"%s\" attribute for %s element", name, tagdesc );
+                     "%s inserting \"%s\" attribute", tagdesc, name );
         break;
 
     case MISSING_ATTR_VALUE:
@@ -477,14 +477,6 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
                      "%s proprietary attribute \"%s\"", tagdesc, name );
         break;
 
-    case UNEXPECTED_END_OF_FILE:
-        /* on end of file adjust reported position to end of input */
-        doc->lexer->lines   = doc->docIn->curline;
-        doc->lexer->columns = doc->docIn->curcol;
-        messageLexer( doc, TidyWarning,
-                      "end of file while parsing attributes" );
-        break;
-
     case ID_NAME_MISMATCH:
         messageNode( doc, TidyWarning, node,
                      "%s id and name attribute value mismatch", tagdesc );
@@ -550,6 +542,14 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     case INVALID_XML_ID:
         messageNode( doc, TidyWarning, node,
                      "%s cannot copy name attribute to id", tagdesc );
+        break;
+
+    case UNEXPECTED_END_OF_FILE:
+        /* on end of file adjust reported position to end of input */
+        doc->lexer->lines   = doc->docIn->curline;
+        doc->lexer->columns = doc->docIn->curcol;
+        messageLexer( doc, TidyWarning,
+                      "end of file while parsing attributes" );
         break;
     }
 }
@@ -850,7 +850,7 @@ void ErrorSummary( TidyDocImpl* doc )
             tidy_out(doc, "as of February 1998 few browsers support the new entities.\n\n");
         }
 #endif
-        if (doc->badChars & VENDOR_SPECIFIC_CHARS)
+        if (doc->badChars & BC_VENDOR_SPECIFIC_CHARS)
         {
 
             tidy_out(doc, "It is unlikely that vendor-specific, system-dependent encodings\n");
@@ -859,7 +859,7 @@ void ErrorSummary( TidyDocImpl* doc )
             tidy_out(doc, " character encoding, instead you are recommended to\n" );
             tidy_out(doc, "use named entities, e.g. &trade;.\n\n");
         }
-        if ((doc->badChars & INVALID_SGML_CHARS) || (doc->badChars & INVALID_NCR))
+        if ((doc->badChars & BC_INVALID_SGML_CHARS) || (doc->badChars & BC_INVALID_NCR))
         {
             tidy_out(doc, "Character codes 128 to 159 (U+0080 to U+009F) are not allowed in HTML;\n");
             tidy_out(doc, "even if they were, they would likely be unprintable control characters.\n");
@@ -867,7 +867,7 @@ void ErrorSummary( TidyDocImpl* doc )
             tidy_out(doc, encnam );
             tidy_out(doc, " encoding and replaced that reference with the Unicode equivalent.\n\n" );
         }
-        if (doc->badChars & INVALID_UTF8)
+        if (doc->badChars & BC_INVALID_UTF8)
         {
             tidy_out(doc, "Character codes for UTF-8 must be in the range: U+0000 to U+10FFFF.\n");
             tidy_out(doc, "The definition of UTF-8 in Annex D of ISO/IEC 10646-1:2000 also\n");
@@ -882,7 +882,7 @@ void ErrorSummary( TidyDocImpl* doc )
 
 #if SUPPORT_UTF16_ENCODINGS
 
-      if (doc->badChars & INVALID_UTF16)
+      if (doc->badChars & BC_INVALID_UTF16)
       {
         tidy_out(doc, "Character codes for UTF-16 must be in the range: U+0000 to U+10FFFF.\n");
         tidy_out(doc, "The definition of UTF-16 in Annex C of ISO/IEC 10646-1:2000 does not allow the\n");
@@ -892,7 +892,7 @@ void ErrorSummary( TidyDocImpl* doc )
 
 #endif
 
-      if (doc->badChars & INVALID_URI)
+      if (doc->badChars & BC_INVALID_URI)
       {
         tidy_out(doc, "URIs must be properly escaped, they must not contain unescaped\n");
         tidy_out(doc, "characters below U+0021 including the space character and not\n");

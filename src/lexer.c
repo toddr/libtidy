@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/22 03:31:32 $ 
-    $Revision: 1.121 $ 
+    $Date: 2003/05/23 01:41:01 $ 
+    $Revision: 1.122 $ 
 
 */
 
@@ -883,7 +883,7 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
                     ReportEntityError( doc, MISSING_SEMICOLON_NCR,
                                        lexer->lexbuf+start, c );
  
-                ReportEncodingError( doc, INVALID_NCR | replaceMode, ch );
+                ReportEncodingError(doc, INVALID_NCR, ch, replaceMode == DISCARDED_CHAR);
                 
                 if ( c1 )
                 {
