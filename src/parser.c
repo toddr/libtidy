@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/07 03:18:25 $ 
-    $Revision: 1.66 $ 
+    $Date: 2003/04/07 16:06:40 $ 
+    $Revision: 1.67 $ 
 
 */
 
@@ -792,7 +792,13 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                                  node->end <= node->start + 1 &&
                                  lexer->lexbuf[node->start] == ' ' );
 
-            if ( cfgBool(doc, TidyEncloseBlockText) && !iswhitenode )
+            /* <form>, <blockquote> and <noscript> don't allow #PCDATA 
+               in HTML 4.01 Strict, %block; model instead of %flow; 
+               depending on --enclose-block-text text is wrapped in <p> */
+            if ( cfgBool(doc, TidyEncloseBlockText) && !iswhitenode &&
+                (nodeIsFORM(element) ||
+                 nodeIsBLOCKQUOTE(element) ||
+                 nodeIsNOSCRIPT(element)))
             {
                 UngetToken( doc );
                 node = InferredTag( doc, "p" );
@@ -1071,7 +1077,12 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
             if (node->tag->model & CM_INLINE)
             {
                 /* DSR - 27Apr02 ensure we wrap anchors and other inline content */
-                if ( cfgBool(doc, TidyEncloseBlockText) )
+                /* infer <p> only for <form>, <blockquote> and <noscript> parents */
+                if ( cfgBool(doc, TidyEncloseBlockText) &&
+                    (nodeIsFORM(element) ||
+                     nodeIsBLOCKQUOTE(element) ||
+                     nodeIsNOSCRIPT(element)
+                    ))
                 {
                     UngetToken( doc );
                     node = InferredTag( doc, "p" );
