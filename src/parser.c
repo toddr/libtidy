@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.83 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/12 04:51:48 $ 
+    $Revision: 1.84 $ 
 
 */
 
@@ -18,6 +18,10 @@
 #include "clean.h"
 #include "tags.h"
 #include "tmbstr.h"
+
+#ifdef AUTO_INPUT_ENCODING
+#include "charsets.h"
+#endif
 
 Bool CheckNodeIntegrity(Node *node)
 {
@@ -2946,7 +2950,52 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
                     ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
             }
             else if ( nodeIsNOSCRIPT(node) )
+            {
                 ReportWarning( doc, head, node, TAG_NOT_ALLOWED_IN);
+            }
+
+#ifdef AUTO_INPUT_ENCODING
+            else if (nodeIsMETA(node))
+            {
+                AttVal * httpEquiv = AttrGetById(node, TidyAttr_HTTP_EQUIV);
+                AttVal * content = AttrGetById(node, TidyAttr_CONTENT);
+                if (httpEquiv && AttrValueIs(httpEquiv, "Content-Type") && AttrHasValue(content))
+                {
+                    tmbstr val, charset;
+                    uint end = 0;
+                    val = charset = tmbstrdup(content->value);
+                    val = tmbstrtolower(val);
+                    val = strstr(content->value, "charset");
+                    
+                    if (val)
+                        val += 7;
+
+                    while(val && *val && (IsWhite((tchar)*val) ||
+                          *val == '=' || *val == '"' || *val == '\''))
+                        ++val;
+
+                    while(val && val[end] && !(IsWhite((tchar)val[end]) ||
+                          val[end] == '"' || val[end] == '\'' || val[end] == ';'))
+                        ++end;
+
+                    if (val && end)
+                    {
+                        tmbstr encoding = tmbstrndup(val, end);
+                        uint id = GetEncodingIdFromName(encoding);
+
+                        /* todo: detect mismatch with BOM/XMLDecl/declared */
+                        /* todo: error for unsupported encodings */
+                        /* todo: try to re-init transcoder */
+                        /* todo: change input/output encoding settings */
+                        /* todo: store id in StreamIn */
+
+                        MemFree(encoding);
+                    }
+
+                    MemFree(charset);
+                }
+            }
+#endif /* AUTO_INPUT_ENCODING */
 
             InsertNodeAtEnd(head, node);
             ParseTag(doc, node, IgnoreWhitespace);
@@ -3647,6 +3696,24 @@ void ParseDocument(TidyDocImpl* doc)
 
     while ((node = GetToken(doc, IgnoreWhitespace)) != NULL)
     {
+
+#ifdef AUTO_INPUT_ENCODING
+        if (node->type == XmlDecl)
+        {
+            AttVal* encoding = GetAttrByName(node, "encoding");
+            if (AttrHasValue(encoding))
+            {
+                uint id = GetEncodingIdFromName(encoding->value);
+
+                /* todo: detect mismatch with BOM/XMLDecl/declared */
+                /* todo: error for unsupported encodings */
+                /* todo: try to re-init transcoder */
+                /* todo: change input/output encoding settings */
+                /* todo: store id in StreamIn */
+            }
+        }
+#endif /* AUTO_INPUT_ENCODING */
+
         /* deal with comments etc. */
         if (InsertMisc( &doc->root, node ))
             continue;
