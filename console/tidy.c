@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/03/19 02:42:19 $ 
-    $Revision: 1.17 $ 
+    $Author: hoehrmann $ 
+    $Date: 2004/07/30 21:05:14 $ 
+    $Revision: 1.18 $ 
 */
 
 #include "tidy.h"
@@ -77,7 +77,7 @@ void help( TidyDoc tdoc, ctmbstr prog )
     printf( "-------------------\n");
     printf( "  -raw              output values above 127 without conversion to entities\n");
     printf( "  -ascii            use US-ASCII for output, ISO-8859-1 for input\n");
-    printf( "  -latin0           use US-ASCII for output, ISO-8859-1 for input\n");
+    printf( "  -latin0           use US-ASCII for output, ISO-8859-15 for input\n");
     printf( "  -latin1           use ISO-8859-1 for both input and output\n");
 #ifndef NO_NATIVE_ISO2022_SUPPORT
     printf( "  -iso2022          use ISO-2022 for both input and output\n");
