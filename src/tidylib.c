@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/26 03:19:44 $ 
-    $Revision: 1.16 $ 
+    $Date: 2003/04/26 03:33:53 $ 
+    $Revision: 1.17 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1058,7 +1058,7 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
 #ifdef TIDY_WIN32_MLANG_SUPPORT
     if (in->encoding > WIN32MLANG)
         Win32MLangInitInputTranscoder(in, in->encoding);
-#endif TIDY_WIN32_MLANG_SUPPORT
+#endif /* TIDY_WIN32_MLANG_SUPPORT */
 
     /* Tidy doesn't alter the doctype for generic XML docs */
     if ( xmlIn )
@@ -1077,7 +1077,7 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
     Win32MLangUninitInputTranscoder(in);
-#endif TIDY_WIN32_MLANG_SUPPORT
+#endif /* TIDY_WIN32_MLANG_SUPPORT */
 
     doc->docIn = NULL;
     return tidyDocStatus( doc );
