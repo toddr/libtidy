@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/08 01:57:16 $ 
-    $Revision: 1.9 $ 
+    $Date: 2003/05/24 23:32:51 $ 
+    $Revision: 1.10 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -105,21 +105,16 @@ Parser ParseMap;
 /* Attribute checking methods */
 
 CheckAttribs CheckAttributes;
-CheckAttribs CheckHR;
 CheckAttribs CheckIMG;
-CheckAttribs CheckAnchor;
 CheckAttribs CheckLINK;
-CheckAttribs CheckMap;
 CheckAttribs CheckAREA;
 CheckAttribs CheckTABLE;
-CheckAttribs CheckTableCell;
 CheckAttribs CheckCaption;
 CheckAttribs CheckSCRIPT;
 CheckAttribs CheckSTYLE;
 CheckAttribs CheckHTML;
 CheckAttribs CheckFORM;
 CheckAttribs CheckMETA;
-
 
 /* 0 == TidyTag_UNKNOWN */
 #define TagId(node)        ((node) && (node)->tag ? (node)->tag->id : TidyTag_UNKNOWN)

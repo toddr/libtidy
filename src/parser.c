@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/24 16:19:36 $ 
-    $Revision: 1.99 $ 
+    $Date: 2003/05/24 23:32:51 $ 
+    $Revision: 1.100 $ 
 
 */
 
@@ -3893,6 +3893,9 @@ void AttributeChecks(TidyDocImpl* doc, Node* node)
 
             if (!cfgBool(doc, TidyXmlTags) && cfgBool(doc, TidyXhtmlOut))
                 FixXmlLang(doc, node);
+
+            if (IsAnchorElement(doc, node))
+                FixId(doc, node);
         }
 
         if (node->content)

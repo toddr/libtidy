@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/10 07:39:49 $ 
-    $Revision: 1.42 $ 
+    $Date: 2003/05/24 23:32:51 $ 
+    $Revision: 1.43 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -126,7 +126,7 @@ static const Dict tag_defs[] =
   { TidyTag_UNKNOWN,    "unknown!",   VERS_UNKNOWN,         NULL,                       (0),                                           NULL,          NULL           },
 
   /* W3C defined elements */
-  { TidyTag_A,          "a",          VERS_ELEM_A,          &W3CAttrsFor_A[0],          (CM_INLINE),                                   ParseInline,   CheckAnchor    },
+  { TidyTag_A,          "a",          VERS_ELEM_A,          &W3CAttrsFor_A[0],          (CM_INLINE),                                   ParseInline,   NULL           },
   { TidyTag_ABBR,       "abbr",       VERS_ELEM_ABBR,       &W3CAttrsFor_ABBR[0],       (CM_INLINE),                                   ParseInline,   NULL           },
   { TidyTag_ACRONYM,    "acronym",    VERS_ELEM_ACRONYM,    &W3CAttrsFor_ACRONYM[0],    (CM_INLINE),                                   ParseInline,   NULL           },
   { TidyTag_ADDRESS,    "address",    VERS_ELEM_ADDRESS,    &W3CAttrsFor_ADDRESS[0],    (CM_BLOCK),                                    ParseBlock,    NULL           },
@@ -167,7 +167,7 @@ static const Dict tag_defs[] =
   { TidyTag_H5,         "h5",         VERS_ELEM_H5,         &W3CAttrsFor_H5[0],         (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
   { TidyTag_H6,         "h6",         VERS_ELEM_H6,         &W3CAttrsFor_H6[0],         (CM_BLOCK|CM_HEADING),                         ParseInline,   NULL           },
   { TidyTag_HEAD,       "head",       VERS_ELEM_HEAD,       &W3CAttrsFor_HEAD[0],       (CM_HTML|CM_OPT|CM_OMITST),                    ParseHead,     NULL           },
-  { TidyTag_HR,         "hr",         VERS_ELEM_HR,         &W3CAttrsFor_HR[0],         (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    CheckHR        },
+  { TidyTag_HR,         "hr",         VERS_ELEM_HR,         &W3CAttrsFor_HR[0],         (CM_BLOCK|CM_EMPTY),                           ParseEmpty,    NULL           },
   { TidyTag_HTML,       "html",       VERS_ELEM_HTML,       &W3CAttrsFor_HTML[0],       (CM_HTML|CM_OPT|CM_OMITST),                    ParseHTML,     CheckHTML      },
   { TidyTag_I,          "i",          VERS_ELEM_I,          &W3CAttrsFor_I[0],          (CM_INLINE),                                   ParseInline,   NULL           },
   { TidyTag_IFRAME,     "iframe",     VERS_ELEM_IFRAME,     &W3CAttrsFor_IFRAME[0],     (CM_INLINE),                                   ParseBlock,    NULL           },
@@ -181,7 +181,7 @@ static const Dict tag_defs[] =
   { TidyTag_LI,         "li",         VERS_ELEM_LI,         &W3CAttrsFor_LI[0],         (CM_LIST|CM_OPT|CM_NO_INDENT),                 ParseBlock,    NULL           },
   { TidyTag_LINK,       "link",       VERS_ELEM_LINK,       &W3CAttrsFor_LINK[0],       (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckLINK      },
   { TidyTag_LISTING,    "listing",    VERS_ELEM_LISTING,    &W3CAttrsFor_LISTING[0],    (CM_BLOCK|CM_OBSOLETE),                        ParsePre,      NULL           },
-  { TidyTag_MAP,        "map",        VERS_ELEM_MAP,        &W3CAttrsFor_MAP[0],        (CM_INLINE),                                   ParseBlock,    CheckMap       },
+  { TidyTag_MAP,        "map",        VERS_ELEM_MAP,        &W3CAttrsFor_MAP[0],        (CM_INLINE),                                   ParseBlock,    NULL           },
   { TidyTag_MENU,       "menu",       VERS_ELEM_MENU,       &W3CAttrsFor_MENU[0],       (CM_BLOCK|CM_OBSOLETE),                        ParseList,     NULL           },
   { TidyTag_META,       "meta",       VERS_ELEM_META,       &W3CAttrsFor_META[0],       (CM_HEAD|CM_EMPTY),                            ParseEmpty,    CheckMETA      },
   { TidyTag_NOFRAMES,   "noframes",   VERS_ELEM_NOFRAMES,   &W3CAttrsFor_NOFRAMES[0],   (CM_BLOCK|CM_FRAMES),                          ParseNoFrames, NULL           },
@@ -214,10 +214,10 @@ static const Dict tag_defs[] =
   { TidyTag_SUP,        "sup",        VERS_ELEM_SUP,        &W3CAttrsFor_SUP[0],        (CM_INLINE),                                   ParseInline,   NULL           },
   { TidyTag_TABLE,      "table",      VERS_ELEM_TABLE,      &W3CAttrsFor_TABLE[0],      (CM_BLOCK),                                    ParseTableTag, CheckTABLE     },
   { TidyTag_TBODY,      "tbody",      VERS_ELEM_TBODY,      &W3CAttrsFor_TBODY[0],      (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
-  { TidyTag_TD,         "td",         VERS_ELEM_TD,         &W3CAttrsFor_TD[0],         (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
+  { TidyTag_TD,         "td",         VERS_ELEM_TD,         &W3CAttrsFor_TD[0],         (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    NULL           },
   { TidyTag_TEXTAREA,   "textarea",   VERS_ELEM_TEXTAREA,   &W3CAttrsFor_TEXTAREA[0],   (CM_INLINE|CM_FIELD),                          ParseText,     NULL           },
   { TidyTag_TFOOT,      "tfoot",      VERS_ELEM_TFOOT,      &W3CAttrsFor_TFOOT[0],      (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
-  { TidyTag_TH,         "th",         VERS_ELEM_TH,         &W3CAttrsFor_TH[0],         (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    CheckTableCell },
+  { TidyTag_TH,         "th",         VERS_ELEM_TH,         &W3CAttrsFor_TH[0],         (CM_ROW|CM_OPT|CM_NO_INDENT),                  ParseBlock,    NULL           },
   { TidyTag_THEAD,      "thead",      VERS_ELEM_THEAD,      &W3CAttrsFor_THEAD[0],      (CM_TABLE|CM_ROWGRP|CM_OPT),                   ParseRowGroup, NULL           },
   { TidyTag_TITLE,      "title",      VERS_ELEM_TITLE,      &W3CAttrsFor_TITLE[0],      (CM_HEAD),                                     ParseTitle,    NULL           },
   { TidyTag_TR,         "tr",         VERS_ELEM_TR,         &W3CAttrsFor_TR[0],         (CM_TABLE|CM_OPT),                             ParseRow,      NULL           },
@@ -577,11 +577,6 @@ void CheckAttributes( TidyDocImpl* doc, Node *node )
 
 /* methods for checking attributes for specific elements */
 
-void CheckHR( TidyDocImpl* doc, Node *node )
-{
-    CheckAttributes( doc, node );
-}
-
 void CheckIMG( TidyDocImpl* doc, Node *node )
 {
     Bool HasAlt = AttrGetById(node, TidyAttr_ALT) != NULL;
@@ -612,23 +607,6 @@ void CheckIMG( TidyDocImpl* doc, Node *node )
         if ( HasIsMap && !HasUseMap )
             ReportMissingAttr( doc, node, "ismap" );
     }
-}
-
-void CheckAnchor( TidyDocImpl* doc, Node *node )
-{
-    CheckAttributes( doc, node );
-    FixId( doc, node );
-}
-
-void CheckMap( TidyDocImpl* doc, Node *node )
-{
-    CheckAttributes( doc, node );
-    FixId( doc, node );
-}
-
-void CheckTableCell( TidyDocImpl* doc, Node *node )
-{
-    CheckAttributes( doc, node );
 }
 
 void CheckCaption( TidyDocImpl* doc, Node *node )
@@ -810,17 +788,21 @@ void CheckLINK( TidyDocImpl* doc, Node *node )
 void CheckFORM( TidyDocImpl* doc, Node *node )
 {
     AttVal *action = AttrGetById(node, TidyAttr_ACTION);
-    CheckAttributes( doc, node );
+
+    CheckAttributes(doc, node);
+
     if (!action)
-        ReportMissingAttr( doc, node, "action");
+        ReportMissingAttr(doc, node, "action");
 }
 
 /* reports missing content attribute */
 void CheckMETA( TidyDocImpl* doc, Node *node )
 {
     AttVal *content = AttrGetById(node, TidyAttr_CONTENT);
-    CheckAttributes( doc, node );
-    if ( ! content )
+
+    CheckAttributes(doc, node);
+
+    if (!content)
         ReportMissingAttr( doc, node, "content" );
     /* name or http-equiv attribute must also be set */
 }
