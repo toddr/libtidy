@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/23 20:44:08 $ 
-    $Revision: 1.38 $ 
+    $Author: creitzel $ 
+    $Date: 2001/10/26 13:57:03 $ 
+    $Revision: 1.39 $ 
 
   Contributing Author(s):
 
@@ -89,7 +89,7 @@ static int rawBufpos = 0;
 static Bool rawPushed = no;
 
 /* Mapping for Windows Western character set CP 1252 (chars 128-159/U+0080-U+009F) to Unicode */
-int Win2Unicode[32] =
+uint Win2Unicode[32] =
 {
     0x20AC, 0x0000, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
     0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x0000, 0x017D, 0x0000,
@@ -98,7 +98,7 @@ int Win2Unicode[32] =
 };
 
 /* Function for conversion from Windows-1252 to Unicode */
-int DecodeWin1252(int c)
+uint DecodeWin1252(uint c)
 {
     if (127 < c && c < 160)
         c = Win2Unicode[c - 128];
@@ -112,7 +112,7 @@ int DecodeWin1252(int c)
 */
 
 /* modified to only need chars 128-255/U+0080-U+00FF - Terry Teague 19 Aug 01 */
-int Mac2Unicode[128] = 
+uint Mac2Unicode[128] = 
 {
     /* x7F = DEL */
     
@@ -145,7 +145,7 @@ int Mac2Unicode[128] =
 };
 
 /* Function to convert from MacRoman to Unicode */
-int DecodeMacRoman(int c)
+uint DecodeMacRoman(uint c)
 {
     if (127 < c)
         c = Mac2Unicode[c - 128];
@@ -159,7 +159,7 @@ int DecodeMacRoman(int c)
    Unicode equivalent are mapped to '?'. Is this appropriate?
 */
 
-int Symbol2Unicode[] = 
+uint Symbol2Unicode[] = 
 {
     0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
     0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
@@ -211,7 +211,7 @@ int Symbol2Unicode[] =
 };
 
 /* Function to convert from Symbol Font chars to Unicode */
-int DecodeSymbolFont(int c)
+uint DecodeSymbolFont(uint c)
 {
     if (c > 255)
         return c;
@@ -1527,7 +1527,6 @@ static void outcUTF8Bytes(Out *out, unsigned char *buf, int *count)
 /* For mac users, should we map Unicode back to MacRoman? */
 void outc(uint c, Out *out)
 {
-    uint ch;
 
 #if 1
     if (out->encoding == MACROMAN)
@@ -1572,6 +1571,7 @@ void outc(uint c, Out *out)
     if (out->encoding == UTF8)
 #if 0
     {
+        uint ch;
         if (c < 128)
             putc(c, out->fp);
         else if (c <= 0x7FF)
@@ -1841,7 +1841,13 @@ int main(int argc, char **argv)
                 XmlTags = yes;
             else if (wstrcasecmp(arg,   "asxml") == 0 ||
                      wstrcasecmp(arg, "asxhtml") == 0)
+            {
                 xHTML = yes;
+            }
+            else if (wstrcasecmp(arg,   "ashtml") == 0)
+            {
+                HtmlOut = yes;
+            }
             else if (wstrcasecmp(arg, "indent") == 0)
             {
                 IndentContent = yes;

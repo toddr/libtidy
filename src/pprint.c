@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/07 07:12:37 $ 
-    $Revision: 1.33 $ 
+    $Author: creitzel $ 
+    $Date: 2001/10/26 13:57:03 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -1069,11 +1069,11 @@ static void PPrintTag(Lexer *lexer, Out *fout,
 
     PPrintAttrs(fout, indent, lexer, node, node->attributes);
 
-    if ((XmlOut == yes || lexer->isvoyager) &&
-            ((node->type == StartEndTag && !xHTML) || node->tag->model & CM_EMPTY))
+    if ( (XmlOut || xHTML) &&
+         (node->type == StartEndTag || node->tag->model & CM_EMPTY))
     {
-        AddC(' ', linelen++);   /* compatibility hack */
-        AddC('/', linelen++);
+        AddC(' ', linelen++);   /* Space is NS compatibility hack <br /> */
+        AddC('/', linelen++);   /* Required end tag marker */
     }
 
     AddC('>', linelen++);

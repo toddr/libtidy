@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/09/04 08:20:36 $ 
-    $Revision: 1.32 $ 
+    $Author: creitzel $ 
+    $Date: 2001/10/26 13:57:03 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -79,6 +79,7 @@ Bool HideEndTags = no;      /* suppress optional end tags */
 Bool XmlTags = no;          /* treat input as XML */
 Bool XmlOut = no;           /* create output as XML */
 Bool xHTML = no;            /* output extensible HTML */
+Bool HtmlOut = no;          /* output plain-old HTML, even for XHTML input. Yes means set explicitly. */
 Bool XmlPi = no;            /* add <?xml?> for XML docs */
 Bool RawOut = no;           /* avoid mapping values > 127 to entities: not used for anything yet */
 Bool UpperCaseTags = no;    /* output tags in upper not lower case */
@@ -192,6 +193,7 @@ static struct Flag
     {"input-xml",       {(int *)&XmlTags},          ParseBool},
     {"output-xml",      {(int *)&XmlOut},           ParseBool},
     {"output-xhtml",    {(int *)&xHTML},            ParseBool},
+    {"output-html",     {(int *)&HtmlOut},          ParseBool},
     {"add-xml-pi",      {(int *)&XmlPi},            ParseBool},
     {"add-xml-decl",    {(int *)&XmlPi},            ParseBool},
     {"assume-xml-procins",  {(int *)&XmlPIs},       ParseBool},
