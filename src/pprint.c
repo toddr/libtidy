@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/16 04:24:11 $ 
-    $Revision: 1.14 $ 
+    $Date: 2001/07/16 10:20:07 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -468,18 +468,18 @@ static void PPrintChar(uint c, uint mode)
         if (c >= 0x2013 && c <= 0x201E)
         {
             switch (c) {
-              case 0x2013:
-              case 0x2014:
+              case 0x2013: /* en dash */
+              case 0x2014: /* em dash */
                 c = '-';
                 break;
-              case 0x2018:
-              case 0x2019:
-              case 0x201A:
+              case 0x2018: /* left single  quotation mark */
+              case 0x2019: /* right single quotation mark */
+              case 0x201A: /* single low-9 quotation mark */
                 c = '\'';
                 break;
-              case 0x201C:
-              case 0x201D:
-              case 0x201E:
+              case 0x201C: /* left double  quotation mark */
+              case 0x201D: /* right double quotation mark */
+              case 0x201E: /* double low-9 quotation mark */
                 c = '"';
                 break;
               }
