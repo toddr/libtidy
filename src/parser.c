@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/03 01:26:25 $ 
-    $Revision: 1.5 $ 
+    $Date: 2001/06/03 01:34:26 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -1500,12 +1500,29 @@ void ParseDefList(Lexer *lexer, Node *list, uint mode)
                 DiscardElement(list);
             }
 
-            /* and parse contents of center */
-            ParseTag(lexer, node, mode);
+            /* #426885 - fix by Glenn Carroll 19 Apr 00, and
+                         Gary Dechaines 11 Aug 00 */
+            /* ParseTag can destroy node, if it finds that
+           	 * this <center> is followed immediately by </center>.
+             * It's awkward but necessary to determine if this
+             * has happened.
+             */
+            parent = node->parent;
 
-            /* now create a new dl element */
-            list = InferredTag(lexer, "dl");
-            InsertNodeAfterElement(node, list);
+            /* and parse contents of center */
+            lexer->excludeBlocks = no;
+            ParseTag(lexer, node, mode);
+            lexer->excludeBlocks = yes;
+
+            /* now create a new dl element,
+             * unless node has been blown away because the
+             * center was empty, as above.
+             */
+            if (parent->last == node)
+            {
+                list = InferredTag(lexer, "dl");
+                InsertNodeAfterElement(node, list);
+            }
             continue;
         }
 
