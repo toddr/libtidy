@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 20:32:29 $ 
-    $Revision: 1.45 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/21 04:05:51 $ 
+    $Revision: 1.46 $ 
 
 */
 
@@ -2319,7 +2319,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     av->next = attributes;
 
                     attributes = av;
-                    continue;
+                    /* continue; */
                 }
 
                 /* now look for '>' */
