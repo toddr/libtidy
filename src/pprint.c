@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 02:00:13 $ 
-    $Revision: 1.71 $ 
+    $Date: 2003/05/08 21:04:10 $ 
+    $Revision: 1.72 $ 
 
 */
 
@@ -1178,8 +1178,9 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
     Bool indAttrs  = cfgBool( doc, TidyIndentAttributes );
     uint xtra      = AttrIndent( doc, node, attr );
     Bool first     = AttrNoIndentFirst( doc, node, attr );
-    ctmbstr name   = attr->attribute;
+    tmbstr name    = attr->attribute;
     Bool wrappable = no;
+    tchar c;
 
     if ( indAttrs )
     {
@@ -1212,9 +1213,17 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
     }
 
     /* Attribute name */
-    while ( *name )
+    while (*name)
     {
-        AddChar( pprint, FoldCase(doc, *name++, ucAttrs) );
+        c = (unsigned char)*name;
+
+        if (c > 0x7F)
+            name += GetUTF8(name, &c);
+        else if (ucAttrs)
+            c = ToUpper(c);
+
+        AddChar(pprint, c);
+        ++name;
     }
 
 /* fix for bug 732038 */
@@ -1317,18 +1326,30 @@ static void PPrintTag( TidyDocImpl* doc,
                        uint mode, uint indent, Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
-    char c, *p;
     Bool uc = cfgBool( doc, TidyUpperCaseTags );
     Bool xhtmlOut = cfgBool( doc, TidyXhtmlOut );
     Bool xmlOut = cfgBool( doc, TidyXmlOut );
+    Bool xml = cfgBool(doc, TidyXmlTags);
+    tchar c;
+    tmbstr s = node->element;
 
     AddChar( pprint, '<' );
 
     if ( node->type == EndTag )
         AddChar( pprint, '/' );
 
-    for ( p = node->element; (c = *p); ++p )
-        AddChar( pprint, FoldCase(doc, c, uc) );
+    while (*s)
+    {
+        c = (unsigned char)*s;
+
+        if (c > 0x7F)
+            s += GetUTF8(s, &c);
+        else if (uc)
+            c = ToUpper(c);
+
+        AddChar(pprint, c);
+        ++s;
+    }
 
     PPrintAttrs( doc, indent, node );
 
@@ -1377,7 +1398,8 @@ static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
     Bool uc = cfgBool( doc, TidyUpperCaseTags );
-    ctmbstr p;
+    tmbstr s = node->element;
+    tchar c;
 
    /*
      Netscape ignores SGML standard by not ignoring a
@@ -1391,8 +1413,20 @@ static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 #endif
 
     AddString( pprint, "</" );
-    for ( p = node->element; *p; ++p )
-        AddChar( pprint, FoldCase(doc, *p, uc) );
+
+    while (*s)
+    {
+        c = (unsigned char)*s;
+
+        if (c > 0x7F)
+            s += GetUTF8(s, &c);
+        else if (uc)
+            c = ToUpper(c);
+
+        AddChar(pprint, c);
+        ++s;
+    }
+
     AddChar( pprint, '>' );
 }
 
