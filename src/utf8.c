@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:50 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/25 18:24:14 $ 
+    $Revision: 1.5 $ 
 
   Uses public interfaces to abstract input source and output
   sink, which may be user supplied or either FILE* or memory
@@ -422,7 +422,7 @@ int EncodeCharToUTF8Bytes( uint c, tmbstr encodebuf,
     {
         int i;
         fprintf( stderr, "UTF-8 encoding error for U+%x : ", c );
-        for (i = 0; 0 < bytes; i++)
+        for (i = 0; i < bytes; i++)
             fprintf( stderr, "0x%02x ", buf[i] );
         fprintf( stderr, "\n" );
     }
