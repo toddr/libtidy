@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: uid54069 $ 
-    $Date: 2001/07/04 18:41:33 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/08 02:59:48 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -2702,6 +2702,7 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
   
     if (HasTitle == 0)
     {
+        if (!BodyOnly)	/* Feature request #434940 - fix by Ignacio Vazquez-Abrams 21 Jun 01 */
         ReportWarning(lexer, head, null, MISSING_TITLE_ELEMENT);
         InsertNodeAtEnd(head, InferredTag(lexer, "title"));
     }

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/25 02:17:20 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/07/08 02:58:38 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -101,6 +101,7 @@ Bool Word2000 = no;         /* draconian cleaning for Word2000 */
 Bool TidyMark = yes;        /* add meta element indicating tidied doc */
 Bool Emacs = no;            /* if true format error output for GNU Emacs */
 Bool LiteralAttribs = no;   /* if true attributes may use newlines */
+Bool BodyOnly = no;         /* #434940 - output BODY content only */
 
 typedef struct _lex PLex;
 
@@ -184,6 +185,7 @@ static struct Flag
     {"keep-time",       {(int *)&KeepFileTimes},    ParseBool},
     {"show-warnings",   {(int *)&ShowWarnings},     ParseBool},
     {"error-file",      {(int *)&errfile},          ParseString},
+    {"show-body-only",   {(int *)&BodyOnly},        ParseBool},	/* #434940 */
     {"slide-style",     {(int *)&slide_style},      ParseName},
     {"new-inline-tags",     {(int *)&inline_tags},  ParseTagNames},
     {"new-blocklevel-tags", {(int *)&block_tags},   ParseTagNames},
@@ -847,7 +849,7 @@ void ParseDocType(Location location, char *option)
 
     /* "-//ACME//DTD HTML 3.14159//EN" or similar */
 
-    if (c == '"')
+    if (c == '"' || c == '\'')	/* #431889 - fix by Terry Teague 01 Jul 01 */
     {
         ParseString(location, option);
         doctype_mode = doctype_user;
