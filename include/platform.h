@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/13 23:29:21 $ 
-    $Revision: 1.48 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/03/19 03:10:19 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -489,12 +489,12 @@ extern "C" {
 
 #endif /* _WIN32 */
 
-/* hack for gnu sys/types.h file  which defines uint and ulong */
+/* hack for gnu sys/types.h file which defines uint and ulong */
 
 #if defined(BE_OS) || defined(SOLARIS_OS) || defined(BSD_BASED_OS) || defined(OSF_OS) || defined(IRIX_OS) || defined(AIX_OS)
 #include <sys/types.h>
 #endif
-#if !defined(HPUX_OS) && !defined(CYGWIN_OS) && !defined(MAC_OS_X) && !defined(BE_OS) && !defined(SOLARIS_OS) && !defined(BSD_BASED_OS) && !defined(OSF_OS) && !defined(IRIX_OS) && !defined(AIX_OS)
+#if !defined(HPUX_OS) && !defined(CYGWIN_OS) && !defined(MAC_OS_X) && !defined(BE_OS) && !defined(SOLARIS_OS) && !defined(BSD_BASED_OS) && !defined(OSF_OS) && !defined(IRIX_OS) && !defined(AIX_OS) && !defined(LINUX_OS)
 typedef unsigned int uint;
 #endif
 #if defined(HPUX_OS) || defined(CYGWIN_OS) || defined(MAC_OS) || defined(BSD_BASED_OS) || defined(_WIN32)
