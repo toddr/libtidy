@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/17 20:51:26 $ 
-    $Revision: 1.93 $ 
+    $Date: 2003/05/21 16:32:04 $ 
+    $Revision: 1.94 $ 
 
 */
 
@@ -240,6 +240,9 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
     if (element->content)
         return no;
 
+    if (!element->tag)
+        return no;
+
     if ( element->tag->model & CM_BLOCK && element->attributes != NULL )
         return no;
 
@@ -286,6 +289,12 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
     if (element->tag->id == TidyTag_UNKNOWN)
         return no;
 
+    if (nodeIsBODY(element))
+        return no;
+
+    if (nodeIsCOLGROUP(element))
+        return no;
+
     return yes;
 }
 
@@ -307,6 +316,30 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
         InsertNodeAtStart( element, NewLiteralTextNode(doc->lexer, onesixty) );
     }
     return element;
+}
+
+Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->content)
+            DropEmptyElements(doc, node->content);
+
+        if (!nodeIsElement(node) && !(node->type == TextNode && !(node->start < node->end)))
+        {
+            node = next;
+            continue;
+        }
+
+        next = TrimEmptyElement(doc, node);
+        node = node == next ? node->next : next;
+    }
+
+    return node;
 }
 
 /* 
@@ -366,14 +399,6 @@ static void TrimTrailingSpace( TidyDocImpl* doc, Node *element, Node *last )
                 }
             }
         }
-        /* if empty string then delete from parse tree */
-        if ( last->start == last->end
-#ifdef COMMENT_NBSP_FIX
-             && tag != doc->tags.tag_td 
-             && tag != doc->tags.tag_th
-#endif
-            )
-            TrimEmptyElement( doc, last );
     }
 }
 
@@ -512,6 +537,10 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
     if (!next && !nodeHasCM(node->parent, CM_INLINE))
         return yes;
 
+    /* <div><small>... </small><h3>...</h3></div> */
+    if (!next && node->parent->next && !nodeHasCM(node->parent->next, CM_INLINE))
+        return yes;
+
     if (!next)
         return no;
 
@@ -564,6 +593,10 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
         (node->prev->type == StartTag || node->prev->type == StartEndTag))
         return yes;
 
+    /* <p><span> ...</span></p> */
+    if (!node->prev && !node->parent->prev && !nodeHasCM(node->parent->parent, CM_INLINE))
+        return yes;
+
     return no;
 }
 
@@ -591,7 +624,6 @@ static void CleanSpaces(TidyDocImpl* doc, Node* node)
             FreeNode(doc, node);
             node = next;
 
-            TrimEmptyElement(doc, parent);
             continue;
         }
 
@@ -706,10 +738,7 @@ static void ParseTag( TidyDocImpl* doc, Node *node, uint mode )
         return;
 
     if (node->type == StartEndTag)
-    {
-        TrimEmptyElement( doc, node );
         return;
-    }
 
     (*node->tag->parser)( doc, node, mode );
 }
@@ -883,7 +912,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 
             element->closed = yes;
             TrimSpaces( doc, element );
-            TrimEmptyElement( doc, element );
             return;
         }
 
@@ -939,7 +967,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         }
 
                         TrimSpaces( doc, element );
-                        TrimEmptyElement( doc, element );
                         return;
                     }
                 }
@@ -951,7 +978,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 {
                     UngetToken( doc );
                     TrimSpaces( doc, element );
-                    TrimEmptyElement( doc, element );
                     return;
                 }
             }
@@ -1133,7 +1159,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 {
                     UngetToken( doc );
                     TrimSpaces( doc, element );
-                    TrimEmptyElement( doc, element );
                     return;
                 }
             }
@@ -1150,7 +1175,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         lexer->istackbase = istackbase;
 
                     TrimSpaces( doc, element );
-                    TrimEmptyElement( doc, element );
                     return;
                 }
             }
@@ -1201,7 +1225,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                          element->parent->tag->parser == ParseList )
                     {
                         TrimSpaces( doc, element );
-                        TrimEmptyElement( doc, element );
                         return;
                     }
 
@@ -1213,7 +1236,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                     if ( nodeIsDL(element->parent) )
                     {
                         TrimSpaces( doc, element );
-                        TrimEmptyElement( doc, element );
                         return;
                     }
 
@@ -1230,14 +1252,12 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                         PopInline( doc, NULL );
                     lexer->istackbase = istackbase;
                     TrimSpaces( doc, element );
-                    TrimEmptyElement( doc, element );
                     return;
 
                 }
                 else
                 {
                     TrimSpaces( doc, element );
-                    TrimEmptyElement( doc, element );
                     return;
                 }
             }
@@ -1317,7 +1337,6 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
     }
 
     TrimSpaces( doc, element );
-    TrimEmptyElement( doc, element );
 }
 
 void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
@@ -1412,7 +1431,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
 
             element->closed = yes;
             TrimSpaces( doc, element );
-            TrimEmptyElement( doc, element );
             return;
         }
 
@@ -1484,7 +1502,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if (!(mode & Preformatted))
                 TrimSpaces(doc, element);
 
-            TrimEmptyElement(doc, element);
             return;
         }
 
@@ -1557,7 +1574,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                     if (!(mode & Preformatted))
                         TrimSpaces(doc, element);
 
-                    TrimEmptyElement(doc, element);
                     return;
                 }
 
@@ -1572,7 +1588,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             {
                 UngetToken( doc );
                 TrimSpaces(doc, element);
-                TrimEmptyElement(doc, element);
                 return;
             }
         }
@@ -1595,7 +1610,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if (!(mode & Preformatted))
                 TrimSpaces(doc, element);
 
-            TrimEmptyElement(doc, element);
             return;
         }
 
@@ -1628,7 +1642,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if (!(mode & Preformatted))
                 TrimSpaces(doc, element);
 
-            TrimEmptyElement(doc, element);
             return;
         }
 
@@ -1750,7 +1763,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                     if (!(mode & Preformatted))
                         TrimSpaces(doc, element);
 
-                    TrimEmptyElement(doc, element);
                     return;
                 }
             }
@@ -1797,7 +1809,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if (!(mode & Preformatted))
                 TrimSpaces(doc, element);
 
-            TrimEmptyElement(doc, element);
             return;
         }
 
@@ -1825,7 +1836,6 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
     if (!(element->tag->model & CM_OPT))
         ReportWarning( doc, element, node, MISSING_ENDTAG_FOR);
 
-    TrimEmptyElement(doc, element);
 }
 
 void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
@@ -1859,7 +1869,6 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         {
             FreeNode( doc, node);
             list->closed = yes;
-            TrimEmptyElement( doc, list);
             return;
         }
 
@@ -1902,7 +1911,6 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
                     ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
 
                     UngetToken( doc );
-                    TrimEmptyElement( doc, list);
                     return;
                 }
             }
@@ -1956,16 +1964,12 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
             if (!(node->tag->model & (CM_BLOCK | CM_INLINE)))
             {
                 ReportWarning( doc, list, node, TAG_NOT_ALLOWED_IN);
-                TrimEmptyElement( doc, list);
                 return;
             }
 
             /* if DD appeared directly in BODY then exclude blocks */
             if (!(node->tag->model & CM_INLINE) && lexer->excludeBlocks)
-            {
-                TrimEmptyElement( doc, list);
                 return;
-            }
 
             node = InferredTag( doc, "dd");
             ReportWarning( doc, list, node, MISSING_STARTTAG);
@@ -1984,7 +1988,6 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
     }
 
     ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
-    TrimEmptyElement( doc, list);
 }
 
 void ParseList(TidyDocImpl* doc, Node *list, uint mode)
@@ -2007,7 +2010,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                 CoerceNode( doc, list, TidyTag_UL );
 
             list->closed = yes;
-            TrimEmptyElement( doc, list);
             return;
         }
 
@@ -2054,7 +2056,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                     if (list->tag->model & CM_OBSOLETE)
                         CoerceNode( doc, list, TidyTag_UL );
 
-                    TrimEmptyElement( doc, list);
                     return;
                 }
             }
@@ -2071,7 +2072,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             if (node->tag && (node->tag->model & CM_BLOCK) && lexer->excludeBlocks)
             {
                 ReportWarning( doc, list, node, MISSING_ENDTAG_BEFORE);
-                TrimEmptyElement( doc, list);
                 return;
             }
 
@@ -2089,7 +2089,6 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
         CoerceNode( doc, list, TidyTag_UL );
 
     ReportWarning( doc, list, node, MISSING_ENDTAG_FOR);
-    TrimEmptyElement( doc, list);
 }
 
 /*
@@ -2175,7 +2174,6 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
             if ( DescendantOf(row, TagId(node)) )
             {
                 UngetToken( doc );
-                TrimEmptyElement( doc, row);
                 return;
             }
 
@@ -2221,7 +2219,6 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
         if ( nodeHasCM(node, CM_ROWGRP) )
         {
             UngetToken( doc );
-            TrimEmptyElement( doc, row);
             return;
         }
 
@@ -2286,7 +2283,6 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
             PopInline( doc, NULL );
     }
 
-    TrimEmptyElement( doc, row);
 }
 
 void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
@@ -2304,7 +2300,6 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
             if (node->type == EndTag)
             {
                 rowgroup->closed = yes;
-                TrimEmptyElement(doc, rowgroup);
                 FreeNode( doc, node);
                 return;
             }
@@ -2317,7 +2312,6 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
         if ( nodeIsTABLE(node) && node->type == EndTag )
         {
             UngetToken( doc );
-            TrimEmptyElement(doc, rowgroup);
             return;
         }
 
@@ -2398,7 +2392,6 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
                 if (node->tag == parent->tag)
                 {
                     UngetToken( doc );
-                    TrimEmptyElement(doc, rowgroup);
                     return;
                 }
             }
@@ -2413,7 +2406,6 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
             if (node->type != EndTag)
                 UngetToken( doc );
 
-            TrimEmptyElement(doc, rowgroup);
             return;
         }
 
@@ -2436,7 +2428,6 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
         ParseTag(doc, node, IgnoreWhitespace);
     }
 
-    TrimEmptyElement(doc, rowgroup);
 }
 
 void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
@@ -2535,7 +2526,6 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             FreeNode( doc, node);
             lexer->istackbase = istackbase;
             table->closed = yes;
-            TrimEmptyElement(doc, table);
             return;
         }
 
@@ -2612,7 +2602,6 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
                     ReportWarning( doc, table, node, MISSING_ENDTAG_BEFORE );
                     UngetToken( doc );
                     lexer->istackbase = istackbase;
-                    TrimEmptyElement(doc, table);
                     return;
                 }
             }
@@ -2623,7 +2612,6 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             UngetToken( doc );
             ReportWarning( doc, table, node, TAG_NOT_ALLOWED_IN);
             lexer->istackbase = istackbase;
-            TrimEmptyElement(doc, table);
             return;
         }
 
@@ -2640,7 +2628,6 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
     }
 
     ReportWarning( doc, table, node, MISSING_ENDTAG_FOR);
-    TrimEmptyElement(doc, table);
     lexer->istackbase = istackbase;
 }
 
@@ -2694,7 +2681,6 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             }
             pre->closed = yes;
             TrimSpaces(doc, pre);
-            TrimEmptyElement(doc, pre);
             return;
         }
 
@@ -2860,7 +2846,6 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
     }
 
     ReportWarning( doc, pre, node, MISSING_ENDTAG_FOR);
-    TrimEmptyElement(doc, pre);
 }
 
 void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
@@ -4018,6 +4003,7 @@ void ParseDocument(TidyDocImpl* doc)
         ParseHTML(doc, html, no);
     }
 
+    DropEmptyElements(doc, &doc->root);
     CleanSpaces(doc, &doc->root);
 }
 
