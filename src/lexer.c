@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/05/07 15:28:47 $ 
-    $Revision: 1.68 $ 
+    $Date: 2002/05/07 15:58:02 $ 
+    $Revision: 1.69 $ 
 
 */
 
@@ -2025,6 +2025,12 @@ Node *GetCDATA(Lexer *lexer, Node *container)
             start = lexer->lexsize + 1;  /* to first letter */
             endtag = no;
             begtag = yes;
+        }
+        else if (c == '!' && lastc == '<') /* Cancel start tag */
+        {
+            start = -1;
+            endtag = no;
+            begtag = no;
         }
         else if (c == '/' && lastc == '<')
         {
