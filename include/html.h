@@ -1,13 +1,13 @@
 /* html.h
 
-  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/13 05:04:19 $ 
-    $Revision: 1.14 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/13 07:38:41 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -491,6 +491,8 @@ void InsertNodeAtEnd(Node *element, Node *node);
 void InsertNodeBeforeElement(Node *element, Node *node);
 void InsertNodeAfterElement(Node *element, Node *node);
 Bool IsJavaScript(Node *node);
+Bool IsBlank(Lexer *lexer, Node *node);
+Bool PreContent(Node *node);
 
 /* attrs.c */
 void InitAttrs(void);
@@ -527,6 +529,7 @@ void DropSections(Lexer *lexer, Node *node);
 void List2BQ(Node *node);
 void BQ2Div(Node *node);
 Bool IsWord2000(Node *root);
+void BumpObject(Lexer *lexer, Node *html);
 
 /* entities.c */
 void InitEntities(void);
