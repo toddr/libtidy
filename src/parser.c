@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/04/19 10:43:05 $ 
-    $Revision: 1.47 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/04/28 19:55:52 $ 
+    $Revision: 1.48 $ 
 
 */
 
@@ -892,6 +892,7 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
                     node->tag == tag_option)
                 {
                     ReportWarning(lexer, element, node, DISCARDING_UNEXPECTED);
+                    FreeNode(node);  /* DSR - 27Apr02 avoid memory leak */
                     continue;
                 }
             }
@@ -1040,6 +1041,16 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
         {
             if (node->tag->model & CM_INLINE)
             {
+                /* DSR - 27Apr02 ensure we wrap anchors and other inline content */
+                if (EncloseBlockText)
+                {
+                    UngetToken(lexer);
+                    node = InferredTag(lexer, "p");
+                    InsertNodeAtEnd(element, node);
+                    ParseTag(lexer, node, MixedContent);
+                    continue;
+                }
+
                 if (checkstack && !node->implicit)
                 {
                     checkstack = no;
