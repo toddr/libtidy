@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/03/01 04:47:12 $ 
-    $Revision: 1.41 $ 
+    $Author: hoehrmann $ 
+    $Date: 2002/04/01 03:36:59 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -55,7 +55,7 @@ ParseProperty ParseBOM;     /* specific to the output-bom option - Bool and 'aut
 
 uint spaces =  2;           /* default indentation */
 uint wraplen = 68;          /* default wrap margin */
-int tabsize = 4;
+int tabsize = 8;
 
 int CharEncoding = ASCII;
 int inCharEncoding = LATIN1;
