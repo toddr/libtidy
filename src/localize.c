@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2005/03/06 03:53:52 $ 
-    $Revision: 1.127 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/03/15 17:25:00 $ 
+    $Revision: 1.128 $ 
 
 */
 
@@ -521,7 +521,7 @@ static char* TagToString(Node* tag, char* buf, size_t count)
     *buf = 0;
     if (tag)
     {
-        if (tag->type == StartTag || tag->type == StartEndTag)
+        if (nodeIsElement(tag))
             tmbsnprintf(buf, count, "<%s>", tag->element);
         else if (tag->type == EndTag)
             tmbsnprintf(buf, count, "</%s>", tag->element);

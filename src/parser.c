@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/15 15:49:55 $ 
-    $Revision: 1.140 $ 
+    $Date: 2005/03/15 17:25:01 $ 
+    $Revision: 1.141 $ 
 
 */
 
@@ -601,7 +601,7 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
 
     /* <h4>...</h4> <em>...</em> */
     if (node->prev && !nodeHasCM(node->prev, CM_INLINE) &&
-        (node->prev->type == StartTag || node->prev->type == StartEndTag))
+        nodeIsElement(node->prev))
         return yes;
 
     /* <p><span> ...</span></p> */
@@ -715,7 +715,7 @@ static Bool InsertMisc(Node *element, Node *node)
     ** a decent place to pick them up.
     */
     if ( node->tag &&
-         (node->type == StartTag || node->type == StartEndTag) &&
+         nodeIsElement(node) &&
          nodeCMIsEmpty(node) && TagId(node) == TidyTag_UNKNOWN &&
          (node->tag->versions & VERS_PROPRIETARY) != 0 )
     {
@@ -783,7 +783,7 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
 
     RemoveNode( node );  /* make sure that node is isolated */
 
-    if ( node->type == StartTag || node->type == StartEndTag )
+    if ( nodeIsElement(node) )
     {
         ReportError(doc, element, node, TAG_NOT_ALLOWED_IN );
 
@@ -883,7 +883,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 
         if ( nodeIsHTML(node) || nodeIsHEAD(node) || nodeIsBODY(node) )
         {
-            if ( node->type == StartTag || node->type == StartEndTag )
+            if ( nodeIsElement(node) )
                 ReportError(doc, element, node, DISCARDING_UNEXPECTED );
             FreeNode( doc, node );
             continue;
@@ -1005,8 +1005,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         /* allow PARAM elements? */
         if ( nodeIsPARAM(node) )
         {
-            if ( nodeHasCM(element, CM_PARAM) &&
-                 (node->type == StartEndTag || node->type == StartTag) )
+            if ( nodeHasCM(element, CM_PARAM) && nodeIsElement(node) )
             {
                 InsertNodeAtEnd(element, node);
                 continue;
@@ -1021,8 +1020,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         /* allow AREA elements? */
         if ( nodeIsAREA(node) )
         {
-            if ( nodeIsMAP(element) &&
-                 (node->type == StartTag || node->type == StartEndTag) )
+            if ( nodeIsMAP(element) && nodeIsElement(node) )
             {
                 InsertNodeAtEnd(element, node);
                 continue;
@@ -1055,7 +1053,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
 
         if ( !nodeHasCM(node, CM_INLINE) )
         {
-            if (node->type != StartTag && node->type != StartEndTag)
+            if ( !nodeIsElement(node) )
             {
                 if ( nodeIsFORM(node) )
                     BadForm( doc );
@@ -1228,7 +1226,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
         }
 
         /* parse known element */
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if (node->tag->model & CM_INLINE)
             {
@@ -1428,7 +1426,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         /* deal with HTML tags */
         if ( nodeIsHTML(node) )
         {
-            if ( node->type == StartTag || node->type == StartEndTag )
+            if ( nodeIsElement(node) )
             {
                 ReportError(doc, element, node, DISCARDING_UNEXPECTED );
                 FreeNode( doc, node );
@@ -1589,7 +1587,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         {
             if ( nodeIsCENTER(node) || nodeIsDIV(node) )
             {
-                if (node->type != StartTag && node->type != StartEndTag)
+                if (!nodeIsElement(node))
                 {
                     ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
@@ -1618,7 +1616,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
 
             if ( nodeIsHR(node) )
             {
-                if ( node->type != StartTag && node->type != StartEndTag )
+                if ( !nodeIsElement(node) )
                 {
                     ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
@@ -1651,7 +1649,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             if ( nodeIsHR(node) )
             {
                 Node *dd;
-                if (node->type != StartTag && node->type != StartEndTag)
+                if ( !nodeIsElement(node) )
                 {
                     ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                     FreeNode( doc, node);
@@ -1712,7 +1710,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         if (!(node->tag->model & CM_INLINE) &&
             !(element->tag->model & CM_MIXED))
         {
-            if (node->type != StartTag && node->type != StartEndTag)
+            if ( !nodeIsElement(node) )
             {
                 ReportError(doc, element, node, DISCARDING_UNEXPECTED);
                 FreeNode( doc, node);
@@ -1753,7 +1751,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
         }
 
         /* parse inline element */
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if (node->implicit)
                 ReportError(doc, element, node, INSERTING_TAG);
@@ -2567,7 +2565,7 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
             return;
         }
 
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             InsertNodeAtEnd(table, node);
             ParseTag(doc, node, IgnoreWhitespace);
@@ -2736,7 +2734,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
             continue;
         }
 
-        if ( node->type == StartTag || node->type == StartEndTag )
+        if ( nodeIsElement(node) )
         {
             /* trim white space before <br> */
             if ( nodeIsBR(node) )
@@ -3105,7 +3103,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
             break;
         }
 
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if ( nodeIsTITLE(node) )
             {
@@ -3210,7 +3208,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
         /* #538536 Extra endtags not detected */
         if ( nodeIsHTML(node) )
         {
-            if (node->type == StartTag || node->type == StartEndTag || lexer->seenEndHtml) 
+            if (nodeIsElement(node) || lexer->seenEndHtml) 
                 ReportError(doc, body, node, DISCARDING_UNEXPECTED);
             else
                 lexer->seenEndHtml = 1;
@@ -3418,7 +3416,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 PopInline( doc, node );
         }
 
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if ( nodeHasCM(node, CM_INLINE) && !nodeHasCM(node, CM_MIXED) )
             {
@@ -3498,7 +3496,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
 
         if ( nodeIsHTML(node) )
         {
-            if (node->type == StartTag || node->type == StartEndTag)
+            if (nodeIsElement(node))
                 ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);
 
             FreeNode( doc, node);
@@ -3598,7 +3596,7 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
             continue; 
         }
 
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if (node->tag && node->tag->model & CM_HEAD)
             {
@@ -3807,7 +3805,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
             continue;
         }
 
-        if (node->type == StartTag || node->type == StartEndTag)
+        if (nodeIsElement(node))
         {
             if (node->tag && node->tag->model & CM_HEAD)
             {
