@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 01:41:01 $ 
-    $Revision: 1.122 $ 
+    $Date: 2003/05/23 01:49:00 $ 
+    $Revision: 1.123 $ 
 
 */
 
@@ -3003,7 +3003,7 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
 
         if (c == EndOfStream)
         {
-            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE_ATTR );
             UngetChar(c, doc->docIn);
             return NULL;
         }
@@ -3112,7 +3112,7 @@ static int ParseServerInstruction( TidyDocImpl* doc )
                 c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE_ATTR );
                     UngetChar(c, doc->docIn);
                     return 0;
                 }
@@ -3136,7 +3136,7 @@ static int ParseServerInstruction( TidyDocImpl* doc )
                 c = ReadChar(doc->docIn);
                 if (c == EndOfStream) /* #427840 - fix by Terry Teague 30 Jun 01 */
                 {
-                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
+                    ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE_ATTR );
                     UngetChar(c, doc->docIn);
                     return 0;
                 }
@@ -3255,7 +3255,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
         if (c == EndOfStream)
         {
-            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE );
+            ReportAttrError( doc, lexer->token, NULL, UNEXPECTED_END_OF_FILE_ATTR );
             UngetChar(c, doc->docIn);
             break;
         }

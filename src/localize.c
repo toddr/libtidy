@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 01:41:01 $ 
-    $Revision: 1.88 $ 
+    $Date: 2003/05/23 01:49:01 $ 
+    $Revision: 1.89 $ 
 
 */
 
@@ -544,7 +544,7 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
                      "%s cannot copy name attribute to id", tagdesc );
         break;
 
-    case UNEXPECTED_END_OF_FILE:
+    case UNEXPECTED_END_OF_FILE_ATTR:
         /* on end of file adjust reported position to end of input */
         doc->lexer->lines   = doc->docIn->curline;
         doc->lexer->columns = doc->docIn->curcol;

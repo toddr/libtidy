@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 01:41:02 $ 
-    $Revision: 1.12 $ 
+    $Date: 2003/05/23 01:49:01 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -159,6 +159,7 @@ void ReportError( TidyDocImpl* doc, Node* element, Node* node, uint code );
 #define BAD_ATTRIBUTE_VALUE_REPLACED     26
 
 #define INVALID_XML_ID          27
+#define UNEXPECTED_END_OF_FILE_ATTR 28
 
 /* accessibility flaws */
 
