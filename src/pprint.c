@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/10/26 13:57:03 $ 
-    $Revision: 1.34 $ 
+    $Date: 2002/03/01 03:40:37 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -482,7 +482,7 @@ static void PPrintChar(uint c, uint mode)
             {
                 AddC('&', linelen++);
 
-                if (NumEntities || XmlOut) /* #433604 - fix by Bjšrn Hšhrmann 15 Jun 01 */
+                if (NumEntities || XmlTags)
                 {
                     AddC('#', linelen++);
                     AddC('1', linelen++);
