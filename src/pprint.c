@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/03 01:39:47 $ 
-    $Revision: 1.2 $ 
+    $Author: creitzel $ 
+    $Date: 2001/06/16 20:26:16 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -945,6 +945,7 @@ static void PPrintComment(Out *fout, uint indent,
 static void PPrintDocType(Out *fout, uint indent,
                           Lexer *lexer, Node *node)
 {
+    uint i, c, mode = 0;
     Bool q = QuoteMarks;
 
     QuoteMarks = no;
@@ -968,8 +969,33 @@ static void PPrintDocType(Out *fout, uint indent,
     if (indent + linelen < wraplen)
         wraphere = linelen;
 
-    PPrintText(fout, null, indent,
-                    lexer, node->start, node->end);
+    for (i = node->start; i < node->end; ++i)
+    {
+        if (indent + linelen >= wraplen)
+            WrapLine(fout, indent);
+
+        c = (unsigned char)lexer->lexbuf[i];
+
+        /* inDTDSubset? */
+        if ( mode & CDATA ) {
+            if (c == ']')
+                mode &= ~CDATA;
+        }
+        else if (c == '[')
+            mode |= CDATA;
+
+        /* look for UTF-8 multibyte character */
+        if (c > 0x7F)
+             i += GetUTF8((unsigned char *)lexer->lexbuf + i, &c);
+
+        if (c == '\n')
+        {
+            PFlushLine(fout, indent);
+            continue;
+        }
+
+        PPrintChar(c, mode);
+    }
 
     if (linelen < wraplen)
         wraphere = linelen;

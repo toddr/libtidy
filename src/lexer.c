@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2001/06/16 14:06:34 $ 
-    $Revision: 1.8 $ 
+    $Date: 2001/06/16 20:26:16 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -1465,7 +1465,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 {
     uint map;
     int c, lastc, badcomment = 0;
-    Bool isempty;
+    Bool isempty, inDTDSubset = no;
     AttVal *attributes;
 
     if (lexer->pushed)
@@ -1989,7 +1989,14 @@ Node *GetToken(Lexer *lexer, uint mode)
                 else
                     lexer->waswhite = no;
 
-                if (c != '>')
+                if (inDTDSubset) {
+                    if (c == ']')
+                        inDTDSubset = no;
+                }
+                else if (c == '[')
+                    inDTDSubset = yes;
+
+                if (inDTDSubset || c != '>')
                     continue;
 
                 lexer->lexsize -= 1;
