@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 09:52:12 $ 
-    $Revision: 1.17 $ 
+    $Date: 2001/07/14 01:03:33 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -584,7 +584,7 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
         
         for (i = 0; c = p[i]; ++i)
         {
-            if ((c > 0x7e) || (c < 0x1f) || (strchr(" <>", c)))
+            if ((c > 0x7e) || (c < 0x20) || (strchr("<>", c)))
                 pos += sprintf(dest + pos, "%%%02X", (unsigned char)c);
             else
                 dest[pos++] = c;
@@ -607,6 +607,8 @@ void CheckUrl(Lexer *lexer, Node *node, AttVal *attval)
             ReportAttrError(lexer, node, attval, ESCAPED_ILLEGAL_URI);
         else
             ReportAttrError(lexer, node, attval, ILLEGAL_URI_REFERENCE);
+
+        lexer->badChars |= INVALID_URI;
     }
 }
 

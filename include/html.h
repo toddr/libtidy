@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/13 07:38:41 $ 
-    $Revision: 1.15 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/14 01:03:33 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -719,6 +719,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define WINDOWS_CHARS           1
 #define NON_ASCII               2
 #define FOUND_UTF16             4
+#define INVALID_URI             8
 
 void HelpText(FILE *errout, char *prog);
 void GeneralInfo(FILE *errout);

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 05:04:19 $ 
-    $Revision: 1.11 $ 
+    $Date: 2001/07/14 01:03:33 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -572,6 +572,17 @@ void ErrorSummary(Lexer *lexer)
             tidy_out(lexer->errout, "instead recommended to use named entities, e.g. &trade; rather\n");
             tidy_out(lexer->errout, "than Windows character code 153 (0x2122 in Unicode). Note that\n");
             tidy_out(lexer->errout, "as of February 1998 few browsers support the new entities.\n\n");
+        }
+        if (lexer->badChars & INVALID_URI)
+        {
+            tidy_out(lexer->errout, "URIs must be properly escaped, they must not contain unescaped\n");
+            tidy_out(lexer->errout, "characters below U+0021 including the space charcter and not\n");
+            tidy_out(lexer->errout, "above U+007E. Tidy escapes the URI for you as recommended by\n");
+            tidy_out(lexer->errout, "HTML 4.01 section B.2.1 and XML 1.0 section 4.2.2. Some user agents\n");
+            tidy_out(lexer->errout, "use another algorithm to escape such URIs and some server-sided\n");
+            tidy_out(lexer->errout, "scripts depend on that. If you want to depend on that, you must\n");
+            tidy_out(lexer->errout, "escape the URI by your own. For more information please refer to\n");
+            tidy_out(lexer->errout, "http://www.w3.org/International/O-URL-and-ident.html\n\n");
         }
     }
 
