@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/17 20:24:57 $ 
-    $Revision: 1.92 $ 
+    $Date: 2003/05/17 20:51:26 $ 
+    $Revision: 1.93 $ 
 
 */
 
@@ -560,7 +560,7 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
         return yes;
 
     /* <h4>...</h4> <em>...</em> */
-    if (node->prev && !nodeHasCM(node->parent, CM_INLINE) &&
+    if (node->prev && !nodeHasCM(node->prev, CM_INLINE) &&
         (node->prev->type == StartTag || node->prev->type == StartEndTag))
         return yes;
 
