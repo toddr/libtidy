@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/18 21:10:30 $ 
-    $Revision: 1.63 $ 
+    $Date: 2004/06/22 09:07:28 $ 
+    $Revision: 1.64 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1965,8 +1965,8 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             */
             /* map sequence of <p class="MsoListBullet"> to <ul>...</ul> */
             /* map <p class="MsoListNumber"> to <ol>...</ol> */
-            if ( AttrMatches(attr, "MsoListBullet") ||
-                 AttrMatches(attr, "MsoListNumber") ||
+            if ( AttrValueIs(attr, "MsoListBullet") ||
+                 AttrValueIs(attr, "MsoListNumber") ||
                  AttrContains(atrStyle, "mso-list:") )
             {
                 TidyTagId listType = TidyTag_UL;
@@ -2052,7 +2052,7 @@ Bool IsWord2000( TidyDocImpl* doc )
 
             attval = AttrGetById( node, TidyAttr_NAME );
 
-            if ( !AttrMatches(attval, "generator") )
+            if ( !AttrValueIs(attval, "generator") )
                 continue;
 
             attval =  AttrGetById( node, TidyAttr_CONTENT );
@@ -2181,7 +2181,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         AttVal* metaContent = AttrGetById(pNode, TidyAttr_CONTENT);
 
         if ( !nodeIsMETA(pNode) || !metaContent ||
-             !AttrMatches(httpEquiv, "Content-Type") )
+             !AttrValueIs(httpEquiv, "Content-Type") )
             continue;
 
         pszBegin = s = tmbstrdup( metaContent->value );
@@ -2499,7 +2499,7 @@ void FixXhtmlNamespace(TidyDocImpl* doc, Bool wantXmlns)
 
     if (wantXmlns)
     {
-        if (!AttrMatches(xmlns, XHTML_NAMESPACE))
+        if (!AttrValueIs(xmlns, XHTML_NAMESPACE))
             RepairAttrValue(doc, html, "xmlns", XHTML_NAMESPACE);
     }
     else if (xmlns)

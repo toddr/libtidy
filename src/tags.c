@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/18 21:10:32 $ 
-    $Revision: 1.48 $ 
+    $Date: 2004/06/22 09:07:28 $ 
+    $Revision: 1.49 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -635,7 +635,7 @@ void CheckHTML( TidyDocImpl* doc, Node *node )
 
     xmlns = AttrGetById(node, TidyAttr_XMLNS);
 
-    if (AttrMatches(xmlns, XHTML_NAMESPACE))
+    if (AttrValueIs(xmlns, XHTML_NAMESPACE))
     {
         Bool htmlOut = cfgBool( doc, TidyHtmlOut );
         doc->lexer->isvoyager = yes;                  /* Unless plain HTML */
