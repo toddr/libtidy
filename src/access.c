@@ -1,14 +1,14 @@
 /* access.c -- carry out accessibility checks
 
   Copyright University of Toronto
-  Portions (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  Portions (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/01 17:23:38 $ 
-    $Revision: 1.17 $ 
+    $Date: 2005/03/01 17:41:48 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -1800,7 +1800,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     }
     
     
-    if (Level2_Enabled( doc ))
+    if (Level3_Enabled( doc ))
     {
         /* Suppress warning for missing 'SUMMARY for HTML 2.0 and HTML 3.2 */
         if (HasSummary == no)
@@ -2467,7 +2467,7 @@ static void CheckSelect( TidyDocImpl* doc, Node* node )
             if ( nodeIsLABEL(node->prev->prev) )
             {
                 temp = node->prev->prev;
-                
+
                 if ( nodeIsText(temp->content) )
                 {
                     label = textFromOneNode( doc, temp->content );
@@ -3193,7 +3193,7 @@ static Bool FindLinkA( TidyDocImpl* doc, Node* node, ctmbstr url )
 
 static void CheckMapLinks( TidyDocImpl* doc, Node* node )
 {
-    Node* child = node->content;
+    Node* child;
 
     /* Stores the 'HREF' link of an AREA element within a MAP element */
     for ( child = node->content; child != NULL; child = child->next )
