@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2004/03/01 11:08:23 $ 
-    $Revision: 1.15 $ 
+    $Date: 2004/03/04 06:54:10 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -362,6 +362,8 @@ Node *CommentToken( Lexer *lexer );
 
 /* choose what version to use for new doctype */
 int HTMLVersion( TidyDocImpl* doc );
+
+ctmbstr GetFPIFromVers(uint vers);
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/01 11:08:23 $ 
-    $Revision: 1.139 $ 
+    $Date: 2004/03/04 06:54:10 $ 
+    $Revision: 1.140 $ 
 
 */
 
@@ -131,7 +131,7 @@ int HTMLVersion(TidyDocImpl* doc)
     return VERS_UNKNOWN;
 }
 
-static ctmbstr GetFPIFromVers(uint vers)
+ctmbstr GetFPIFromVers(uint vers)
 {
     uint i;
 
@@ -2162,6 +2162,8 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                     {
                         /* todo: check for complete "<!DOCTYPE" not just <!D */
 
+                        uint skip = 0;
+
                         lexer->state = LEX_DOCTYPE; /* doctype */
                         lexer->lexsize -= 2;
                         lexer->txtend = lexer->lexsize;
@@ -2172,6 +2174,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                         for (;;)
                         {
                             c = ReadChar(doc->docIn);
+                            ++skip;
 
                             if (c == EndOfStream || c == '>')
                             {
@@ -2188,6 +2191,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             for (;;)
                             {
                                 c = ReadChar(doc->docIn);
+                                ++skip;
 
                                 if (c == EndOfStream || c == '>')
                                 {
@@ -2206,7 +2210,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                             break;
                         }
 
-                        CondReturnTextNode(doc, 0)
+                        CondReturnTextNode(doc, (skip + 3))
 
                         lexer->txtstart = lexer->lexsize;
                         continue;
@@ -2406,6 +2410,9 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
                     RepairDuplicateAttributes( doc, curr );
                 }
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+                StoreOriginalTextInToken(doc, lexer->token, 0);
+#endif
                 return lexer->token;  /* return start tag */
 
             case LEX_COMMENT:  /* seen <!-- so look for --> */
@@ -3538,12 +3545,16 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
 static Node *ParseDocTypeDecl(TidyDocImpl* doc)
 {
     Lexer *lexer = doc->lexer;
-    Node *node = DocTypeToken(doc);
     int start = lexer->lexsize;
     int state = DT_DOCTYPENAME;
     uint c;
     uint delim = 0;
     Bool hasfpi = yes;
+
+    Node* node = NewNode(lexer);
+    node->type = DocTypeTag;
+    node->start = lexer->txtstart;
+    node->end = lexer->txtend;
 
     lexer->waswhite = no;
 
