@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/30 13:56:53 $ 
-    $Revision: 1.26 $ 
+    $Date: 2005/03/31 13:19:21 $ 
+    $Revision: 1.27 $ 
 */
 
 #include "tidy.h"
@@ -229,7 +229,7 @@ typedef struct {
     Bool haveVals; /**< if yes, vals is valid */
 } OptionDesc;
 
-typedef void (*OptionFunc)( TidyOption, const OptionDesc * );
+typedef void (*OptionFunc)( TidyDoc, TidyOption, const OptionDesc * );
 
 
 /* Create description "d" related to "opt" */
@@ -336,7 +336,7 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     }
 }
 
-static void optionhelpImp( TidyDoc tdoc, OptionFunc OptionPrint )
+static void ForEachOption( TidyDoc tdoc, OptionFunc OptionPrint )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
@@ -348,8 +348,93 @@ static void optionhelpImp( TidyDoc tdoc, OptionFunc OptionPrint )
         if ( tidyOptIsReadOnly(topt) )
             continue;
         GetOption( tdoc, topt, &d );
-        (*OptionPrint)( topt, &d );
+        (*OptionPrint)( tdoc, topt, &d );
     }
+}
+
+static
+void PrintAllowedValuesFromPick( TidyOption topt )
+{
+    TidyIterator pos = tidyOptGetPickList( topt );
+    Bool first = yes;
+    ctmbstr def;
+    while ( pos )
+    {
+        if (first)
+            first = no;
+        else
+            printf(", ");
+        def = tidyOptGetNextPick( topt, &pos );
+        printf("%s", def);
+    }
+}
+
+static
+void PrintAllowedValues( TidyOption topt, const OptionDesc *d )
+{
+    if (d->vals)
+        printf( "%s", d->vals );
+    else
+        PrintAllowedValuesFromPick( topt );
+}
+
+static
+void printXMLDescription( TidyDoc tdoc, TidyOption topt )
+{
+    ctmbstr doc = tidyOptGetDoc( tdoc, topt );
+
+    if (doc)
+        printf("  <description>%s</description>\n", doc);
+    else
+    {
+        printf("  <description />\n");
+        fprintf(stderr, "Warning: option `%s' is not documented.\n",
+                tidyOptGetName( topt ));
+    }
+}
+
+static
+void printXMLCrossRef( TidyDoc tdoc, TidyOption topt )
+{
+    TidyOption optLinked;
+    TidyIterator pos = tidyOptGetDocLinksList(tdoc, topt);
+    while( pos )
+    {
+        optLinked = tidyOptGetNextDocLinks(tdoc, &pos );
+        printf("  <seealso>%s</seealso>\n",tidyOptGetName(optLinked));
+    }
+}
+
+static
+void printXMLOption( TidyDoc tdoc, TidyOption topt, const OptionDesc *d )
+{
+    printf( " <option class=\"%s\">\n", d->cat );
+    printf  ("  <name>%s</name>\n",d->name);
+    printf  ("  <type>%s</type>\n",d->type);
+    if (d->def)
+        printf("  <default>%s</default>\n",d->def);
+    else
+        printf("  <default />\n");
+    if (d->haveVals)
+    {
+        printf("  <example>");
+        PrintAllowedValues( topt, d );
+        printf("</example>\n");
+    }
+    else
+    {
+        printf("  <example />\n");
+    }
+    printXMLDescription( tdoc, topt );
+    printXMLCrossRef( tdoc, topt );
+    printf( " </option>\n" );
+}
+
+static void XMLoptionhelp( TidyDoc tdoc )
+{
+    printf( "<?xml version=\"1.0\"?>\n<config>\n" );
+    ForEachOption( tdoc, printXMLOption );
+    printf( "</config>\n" );
 }
 
 static
@@ -402,7 +487,8 @@ tmbstr GetAllowedValues( TidyOption topt, const OptionDesc *d )
 }
 
 static
-void printOption( TidyOption topt, const OptionDesc *d )
+void printOption( TidyDoc ARG_UNUSED(tdoc), TidyOption topt,
+                  const OptionDesc *d )
 {
     if ( *d->name || *d->type )
     {
@@ -435,7 +521,7 @@ static void optionhelp( TidyDoc tdoc )
     printf( fmt, "Name", "Type", "Allowable values" );
     printf( fmt, ul, ul, ul );
 
-    optionhelpImp( tdoc, printOption );
+    ForEachOption( tdoc, printOption );
 }
 
 static void optionvalues( TidyDoc tdoc )
@@ -707,6 +793,12 @@ int main( int argc, char** argv )
             else if ( strcasecmp(arg, "help-config") == 0 )
             {
                 optionhelp( tdoc );
+                tidyRelease( tdoc );
+                return 0; /* success */
+            }
+            else if ( strcasecmp(arg, "xml-config") == 0 )
+            {
+                XMLoptionhelp( tdoc );
                 tidyRelease( tdoc );
                 return 0; /* success */
             }
