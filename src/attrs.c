@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/12/28 23:42:51 $ 
-    $Revision: 1.40 $ 
+    $Date: 2002/01/10 08:54:20 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -802,7 +802,7 @@ static void CheckLowerCaseAttrValue(Lexer *lexer, Node *node, AttVal *attval)
     
     while (*p)
     {
-        if (!IsLower(*p))
+        if (IsUpper(*p)) /* #501230 - fix by Terry Teague - 09 Jan 02 */
         {
             hasUpper = yes;
             break;
