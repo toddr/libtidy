@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/06 13:41:12 $ 
-    $Revision: 1.30 $ 
+    $Date: 2005/04/06 14:39:41 $ 
+    $Revision: 1.31 $ 
 */
 
 #include "tidy.h"
@@ -76,8 +76,8 @@ static void help( ctmbstr prog )
     printf( "Character encodings\n");
     printf( "-------------------\n");
     printf( "  -raw              output values above 127 without conversion to entities\n");
-    printf( "  -ascii            use US-ASCII for output, ISO-8859-1 for input\n");
-    printf( "  -latin0           use US-ASCII for output, ISO-8859-15 for input\n");
+    printf( "  -ascii            use ISO-8859-1 for input, US-ASCII for output\n");
+    printf( "  -latin0           use ISO-8859-15 for input, US-ASCII for output\n");
     printf( "  -latin1           use ISO-8859-1 for both input and output\n");
 #ifndef NO_NATIVE_ISO2022_SUPPORT
     printf( "  -iso2022          use ISO-2022 for both input and output\n");
@@ -174,10 +174,9 @@ static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
     free(c3buf);
 }
 
-#define kMaxValFieldWidth 40
 static const char* fmt = "%-27.27s %-9.9s  %-40.40s\n";
 static const char* valfmt = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
-static const char* ul 
+static const char* ul
         = "=================================================================";
 
 static Bool isAutoBool( TidyOption topt )
