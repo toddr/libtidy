@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/24 15:55:01 $ 
-    $Revision: 1.12 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/06/09 08:03:06 $ 
+    $Revision: 1.13 $ 
 */
 
 #include "tidy.h"
@@ -400,20 +400,33 @@ int main( int argc, char** argv )
     uint accessWarnings = 0;
 
     errout = stderr;  /* initialize to stderr */
-
+    status = 0;
+    
 #ifdef CONFIG_FILE
     if ( tidyFileExists(CONFIG_FILE) )
-      tidyLoadConfig( tdoc, CONFIG_FILE );
+    {
+        status = tidyLoadConfig( tdoc, CONFIG_FILE );
+        if ( status != 0 )
+            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", CONFIG_FILE, status);
+    }
 #endif /* CONFIG_FILE */
 
     /* look for env var "HTML_TIDY" */
     /* then for ~/.tidyrc (on platforms defining $HOME) */
 
     if ( cfgfil = getenv("HTML_TIDY") )
-        tidyLoadConfig( tdoc, cfgfil );
+    {
+        status = tidyLoadConfig( tdoc, cfgfil );
+        if ( status != 0 )
+            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", cfgfil, status);
+    }
 #ifdef USER_CONFIG_FILE
     else if ( tidyFileExists(USER_CONFIG_FILE) )
-        tidyLoadConfig( tdoc, USER_CONFIG_FILE );
+    {
+        status = tidyLoadConfig( tdoc, USER_CONFIG_FILE );
+        if ( status != 0 )
+            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", USER_CONFIG_FILE, status);
+    }
 #endif /* USER_CONFIG_FILE */
 
     /* read command line */
