@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/17 12:56:21 $ 
-    $Revision: 1.163 $ 
+    $Date: 2005/02/17 14:06:59 $ 
+    $Revision: 1.164 $ 
 
 */
 
@@ -3404,16 +3404,16 @@ AttVal *NewAttribute(void)
 }
 
 /* create a new attribute with given name and value */
-AttVal* NewAttributeEx( ctmbstr name, ctmbstr value )
+AttVal* NewAttributeEx( TidyDocImpl* doc, ctmbstr name, ctmbstr value,
+                        int delim )
 {
     AttVal *av = NewAttribute();
     av->attribute = tmbstrdup(name);
     av->value = tmbstrdup(value);
+    av->delim = delim;
+    av->dict = FindAttribute( doc, av );
     return av;
 }
-
-
-/* swallows closing '>' */
 
 static void AddAttrToList( AttVal** list, AttVal* av )
 {
@@ -3428,10 +3428,18 @@ static void AddAttrToList( AttVal** list, AttVal* av )
   }
 }
 
-void InsertAttributeAtEnd( Node *node, AttVal *av)
+void InsertAttributeAtEnd( Node *node, AttVal *av )
 {
     AddAttrToList(&node->attributes, av);
 }
+
+void InsertAttributeAtStart( Node *node, AttVal *av )
+{
+    av->next = node->attributes;
+    node->attributes = av;
+}
+
+/* swallows closing '>' */
 
 static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
 {

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/15 13:48:23 $ 
-    $Revision: 1.77 $ 
+    $Date: 2005/02/17 14:06:58 $ 
+    $Revision: 1.78 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -536,12 +536,8 @@ static void CreateStyleElement( TidyDocImpl* doc )
     FindTag( doc, node );
 
     /* insert type attribute */
-    av = NewAttribute();
-    av->attribute = tmbstrdup("type");
-    av->value = tmbstrdup("text/css");
-    av->delim = '"';
-    av->dict = FindAttribute( doc, av );
-    node->attributes = av;
+    av = NewAttributeEx( doc, "type", "text/css", '"' );
+    InsertAttributeAtStart( node, av );
 
     body = FindBody( doc );
     lexer->txtstart = lexer->lexsize;
@@ -708,13 +704,8 @@ static void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
     }
     else /* else create new style attribute */
     {
-        av = NewAttribute();
-        av->attribute = tmbstrdup("style");
-        av->value = tmbstrdup(property);
-        av->delim = '"';
-        av->dict = FindAttribute( doc, av );
-        av->next = node->attributes;
-        node->attributes = av;
+        av = NewAttributeEx( doc, "style", property, '"' );
+        InsertAttributeAtStart( node, av );
     }
 }
 
@@ -758,13 +749,8 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
     }
     else if (s2)  /* copy class names from child */
     {
-        av = NewAttribute();
-        av->attribute = tmbstrdup("class");
-        av->value = tmbstrdup(s2);
-        av->delim = '"';
-        av->dict = FindAttribute(doc, av);
-        av->next = node->attributes;
-        node->attributes = av;
+        av = NewAttributeEx( doc, "class", s2, '"' );
+        InsertAttributeAtStart( node, av );
     }
 }
 
@@ -809,13 +795,8 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     }
     else if (s2)  /* copy style of child */
     {
-        av = NewAttribute();
-        av->attribute = tmbstrdup("style");
-        av->value = tmbstrdup(s2);
-        av->delim = '"';
-        av->dict = FindAttribute(doc, av);
-        av->next = node->attributes;
-        node->attributes = av;
+        av = NewAttributeEx( doc, "style", s2, '"' );
+        InsertAttributeAtStart( node, av );
     }
 }
 
