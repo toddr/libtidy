@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/02/29 04:40:53 $ 
-    $Revision: 1.46 $ 
+    $Date: 2004/02/29 04:44:07 $ 
+    $Revision: 1.47 $ 
 
 */
 
@@ -476,6 +476,7 @@ extern "C" {
 #pragma warning( disable : 4189 ) /* local variable is initialized but not referenced */
 #pragma warning( disable : 4100 ) /* unreferenced formal parameter */
 #pragma warning( disable : 4706 ) /* assignment within conditional expression */
+#pragma warning( disable : 4068 ) /* unknown #pragma unused(...) */
 #endif
 
 #endif /* _WIN32 */
