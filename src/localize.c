@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/12/02 03:52:37 $ 
-    $Revision: 1.48 $ 
+    $Date: 2001/12/04 09:54:36 $ 
+    $Revision: 1.49 $ 
 
 */
 
@@ -407,7 +407,8 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, " unexpected '=', expected attribute name");
         }
 
-        tidy_out(lexer->errout, "\n");
+        if ((code != UNEXPECTED_GT))
+            tidy_out(lexer->errout, "\n");
     }
     
     if (code == UNEXPECTED_GT)
@@ -430,8 +431,8 @@ void ReportMissingAttr(Lexer* lexer, Node* node, char* name)
 
 void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
 {
-    if ((code == DISCARDING_UNEXPECTED) && lexer->errors)
-        lexer->errors++;
+    if ((code == DISCARDING_UNEXPECTED) && lexer->badForm)
+        /* lexer->errors++ */; /* already done in BadForm() */
     else
         lexer->warnings++;
 
@@ -457,7 +458,7 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
             tidy_out(lexer->errout, "Warning: missing </%s> before ", element->element);
             ReportTag(lexer, node);
         }
-        else if ((code == DISCARDING_UNEXPECTED) && (lexer->errors == 0))
+        else if ((code == DISCARDING_UNEXPECTED) && (lexer->badForm == no))
         {
             /* the case for when this is an error not a warning, is handled later */
             tidy_out(lexer->errout, "Warning: discarding unexpected ");
@@ -619,11 +620,11 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
             tidy_out(lexer->errout, " element not empty or not closed");
         }
 
-        if ((code != DISCARDING_UNEXPECTED) || (lexer->errors == 0))
+        if ((code != DISCARDING_UNEXPECTED) || (lexer->badForm == no))
             tidy_out(lexer->errout, "\n");
     }
     
-    if ((code == DISCARDING_UNEXPECTED) && lexer->errors)
+    if ((code == DISCARDING_UNEXPECTED) && lexer->badForm)
     {
         /* the case for when this is a warning not an error, is handled earlier */
         if (!ShowWarnings)
