@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/30 23:51:38 $ 
-    $Revision: 1.72 $ 
+    $Author: krusch $ 
+    $Date: 2003/05/01 23:15:49 $ 
+    $Revision: 1.73 $ 
 
 */
 
@@ -1267,13 +1267,38 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
     }
 }
 
+/* check hexadecimal color value */
+Bool isValidColorNumber( tmbstr color)
+{
+    Bool valid = yes;
+    int i;
+
+    if (tmbstrlen(color) == 6)
+    {
+        /* check if valid hex digits and letters */
+        for (i = 0; i < 6; i++)
+        {
+            if (!IsDigit(color[i]) &&
+                !strchr("abcdef", ToLower(color[i])))
+            {
+                valid = no;
+                break;
+            }
+        }
+    }
+    else
+    {
+        valid = no;
+    }
+    return valid;
+}
+
 /* check color syntax and beautify value by option */
 void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     /* Bool ReplaceColor = yes; */ /* #477643 - replace hex color attribute values with names */
     Bool HexUppercase = yes;
-    Bool invalid = no;
-    Bool found = no;
+    Bool valid = no;
     tmbstr given;
     const struct _colors *color;
     uint i = 0;
@@ -1285,25 +1310,40 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
     }
 
     given = attval->value;
+
+    if (given[0] == '#')
+    {
+        valid = isValidColorNumber(given + 1);
+    }
+    else
+    {
+        /* 727851 - add hash to hash-less color values */
+        if (isValidColorNumber(given))
+        {
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
+            tmbstr s = NULL;
+            tmbstr cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
+            *cp++ = '#';
+            while(*cp++ = *given++)
+                /**/;
+            MemFree(attval->value);
+            given = attval->value = s;
+            valid = yes;
+            // TODO: Emit warning
+        }
+    }
     
     for (color = colors; color->name; ++color)
     {
-        if (given[0] == '#')
+        if (given[0] == '#' && valid)
         {
-            if (tmbstrlen(given) != 7)
-            {
-                ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-                invalid = yes;
-                break;
-            }
-            else if (tmbstrcasecmp(given, color->hex) == 0)
+            if (tmbstrcasecmp(given, color->hex) == 0)
             {
                 if ( cfgBool(doc, TidyReplaceColor) )
                 {
                     MemFree(attval->value);
                     attval->value = tmbstrdup(color->name);
                 }
-                found = yes;
                 break;
             }
         }
@@ -1311,41 +1351,27 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
         {
             if (tmbstrcasecmp(given, color->name) == 0)
             {
+                valid = yes;
                 if ( cfgBool(doc, TidyReplaceColor) )
                 {
                     MemFree(attval->value);
                     attval->value = tmbstrdup(color->name);
                 }
-                found = yes;
                 break;
             }
         }
         else
         {
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-            invalid = yes;
             break;
         }
     }
-    
-    if (!found && !invalid)
+
+    if (valid)
     {
         if (given[0] == '#')
         {
-            /* check if valid hex digits and letters */
-            for (i = 1; i < 7; ++i)
-            {
-                if (!IsDigit(given[i]) &&
-                    !strchr("abcdef", ToLower(given[i])))
-                {
-                    ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-                    invalid = yes;
-                    break;
-                }
-            }
-            
-            /* convert hex letters to uppercase */
-            if (!invalid && HexUppercase)
+            if (HexUppercase)
             {
                 for (i = 1; i < 7; ++i)
                 {
@@ -1353,14 +1379,14 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
                 }
             }
         }
-        else
-        {
-            /* we could search for more colors and mark the file as HTML
-               Proprietary, but I don't thinks it's worth the effort,
-               so values not in HTML 4.01 are invalid */
+    }
+    else
+    {
+        /* we could search for more colors and mark the file as HTML
+           Proprietary, but I don't thinks it's worth the effort,
+           so values not in HTML 4.01 are invalid */
 
-            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
-        }
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
 }
 
