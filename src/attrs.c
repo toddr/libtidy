@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/29 04:26:00 $ 
-    $Revision: 1.67 $ 
+    $Date: 2003/04/30 02:57:39 $ 
+    $Revision: 1.68 $ 
 
 */
 
@@ -194,23 +194,23 @@ struct _colors
 
 static const struct _colors colors[] =
 {
-    {"black",   "#000000"},
-    {"green",   "#008000"},
-    {"silver",  "#C0C0C0"},
-    {"lime",    "#00FF00"},
-    {"gray",    "#808080"},
-    {"olive",   "#808000"},
-    {"white",   "#FFFFFF"},
-    {"yellow",  "#FFFF00"},
-    {"maroon",  "#800000"},
-    {"navy",    "#000080"},
-    {"red",     "#FF0000"},
-    {"blue",    "#0000FF"},
-    {"purple",  "#800080"},
-    {"teal",    "#008080"},
-    {"fuchsia", "#FF00FF"},
-    {"aqua",    "#00FFFF"},
-    {NULL,      NULL}
+    { "black",   "#000000" },
+    { "green",   "#008000" },
+    { "silver",  "#C0C0C0" },
+    { "lime",    "#00FF00" },
+    { "gray",    "#808080" },
+    { "olive",   "#808000" },
+    { "white",   "#FFFFFF" },
+    { "yellow",  "#FFFF00" },
+    { "maroon",  "#800000" },
+    { "navy",    "#000080" },
+    { "red",     "#FF0000" },
+    { "blue",    "#0000FF" },
+    { "purple",  "#800080" },
+    { "teal",    "#008080" },
+    { "fuchsia", "#FF00FF" },
+    { "aqua",    "#00FFFF" },
+    { NULL,      NULL      }
 };
 
 static const struct _colors fancy_colors[] =
@@ -355,7 +355,7 @@ static const struct _colors fancy_colors[] =
     { "whitesmoke",           "#F5F5F5" },
     { "yellow",               "#FFFF00" },
     { "yellowgreen",          "#9ACD32" },
-    { NULL,      NULL }
+    { NULL,                   NULL      }
 };
 
 
@@ -372,9 +372,7 @@ static const Attribute* lookup( ctmbstr atnam )
 }
 
 
-/* Locate attributes by type
-*/
-
+/* Locate attributes by type */
 AttVal* AttrGetById( Node* node, TidyAttrId id )
 {
    AttVal* av;
@@ -472,13 +470,16 @@ Bool IsAnchorElement( TidyDocImpl* doc, Node *node)
 }
 
 /*
-  In CSS1, selectors can contain only the characters A-Z, 0-9, and Unicode characters 161-255, plus dash (-);
-  they cannot start with a dash or a digit; they can also contain escaped characters and any Unicode character
-  as a numeric code (see next item).
+  In CSS1, selectors can contain only the characters A-Z, 0-9,
+  and Unicode characters 161-255, plus dash (-); they cannot start
+  with a dash or a digit; they can also contain escaped characters
+  and any Unicode character as a numeric code (see next item).
 
-  The backslash followed by at most four hexadecimal digits (0..9A..F) stands for the Unicode character with that number.
+  The backslash followed by at most four hexadecimal digits
+  (0..9A..F) stands for the Unicode character with that number.
 
-  Any character except a hexadecimal digit can be escaped to remove its special meaning, by putting a backslash in front.
+  Any character except a hexadecimal digit can be escaped to remove
+  its special meaning, by putting a backslash in front.
 
   #508936 - CSS class naming for -clean option
 */
@@ -516,10 +517,6 @@ Bool IsCSS1Selector( ctmbstr buf )
     }
     return valid;
 }
-
-
-
-
 
 /* free single anchor */
 static void FreeAnchor(Anchor *a)
@@ -654,7 +651,6 @@ static void DeclareAttribute( TidyDocImpl* doc, ctmbstr name,
     }
 }
 
-
 /* free all declared attributes */
 static void FreeDeclaredAttributes( TidyDocImpl* doc )
 {
@@ -683,134 +679,135 @@ void FreeAttrTable( TidyDocImpl* doc )
  the same attribute name can't be used
  more than once in each element
 */
-
 void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
 {
     AttVal *attval;
 
     for (attval = node->attributes; attval != NULL;)
     {
-        if (attval->asp == NULL && attval->php == NULL)
+        AttVal *current;
+
+        if (!(attval->asp == NULL && attval->php == NULL))
         {
-            AttVal *current;
-            
-            for (current = attval->next; current != NULL;)
+            attval = attval->next;
+            continue;
+        }
+
+        for (current = attval->next; current != NULL;)
+        {
+            AttVal *temp;
+
+            if (!(current->asp == NULL && current->php == NULL &&
+                tmbstrcasecmp(attval->attribute, current->attribute) == 0))
             {
-                if (current->asp == NULL && current->php == NULL &&
-                    tmbstrcasecmp(attval->attribute, current->attribute) == 0)
-                {
-                    AttVal *temp;
+                current = current->next;
+                continue;
+            }
 
-                    if ( tmbstrcasecmp(current->attribute, "class") == 0 
-                         && cfgBool(doc, TidyJoinClasses) )
-                    {
-                        /* concatenate classes */
+            if ( tmbstrcasecmp(current->attribute, "class") == 0 
+                && cfgBool(doc, TidyJoinClasses) )
+            {
+                /* concatenate classes */
 
-                        current->value = (tmbstr) MemRealloc(current->value, tmbstrlen(current->value) +
-                                                                            tmbstrlen(attval->value)  + 2);
-                        tmbstrcat(current->value, " ");
-                        tmbstrcat(current->value, attval->value);
+                current->value = (tmbstr) MemRealloc(current->value, tmbstrlen(current->value) +
+                    tmbstrlen(attval->value)  + 2);
+                tmbstrcat(current->value, " ");
+                tmbstrcat(current->value, attval->value);
 
-                        temp = attval->next;
+                temp = attval->next;
 
-                        if (temp->next == NULL)
-                            current = NULL;
-                        else
-                            current = current->next;
-
-                        ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
-
-                        RemoveAttribute(node, attval);
-                        attval = temp;
-                    }
-                    else if ( tmbstrcasecmp(current->attribute, "style") == 0 
-                              && cfgBool(doc, TidyJoinStyles) )
-                    {
-                        /* concatenate styles */
-
-                        /*
-                          this doesn't handle CSS comments and
-                          leading/trailing white-space very well
-                          see http://www.w3.org/TR/css-style-attr
-                        */
-
-                        uint end = tmbstrlen(current->value);
-
-                        if (current->value[end] == ';')
-                        {
-                            /* attribute ends with declaration seperator */
-
-                            current->value = (tmbstr) MemRealloc(current->value,
-                                end + tmbstrlen(attval->value) + 2);
-
-                            tmbstrcat(current->value, " ");
-                            tmbstrcat(current->value, attval->value);
-                        }
-                        else if (current->value[end] == '}')
-                        {
-                            /* attribute ends with rule set */
-
-                            current->value = (tmbstr) MemRealloc(current->value,
-                                end + tmbstrlen(attval->value) + 6);
-
-                            tmbstrcat(current->value, " { ");
-                            tmbstrcat(current->value, attval->value);
-                            tmbstrcat(current->value, " }");
-                        }
-                        else
-                        {
-                            /* attribute ends with property value */
-
-                            current->value = (tmbstr) MemRealloc(current->value,
-                                end + tmbstrlen(attval->value) + 3);
-
-                            tmbstrcat(current->value, "; ");
-                            tmbstrcat(current->value, attval->value);
-                        }
-
-                        temp = attval->next;
-
-                        if (temp->next == NULL)
-                            current = NULL;
-                        else
-                            current = current->next;
-
-                        ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
-
-                        RemoveAttribute(node, attval);
-                        attval = temp;
-
-                    }
-                    else if ( cfg(doc, TidyDuplicateAttrs) == TidyKeepLast )
-                    {
-                        temp = current->next;
-                        ReportAttrError( doc, node, current, REPEATED_ATTRIBUTE);
-                        RemoveAttribute(node, current);
-                        current = temp;
-                    }
-                    else
-                    {
-                        temp = attval->next;
-                        if (attval->next == NULL)
-                            current = NULL;
-                        else
-                            current = current->next;
-
-                        ReportAttrError( doc, node, attval, REPEATED_ATTRIBUTE);
-                        RemoveAttribute(node, attval);
-                        attval = temp;
-                    }
-                }
+                if (temp->next == NULL)
+                    current = NULL;
                 else
                     current = current->next;
+
+                ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
+
+                RemoveAttribute(node, attval);
+                attval = temp;
             }
-            attval = attval->next;
+            else if ( tmbstrcasecmp(current->attribute, "style") == 0 
+                && cfgBool(doc, TidyJoinStyles) )
+            {
+                /* concatenate styles */
+
+                /*
+                this doesn't handle CSS comments and
+                leading/trailing white-space very well
+                see http://www.w3.org/TR/css-style-attr
+                */
+
+                uint end = tmbstrlen(current->value);
+
+                if (current->value[end] == ';')
+                {
+                    /* attribute ends with declaration seperator */
+
+                    current->value = (tmbstr) MemRealloc(current->value,
+                        end + tmbstrlen(attval->value) + 2);
+
+                    tmbstrcat(current->value, " ");
+                    tmbstrcat(current->value, attval->value);
+                }
+                else if (current->value[end] == '}')
+                {
+                    /* attribute ends with rule set */
+
+                    current->value = (tmbstr) MemRealloc(current->value,
+                        end + tmbstrlen(attval->value) + 6);
+
+                    tmbstrcat(current->value, " { ");
+                    tmbstrcat(current->value, attval->value);
+                    tmbstrcat(current->value, " }");
+                }
+                else
+                {
+                    /* attribute ends with property value */
+
+                    current->value = (tmbstr) MemRealloc(current->value,
+                        end + tmbstrlen(attval->value) + 3);
+
+                    tmbstrcat(current->value, "; ");
+                    tmbstrcat(current->value, attval->value);
+                }
+
+                temp = attval->next;
+
+                if (temp->next == NULL)
+                    current = NULL;
+                else
+                    current = current->next;
+
+                ReportAttrError( doc, node, attval, JOINING_ATTRIBUTE);
+
+                RemoveAttribute(node, attval);
+                attval = temp;
+
+            }
+            else if ( cfg(doc, TidyDuplicateAttrs) == TidyKeepLast )
+            {
+                temp = current->next;
+                ReportAttrError( doc, node, current, REPEATED_ATTRIBUTE);
+                RemoveAttribute(node, current);
+                current = temp;
+            }
+            else
+            {
+                temp = attval->next;
+
+                if (attval->next == NULL)
+                    current = NULL;
+                else
+                    current = current->next;
+
+                ReportAttrError( doc, node, attval, REPEATED_ATTRIBUTE);
+                RemoveAttribute(node, attval);
+                attval = temp;
+            }
         }
-        else
-            attval = attval->next;
+        attval = attval->next;
     }
 }
-
 
 /* ignore unknown attributes for proprietary elements */
 const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
@@ -1489,6 +1486,3 @@ void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
     if (tmbstrcasecmp(attval->attribute, "lang") == 0)
         ConstrainVersion( doc, ~VERS_XHTML11 );
 }
-
-
-
