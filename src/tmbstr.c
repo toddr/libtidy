@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/03 19:45:34 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -97,8 +97,11 @@ int tmbstrcmp( ctmbstr s1, ctmbstr s2 )
 uint tmbstrlen( ctmbstr str )
 {
     uint len = 0;
-    while ( *str++ )
-        ++len;
+    if ( str ) 
+    {
+        while ( *str++ )
+            ++len;
+    }
     return len;
 }
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:10 $ 
-    $Revision: 1.56 $ 
+    $Date: 2003/03/03 19:45:31 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -2799,10 +2799,13 @@ Bool IsJavaScript(Node *node)
 
     for (attr = node->attributes; attr; attr = attr->next)
     {
-        if ( (tmbstrcasecmp(attr->attribute, "language") == 0
-                || tmbstrcasecmp(attr->attribute, "type") == 0)
-                && tmbsubstr(attr->value, "javascript"))
+        if ( (tmbstrcasecmp(attr->attribute, "language") == 0 ||
+              tmbstrcasecmp(attr->attribute, "type") == 0)
+             && tmbsubstr(attr->value, "javascript") )
+        {
             result = yes;
+            break;
+        }
     }
 
     return result;
