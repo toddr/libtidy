@@ -7,15 +7,13 @@
   CVS Info :
 
     $Author: krusch $ 
-    $Date: 2002/04/18 21:48:13 $ 
-    $Revision: 1.46 $ 
+    $Date: 2002/04/19 10:43:05 $ 
+    $Revision: 1.47 $ 
 
 */
 
 #include "platform.h"   /* platform independent stuff */
 #include "html.h"       /* to pull in definition of nodes */
-
-int SeenBodyEndTag = 0;  /* could be moved into lexer structure */
 
 Bool CheckNodeIntegrity(Node *node)
 {
@@ -2876,7 +2874,18 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
     while ((node = GetToken(lexer, mode)) != null)
     {
         /* #538536 Extra endtags not detected */
-        if (SeenBodyEndTag == 1 && (node->type == StartTag || node->type == StartEndTag))
+        if (node->tag == tag_html)
+        {
+            if (node->type == StartTag || node->type == StartEndTag || lexer->seenEndHtml) 
+                ReportWarning(lexer, body, node, DISCARDING_UNEXPECTED);
+            else
+                lexer->seenEndHtml = 1;
+
+            FreeNode(node);
+            continue;
+        }
+
+        if (lexer->seenEndBody && (node->type == StartTag || node->type == EndTag || node->type == StartEndTag))
         {
             ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
         }
@@ -2886,7 +2895,7 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
             body->closed = yes;
             TrimSpaces(lexer, body);
             FreeNode(node);
-            SeenBodyEndTag = 1;
+            lexer->seenEndBody = 1;
             mode = IgnoreWhitespace;
 
             if (body->parent->tag == tag_noframes)
@@ -2920,15 +2929,6 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
             break;
         }
         
-        if (node->tag == tag_html)
-        {
-            if (node->type == StartTag || node->type == StartEndTag)
-                ReportWarning(lexer, body, node, DISCARDING_UNEXPECTED);
-
-            FreeNode(node);
-            continue;
-        }
-
         iswhitenode = no;
 
         if (node->type == TextNode &&
@@ -2940,11 +2940,12 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
         if (InsertMisc(body, node))
             continue;
 
-        if (SeenBodyEndTag == 1 && !iswhitenode)
-        {
-            ++SeenBodyEndTag;
-            ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
-        }
+        /* #538536 Extra endtags not detected */
+//      if (lexer->seenEndBody == 1 && !iswhitenode)
+//      {
+//          ++lexer->seenEndBody;
+//          ReportWarning(lexer, body, node, CONTENT_AFTER_BODY);
+//      }
 
         /* mixed content model permits text */
         if (node->type == TextNode)

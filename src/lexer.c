@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/04/13 16:34:16 $ 
-    $Revision: 1.61 $ 
+    $Author: krusch $ 
+    $Date: 2002/04/19 10:43:05 $ 
+    $Revision: 1.62 $ 
 
 */
 
@@ -241,6 +241,10 @@ Lexer *NewLexer(StreamIn *in)
         lexer->istacksize = 0;
         lexer->istackbase = 0;
         lexer->styles = null;
+
+        /* #538536 Extra endtags not detected */
+        lexer->seenEndBody = 0;
+        lexer->seenEndHtml = 0;
     }
 
 

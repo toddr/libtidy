@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: krusch $ 
-    $Date: 2002/02/26 21:45:46 $ 
-    $Revision: 1.64 $ 
+    $Date: 2002/04/19 10:43:05 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -366,6 +366,9 @@ struct _lexer
     uint txtend;    /* end of current node */
     uint state;     /* state of lexer's finite state machine */
     struct _node *token;
+
+    Bool seenEndBody; /* true if a </body> tag has been encountered */
+    Bool seenEndHtml; /* true if a </html> tag has been encountered */
 
     /* 
       lexer character buffer
