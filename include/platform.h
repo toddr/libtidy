@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/29 23:08:33 $ 
-    $Revision: 1.11 $ 
+    $Date: 2001/08/31 03:19:07 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -39,7 +39,7 @@
 #define MAC_OS_MKLINUX
 #endif
 #if defined(__APPLE__) && defined(__MACH__)
-/* Mac OS X 10.x - gcc or Metrowerks MachO compilers */
+/* Mac OS X (client) 10.x (or server 1.x/10.x) - gcc or Metrowerks MachO compilers */
 #define MAC_OS_X
 #endif
 #if defined(MAC_OS_CLASSIC) || defined(MAC_OS_MKLINUX) || defined(MAC_OS_X)
@@ -51,6 +51,12 @@
  
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define BSD_BASED_OS
+#endif
+
+/* Convenience defines for Windows platforms */
+ 
+#if defined(WINDOWS) || defined(_WIN32)
+#define WINDOWS_OS
 #endif
 
 #include <ctype.h>
@@ -104,7 +110,7 @@
 #if PRESERVE_FILE_TIMES
 
 #ifndef HAS_FUTIME
-#if defined(sun) || defined(__linux__) || defined(BSD_BASED_OS) || defined(MAC_OS)
+#if defined(sun) || defined(__linux__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define HAS_FUTIME 0
 #else
 #define HAS_FUTIME 1
@@ -112,14 +118,14 @@
 #endif
 
 #ifndef UTIME_NEEDS_CLOSED_FILE
-#if defined(sun) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS)
+#if defined(sun) || defined(__MINT__) || defined(BSD_BASED_OS) || defined(MAC_OS) || defined(__MSL__)
 #define UTIME_NEEDS_CLOSED_FILE 1
 #else
 #define UTIME_NEEDS_CLOSED_FILE 0
 #endif
 #endif
 
-#if !defined(MAC_OS_CLASSIC)
+#if defined(MAC_OS_X) || (!defined(MAC_OS_CLASSIC) && !defined(__MSL__))
 #include <sys/types.h> 
 #include <sys/stat.h>
 #else
@@ -133,13 +139,15 @@
 #endif /* HASFUTIME */
 
 /*
-  MS Windows needs _ prefix for Unix file functions
-  Tidy uses for preserving the last modified time
+  MS Windows needs _ prefix for Unix file functions.
+  Not required by Metrowerks Standard Library (MSL).
+  
+  Tidy uses following for preserving the last modified time.
 
   WINDOWS automatically set by Win16 compilers.
   _WIN32 automatically set by Win32 compilers.
 */
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__MSL__)
 #define futime _futime
 #define fstat _fstat
 #define utimbuf _utimbuf
@@ -153,7 +161,7 @@
 /* you may need to delete the #ifndef and #endif on your system */
 
 #ifndef __USE_MISC
-#if defined(sun) || defined(BSD_BASED_OS)
+#if defined(sun) || defined(BSD_BASED_OS) || defined(MAC_OS_X)
 #include <sys/types.h>
 #else
 #ifndef _INCLUDE_HPUX_SOURCE
@@ -192,7 +200,7 @@ typedef enum
   _WIN32 automatically set by Win32 compilers.
 */
 
-#if defined(WINDOWS) || defined(_WIN32)
+#if defined(WINDOWS_OS) && !defined(__MSL__)
 #define unlink _unlink
 #endif
 
