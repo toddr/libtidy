@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/25 03:06:36 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/06/29 08:20:38 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -815,6 +815,7 @@ extern Dict *tag_head;
 extern Dict *tag_body;
 extern Dict *tag_frameset;
 extern Dict *tag_frame;
+extern Dict *tag_iframe;	/* #433359 - fix by Randy Waki 12 Mar 01 */
 extern Dict *tag_noframes;
 extern Dict *tag_title;
 extern Dict *tag_base;

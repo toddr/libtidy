@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/03 01:34:26 $ 
-    $Revision: 1.6 $ 
+    $Date: 2001/06/29 08:21:56 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -247,6 +247,10 @@ static Bool CanPrune(Node *element)
     if (element->tag == tag_object)
         return no;
 
+    /* #433359 - fix by Randy Waki 12 Mar 01 */
+    if (element->tag == tag_iframe)
+        return no;
+                                
     if ( element->attributes != null &&
             (GetAttrByName(element, "id") ||
                GetAttrByName(element, "name")) )
