@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/04/07 14:19:26 $ 
-    $Revision: 1.41 $ 
+    $Author: creitzel $ 
+    $Date: 2002/04/09 03:16:11 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -3136,9 +3136,17 @@ void ParseNoFrames(Lexer *lexer, Node *noframes, uint mode)
 
         if ((node->tag == tag_frame || node->tag == tag_frameset))
         {
-            ReportWarning(lexer, noframes, node, MISSING_ENDTAG_BEFORE);
             TrimSpaces(lexer, noframes);
-            UngetToken(lexer);
+            if (node->type == EndTag)
+            {
+                ReportWarning(lexer, noframes, node, DISCARDING_UNEXPECTED);
+                FreeNode(node);       /* Throw it away */
+            }
+            else
+            {
+                ReportWarning(lexer, noframes, node, MISSING_ENDTAG_BEFORE);
+                UngetToken(lexer);
+            }
             return;
         }
 
