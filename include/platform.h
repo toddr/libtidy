@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:09 $ 
-    $Revision: 1.35 $ 
+    $Date: 2003/03/05 18:07:38 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -24,18 +24,29 @@ extern "C" {
 */
 
 /* #define CONFIG_FILE "/etc/tidy_config.txt" */ /* original */
-/* #define CONFIG_FILE "/etc/tidyrc" */
+/* #define CONFIG_FILE "/etc/.tidyrc" */
 /* #define CONFIG_FILE "/etc/tidy.conf" */
 
 /*
-  Uncomment the following #define if you are on a Unix system
-  supporting the call getpwnam() and the HOME environment variable.
-  It enables tidy to find config files named ~/.tidyrc and
+  Uncomment the following #define if you are on a system
+  supporting the HOME environment variable.
+  It enables tidy to find config files named ~/.tidyrc if 
+  the HTML_TIDY environment variable is not set.
+*/
+/* #define USER_CONFIG_FILE "~/.tidyrc" */
+
+/*
+  Uncomment the following #define if 
+  a) you have defined USER_CONFIG_FILE and 
+  b) you are on a Unix system supporting the call getpwnam().
+
+  It enables tidy to find config files named 
   ~your/.tidyrc etc if the HTML_TIDY environment
   variable is not set. Contributed by Todd Lewis.
 */
 
 /* #define SUPPORT_GETPWNAM */
+
 
 /* Enable/disable support for Big5 and Shift_JIS character encodings */
 #ifndef SUPPORT_ASIAN_ENCODINGS
@@ -427,6 +438,7 @@ extern "C" {
 #define utimbuf _utimbuf /* Windows seems to want utimbuf */
 #define stat _stat
 #define fileno _fileno
+#define access _access
 #define strcasecmp _stricmp
 #define utime _utime
 #if _MSC_VER > 1000

@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:09 $ 
-    $Revision: 1.2 $ 
+    $Date: 2003/03/05 18:07:39 $ 
+    $Revision: 1.3 $ 
 
   Contributing Author(s):
 
@@ -222,6 +222,9 @@ TIDY_EXPORT int         tidyLoadConfig( TidyDoc tdoc, ctmbstr configFile );
 /** Load a Tidy configuration file with the specified character encoding */
 TIDY_EXPORT int         tidyLoadConfigEnc( TidyDoc tdoc, ctmbstr configFile,
                                            ctmbstr charenc );
+
+TIDY_EXPORT Bool        tidyFileExists( ctmbstr filename );
+
 
 /** Set the input/output character encoding for parsing markup.
 **  Values include: ascii, latin1, raw, utf8, iso2022, mac,
