@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/03/31 03:54:47 $ 
-    $Revision: 1.9 $ 
+    $Date: 2003/05/04 20:40:55 $ 
+    $Revision: 1.10 $ 
 */
 
 #include "tidy.h"
@@ -721,12 +721,16 @@ int main( int argc, char** argv )
             break;
     }
 
-    if ( contentErrors + contentWarnings > 0 && 
-         !tidyOptGetBool(tdoc, TidyQuiet) )
-    {
-        tidyErrorSummary( tdoc );
-        tidyGeneralInfo( tdoc );
-    }
+    if (!tidyOptGetBool(tdoc, TidyQuiet) &&
+        errout == stderr && !contentErrors)
+        fprintf(errout, "\n");
+
+    if (contentErrors + contentWarnings > 0 && 
+         !tidyOptGetBool(tdoc, TidyQuiet))
+        tidyErrorSummary(tdoc);
+
+    if (!tidyOptGetBool(tdoc, TidyQuiet))
+        tidyGeneralInfo(tdoc);
 
     /* called to free hash tables etc. */
     tidyRelease( tdoc );
