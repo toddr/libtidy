@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/06/07 05:46:22 $ 
-    $Revision: 1.4 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/06/09 00:34:30 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -977,6 +977,8 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
 
     doctype = FindDocType(root);
 
+    FixHTMLNameSpace(lexer, root, name_space);	/* #427839 - fix by Evan Lenz 05 Sep 00 */
+
     if (doctype_mode == doctype_omit)
     {
         if (doctype)
@@ -1019,8 +1021,6 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
         fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
         sysid = voyager_loose;
     }
-
-    FixHTMLNameSpace(lexer, root, name_space);
 
     if (!doctype)
     {
