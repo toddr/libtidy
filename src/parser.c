@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 04:40:46 $ 
-    $Revision: 1.72 $ 
+    $Date: 2003/04/13 22:03:27 $ 
+    $Revision: 1.73 $ 
 
 */
 
@@ -480,7 +480,7 @@ static void TrimSpaces( TidyDocImpl* doc, Node *element)
         TrimInitialSpace( doc, element, text );
 
     text = element->last;
-    if ( nodeIsText(text) )
+    if ( nodeIsText(text) && !nodeIsPRE(element))
         TrimTrailingSpace( doc, element, text );
 }
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 10:45:17 $ 
-    $Revision: 1.59 $ 
+    $Date: 2003/04/13 22:03:28 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -1523,7 +1523,7 @@ static Bool InsideHead( TidyDocImpl* doc, Node *node )
 */
 static int TextEndsWithNewline(Lexer *lexer, Node *node, uint mode )
 {
-    if ( (mode & CDATA|COMMENT) && node->type == TextNode && node->end > node->start )
+    if ( (mode & (CDATA|COMMENT)) && node->type == TextNode && node->end > node->start )
     {
         uint ch, ix = node->end - 1;
         /* Skip non-newline whitespace. */
@@ -1921,8 +1921,8 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
                 PPrintTree( doc, (mode | PREFORMATTED | NOWRAP),
                             indent, content );
             }
-            indent = indprev;
             PCondFlushLine( doc, indent );
+            indent = indprev;
             PPrintEndTag( doc, mode, indent, node );
 
             if ( !cfg(doc, TidyIndentContent) && node->next != NULL )
