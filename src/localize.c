@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/04/02 08:32:02 $ 
-    $Revision: 1.76 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/11 04:40:45 $ 
+    $Revision: 1.77 $ 
 
 */
 
@@ -784,6 +784,10 @@ void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
     case ENCODING_IO_CONFLICT:
         messageNode( doc, TidyWarning, node,
            "Output encoding does not work with standard output" );
+        break;
+    case MISSING_DOCTYPE:
+        messageNode( doc, TidyWarning, node,
+            "Missing <!DOCTYPE> declaration");
         break;
     }
 }

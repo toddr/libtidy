@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 15:14:57 $ 
-    $Revision: 1.71 $ 
+    $Date: 2003/04/11 04:40:46 $ 
+    $Revision: 1.72 $ 
 
 */
 
@@ -3650,6 +3650,9 @@ Node *ParseDocument(TidyDocImpl* doc)
         }
         else
             html = node;
+
+        if (!FindDocType(doc))
+            ReportWarning(doc, NULL, NULL, MISSING_DOCTYPE);
 
         InsertNodeAtEnd(document, html);
         ParseHTML( doc, html, no );
