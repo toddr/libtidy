@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 08:37:34 $ 
-    $Revision: 1.41 $ 
+    $Date: 2001/09/09 19:45:25 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -151,6 +151,10 @@ void ReportEncodingError(Lexer *lexer, uint code, uint c)
     
     lexer->warnings++;
 
+    /* keep quiet after <ShowErrors> errors */
+    if (lexer->errors > ShowErrors)
+        return;
+
     if (ShowWarnings)
     {
         ReportPosition(lexer);
@@ -211,6 +215,10 @@ void ReportEntityError(Lexer *lexer, uint code, char *entity, int c)
 
     lexer->warnings++;
 
+    /* keep quiet after <ShowErrors> errors */
+    if (lexer->errors > ShowErrors)
+        return;
+
     if (ShowWarnings)
     {
         ReportPosition(lexer);
@@ -253,7 +261,10 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             value = av->value;
     }
 
-    lexer->warnings++;
+    if (code == UNEXPECTED_GT)
+        lexer->errors++;
+    else
+        lexer->warnings++;
 
     /* keep quiet after <ShowErrors> errors */
     if (lexer->errors > ShowErrors)
@@ -302,13 +313,6 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
             tidy_out(lexer->errout, " has XML attribute \"%s\"", name);
-        }
-        else if (code == UNEXPECTED_GT)
-        {
-            tidy_out(lexer->errout, "Error: ");
-            ReportTag(lexer, node);
-            tidy_out(lexer->errout, " missing '>' for end of tag");
-            lexer->errors++;
         }
         else if (code == UNEXPECTED_QUOTEMARK)
         {
@@ -405,13 +409,15 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
 
         tidy_out(lexer->errout, "\n");
     }
-    else if (code == UNEXPECTED_GT)
+    
+    if (code == UNEXPECTED_GT)
     {
-        ReportPosition(lexer);
+        if (!ShowWarnings)
+            ReportPosition(lexer);
+
         tidy_out(lexer->errout, "Error: ");
         ReportTag(lexer, node);
         tidy_out(lexer->errout, " missing '>' for end of tag\n");
-        lexer->errors++;
     }
 }
 
@@ -424,10 +430,13 @@ void ReportMissingAttr(Lexer* lexer, Node* node, char* name)
 
 void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
 {
-    lexer->warnings++;
+    if ((code == DISCARDING_UNEXPECTED) && lexer->errors)
+        lexer->errors++;
+    else
+        lexer->warnings++;
 
-    /* keep quiet after 6 errors */
-    if (lexer->errors > 6)
+    /* keep quiet after <ShowErrors> errors */
+    if (lexer->errors > ShowErrors)
         return;
 
     if (ShowWarnings)
@@ -448,10 +457,10 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
             tidy_out(lexer->errout, "Warning: missing </%s> before ", element->element);
             ReportTag(lexer, node);
         }
-        else if (code == DISCARDING_UNEXPECTED)
+        else if ((code == DISCARDING_UNEXPECTED) && (lexer->errors == 0))
         {
-            tidy_out(lexer->errout, lexer->errors ? "Error:" : "Warning");
-            tidy_out(lexer->errout, " discarding unexpected ");
+            /* the case for when this is an error not a warning, is handled later */
+            tidy_out(lexer->errout, "Warning: discarding unexpected ");
             ReportTag(lexer, node);
         }
         else if (code == NESTED_EMPHASIS)
@@ -610,19 +619,30 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
             tidy_out(lexer->errout, " element not empty or not closed");
         }
 
+        if ((code != DISCARDING_UNEXPECTED) || (lexer->errors == 0))
+            tidy_out(lexer->errout, "\n");
+    }
+    
+    if ((code == DISCARDING_UNEXPECTED) && lexer->errors)
+    {
+        /* the case for when this is a warning not an error, is handled earlier */
+        if (!ShowWarnings)
+            ReportPosition(lexer);
+
+        tidy_out(lexer->errout, "Error: discarding unexpected ");
+        ReportTag(lexer, node);
         tidy_out(lexer->errout, "\n");
     }
 }
 
 void ReportError(Lexer *lexer, Node *element, Node *node, uint code)
 {
-    lexer->warnings++;
-
-    /* keep quiet after 6 errors */
-    if (lexer->errors > 6)
-        return;
-
+    /* lexer->warnings++; */
     lexer->errors++;
+
+    /* keep quiet after <ShowErrors> errors */
+    if (lexer->errors > ShowErrors)
+        return;
 
     ReportPosition(lexer);
 
@@ -927,10 +947,22 @@ void ReportVersion(FILE *errout, Lexer *lexer, char *filename, Node *doctype)
 
 void ReportNumWarnings(FILE *errout, Lexer *lexer)
 {
+    /*
     if (lexer->warnings > 0)
         tidy_out(errout, "%d warnings/errors were found!\n\n", lexer->warnings);
+    */
+    if ((lexer->warnings > 0) || (lexer->errors > 0))
+    {
+        tidy_out(errout, "%d %s, %d %s were found!",
+                 lexer->warnings, lexer->warnings == 1?"warning":"warnings",
+                 lexer->errors, lexer->errors == 1?"error":"errors");
+        if ((lexer->errors > ShowErrors) || !ShowWarnings)
+            tidy_out(errout, " Not all warnings/errors were shown.\n\n");
+        else
+            tidy_out(errout, "\n\n");
+    }
     else
-        tidy_out(errout, "no warnings or errors were found\n\n");
+        tidy_out(errout, "No warnings or errors were found.\n\n");
 }
 
 void HelpText(FILE *out, char *prog)
