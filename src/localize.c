@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/08/06 01:13:40 $ 
-    $Revision: 1.62 $ 
+    $Date: 2002/09/03 04:02:09 $ 
+    $Revision: 1.63 $ 
 
 */
 
@@ -24,7 +24,7 @@
 /* points to the Adaptive Technology Resource Centre at the University of Toronto */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-char *release_date = "1st August 2002";
+char *release_date = "1st September 2002";
 
 static char *currentFile; /* sasdjb 01May00 for GNU Emacs error parsing */
 
