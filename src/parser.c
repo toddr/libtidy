@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 04:39:59 $ 
-    $Revision: 1.88 $ 
+    $Date: 2003/05/13 09:11:20 $ 
+    $Revision: 1.89 $ 
 
 */
 
@@ -2588,6 +2588,13 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
         /* deal with comments etc. */
         if (InsertMisc(pre, node))
             continue;
+
+        if (node->tag == NULL)
+        {
+            ReportWarning(doc, pre, node, DISCARDING_UNEXPECTED);
+            FreeNode(doc, node);
+            continue;
+        }
 
         /* strip unexpected tags */
         if ( !PreContent(doc, node) )
