@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 09:55:49 $ 
-    $Revision: 1.32 $ 
+    $Date: 2001/07/18 20:58:54 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -742,6 +742,18 @@ static Node *PhpToken(Lexer *lexer)
     return node;
 }
 
+/* XML Declaration <?xml version='1.0' ... ?> */
+static Node *XmlDeclToken(Lexer *lexer)
+{
+    Node *node;
+
+    node = NewNode();
+    node->type = XmlDecl;
+    node->start = lexer->txtstart;
+    node->end = lexer->txtend;
+    return node;
+}
+
 /* Word2000 uses <![if ... ]> and <![endif]> */
 static Node *SectionToken(Lexer *lexer)
 {
@@ -1370,7 +1382,7 @@ Bool FixXMLPI(Lexer *lexer, Node *root)
     Node *xml;
     char *s;
 
-    if( root->content && root->content->type == ProcInsTag)
+    if( root->content && root->content->type == XmlDecl)
     {
         s = &lexer->lexbuf[root->content->start];
 
@@ -1379,7 +1391,7 @@ Bool FixXMLPI(Lexer *lexer, Node *root)
     }
 
     xml = NewNode();
-    xml->type = ProcInsTag;
+    xml->type = XmlDecl;
     xml->next = root->content;
 
     if (root->content)
@@ -2104,6 +2116,15 @@ Node *GetToken(Lexer *lexer, uint mode)
                     }
                 }
 
+                if  (lexer->lexsize - lexer->txtstart == 3)
+                {
+                    if (wstrncmp(lexer->lexbuf + lexer->txtstart, "xml", 3) == 0)
+                    {
+                        lexer->state = LEX_XMLDECL;
+                        continue;
+                    }
+                }
+
                 if (XmlPIs)  /* insist on ?> as terminator */
                 {
                     if (c != '?')
@@ -2194,6 +2215,26 @@ Node *GetToken(Lexer *lexer, uint mode)
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
                 return lexer->token = PhpToken(lexer);
+
+            case LEX_XMLDECL: /* seen "<?xml" so look for "?>" */
+                if (c != '?')
+                    continue;
+
+                /* now look for '>' */
+                c = ReadChar(lexer->in);
+
+                if (c != '>')
+                {
+                    UngetChar(c, lexer->in);
+                    continue;
+                }
+
+                lexer->lexsize -= 1;
+                lexer->txtend = lexer->lexsize;
+                lexer->lexbuf[lexer->lexsize] = '\0';
+                lexer->state = LEX_CONTENT;
+                lexer->waswhite = no;
+                return lexer->token = XmlDeclToken(lexer);
 
             case LEX_SECTION: /* seen "<![" so look for "]>" */
                 if (c == '[')

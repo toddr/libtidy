@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/17 11:24:06 $ 
-    $Revision: 1.23 $ 
+    $Date: 2001/07/18 20:58:54 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -466,7 +466,8 @@ static Bool InsertMisc(Node *element, Node *node)
         node->type == SectionTag ||
         node->type == AspTag ||
         node->type == JsteTag ||
-        node->type == PhpTag)
+        node->type == PhpTag ||
+        node->type == XmlDecl)
     {
         InsertNodeAtEnd(element, node);
         return yes;
