@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/07/14 12:01:14 $ 
-    $Revision: 1.130 $ 
+    $Author: lpassey $ 
+    $Date: 2003/07/16 14:30:08 $ 
+    $Revision: 1.131 $ 
 
 */
 
@@ -1102,12 +1102,13 @@ void FreeNode( TidyDocImpl* doc, Node *node )
     {
         Node* next = node->next;
 
-        MemFree( node->element );
         FreeAttrs( doc, node );
         FreeNode( doc, node->content );
-        /* node->content = NULL; */
+        MemFree( node->element );
         if (RootNode != node->type)
             MemFree( node );
+        else
+            node->content = NULL;
 
         node = next;
     }
