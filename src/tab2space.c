@@ -2,7 +2,9 @@
 #include <stdlib.h> 
 #include <string.h>
 
+#ifndef __BEOS__
 typedef unsigned int uint;
+#endif
 typedef unsigned char byte;
 typedef int bool;
 
