@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/06/18 20:52:11 $ 
-    $Revision: 1.10 $ 
+    $Date: 2004/06/18 20:58:38 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -1717,14 +1717,14 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
             {
                 if ( hasValue(av) )
                 {
-                    if ( strstr(av->value, "summary") == NULL &&
-                         strstr(av->value, "table") == NULL )
+                    if (!AttrContains(av, "summary") && 
+                        !AttrContains(av, "table"))
                     {
                         HasSummary = yes;
                     }
 
-                    if ( strstr(av->value, "summary") != NULL ||
-                         strstr(av->value, "table") != NULL )
+                    if (AttrContains(av, "summary") && 
+                        AttrContains(av, "table"))
                     {
                         HasSummary = yes;
                         ReportAccessError( doc, node, TABLE_SUMMARY_INVALID_PLACEHOLDER );
@@ -2728,7 +2728,7 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
         {
             if ( attrIsREL(av) && hasValue(av) )
             {
-                if ( strstr(av->value, "stylesheet") != NULL )
+                if (AttrContains(av, "stylesheet"))
                     HasRel = yes;
             }
 
@@ -3151,8 +3151,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
             AttVal* av = attrGetREL(node);
             HasMetaData = yes;
 
-            if ( hasValue(av) &&
-                 strstr(av->value, "stylesheet") != NULL )
+            if (AttrContains(av, "stylesheet"))
             {
                 HasRel = yes;
                 ReportAccessError( doc, node, METADATA_MISSING_LINK );
