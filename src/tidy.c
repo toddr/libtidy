@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/03 01:44:54 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/06/03 01:48:39 $ 
+    $Revision: 1.3 $ 
 
   Contributing Author(s):
 
@@ -762,9 +762,11 @@ int main(int argc, char **argv)
             if (arg[0] == '-')
                 ++arg;
 #endif
+            /* #427667 - fix by Randy Waki 04 Aug 00 */
+            /*
             if (strcmp(arg, "indent") == 0)
                 IndentContent = yes;
-            else if (strcmp(arg, "xml") == 0)
+            else */ if (strcmp(arg, "xml") == 0)
                 XmlTags = yes;
             else if (strcmp(arg, "asxml") == 0 || strcmp(arg, "asxhtml") == 0)
                 xHTML = yes;
