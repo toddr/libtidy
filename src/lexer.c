@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/06/02 08:45:43 $ 
-    $Revision: 1.3 $ 
+    $Author: creitzel $ 
+    $Date: 2001/06/07 05:46:22 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -1454,7 +1454,7 @@ Node *GetToken(Lexer *lexer, uint mode)
 
     while ((c = ReadChar(lexer->in)) != EndOfStream)
     {
-        if (lexer->insertspace && mode != IgnoreWhitespace)
+        if (lexer->insertspace && !(mode & IgnoreWhitespace))
         {
             AddCharToLexer(lexer, ' ');
             lexer->waswhite = yes;
