@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 00:59:53 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/07/09 01:14:42 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -97,20 +97,20 @@ static struct tag
     CheckAttribs *chkattrs;
 } tags[] =
 {
-    {"html",       (VERS_ALL|VERS_FRAMESET),     (CM_HTML|CM_OPT|CM_OMITST),  ParseHTML, CheckHTML},
+    {"html",       VERS_ALL,     (CM_HTML|CM_OPT|CM_OMITST),  ParseHTML, CheckHTML},
 
-    {"head",       (VERS_ALL|VERS_FRAMESET),     (CM_HTML|CM_OPT|CM_OMITST), ParseHead, null},
+    {"head",       VERS_ALL,     (CM_HTML|CM_OPT|CM_OMITST), ParseHead, null},
 
-    {"title",      (VERS_ALL|VERS_FRAMESET),     CM_HEAD, ParseTitle, null},
-    {"base",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, null},
-    {"link",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, CheckLINK},
-    {"meta",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, null},
-    {"style",      (VERS_FROM32|VERS_FRAMESET),  CM_HEAD, ParseScript, CheckSTYLE},
-    {"script",     (VERS_FROM32|VERS_FRAMESET),  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
+    {"title",      VERS_ALL,     CM_HEAD, ParseTitle, null},
+    {"base",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, null},
+    {"link",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, CheckLINK},
+    {"meta",       VERS_ALL,     (CM_HEAD|CM_EMPTY), null, null},
+    {"style",      VERS_FROM32,  CM_HEAD, ParseScript, CheckSTYLE},
+    {"script",     VERS_FROM32,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
     {"server",     VERS_NETSCAPE,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, null},
 
     {"body",       VERS_ALL,     (CM_HTML|CM_OPT|CM_OMITST), ParseBody, null},
-    {"frameset",   VERS_FRAMESET,  (CM_HTML|CM_FRAMES), ParseFrameSet, null},
+    {"frameset",   VERS_FRAMESET, (CM_HTML|CM_FRAMES), ParseFrameSet, null},
 
     {"p",          VERS_ALL,     (CM_BLOCK|CM_OPT), ParseInline, null},
     {"h1",         VERS_ALL,     (CM_BLOCK|CM_HEADING), ParseInline, null},
