@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/22 03:31:32 $ 
-    $Revision: 1.97 $ 
+    $Date: 2003/05/23 00:09:26 $ 
+    $Revision: 1.98 $ 
 
 */
 
@@ -3142,14 +3142,20 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
                 ++HasTitle;
 
                 if (HasTitle > 1)
-                    ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
+                    if (head)
+                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS_IN);
+                    else
+                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
             }
             else if ( nodeIsBASE(node) )
             {
                 ++HasBase;
 
                 if (HasBase > 1)
-                    ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
+                    if (head)
+                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS_IN);
+                    else
+                        ReportWarning( doc, head, node, TOO_MANY_ELEMENTS);
             }
             else if ( nodeIsNOSCRIPT(node) )
             {
@@ -4160,7 +4166,11 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
         /* discard unexpected end tags */
         if (node->type == EndTag)
         {
-            ReportError( doc, element, node, UNEXPECTED_ENDTAG );
+            if (element)
+                ReportError(doc, element, node, UNEXPECTED_ENDTAG_IN);
+            else
+                ReportError(doc, element, node, UNEXPECTED_ENDTAG);
+
             FreeNode( doc, node);
             continue;
         }

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 04:39:59 $ 
-    $Revision: 1.9 $ 
+    $Date: 2003/05/23 00:09:25 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -125,6 +125,8 @@ void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versW
 #define MIXED_CONTENT_IN_BLOCK  38
 #define MISSING_DOCTYPE         39         
 #define SPACE_PRECEDING_XMLDECL 40
+#define TOO_MANY_ELEMENTS_IN    41
+#define UNEXPECTED_ENDTAG_IN    42
 
 /* error codes used for attribute messages */
 
