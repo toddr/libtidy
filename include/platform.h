@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/02/02 10:23:28 $ 
-    $Revision: 1.20 $ 
+    $Date: 2002/02/03 01:19:06 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -172,8 +172,8 @@
 #endif
 #endif
 
-/* Convenience defines for OS/2 + gcc platforms */
-#if defined(__EMX__)
+/* Convenience defines for OS/2 + icc/gcc platforms */
+#if defined(__OS2__) || defined(__IBMC__) || defined(__EMX__)
 #define OS2_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OS/2"
