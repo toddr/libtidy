@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: creitzel $ 
-#     $Date: 2003/01/18 14:23:43 $ 
-#     $Revision: 1.1 $ 
+#     $Date: 2003/02/05 16:13:13 $ 
+#     $Revision: 1.2 $ 
 #
 #  Copyright (c) 1998-2002 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, Institut National de
@@ -68,7 +68,7 @@ libtidy_la_SOURCES = \
 	tidylib.c
 
 libtidy_la_LDFLAGS = \
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_LITE_AGE) \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-release $(LT_RELEASE) -no-undefined -export-dynamic
 
 HFILES = \
