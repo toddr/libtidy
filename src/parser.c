@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/16 21:51:33 $ 
-    $Revision: 1.74 $ 
+    $Date: 2003/04/16 22:18:16 $ 
+    $Revision: 1.75 $ 
 
 */
 
@@ -3055,6 +3055,9 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 para = InferredTag(doc, "p");
                 InsertNodeAtEnd(body, para);
                 ParseTag(doc, para, mode);
+
+                /* fix for bug 505745 */
+                TrimSpaces(doc, para);
                 mode = MixedContent;
                 continue;
             }
