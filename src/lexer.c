@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/17 15:50:20 $ 
-    $Revision: 1.93 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/17 22:12:47 $ 
+    $Revision: 1.94 $ 
 
 */
 
@@ -1222,6 +1222,18 @@ Node *FindHEAD( TidyDocImpl* doc )
               node = node->next )
             /**/;
     }
+
+    return node;
+}
+
+Node *FindTITLE(TidyDocImpl* doc)
+{
+    Node *node = FindHEAD(doc);
+
+    if (node)
+        for (node = node->content;
+             node && !nodeIsTITLE(node);
+             node = node->next);
 
     return node;
 }

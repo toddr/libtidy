@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/16 22:18:16 $ 
-    $Revision: 1.75 $ 
+    $Date: 2003/04/17 22:12:48 $ 
+    $Revision: 1.76 $ 
 
 */
 
@@ -625,17 +625,21 @@ static void MoveToHead( TidyDocImpl* doc, Node *element, Node *node )
     {
         ReportWarning( doc, element, node, TAG_NOT_ALLOWED_IN );
 
-        while ( !nodeIsHTML(element) )
-            element = element->parent;
+        head = FindHEAD(doc);
+        assert(head != NULL);
 
-        for (head = element->content; head; head = head->next)
+        /* fix for bug 723206; a better fix would avoid to insert    */
+        /* the empty <title> element, but that would require to move */
+        /* the relevant code after ParseDocument(), this is simpler  */
+        if (nodeIsTITLE(node))
         {
-            if ( nodeIsHEAD(head) )
-            {
-                InsertNodeAtEnd(head, node);
-                break;
-            }
+            Node *title = FindTITLE(doc);
+
+            if (title && title->implicit)
+                RemoveNode(title);
         }
+
+        InsertNodeAtEnd(head, node);
 
         if ( node->tag->parser )
             ParseTag( doc, node, IgnoreWhitespace );

@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 16:21:37 $ 
-    $Revision: 1.6 $ 
+    $Date: 2003/04/17 22:12:48 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -451,6 +451,7 @@ void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len );
 Node* FindDocType( TidyDocImpl* doc );
 Node* FindHTML( TidyDocImpl* doc );
 Node* FindHEAD( TidyDocImpl* doc );
+Node* FindTITLE(TidyDocImpl* doc);
 Node* FindBody( TidyDocImpl* doc );
 
 /* Returns containing block element, if any */
