@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 01:49:01 $ 
-    $Revision: 1.89 $ 
+    $Date: 2003/05/23 03:20:33 $ 
+    $Revision: 1.90 $ 
 
 */
 
@@ -36,6 +36,115 @@ ctmbstr ReleaseDate(void)
   return release_date;
 }
 
+struct _msgfmt
+{
+    uint code;
+    ctmbstr fmt;
+} const msgFormat[] = 
+{
+/* ReportEncodingError */
+  { ENCODING_MISMATCH,            "specified input encoding (%s) does not match actual input encoding (%s)" },
+  { VENDOR_SPECIFIC_CHARS,        "%s invalid character code %s"                                            },
+  { INVALID_SGML_CHARS,           "%s invalid character code %s"                                            },
+  { INVALID_UTF8,                 "%s invalid UTF-8 bytes (char. code %s)"                                  },
+  { INVALID_UTF16,                "%s invalid UTF-16 surrogate pair (char. code %s)"                        },
+  { INVALID_NCR,                  "%s invalid numeric character reference %s"                               },
+
+/* ReportEntityError */
+  { MISSING_SEMICOLON,            "entity \"%s\" doesn't end in ';'"                                        },
+  { MISSING_SEMICOLON_NCR,        "numeric character reference \"%s\" doesn't end in ';'"                   },
+  { UNKNOWN_ENTITY,               "unescaped & or unknown entity \"%s\""                                    },
+  { UNESCAPED_AMPERSAND,          "unescaped & which should be written as &amp;"                            },
+  { APOS_UNDEFINED,               "named entity &apos; only defined in XML/XHTML"                           },
+
+/* ReportAttrError */
+  { UNKNOWN_ATTRIBUTE,            "%s unknown attribute \"%s\""                                             },
+  { INSERTING_ATTRIBUTE,          "%s inserting \"%s\" attribute"                                           },
+  { MISSING_ATTR_VALUE,           "%s attribute \"%s\" lacks value"                                         },
+  { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     },
+  { BAD_ATTRIBUTE_VALUE,          "%s attribute \"%s\" has invalid value \"%s\""                            },
+  { BAD_ATTRIBUTE_VALUE_REPLACED, "%s attribute \"%s\" had invalid value \"%s\" and has been replaced"      },
+  { INVALID_ATTRIBUTE,            "%s attribute name \"%s\" (value=\"%s\") is invalid"                      },
+  { XML_ID_SYNTAX,                "%s ID \"%s\" uses XML ID syntax"                                         },
+  { XML_ATTRIBUTE_VALUE,          "%s has XML attribute \"%s\""                                             },
+  { UNEXPECTED_QUOTEMARK,         "%s unexpected or duplicate quote mark"                                   },
+  { MISSING_QUOTEMARK,            "%s attribute with missing trailing quote mark"                           },
+  { REPEATED_ATTRIBUTE,           "%s dropping value \"%s\" for repeated attribute \"%s\""                  },
+  { PROPRIETARY_ATTR_VALUE,       "%s proprietary attribute value \"%s\""                                   },
+  { PROPRIETARY_ATTRIBUTE,        "%s proprietary attribute \"%s\""                                         },
+  { UNEXPECTED_END_OF_FILE_ATTR,  "end of file while parsing attributes"                                    },
+  { ID_NAME_MISMATCH,             "%s id and name attribute value mismatch"                                 },
+  { BACKSLASH_IN_URI,             "%s URI reference contains backslash. Typo?"                              },
+  { FIXED_BACKSLASH,              "%s converting backslash in URI to slash"                                 },
+  { ILLEGAL_URI_REFERENCE,        "%s improperly escaped URI reference"                                     },
+  { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     },
+  { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  },
+  { ANCHOR_NOT_UNIQUE,            "%s Anchor \"%s\" already defined"                                        },
+  { ENTITY_IN_ID,                 "No entities allowed in id attribute, discarding \"&\""                   },
+  { JOINING_ATTRIBUTE,            "%s joining values of repeated attribute \"%s\""                          },
+  { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              },
+  { ATTR_VALUE_NOT_LCASE,         "%s attribute value \"%s\" must be lower case for XHTML"                  },
+  { UNEXPECTED_GT,                "%s missing '>' for end of tag"                                           },
+  { INVALID_XML_ID,               "%s cannot copy name attribute to id"                                     },
+
+/* ReportWarning */
+  { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           },
+  { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 },
+  { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                },
+  { NESTED_EMPHASIS,              "nested emphasis %s"                                                      },
+  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      },
+  { NON_MATCHING_ENDTAG,          "replacing unexpected %s by </%s>"                                        },
+  { TAG_NOT_ALLOWED_IN,           "%s isn't allowed in <%s> elements"                                       },
+  { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 },
+  { MISSING_STARTTAG,             "missing <%s>"                                                            },
+  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                },
+  { TOO_MANY_ELEMENTS,            "too many %s elements in <%s>"                                            },
+  { USING_BR_INPLACE_OF,          "using <br> in place of %s"                                               },
+  { INSERTING_TAG,                "inserting implicit <%s>"                                                 },
+  { CANT_BE_NESTED,               "%s can't be nested"                                                      },
+  { PROPRIETARY_ELEMENT,          "%s is not approved by W3C"                                               },
+  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           },
+  { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             },
+  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       },
+  { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       },
+  { ILLEGAL_NESTING,              "%s shouldn't be nested"                                                  },
+  { NOFRAMES_CONTENT,             "%s not inside 'noframes' element"                                        },
+  { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      },
+  { MALFORMED_DOCTYPE,            "expected \"html PUBLIC\" or \"html SYSTEM\""                             },
+  { CONTENT_AFTER_BODY,           "content occurs after end of body"                                        },
+  { MALFORMED_COMMENT,            "adjacent hyphens within comment"                                         },
+  { BAD_COMMENT_CHARS,            "expecting -- or >"                                                       },
+  { BAD_XML_COMMENT,              "XML comments can't contain --"                                           },
+  { BAD_CDATA_CONTENT,            "'<' + '/' + letter not allowed here"                                     },
+  { INCONSISTENT_NAMESPACE,       "HTML namespace doesn't match content"                                    },
+  { DTYPE_NOT_UPPER_CASE,         "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case"                         },
+  { UNEXPECTED_END_OF_FILE,       "unexpected end of file %s"                                               },
+  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       },
+  { ELEMENT_NOT_EMPTY,            "%s element not empty or not closed"                                      },
+  { ENCODING_IO_CONFLICT,         "Output encoding does not work with standard output"                      },
+  { MISSING_DOCTYPE,              "missing <!DOCTYPE> declaration"                                          },
+  { SPACE_PRECEDING_XMLDECL,      "removing whitespace preceding XML Declaration"                           },
+  { UNEXPECTED_ENDTAG_IN,         "unexpected </%s> in <%s>"                                                },
+  { TOO_MANY_ELEMENTS_IN,         "too many %s elements in <%s>"                                            },
+
+/* ReportError */
+  { SUSPECTED_MISSING_QUOTE,      "missing quote mark for attribute value"                                  },
+  { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               },
+  { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   },
+  { UNEXPECTED_ENDTAG,            "unexpected </%s> in <%s>"                                                },
+  { 0,                            NULL                                                                      }
+};
+
+ctmbstr GetFormatFromCode(uint code)
+{
+    uint i;
+
+    for (i = 0; msgFormat[i].fmt; ++i)
+        if (msgFormat[i].code == code)
+            return msgFormat[i].fmt;
+
+    return NULL;
+}
 
 static char* LevelPrefix( TidyReportLevel level, char* buf )
 {
@@ -304,7 +413,7 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
     char buf[ 32 ];
 
     ctmbstr action = discarded ? "discarding" : "replacing";
-    ctmbstr fmt = NULL;
+    ctmbstr fmt = GetFormatFromCode(code);
 
     /* An encoding mismatch is currently treated as a non-fatal error */
     switch (code)
@@ -312,8 +421,7 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
     case ENCODING_MISMATCH:
         /* actual encoding passed in "c" */
         messageLexer( doc, TidyWarning,
-                      "specified input encoding (%s) does "
-                      "not match actual input encoding (%s)",
+                      fmt,
                        CharEncodingName( doc->docIn->encoding ),
                        CharEncodingName(c) );
         doc->badChars |= BC_ENCODING_MISMATCH;
@@ -321,26 +429,22 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 
     case VENDOR_SPECIFIC_CHARS:
         NtoS(c, buf);
-        fmt = "%s invalid character code %s";
         doc->badChars |= BC_VENDOR_SPECIFIC_CHARS;
         break;
 
     case INVALID_SGML_CHARS:
         NtoS(c, buf);
-        fmt = "%s invalid character code %s";
         doc->badChars |= BC_INVALID_SGML_CHARS;
         break;
 
     case INVALID_UTF8:
         sprintf( buf, "U+%04X", c );
-        fmt = "%s invalid UTF-8 bytes (char. code %s)";
         doc->badChars |= BC_INVALID_UTF8;
         break;
 
 #if SUPPORT_UTF16_ENCODINGS
     case INVALID_UTF16:
         sprintf( buf, "U+%04X", c );
-        fmt = "%s invalid UTF-16 surrogate pair (char. code %s)";
         doc->badChars |= BC_INVALID_UTF16;
         break;
 #endif
@@ -348,7 +452,6 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 #if SUPPORT_ASIAN_ENCODINGS
     case INVALID_NCR:
         NtoS(c, buf);
-        fmt = "%s invalid numeric character reference %s";
         doc->badChars |= BC_INVALID_NCR;
         break;
 #endif
@@ -361,34 +464,16 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
 {
     ctmbstr entityname = ( entity ? entity : "NULL" );
-    ctmbstr fmt = NULL;
+    ctmbstr fmt = GetFormatFromCode(code);
 
-    switch ( code )
-    {
-    case MISSING_SEMICOLON:
-        fmt = "entity \"%s\" doesn't end in ';'";
-        break;
-    case MISSING_SEMICOLON_NCR:
-        fmt = "numeric character reference \"%s\" doesn't end in ';'";
-        break;
-    case UNKNOWN_ENTITY:
-        fmt = "unescaped & or unknown entity \"%s\"";
-        break;
-    case UNESCAPED_AMPERSAND:
-        fmt = "unescaped & which should be written as &amp;";
-        break;
-    case APOS_UNDEFINED:
-        fmt = "named entity &apos; only defined in XML/XHTML";
-        break;
-    }
-
-    if ( fmt )
+    if (fmt)
         messageLexer( doc, TidyWarning, fmt, entityname );
 }
 
 void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 {
     char *name = "NULL", *value = "NULL", tagdesc[ 64 ];
+    ctmbstr fmt = GetFormatFromCode(code);
 
     TagToString( node, tagdesc );
     if ( av )
@@ -402,154 +487,60 @@ void ReportAttrError( TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     switch ( code )
     {
     case UNKNOWN_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s unknown attribute \"%s\"", tagdesc, name );
-        break;
-
     case INSERTING_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s inserting \"%s\" attribute", tagdesc, name );
-        break;
-
     case MISSING_ATTR_VALUE:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute \"%s\" lacks value", tagdesc, name );
-        break;
-
-    case MISSING_IMAGEMAP:  /* this is not used anywhere */
-        messageNode( doc, TidyWarning, node,
-                     "%s should use client-side image map", tagdesc );
-        doc->badAccess |= MISSING_IMAGE_MAP;
+    case XML_ATTRIBUTE_VALUE:
+    case PROPRIETARY_ATTRIBUTE:
+    case JOINING_ATTRIBUTE:
+        messageNode(doc, TidyWarning, node, fmt, tagdesc, name);
         break;
 
     case BAD_ATTRIBUTE_VALUE:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute \"%s\" has invalid value \"%s\"",
-                     tagdesc, name, value );
-        break;
-
     case BAD_ATTRIBUTE_VALUE_REPLACED:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute \"%s\" had invalid value \"%s\" and has been replaced",
-                     tagdesc, name, value );
-        break;
-
     case INVALID_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute name \"%s\" (value=\"%s\") is invalid",
-                     tagdesc, name, value );
-        break;
-
-    case XML_ID_SYNTAX:
-        messageNode( doc, TidyWarning, node,
-                     "%s ID \"%s\" uses XML ID syntax", tagdesc, value );
-        break;
-
-    case XML_ATTRIBUTE_VALUE:
-        messageNode( doc, TidyWarning, node,
-                     "%s has XML attribute \"%s\"", tagdesc, name );
+        messageNode(doc, TidyWarning, node, fmt, tagdesc, name, value);
         break;
 
     case UNEXPECTED_QUOTEMARK:
-        messageNode( doc, TidyWarning, node,
-                     "%s unexpected or duplicate quote mark", tagdesc );
+    case MISSING_QUOTEMARK:
+    case ID_NAME_MISMATCH:
+    case BACKSLASH_IN_URI:
+    case FIXED_BACKSLASH:
+    case ILLEGAL_URI_REFERENCE:
+    case ESCAPED_ILLEGAL_URI:
+    case NEWLINE_IN_URI:
+    case UNEXPECTED_GT:
+    case INVALID_XML_ID:
+    case UNEXPECTED_EQUALSIGN:
+        messageNode(doc, TidyWarning, node, fmt, tagdesc);
         break;
 
-    case MISSING_QUOTEMARK:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute with missing trailing quote mark",
-                     tagdesc );
+    case XML_ID_SYNTAX:
+    case PROPRIETARY_ATTR_VALUE:
+    case ANCHOR_NOT_UNIQUE:
+    case ATTR_VALUE_NOT_LCASE:
+        messageNode(doc, TidyWarning, node, fmt, tagdesc, value);
+        break;
+
+
+    case MISSING_IMAGEMAP:  /* this is not used anywhere */
+        messageNode(doc, TidyWarning, node, fmt, tagdesc);
+        doc->badAccess |= MISSING_IMAGE_MAP;
         break;
 
     case REPEATED_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s dropping value \"%s\" for repeated attribute \"%s\"",
-                     tagdesc, value, name );
-        break;
-
-    case PROPRIETARY_ATTR_VALUE:
-        messageNode( doc, TidyWarning, node,
-                     "%s proprietary attribute value \"%s\"", tagdesc, value );
-        break;
-
-    case PROPRIETARY_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s proprietary attribute \"%s\"", tagdesc, name );
-        break;
-
-    case ID_NAME_MISMATCH:
-        messageNode( doc, TidyWarning, node,
-                     "%s id and name attribute value mismatch", tagdesc );
-        break;
-
-    case BACKSLASH_IN_URI:
-        messageNode( doc, TidyWarning, node,
-                     "%s URI reference contains backslash. Typo?", tagdesc );
-        break;
-
-    case FIXED_BACKSLASH:
-        messageNode( doc, TidyWarning, node,
-                     "%s converting backslash in URI to slash", tagdesc );
-        break;
-
-    case ILLEGAL_URI_REFERENCE:
-        messageNode( doc, TidyWarning, node,
-                     "%s improperly escaped URI reference", tagdesc );
-        break;
-
-    case ESCAPED_ILLEGAL_URI:
-        messageNode( doc, TidyWarning, node,
-                     "%s escaping malformed URI reference", tagdesc );
-        break;
-
-    case NEWLINE_IN_URI:
-        messageNode( doc, TidyWarning, node,
-                     "%s discarding newline in URI reference", tagdesc );
-        break;
-
-    case ANCHOR_NOT_UNIQUE:
-        messageNode( doc, TidyWarning, node,
-                     "%s Anchor \"%s\" already defined", tagdesc, value);
+        messageNode(doc, TidyWarning, node, fmt, tagdesc, value, name);
         break;
 
     case ENTITY_IN_ID:
-        messageNode( doc, TidyWarning, node,
-                     "No entities allowed in id attribute, discarding \"&\"" );
-        break;
-
-    case JOINING_ATTRIBUTE:
-        messageNode( doc, TidyWarning, node,
-                     "%s joining values of repeated attribute \"%s\"",
-                 tagdesc, name );
-        break;
-
-    case UNEXPECTED_EQUALSIGN:
-        messageNode( doc, TidyWarning, node,
-                     "%s unexpected '=', expected attribute name", tagdesc );
-        break;
-
-    case ATTR_VALUE_NOT_LCASE:
-        messageNode( doc, TidyWarning, node,
-                     "%s attribute value \"%s\" must be lower case for XHTML",
-                     tagdesc, value );
-        break;
-
-    case UNEXPECTED_GT:
-        messageNode( doc, TidyWarning, node,
-                     "%s missing '>' for end of tag", tagdesc );
-        break;
-
-    case INVALID_XML_ID:
-        messageNode( doc, TidyWarning, node,
-                     "%s cannot copy name attribute to id", tagdesc );
+        messageNode(doc, TidyWarning, node, fmt);
         break;
 
     case UNEXPECTED_END_OF_FILE_ATTR:
         /* on end of file adjust reported position to end of input */
         doc->lexer->lines   = doc->docIn->curline;
         doc->lexer->columns = doc->docIn->curcol;
-        messageLexer( doc, TidyWarning,
-                      "end of file while parsing attributes" );
+        messageLexer(doc, TidyWarning, fmt);
         break;
     }
 }
@@ -568,101 +559,85 @@ void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
     char nodedesc[ 256 ] = {0};
     char elemdesc[ 256 ] = {0};
     Node* rpt = ( element ? element : node );
+    ctmbstr fmt = GetFormatFromCode(code);
     TagToString( node, nodedesc );
 
     switch ( code )
     {
+    case MISSING_STARTTAG:
+    case UNEXPECTED_ENDTAG:
+    case TOO_MANY_ELEMENTS:
+    case INSERTING_TAG:
+        messageNode(doc, TidyWarning, node, fmt, node->element);
+        break;
+
+    case USING_BR_INPLACE_OF:
+    case CANT_BE_NESTED:
+    case PROPRIETARY_ELEMENT:
+    case UNESCAPED_ELEMENT:
+    case NOFRAMES_CONTENT:
+        messageNode(doc, TidyWarning, node, fmt, nodedesc);
+        break;
+
+    case MISSING_TITLE_ELEMENT:
+    case INCONSISTENT_VERSION:
+    case MALFORMED_DOCTYPE:
+    case CONTENT_AFTER_BODY:
+    case MALFORMED_COMMENT:
+    case BAD_COMMENT_CHARS:
+    case BAD_XML_COMMENT:
+    case BAD_CDATA_CONTENT:
+    case INCONSISTENT_NAMESPACE:
+    case DOCTYPE_AFTER_TAGS:
+    case NESTED_QUOTATION:
+    case DTYPE_NOT_UPPER_CASE:
+        messageNode(doc, TidyWarning, rpt, fmt);
+        break;
+
+    case COERCE_TO_ENDTAG:
+    case NON_MATCHING_ENDTAG:
+        messageNode(doc, TidyWarning, rpt, fmt, node->element, node->element);
+        break;
+
+    case UNEXPECTED_ENDTAG_IN:
+    case TOO_MANY_ELEMENTS_IN:
+        messageNode(doc, TidyWarning, node, fmt, node->element, element->element);
+        break;
+
+    case ENCODING_IO_CONFLICT:
+    case MISSING_DOCTYPE:
+    case SPACE_PRECEDING_XMLDECL:
+        messageNode(doc, TidyWarning, node, fmt);
+        break;
+
+    case TRIM_EMPTY_ELEMENT:
+    case ILLEGAL_NESTING:
+    case UNEXPECTED_END_OF_FILE:
+    case ELEMENT_NOT_EMPTY:
+        TagToString(element, elemdesc);
+        messageNode(doc, TidyWarning, element, fmt, elemdesc);
+        break;
+
+    case NESTED_EMPHASIS:
+        messageNode(doc, TidyWarning, rpt, fmt, nodedesc);
+        break;
+
+
     case MISSING_ENDTAG_FOR:
-        messageNode( doc, TidyWarning, rpt,
-                     "missing </%s>", element->element );
+        messageNode(doc, TidyWarning, rpt, fmt, element->element);
         break;
 
     case MISSING_ENDTAG_BEFORE:
-        messageNode( doc, TidyWarning, rpt,
-                     "missing </%s> before %s",
-                     element->element, nodedesc );
+        messageNode(doc, TidyWarning, rpt, fmt, element->element, nodedesc);
         break;
 
     case DISCARDING_UNEXPECTED:
         /* Force error if in a bad form */
-        messageNode( doc, doc->badForm ? TidyError : TidyWarning, node,
-                     "discarding unexpected %s", nodedesc );
-        break;
-
-    case NESTED_EMPHASIS:
-        messageNode( doc, TidyWarning, rpt,
-                     "nested emphasis %s", nodedesc );
-        break;
-
-    case COERCE_TO_ENDTAG:
-        messageNode( doc, TidyWarning, rpt,
-                     "<%s> is probably intended as </%s>",
-                     node->element, node->element );
-        break;
-
-    case NON_MATCHING_ENDTAG:
-        messageNode( doc, TidyWarning, rpt,
-                     "replacing unexpected %s by </%s>",
-                     node->element, node->element );
+        messageNode(doc, doc->badForm ? TidyError : TidyWarning, node, fmt, nodedesc);
         break;
 
     case TAG_NOT_ALLOWED_IN:
-        messageNode( doc, TidyWarning, rpt,
-                     "%s isn't allowed in <%s> elements",
-                     nodedesc, element->element );
-        break;
-
-    case DOCTYPE_AFTER_TAGS:
-        messageNode( doc, TidyWarning, rpt,
-                     "<!DOCTYPE> isn't allowed after elements" );
-        break;
-
-    case MISSING_STARTTAG:
-        messageNode( doc, TidyWarning, node,
-                     "missing <%s>", node->element );
-        break;
-
-    case UNEXPECTED_ENDTAG_IN:
-        messageNode( doc, TidyWarning, node,
-                     "unexpected </%s> in <%s>",
-                     node->element, element->element );
-        break;
-
-    case UNEXPECTED_ENDTAG:
-        messageNode( doc, TidyWarning, node,
-                     "unexpected </%s>", node->element );
-        break;
-
-    case TOO_MANY_ELEMENTS_IN:
-        messageNode( doc, TidyWarning, node,
-                     "too many %s elements in <%s>",
-                     node->element, element->element );
-        break;
-
-    case TOO_MANY_ELEMENTS:
-        messageNode( doc, TidyWarning, node,
-                     "too many %s elements",
-                     node->element );
-        break;
-
-    case USING_BR_INPLACE_OF:
-        messageNode( doc, TidyWarning, node,
-                     "using <br> in place of %s", nodedesc );
-        break;
-
-    case INSERTING_TAG:
-        messageNode( doc, TidyWarning, node,
-                     "inserting implicit <%s>", node->element );
-        break;
-
-    case CANT_BE_NESTED:
-        messageNode( doc, TidyWarning, node,
-                     "%s can't be nested", nodedesc );
-        break;
-
-    case PROPRIETARY_ELEMENT:
-        messageNode( doc, TidyWarning, node,
-                     "%s is not approved by W3C", nodedesc );
+        messageNode(doc, TidyWarning, rpt, fmt, nodedesc, element->element);
         break;
 
     case OBSOLETE_ELEMENT:
@@ -672,116 +647,10 @@ void ReportWarning( TidyDocImpl* doc, Node *element, Node *node, uint code )
               obsolete = " obsolete";
 
           TagToString( element, elemdesc );
-          messageNode( doc, TidyWarning, rpt,
-                       "replacing %s element %s by %s",
-                       obsolete, elemdesc, nodedesc );
+          messageNode(doc, TidyWarning, rpt, fmt, obsolete, elemdesc, nodedesc);
         }
         break;
 
-    case UNESCAPED_ELEMENT:
-        messageNode( doc, TidyWarning, node,
-                     "unescaped %s in pre content", nodedesc );
-        break;
-
-    case TRIM_EMPTY_ELEMENT:
-        TagToString( element, elemdesc );
-        messageNode( doc, TidyWarning, element,
-                     "trimming empty %s", elemdesc );
-        break;
-
-    case MISSING_TITLE_ELEMENT:
-        messageNode( doc, TidyWarning, rpt,
-                     "inserting missing 'title' element" );
-        break;
-
-    case ILLEGAL_NESTING:
-        TagToString( element, elemdesc );
-        messageNode( doc, TidyWarning, element,
-                     "%s shouldn't be nested", elemdesc );
-        break;
-
-    case NOFRAMES_CONTENT:
-        messageNode( doc, TidyWarning, node,
-                     "%s not inside 'noframes' element", nodedesc );
-        break;
-
-    case INCONSISTENT_VERSION:
-        messageNode( doc, TidyWarning, rpt,
-                     "HTML DOCTYPE doesn't match content" );
-        break;
-
-    case MALFORMED_DOCTYPE:
-        messageNode( doc, TidyWarning, rpt,
-                     "expected \"html PUBLIC\" or \"html SYSTEM\"" );
-        break;
-
-    case CONTENT_AFTER_BODY:
-        messageNode( doc, TidyWarning, rpt,
-                     "content occurs after end of body" );
-        break;
-
-    case MALFORMED_COMMENT:
-        messageNode( doc, TidyWarning, rpt,
-                     "adjacent hyphens within comment" );
-        break;
-
-    case BAD_COMMENT_CHARS:
-        messageNode( doc, TidyWarning, rpt,
-                     "expecting -- or >" );
-        break;
-
-    case BAD_XML_COMMENT:
-        messageNode( doc, TidyWarning, rpt,
-                     "XML comments can't contain --" );
-        break;
-
-    case BAD_CDATA_CONTENT:
-        messageNode( doc, TidyWarning, rpt,
-                     "'<' + '/' + letter not allowed here" );
-        break;
-
-    case INCONSISTENT_NAMESPACE:
-        messageNode( doc, TidyWarning, rpt,
-                     "HTML namespace doesn't match content" );
-        break;
-
-    case DTYPE_NOT_UPPER_CASE:
-        messageNode( doc, TidyWarning, rpt,
-                     "SYSTEM, PUBLIC, W3C, DTD, EN must be upper case" );
-        break;
-
-    case UNEXPECTED_END_OF_FILE:
-        /* on end of file report position at end of input */
-        TagToString( element, elemdesc );
-        messageNode( doc, TidyWarning, element,
-                     "unexpected end of file %s", elemdesc );
-        break;
-
-    case NESTED_QUOTATION:
-        messageNode( doc, TidyWarning, rpt,
-                     "nested q elements, possible typo." );
-        break;
-
-    case ELEMENT_NOT_EMPTY:
-        TagToString( element, elemdesc );
-        messageNode( doc, TidyWarning, element,
-                     "%s element not empty or not closed", elemdesc );
-        break;
-
-    case ENCODING_IO_CONFLICT:
-        messageNode( doc, TidyWarning, node,
-                     "Output encoding does not work with standard output" );
-        break;
-
-    case MISSING_DOCTYPE:
-        messageNode( doc, TidyWarning, node,
-                     "missing <!DOCTYPE> declaration");
-        break;
-
-    case SPACE_PRECEDING_XMLDECL:
-        messageNode(doc, TidyWarning, node,
-                    "removing whitespace preceding XML Declaration");
-        break;
     }
 }
 
@@ -789,31 +658,26 @@ void ReportError( TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     char nodedesc[ 256 ] = {0};
     Node* rpt = ( element ? element : node );
+    ctmbstr fmt = GetFormatFromCode(code);
 
     switch ( code )
     {
     case SUSPECTED_MISSING_QUOTE:
-        messageNode( doc, TidyError, rpt, 
-                     "missing quote mark for attribute value" );
-        break;
-
     case DUPLICATE_FRAMESET:
-        messageNode( doc, TidyError, rpt, "repeated FRAMESET element" );
+        messageNode(doc, TidyError, rpt, fmt);
         break;
 
     case UNKNOWN_ELEMENT:
         TagToString( node, nodedesc );
-        messageNode( doc, TidyError, node, "%s is not recognized!", nodedesc );
+        messageNode( doc, TidyError, node, fmt, nodedesc );
         break;
 
     case UNEXPECTED_ENDTAG_IN:
-        messageNode( doc, TidyError, node, "unexpected </%s> in <%s>",
-                     node->element, element->element );
+        messageNode(doc, TidyError, node, fmt, node->element, element->element);
         break;
 
     case UNEXPECTED_ENDTAG:  /* generated by XML docs */
-        messageNode( doc, TidyError, node, "unexpected </%s>",
-                     node->element );
+        messageNode(doc, TidyError, node, fmt, node->element);
         break;
     }
 }
