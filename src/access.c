@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/11 13:31:26 $ 
-    $Revision: 1.16 $ 
+    $Date: 2005/03/01 17:23:38 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -444,7 +444,28 @@ static tmbstr getTextNodeClear( TidyDocImpl* doc, Node* node )
     getTextNode( doc, node->content );
     return doc->access.textNode;
 }
-    
+
+/**********************************************************
+* LevelX_Enabled
+*
+* Tell whether access "X" is enabled.
+**********************************************************/
+
+static Bool Level1_Enabled( TidyDocImpl* doc )
+{
+   return doc->access.PRIORITYCHK == 1 ||
+          doc->access.PRIORITYCHK == 2 ||
+          doc->access.PRIORITYCHK == 3;
+}
+static Bool Level2_Enabled( TidyDocImpl* doc )
+{
+    return doc->access.PRIORITYCHK == 2 ||
+           doc->access.PRIORITYCHK == 3;
+}
+static Bool Level3_Enabled( TidyDocImpl* doc )
+{
+    return doc->access.PRIORITYCHK == 3;
+}
 
 /********************************************************
 * CheckColorAvailable
@@ -455,9 +476,7 @@ static tmbstr getTextNodeClear( TidyDocImpl* doc, Node* node )
 
 static void CheckColorAvailable( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         if ( nodeIsIMG(node) )
             ReportAccessWarning( doc, node, INFORMATION_NOT_CONVEYED_IMAGE );
@@ -496,7 +515,7 @@ static void CheckColorContrast( TidyDocImpl* doc, Node* node )
 {
     int rgbBG[3] = {255,255,255};   /* Black text on white BG */
 
-    if ( doc->access.PRIORITYCHK == 3 )
+    if (Level3_Enabled( doc ))
     {
         Bool gotBG = yes;
         AttVal* av;
@@ -668,9 +687,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
     AttVal* av;
     tmbstr word;
                 
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         /* Checks all image attributes for invalid values within attributes */
         for (av = node->attributes; av != NULL; av = av->next)
@@ -924,9 +941,7 @@ static void CheckApplet( TidyDocImpl* doc, Node* node )
     AttVal* av;
     tmbstr word = NULL;
         
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         /* Checks for attributes within the APPLET element */
         for (av = node->attributes; av != NULL; av = av->next)
@@ -989,9 +1004,7 @@ static void CheckObject( TidyDocImpl* doc, Node* node )
     Bool HasAlt = no;
     Bool HasDescription = no;
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         if ( node->content != NULL)
         {
@@ -1094,9 +1107,7 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
 
     doc->access.numFrames++;
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* Checks for attributes within the FRAME element */
         for (av = node->attributes; av != NULL; av = av->next)
@@ -1167,9 +1178,7 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
 
 static void CheckIFrame( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* Checks for valid 'SRC' value within the IFRAME element */
         AttVal* av = attrGetSRC( node );
@@ -1201,9 +1210,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
     /* Checks for attributes within the ANCHOR element */
     for ( av = node->attributes; av != NULL; av = av->next )
     {
-        if ( doc->access.PRIORITYCHK == 1 ||
-             doc->access.PRIORITYCHK == 2 ||
-             doc->access.PRIORITYCHK == 3 )
+        if (Level1_Enabled( doc ))
         {
             /* Must be of valid sound file type */
             if ( attrIsHREF(av) )
@@ -1254,8 +1261,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
             }
         }
 
-        if ( doc->access.PRIORITYCHK == 2 ||
-             doc->access.PRIORITYCHK == 3 )
+        if (Level2_Enabled( doc ))
         {
             /* Checks 'TARGET' attribute for validity if it exists */
             if ( attrIsTARGET(av) )
@@ -1272,8 +1278,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
         }
     }
     
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         if ((node->content != NULL)&&
             (node->content->tag == NULL))
@@ -1341,9 +1346,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
     /* Checks all attributes within the AREA element */
     for (av = node->attributes; av != NULL; av = av->next)
     {
-        if ((doc->access.PRIORITYCHK == 1)||
-            (doc->access.PRIORITYCHK == 2)||
-            (doc->access.PRIORITYCHK == 3))
+        if (Level1_Enabled( doc ))
         {
             /*
               Checks for valid ALT attribute.
@@ -1361,8 +1364,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
             }
         }
 
-        if ((doc->access.PRIORITYCHK == 2)||
-            (doc->access.PRIORITYCHK == 3))
+        if (Level2_Enabled( doc ))
         {
             if ( attrIsTARGET(av) )
             {
@@ -1378,9 +1380,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
         }
     }
 
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         /* AREA must contain alt text */
         if (HasAlt == no)
@@ -1400,9 +1400,7 @@ static void CheckArea( TidyDocImpl* doc, Node* node )
 
 static void CheckScriptAcc( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* NOSCRIPT element must appear immediately following SCRIPT element */
         if ( node->next == NULL || !nodeIsNOSCRIPT(node->next) )
@@ -1531,7 +1529,7 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
     tmbstr word = NULL;
     AttVal* av;
 
-    if (doc->access.PRIORITYCHK == 3)
+    if (Level3_Enabled( doc ))
     {
         /* Checks TH element for 'ABBR' attribute */
         for (av = node->attributes; av != NULL; av = av->next)
@@ -1597,9 +1595,7 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
 
     int flag = 0;
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         if (node->content != NULL)
         {
@@ -1704,7 +1700,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     Bool HasSummary = no;
     Bool HasCaption = no;
 
-    if (doc->access.PRIORITYCHK == 3)
+    if (Level3_Enabled( doc ))
     {
         AttVal* av;
         /* Table must have a 'SUMMARY' describing the purpose of the table */
@@ -1745,16 +1741,13 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         }
     }
 
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         /* Checks for multiple headers */
         CheckMultiHeaders( doc, node );
     }
     
-    if ((doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level2_Enabled( doc ))
     {
         /* Table must have a CAPTION describing the purpose of the table */
         if ( nodeIsCAPTION(node->content) )
@@ -1807,7 +1800,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
     }
     
     
-    if ( doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         /* Suppress warning for missing 'SUMMARY for HTML 2.0 and HTML 3.2 */
         if (HasSummary == no)
@@ -1816,8 +1809,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         }
     }
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         if (node->content != NULL)
         {
@@ -1845,9 +1837,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         }
     }
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         if ( doc->access.CheckedHeaders == 2 )
         {
@@ -1898,9 +1888,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
     int matchingCount = 0;
     AttVal* av;
     
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* 
            Checks the text within the PRE and XMP tags to see if ascii 
@@ -1968,8 +1956,7 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
         }
     }
 
-    if ((doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level2_Enabled( doc ))
     {
         /* 
            Checks for A element following PRE to ensure proper skipover link
@@ -2053,8 +2040,7 @@ static void CheckFormControls( TidyDocImpl* doc, Node* node )
 
 static void CheckLabel( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {    
         /* Checks for valid 'FOR' attribute */
         AttVal* av = attrGetFOR( node );
@@ -2092,8 +2078,7 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
     Bool HasLabelAfter = no;
     Bool HasValidLabel = no;
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
 
         /* Checks attributes within the INPUT element */
@@ -2212,9 +2197,7 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
         /* 'VALUE' must be found if the 'TYPE' is 'text' or 'checkbox' */
         if ( attrIsTYPE(av) && hasValue(av) )
         {
-            if ( doc->access.PRIORITYCHK == 1 ||
-                 doc->access.PRIORITYCHK == 2 ||
-                 doc->access.PRIORITYCHK == 3 )
+            if (Level1_Enabled( doc ))
             {
                 if (AttrValueIs(av, "image"))
                 {
@@ -2222,7 +2205,7 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
                 }
             }
 
-            if ( doc->access.PRIORITYCHK == 3 )
+            if (Level3_Enabled( doc ))
             {
                 if (AttrValueIs(av, "text") ||
                     AttrValueIs(av, "checkbox"))
@@ -2283,9 +2266,7 @@ static void CheckFrameSet( TidyDocImpl* doc, Node* node )
     
     Bool HasNoFrames = no;
 
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         if (node->content != NULL)
         {
@@ -2355,8 +2336,7 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
     Bool IsValidIncrease = no;
     Bool NeedsDescription = no;
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         /* 
            Text within header element cannot contain more than 20 words without
@@ -2421,8 +2401,7 @@ static void CheckParagraphHeader( TidyDocImpl* doc, Node* node )
     Bool IsNotHeader = no;
     Node* temp;
 
-    if ((doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level2_Enabled( doc ))
     {
         /* Cannot contain text formatting elements */
         if (node->content != NULL)   
@@ -2480,8 +2459,7 @@ static void CheckSelect( TidyDocImpl* doc, Node* node )
     Bool HasLabelBefore = no;
     Bool HasLabelAfter = no;
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         /* Check to see if there is a LABEL preceding SELECT */
         if ( node->prev != NULL && node->prev->prev != NULL )
@@ -2548,8 +2526,7 @@ static void CheckTextArea( TidyDocImpl* doc, Node* node )
     tmbstr label;
     Node* temp;
 
-    if ((doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level2_Enabled( doc ))
     {
         /* Check to see if there is a LABEL before or after TEXTAREA */
         if (node->prev != NULL && node->prev->prev != NULL)
@@ -2606,9 +2583,7 @@ static void CheckTextArea( TidyDocImpl* doc, Node* node )
 
 static void CheckEmbed( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         AttVal* av = attrGetSRC( node );
         if ( hasValue(av) && IsValidMediaExtension(av->value) )
@@ -2630,7 +2605,7 @@ static void CheckHTMLAccess( TidyDocImpl* doc, Node* node )
 {
     Bool ValidLang = no;
 
-    if ( doc->access.PRIORITYCHK == 3 )
+    if (Level3_Enabled( doc ))
     {
         AttVal* av = attrGetLANG( node );
         if ( av )
@@ -2655,8 +2630,7 @@ static void CheckHTMLAccess( TidyDocImpl* doc, Node* node )
 static void CheckBlink( TidyDocImpl* doc, Node* node )
 {
     
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         /* Checks to see if text is found within the BLINK element. */
         if ( nodeIsText(node->content) )
@@ -2681,8 +2655,7 @@ static void CheckBlink( TidyDocImpl* doc, Node* node )
 
 static void CheckMarquee( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         /* Checks to see if there is text in between the MARQUEE element */
         if ( nodeIsText(node) )
@@ -2710,9 +2683,7 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
     Bool HasRel = no;
     Bool HasType = no;
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         AttVal* av;
         /* Check for valid 'REL' and 'TYPE' attribute */
@@ -2744,9 +2715,7 @@ static void CheckLink( TidyDocImpl* doc, Node* node )
 
 static void CheckStyle( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         ReportAccessWarning( doc, node, STYLESHEETS_REQUIRE_TESTING_STYLE_ELEMENT );
     }
@@ -2763,9 +2732,7 @@ static void CheckStyle( TidyDocImpl* doc, Node* node )
 
 static void DynamicContent( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         uint msgcode = 0;
         if ( nodeIsAPPLET(node) )
@@ -2790,9 +2757,7 @@ static void DynamicContent( TidyDocImpl* doc, Node* node )
 
 static void ProgrammaticObjects( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         int msgcode = 0;
         if ( nodeIsSCRIPT(node) )
@@ -2818,9 +2783,7 @@ static void ProgrammaticObjects( TidyDocImpl* doc, Node* node )
 
 static void AccessibleCompatible( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         int msgcode = 0;
         if ( nodeIsSCRIPT(node) )
@@ -2855,9 +2818,7 @@ static int WordCount( TidyDocImpl* doc, Node* node )
 {
     int wc = 0;
 
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* Count the number of words found within a text node */
         if ( nodeIsText( node ) )
@@ -2892,9 +2853,7 @@ static int WordCount( TidyDocImpl* doc, Node* node )
 
 static void CheckFlicker( TidyDocImpl* doc, Node* node )
 {
-    if ((doc->access.PRIORITYCHK == 1)||
-        (doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level1_Enabled( doc ))
     {
         int msgcode = 0;
         if ( nodeIsSCRIPT(node) )
@@ -2935,8 +2894,7 @@ static void CheckFlicker( TidyDocImpl* doc, Node* node )
 
 static void CheckDeprecated( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         int msgcode = 0;
         if ( nodeIsAPPLET(node) )
@@ -2983,8 +2941,7 @@ static void CheckScriptKeyboardAccessible( TidyDocImpl* doc, Node* node )
     int HasOnMouseOver = 0;
     int HasOnMouseMove = 0;
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         AttVal* av;
         /* Checks all elements for their attributes */
@@ -3076,8 +3033,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
     Bool ContainsAttr = no;
     Bool HasMetaData = no;
 
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         if ( nodeIsMETA(node) )
         {
@@ -3168,8 +3124,7 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node )
 
 static void MetaDataPresent( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level2_Enabled( doc ))
     {
         ReportAccessError( doc, node, METADATA_MISSING );
     }
@@ -3187,8 +3142,7 @@ static void CheckDocType( TidyDocImpl* doc, Node* node )
 {
     tmbstr word;
 
-    if ((doc->access.PRIORITYCHK == 2)||
-        (doc->access.PRIORITYCHK == 3))
+    if (Level2_Enabled( doc ))
     {
         if (node->tag == NULL)
         {
@@ -3267,9 +3221,7 @@ static void CheckMapLinks( TidyDocImpl* doc, Node* node )
 
 static void CheckForStyleAttribute( TidyDocImpl* doc, Node* node )
 {
-    if ( doc->access.PRIORITYCHK == 1 ||
-         doc->access.PRIORITYCHK == 2 ||
-         doc->access.PRIORITYCHK == 3 )
+    if (Level1_Enabled( doc ))
     {
         /* Must not contain 'STYLE' attribute */
         AttVal* style = attrGetSTYLE( node );
