@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:34:37 $ 
-    $Revision: 1.24 $ 
+    $Date: 2005/03/30 13:27:01 $ 
+    $Revision: 1.25 $ 
 */
 
 #include "tidy.h"
@@ -105,6 +105,7 @@ static void help( ctmbstr prog )
     printf( "  -version  or -v   show the version of Tidy\n");
     printf( "  -help, -h or -?   list the command line options\n");
     printf( "  -help-config      list all configuration options\n");
+    printf( "  -xml-config       list all configuration options in XML format\n");
     printf( "  -show-config      list the current configuration settings\n");
     printf( "\n");
     printf( "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
@@ -197,12 +198,229 @@ static Bool isAutoBool( TidyOption topt )
     return no;
 }
 
-static void optionhelp( TidyDoc tdoc )
+static
+ctmbstr ConfigCategoryName( TidyConfigCategory id )
+{
+    switch( id )
+    {
+    case TidyMarkup:
+        return "markup";
+    case TidyDiagnostics:
+        return "diagnostics";
+    case TidyPrettyPrint:
+        return "print";
+    case TidyEncoding:
+        return "encoding";
+    case TidyMiscellaneous:
+        return "misc";
+    }
+    assert(0);
+    abort();
+}
+
+/* Description of an option */
+typedef struct {
+    ctmbstr name;  /**< Name */
+    ctmbstr cat;   /**< Category */
+    ctmbstr type;  /**< "String, ... */
+    ctmbstr vals;  /**< Potential values. If NULL, use an external function */
+    ctmbstr def;   /**< default */
+    tmbchar tempdefs[80]; /**< storage for default such as integer */
+} OptionDesc;
+
+typedef void (*OptionFunc)( TidyOption, const OptionDesc * );
+
+
+/* Create description "d" related to "opt" */
+static
+void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
+{
+    TidyOptionId optId = tidyOptGetId( topt );
+    TidyOptionType optTyp = tidyOptGetType( topt );
+
+    d->name = tidyOptGetName( topt );
+    d->cat = ConfigCategoryName( tidyOptGetCategory( topt ) );
+    d->vals = NULL;
+    d->def = NULL;
+
+    if ( tidyOptIsReadOnly(topt) )
+        return;
+
+    /* Handle special cases first.
+     */
+    switch ( optId )
+    {
+    case TidyDuplicateAttrs:
+    case TidyNewline:
+    case TidyAccessibilityCheckLevel:
+        d->type = "enum";
+        d->vals = NULL;
+        d->def =
+            optId==TidyNewline ?
+            "<em>Platform dependent</em>"
+            :tidyOptGetCurrPick( tdoc, optId );
+        break;
+
+    case TidyDoctype:
+        d->type = "DocType";
+        d->vals = NULL;
+        {
+            ctmbstr sdef = NULL;
+            sdef = (tmbstr) tidyOptGetCurrPick( tdoc, TidyDoctypeMode );
+            if ( !sdef || *sdef == '*' )
+                sdef = tidyOptGetValue( tdoc, TidyDoctype );
+            d->def = sdef;
+        }
+        break;
+
+    case TidyInlineTags:
+    case TidyBlockTags:
+    case TidyEmptyTags:
+    case TidyPreTags:
+        d->type = "Tag names";
+        d->vals = "tagX, tagY, ...";
+        d->def = "-none-";
+        break;
+
+    case TidyCharEncoding:
+    case TidyInCharEncoding:
+    case TidyOutCharEncoding:
+        d->type = "Encoding";
+        d->def = tidyOptGetEncName( tdoc, optId );
+        if (!d->def)
+            d->def = "?";
+        d->vals = NULL;
+        break;
+
+        /* General case will handle remaining */
+    default:
+        switch ( optTyp )
+        {
+        case TidyBoolean:
+            d->type = "Boolean";
+            d->vals = "y/n, yes/no, t/f, true/false, 1/0";
+            d->def = tidyOptGetCurrPick( tdoc, optId );
+            break;
+
+        case TidyInteger:
+            if (isAutoBool(topt))
+            {
+                d->type = "AutoBool";
+                d->vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
+                d->def = tidyOptGetCurrPick( tdoc, optId );
+            } else
+            {
+                uint idef;
+                d->type = "Integer";
+                if ( optId == TidyWrapLen )
+                    d->vals = "0 (no wrapping), 1, 2, ...";
+                else
+                    d->vals = "0, 1, 2, ...";
+
+                idef = tidyOptGetInt( tdoc, optId );
+                sprintf(d->tempdefs, "%u", idef);
+                d->def = d->tempdefs;
+            }
+            break;
+
+        case TidyString:
+            d->type = "String";
+            d->vals = "-";
+            d->def = tidyOptGetValue( tdoc, optId );
+            if (!d->def)
+                d->def = "-";
+            break;
+        }
+    }
+}
+
+static void optionhelpImp( TidyDoc tdoc, OptionFunc OptionPrint )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
+    while ( pos )
+    {
+        TidyOption topt = tidyGetNextOption( tdoc, &pos );
+        OptionDesc d;
+
+        if ( tidyOptIsReadOnly(topt) )
+            continue;
+        GetOption( tdoc, topt, &d );
+        (*OptionPrint)( topt, &d );
+    }
+}
+
+static
+tmbstr GetAllowedValuesFromPick( TidyOption topt )
+{
+    TidyIterator pos;
+    Bool first;
+    ctmbstr def;
+    uint len = 0;
+    tmbstr val;
+
+    pos = tidyOptGetPickList( topt );
+    first = yes;
+    while ( pos )
+    {
+        if (first)
+            first = no;
+        else
+            len += 2;
+        def = tidyOptGetNextPick( topt, &pos );
+        len += strlen(def);
+    }
+    val = malloc(len+1);
+    val[0] = '\0';
+    pos = tidyOptGetPickList( topt );
+    first = yes;
+    while ( pos )
+    {
+        if (first)
+            first = no;
+        else
+            strcat(val, ", ");
+        def = tidyOptGetNextPick( topt, &pos );
+        strcat(val, def);
+    }
+    return val;
+}
+
+static
+tmbstr GetAllowedValues( TidyOption topt, const OptionDesc *d )
+{
+    if (d->vals)
+    {
+        tmbstr val = malloc(1+strlen(d->vals));
+        strcpy(val, d->vals);
+        return val;
+    }
+    else
+        return GetAllowedValuesFromPick( topt );
+}
+
+static
+void printOption( TidyOption topt, const OptionDesc *d )
+{
+    if ( *d->name || *d->type )
+    {
+       ctmbstr pval = d->vals;
+       tmbstr val = NULL;
+       if (pval == NULL)
+       {
+           val = GetAllowedValues( topt, d);
+           pval = val;
+       }
+       print3Columns( fmt, 27, 9, 40, d->name, d->type, pval );
+       if (val)
+           free(val);
+    }
+}
+
+static void optionhelp( TidyDoc tdoc )
+{
     printf( "\nHTML Tidy Configuration Settings\n\n" );
-    printf( "Within a file, use the form:\n\n" ); 
+    printf( "Within a file, use the form:\n\n" );
     printf( "wrap: 72\n" );
     printf( "indent: no\n\n" );
     printf( "When specified on the command line, use the form:\n\n" );
@@ -211,104 +429,7 @@ static void optionhelp( TidyDoc tdoc )
     printf( fmt, "Name", "Type", "Allowable values" );
     printf( fmt, ul, ul, ul );
 
-    while ( pos )
-    {
-        TidyOption topt = tidyGetNextOption( tdoc, &pos );
-        TidyOptionId optId = tidyOptGetId( topt );
-        TidyOptionType optTyp = tidyOptGetType( topt );
-
-        ctmbstr name = (tmbstr) tidyOptGetName( topt );
-        ctmbstr type = "String";
-        tmbchar tempvals[80] = {0};
-        ctmbstr vals = &tempvals[0];
-
-        if ( tidyOptIsReadOnly(topt) )
-            continue;
-
-        /* Handle special cases first.
-        */
-        switch ( optId )
-        {
-        case TidyDuplicateAttrs:
-            type = "enum";
-            vals = "keep-first, keep-last";
-            break;
-
-        case TidyDoctype:
-            type = "DocType";
-            vals = "auto, omit, strict, loose, transitional"
-                   ", user specified fpi (string)";
-            break;
-
-        case TidyCSSPrefix:
-            type = "Name";
-            vals = "CSS1 selector";
-            break;
-
-        case TidyInlineTags:
-        case TidyBlockTags:
-        case TidyEmptyTags:
-        case TidyPreTags:
-            type = "Tag names";
-            vals = "tagX, tagY, ...";
-            break;
-
-        case TidyCharEncoding:
-        case TidyInCharEncoding:
-        case TidyOutCharEncoding:
-            type = "Encoding";
-            vals = "ascii, latin0, latin1, raw, utf8, iso2022"
-#if SUPPORT_UTF16_ENCODINGS
-                   ", utf16le, utf16be, utf16"
-#endif
-#if SUPPORT_ASIAN_ENCODINGS
-                   ", mac, win1252, ibm858, big5, shiftjis"
-#else
-                   ", mac, win1252, ibm858"
-#endif
-                   ;
-            break;
-
-        case TidyNewline:
-            type = "enum";
-            vals = "LF, CRLF, CR";
-            break;
-
-        /* General case will handle remaining */
-        default:
-            switch ( optTyp )
-            {
-            case TidyBoolean:
-                type = "Boolean";
-                vals = "y/n, yes/no, t/f, true/false, 1/0";
-                break;
-
-            case TidyInteger:
-                if (isAutoBool(topt))
-                {
-                    type = "AutoBool";
-                    vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
-                }
-                else
-                {
-                    type = "Integer";
-                    if ( optId == TidyWrapLen )
-                        vals = "0 (no wrapping), 1, 2, ...";
-                    else
-                        vals = "0, 1, 2, ...";
-                }
-                break;
-
-            case TidyString:
-                type = "String";
-                vals = "-";
-                break;
-            }
-        }
-
-        if ( *name || *type || *vals )
-            print3Columns( fmt, 27, 9, 40, name, type, vals );
-    }
+    optionhelpImp( tdoc, printOption );
 }
 
 static void optionvalues( TidyDoc tdoc )
