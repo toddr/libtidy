@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/18 09:11:50 $ 
-    $Revision: 1.21 $ 
+    $Date: 2001/08/19 19:18:16 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -118,7 +118,7 @@ Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char *
 Bool JoinClasses = no;      /* join multiple class attributes */
 Bool JoinStyles = yes;      /* join multiple style attributes */
 Bool EscapeCdata = no;      /* replace <![CDATA[]]> sections with escaped text */
-Bool NCR = yes; 	        /* #431953 - RJ allow numeric character references */
+Bool NCR = yes;             /* #431953 - RJ allow numeric character references */
 
 typedef struct _lex PLex;
 
@@ -203,15 +203,15 @@ static struct Flag
     {"keep-time",       {(int *)&KeepFileTimes},    ParseBool},
     {"show-warnings",   {(int *)&ShowWarnings},     ParseBool},
     {"error-file",      {(int *)&errfile},          ParseString},
-    {"show-body-only",   {(int *)&BodyOnly},        ParseBool},	/* #434940 */
+    {"show-body-only",   {(int *)&BodyOnly},        ParseBool}, /* #434940 */
     {"slide-style",     {(int *)&slide_style},      ParseName},
     {"new-inline-tags",     {(int *)&inline_tags},  ParseTagNames},
     {"new-blocklevel-tags", {(int *)&block_tags},   ParseTagNames},
     {"new-empty-tags",  {(int *)&empty_tags},       ParseTagNames},
     {"new-pre-tags",    {(int *)&pre_tags},         ParseTagNames},
     {"char-encoding",   {(int *)&CharEncoding},     ParseCharEncoding},
-    {"language", 	    {(void *)&Language},	    ParseName},  /* #431953 - RJ */
-    {"ncr",   		    {(void *)&NCR},     	    ParseBool},  /* #431953 - RJ */
+    {"language",        {(void *)&Language},        ParseName},  /* #431953 - RJ */
+    {"ncr",             {(void *)&NCR},             ParseBool},  /* #431953 - RJ */
     {"doctype",         {(int *)&doctype_str},      ParseDocType},
     {"fix-backslash",   {(int *)&FixBackslash},     ParseBool},
     {"gnu-emacs",       {(int *)&Emacs},            ParseBool},
@@ -226,7 +226,7 @@ static struct Flag
     {"join-styles",     {(int *)&JoinStyles},       ParseBool},
     {"escape-cdata",    {(int *)&EscapeCdata},      ParseBool},
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
-    
+
   /* this must be the final entry */
     {0,          0,             0}
 };
@@ -246,7 +246,7 @@ static PList *lookup(char *s)
     PList *np;
 
     for (np = hashtable[hash(s)]; np != null; np = np->next)
-        if (wstrcmp(s, np->name) == 0)
+        if (wstrcasecmp(s, np->name) == 0)
             return np;
     return null;
 }
@@ -451,7 +451,7 @@ void ParseConfigFile(char *file)
     const char *fname;
     PList *entry;
 
-    /* setup property name -> parser table*/
+    /* setup property name -> parser table */
 
     InitConfig();
 
@@ -536,7 +536,7 @@ Bool ParseConfig(char *option, char *parameter)
         ReportBadArgument(option);
         return no;
     }
-
+    
     return yes;
 }
 
@@ -744,10 +744,10 @@ void ParseString(Location location, char *option)
     if (c == '"' || c == '\'')
     {
         delim = c;
-        AdvanceChar();	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+        AdvanceChar(); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
     }
 
-    while (i < 8190 && c != EOF && c != '\r' && c != '\n')	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+    while (i < 8190 && c != EOF && c != '\r' && c != '\n') /* #431889 - fix by Dave Bryan 04 Jan 2001 */
     {
 /* #431889 - fix by Dave Bryan 04 Jan 2001 */
 #if 0
@@ -798,7 +798,7 @@ void ParseString(Location location, char *option)
         ReportBadArgument(option);
 #endif
     *location.string = wstrdup(buf);
-    NextProperty();	/* #431889 - fix by Dave Bryan 04 Jan 2001 */
+    NextProperty(); /* #431889 - fix by Dave Bryan 04 Jan 2001 */
 }
 
 void ParseCharEncoding(Location location, char *option)
@@ -836,10 +836,10 @@ void ParseCharEncoding(Location location, char *option)
         *location.number = UTF16;
     else if (wstrcasecmp(buf, "win1252") == 0)
         *location.number = WIN1252;
-    else if (wstrcasecmp(buf, "big5") == 0)	/* #431953 - RJ */
-        *location.number = BIG5;		/* #431953 - RJ */
-    else if (wstrcasecmp(buf, "shiftjis") == 0)	/* #431953 - RJ */
-        *location.number = SHIFTJIS;		/* #431953 - RJ */
+    else if (wstrcasecmp(buf, "big5") == 0) /* #431953 - RJ */
+        *location.number = BIG5; /* #431953 - RJ */
+    else if (wstrcasecmp(buf, "shiftjis") == 0) /* #431953 - RJ */
+        *location.number = SHIFTJIS; /* #431953 - RJ */
     else
         ReportBadArgument(option);
 
@@ -909,7 +909,7 @@ void ParseDocType(Location location, char *option)
 
     /* "-//ACME//DTD HTML 3.14159//EN" or similar */
 
-    if (c == '"' || c == '\'')	/* #431889 - fix by Terry Teague 01 Jul 01 */
+    if (c == '"' || c == '\'') /* #431889 - fix by Terry Teague 01 Jul 01 */
     {
         ParseString(location, option);
         doctype_mode = doctype_user;
@@ -927,7 +927,7 @@ void ParseDocType(Location location, char *option)
 
     /* #443663 - fix by Terry Teague 23 Jul 01 */
     if (wstrcasecmp(buf, "auto") == 0)
-    doctype_mode = doctype_auto;
+        doctype_mode = doctype_auto;
     else if (wstrcasecmp(buf, "omit") == 0)
         doctype_mode = doctype_omit;
     else if (wstrcasecmp(buf, "strict") == 0)
