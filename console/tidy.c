@@ -1,7 +1,7 @@
 /*
   tidy.c - HTML TidyLib command line driver
 
-  Copyright (c) 1998-2003 World Wide Web Consortium
+  Copyright (c) 1998-2005 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/24 10:31:02 $ 
-    $Revision: 1.21 $ 
+    $Date: 2005/03/10 10:05:26 $ 
+    $Revision: 1.22 $ 
 */
 
 #include "tidy.h"
@@ -117,6 +117,62 @@ static void help( TidyDoc tdoc, ctmbstr prog )
     printf( "\n");
 }
 
+static const char *cutToWhiteSpace(const char *s, uint offset, char *sbuf)
+{
+    if (!s)
+    {
+        sbuf[0] = '\0';
+        return NULL;
+    }
+    else if (strlen(s) <= offset)
+    {
+        strcpy(sbuf,s);
+        sbuf[offset] = '\0';
+        return NULL;
+    }
+    else
+    {
+        uint j, l, n;
+        j = offset;
+        while(j && s[j] != ' ')
+            --j;
+        l = j;
+        n = j+1;
+        /* no white space */
+        if (j==0)
+	{
+            l = offset;
+            n = offset;
+	}
+        strncpy(sbuf,s,l);
+        sbuf[l] = '\0';
+        return s+n;
+    }
+}
+
+static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
+                           const char *c1, const char *c2, const char *c3 )
+{
+    const char *pc1=c1, *pc2=c2, *pc3=c3;
+    char *c1buf = malloc(l1+1);
+    char *c2buf = malloc(l2+1);
+    char *c3buf = malloc(l3+1);
+
+    do
+    {
+        pc1 = cutToWhiteSpace(pc1, l1, c1buf);
+        pc2 = cutToWhiteSpace(pc2, l2, c2buf);
+        pc3 = cutToWhiteSpace(pc3, l3, c3buf);
+        printf(fmt,
+               c1buf[0]!='\0'?c1buf:"",
+               c2buf[0]!='\0'?c2buf:"",
+               c3buf[0]!='\0'?c3buf:"");
+    } while (pc1 || pc2 || pc3);
+    free(c1buf);
+    free(c2buf);
+    free(c3buf);
+}
+
 #define kMaxValFieldWidth 40
 static const char* fmt = "%-27.27s %-9.9s  %-40.40s\n";
 static const char* valfmt = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
@@ -181,10 +237,7 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
         case TidyDoctype:
             type = "DocType";
             vals = "auto, omit, strict, loose, transitional,";
-            printf( fmt, name, type, vals );
-            name = "";
-            type = "";
-            vals = "user specified fpi (string)";
+                   " user specified fpi (string)";
             break;
 
         case TidyCSSPrefix:
@@ -204,20 +257,16 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
         case TidyInCharEncoding:
         case TidyOutCharEncoding:
             type = "Encoding";
-            vals = "ascii, latin0, latin1, raw, utf8, iso2022,";
-            printf( fmt, name, type, vals );
-            name = "";
-            type = "";
-
+            vals = "ascii, latin0, latin1, raw, utf8, iso2022"
 #if SUPPORT_UTF16_ENCODINGS
-            vals = "utf16le, utf16be, utf16,";
-            printf( fmt, name, type, vals );
+                   ", utf16le, utf16be, utf16"
 #endif
 #if SUPPORT_ASIAN_ENCODINGS
-            vals = "mac, win1252, ibm858, big5, shiftjis";
+                   ", mac, win1252, ibm858, big5, shiftjis"
 #else
-            vals = "mac, win1252, ibm858";
+                   ", mac, win1252, ibm858"
 #endif
+	           ;
             break;
 
         case TidyNewline:
@@ -258,7 +307,7 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
         }
 
         if ( *name || *type || *vals )
-            printf( fmt, name, type, vals );
+            print3Columns( fmt, 27, 9, 40, name, type, vals );
     }
 }
 
@@ -783,3 +832,11 @@ int main( int argc, char** argv )
     return 0;
 }
 
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
