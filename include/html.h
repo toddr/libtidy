@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/14 04:17:16 $ 
-    $Revision: 1.62 $ 
+    $Author: krusch $ 
+    $Date: 2002/01/27 19:04:57 $ 
+    $Revision: 1.63 $ 
 
 */
 
@@ -936,6 +936,7 @@ extern Bool NCR; /* #431953 - RJ */
 extern Bool OutputBOM;
 extern Bool SmartBOM;
 extern Bool ReplaceColor; /* #477643 - replace hex color attribute values with names */
+extern char *CSSPrefix;   /* #508936 - CSS class naming for -clean option */
 
 /* Parser methods for tags */
 

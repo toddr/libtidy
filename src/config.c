@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/16 09:35:30 $ 
-    $Revision: 1.37 $ 
+    $Author: krusch $ 
+    $Date: 2002/01/27 19:04:57 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -129,6 +129,7 @@ Bool NCR = yes;             /* #431953 - RJ allow numeric character references *
 Bool OutputBOM = no;        /* output a Byte Order Mark (BOM) when using UTF-8/UTF-16 encodings */
 Bool SmartBOM = yes;        /* if input stream has BOM, do we automatically output a BOM? */
 Bool ReplaceColor = no;     /* #477643 - replace hex color attribute values with names */
+char *CSSPrefix = null;     /* #508936 - CSS class naming for -clean option */
 
 static uint c;      /* current char in input stream */
 static FILE *fin;   /* file pointer for input stream */
@@ -260,6 +261,7 @@ static struct Flag
     {"repeated-attributes", {(int *)&DuplicateAttrs}, ParseRepeatedAttribute},
     {"output-bom",      {(int *)&OutputBOM},        ParseBOM},
     {"replace-color",   {(int *)&ReplaceColor},     ParseBool}, /* #477643 - replace hex color attribute values with names */
+    {"css-prefix",      {(char *)&CSSPrefix},       ParseName}, /* #508936 - CSS class naming for -clean option          */
 
   /* this must be the final entry */
     {0,          0,             0}
@@ -351,6 +353,9 @@ void FreeConfig(void)
 
     if (errfile)
         MemFree(errfile);
+
+    if (CSSPrefix)
+        MemFree(CSSPrefix);
 }
 
 static unsigned GetC(FILE *fp)

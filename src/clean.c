@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/12/27 21:23:37 $ 
-    $Revision: 1.14 $ 
+    $Author: krusch $ 
+    $Date: 2002/01/27 19:04:57 $ 
+    $Revision: 1.15 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -264,9 +264,9 @@ void FreeStyles(Lexer *lexer)
 static char *GensymClass(char *tag)
 {
     static int n = 1;
-    char buf[128];
+    char buf[512];                                             /* CSSPrefix is limited to 256 characters */
 
-    sprintf(buf, "c%d", n++);
+    sprintf(buf, "%s%d", (CSSPrefix ? CSSPrefix : "c"), n++); /* #508936 - CSS class naming for -clean option */
     return wstrdup(buf);
 }
 
