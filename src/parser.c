@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2002/04/10 18:00:10 $ 
-    $Revision: 1.44 $ 
+    $Author: krusch $ 
+    $Date: 2002/04/18 21:05:05 $ 
+    $Revision: 1.45 $ 
 
 */
 
@@ -2819,7 +2819,9 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
         */
         if (!(node->tag->model & CM_HEAD))
         {
-            ReportWarning(lexer, head, node, TAG_NOT_ALLOWED_IN);
+            /* #545067 Implicit closing of head broken - warn only for XHTML input */
+            if (lexer->isvoyager)
+                ReportWarning(lexer, head, node, TAG_NOT_ALLOWED_IN);
             UngetToken(lexer);
             break;
         }
