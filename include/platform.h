@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/26 03:19:43 $ 
-    $Revision: 1.42 $ 
+    $Author: terry_teague $ 
+    $Date: 2003/06/09 08:06:39 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -76,6 +76,11 @@ extern "C" {
 #define PLATFORM_NAME "Mac OS"
 #endif
 
+/* needed for access() */
+#if !defined(_POSIX) && !defined(NO_ACCESS_SUPPORT)
+#define NO_ACCESS_SUPPORT
+#endif
+
 #ifdef SUPPORT_GETPWNAM
 #undef SUPPORT_GETPWNAM
 #endif
@@ -135,11 +140,30 @@ extern "C" {
 /* Convenience defines for Windows platforms */
  
 #if defined(WINDOWS) || defined(_WIN32)
+
 #define WINDOWS_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Windows"
 #endif
+
+#if defined(__MWERKS__) || defined(__MSL__)
+/* not available with Metrowerks Standard Library */
+
+#ifdef SUPPORT_GETPWNAM
+#undef SUPPORT_GETPWNAM
+#endif
+
+/* needed for setmode() */
+#if !defined(NO_SETMODE_SUPPORT)
+#define NO_SETMODE_SUPPORT
+#endif
+
+#define strcasecmp _stricmp
+
+#endif
+
 #define FILENAMES_CASE_SENSITIVE 0
+
 #endif
 
 /* Convenience defines for Linux platforms */
@@ -420,10 +444,25 @@ extern "C" {
   _WIN32 automatically set by Win32 compilers.
 */
 #if defined(_WIN32) && !defined(__MSL__) && !defined(__BORLANDC__)
+
 #define futime _futime
 #define fstat _fstat
 #define utimbuf _utimbuf /* Windows seems to want utimbuf */
 #define stat _stat
+#define utime _utime
+
+#endif /* _WIN32 */
+
+#endif /* PRESERVE_FILE_TIMES */
+
+/*
+  MS Windows needs _ prefix for Unix file functions.
+  Not required by Metrowerks Standard Library (MSL).
+  
+  WINDOWS automatically set by Win16 compilers.
+  _WIN32 automatically set by Win32 compilers.
+*/
+#if defined(_WIN32) && !defined(__MSL__) && !defined(__BORLANDC__)
 
 #ifndef __WATCOMC__
 #define fileno _fileno
@@ -432,20 +471,22 @@ extern "C" {
 
 #define access _access
 #define strcasecmp _stricmp
-#define utime _utime
+
 #if _MSC_VER > 1000
 #pragma warning( disable : 4189 ) /* local variable is initialized but not referenced */
 #pragma warning( disable : 4100 ) /* unreferenced formal parameter */
 #pragma warning( disable : 4706 ) /* assignment within conditional expression */
 #endif
-#if  defined(_USRDLL) && !defined(TIDY_EXPORT)
-#define TIDY_EXPORT __declspec( dllexport ) 
-#endif
-#elif defined(_WIN32) && defined(__MSL__)
-#define strcasecmp _stricmp
+
 #endif /* _WIN32 */
 
-#endif /* PRESERVE_FILE_TIMES */
+#if defined(_WIN32)
+
+#if defined(_USRDLL) && !defined(TIDY_EXPORT)
+#define TIDY_EXPORT __declspec( dllexport ) 
+#endif
+
+#endif /* _WIN32 */
 
 /* hack for gnu sys/types.h file  which defines uint and ulong */
 
@@ -510,6 +551,9 @@ void FatalError( ctmbstr msg );
 *  This will reduce inter-dependencies/conflicts w/ application code.
 */
 #if 1
+/*
+*  Please note - this definition assumes your compiler uses 'int' for enums.
+*/
 #define opaque( typenam )\
 struct _##typenam { int _opaque; };\
 typedef struct _##typenam* typenam
