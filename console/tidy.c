@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/03/16 00:16:08 $ 
-    $Revision: 1.15 $ 
+    $Date: 2004/03/16 01:00:47 $ 
+    $Revision: 1.16 $ 
 */
 
 #include "tidy.h"
@@ -716,7 +716,8 @@ int main( int argc, char** argv )
 
         if ( status >= 0 )
         {
-            if ( tidyOptGetBool(tdoc, TidyWriteBack) && argc > 1 )
+            if ( tidyOptGetBool(tdoc, TidyWriteBack) &&
+                 tidyOptGetBool(tdoc, TidyShowMarkup) && argc > 1 )
                 status = tidySaveFile( tdoc, htmlfil );
             else
             {
