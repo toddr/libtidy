@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 20:13:53 $ 
-    $Revision: 1.124 $ 
+    $Date: 2003/05/24 15:05:37 $ 
+    $Revision: 1.125 $ 
 
 */
 
@@ -1105,7 +1105,7 @@ void FreeNode( TidyDocImpl* doc, Node *node )
         MemFree( node->element );
         FreeAttrs( doc, node );
         FreeNode( doc, node->content );
-        node->content = NULL;
+        /* node->content = NULL; */
         if (RootNode != node->type)
             MemFree( node );
 

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/05/22 19:12:06 $ 
-    $Revision: 1.31 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/24 15:05:38 $ 
+    $Revision: 1.32 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -134,7 +134,8 @@ void          tidyDocRelease( TidyDocImpl* doc )
 
         FreePrintBuf( doc );
         FreeLexer( doc );
-        FreeNode( doc, &doc->root );
+        FreeNode(doc, &doc->root);
+        ClearMemory(&doc->root, sizeof(Node));
         FreeNode( doc, doc->givenDoctype );
 
         FreeConfig( doc );
@@ -1045,7 +1046,9 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     TakeConfigSnapshot( doc );    /* Save config state */
     FreeLexer( doc );
     FreeAnchors( doc );
-    FreeNode( doc, &doc->root );
+
+    FreeNode(doc, &doc->root);
+    ClearMemory(&doc->root, sizeof(Node));
 
     FreeNode( doc, doc->givenDoctype );
     doc->givenDoctype = NULL;
