@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/09 20:18:47 $ 
-    $Revision: 1.56 $ 
+    $Date: 2001/12/28 23:49:30 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -1224,6 +1224,9 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
         {
             fpi = null;
             sysid = "";
+        
+            if (doctype)/* #473490 - fix by Bjšrn Hšhrmann 10 Oct 01 */
+                DiscardElement(doctype);
         }
     }
     else if (doctype_mode == doctype_strict)
