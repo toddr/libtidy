@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2002/01/14 04:18:16 $ 
-    $Revision: 1.42 $ 
+    $Author: lpassey $ 
+    $Date: 2002/02/02 23:11:00 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -1104,6 +1104,8 @@ void CheckClear(Lexer *lexer, Node *node, AttVal *attval)
     if (attval == null || attval->value == null)
     {
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        if (attval->value == null)
+            attval->value = wstrdup( "none" );
         return;
     }
 
