@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/11 03:46:28 $ 
-    $Revision: 1.5 $ 
+    $Date: 2001/07/11 05:16:51 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -557,6 +557,29 @@ void CheckName(Lexer *lexer, Node *node, AttVal *attval)
 
 void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 {
+    char *p = attval->value;
+    uint i = 0;
+    
+    if (p == null)
+    {
+        ReportAttrError(lexer, node, attval->attribute, MISSING_ATTR_VALUE);
+        return;
+    }
+    
+    if (!IsLetter(*p++))
+    {
+        /* shout: illegal ID value in HTML */
+    } else {
+
+        while(*p)
+        {
+            if (!IsNamechar(*p++))
+            {
+                /* shout: illegal ID value in HTML */
+                break;
+            }
+        }
+    }
 }
 
 void CheckBool(Lexer *lexer, Node *node, AttVal *attval)
@@ -685,6 +708,7 @@ void CheckIMG(Lexer *lexer, Node *node)
 void CheckAnchor(Lexer *lexer, Node *node)
 {
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     FixId(lexer, node);
 }
