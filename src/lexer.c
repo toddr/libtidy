@@ -1,14 +1,14 @@
 /*
   lexer.c - Lexer for html parser
   
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/08 03:45:18 $ 
-    $Revision: 1.71 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:58:19 $ 
+    $Revision: 1.72 $ 
 
 */
 
@@ -890,11 +890,30 @@ static char ParseTagName(Lexer *lexer)
   list of AttVal nodes which hold the
   strings for attribute/value pairs.
 */
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+Node *NewNode(Lexer *lexer)
+#else
 Node *NewNode(void)
+#endif
 {
     Node *node;
 
     node = (Node *)MemAlloc(sizeof(Node));
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    if (lexer)
+    {
+        node->line = lexer->lines;
+        node->column = lexer->columns;
+    }
+    else
+    {
+        node->line = 0;
+        node->column = 0;
+    }
+#endif
 
     node->parent = null;
     node->prev = null;
@@ -919,7 +938,12 @@ Node *CloneNode(Lexer *lexer, Node *element)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->parent = element->parent;
     node->start = lexer->lexsize;
     node->end = lexer->lexsize;
@@ -941,7 +965,12 @@ Node *CloneNodeEx(Lexer *lexer, Node *element)
     if (!element)
         return null;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->parent     = element->parent;
     node->start      = element->start;
     node->end        = element->end;
@@ -1068,7 +1097,12 @@ Node *TextToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
@@ -1077,7 +1111,12 @@ Node *TextToken(Lexer *lexer)
 /* used for creating preformatted text from Word2000 */
 Node *NewLineNode(Lexer *lexer)
 {
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    Node *node = NewNode(lexer);
+#else
     Node *node = NewNode();
+#endif
 
     node->start = lexer->lexsize;
     AddCharToLexer(lexer, (uint)'\n');
@@ -1088,7 +1127,12 @@ Node *NewLineNode(Lexer *lexer)
 /* used for adding a &nbsp; for Word2000 */
 Node *NewLiteralTextNode(Lexer *lexer, char* txt )
 {
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    Node *node = NewNode(lexer);
+#else
     Node *node = NewNode();
+#endif
 
     node->start = lexer->lexsize;
     AddStringToLexer(lexer, txt);
@@ -1100,7 +1144,12 @@ static Node *TagToken(Lexer *lexer, uint type)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = type;
     node->element = wstrndup(lexer->lexbuf + lexer->txtstart,
                         lexer->txtend - lexer->txtstart);
@@ -1117,7 +1166,12 @@ Node *CommentToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = CommentTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1129,7 +1183,12 @@ static Node *DocTypeToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = DocTypeTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1141,7 +1200,12 @@ static Node *PIToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = ProcInsTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1152,7 +1216,12 @@ static Node *AspToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = AspTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1163,7 +1232,12 @@ static Node *JsteToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = JsteTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1175,7 +1249,12 @@ static Node *PhpToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = PhpTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1187,7 +1266,12 @@ static Node *XmlDeclToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = XmlDecl;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1199,7 +1283,12 @@ static Node *SectionToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = SectionTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1211,7 +1300,12 @@ static Node *CDATAToken(Lexer *lexer)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = CDATATag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1349,11 +1443,18 @@ Bool AddGenerator(Lexer *lexer, Node *root)
             }
         }
 
-        node = InferredTag(lexer, "meta");
-        AddAttribute(node, "content", buf);
-        AddAttribute(node, "name", "generator");
-        InsertNodeAtStart(head, node);
-        return yes;
+/* Mike Lam/TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel == 0)
+#endif
+        {
+            node = InferredTag(lexer, "meta");
+            AddAttribute(node, "content", buf);
+            AddAttribute(node, "name", "generator");
+            InsertNodeAtStart(head, node);
+
+	        return yes;
+        }
     }
 
     return no;
@@ -1546,7 +1647,12 @@ static Node* NewXhtmlDocTypeNode( Node* root )
     if ( !html )
         return null;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    doctype = NewNode(null);
+#else
     doctype = NewNode();
+#endif
     doctype->type = DocTypeTag;
     doctype->next = html;
     doctype->parent = root;
@@ -1914,7 +2020,12 @@ Bool FixXmlDecl(Lexer *lexer, Node *root)
     }
     else
     {
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+        xml = NewNode(lexer);
+#else
         xml = NewNode();
+#endif
         xml->type = XmlDecl;
         xml->next = root->content;
         
@@ -1954,7 +2065,12 @@ Node *InferredTag(Lexer *lexer, char *name)
 {
     Node *node;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = StartTag;
     node->implicit = yes;
     node->element = wstrdup(name);
@@ -2363,7 +2479,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                                     continue;
 
                                 UngetChar(c, lexer->in);
-                                    break;
+                                break;
                             }
 
                             break;

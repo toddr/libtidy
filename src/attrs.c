@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/05/23 23:35:40 $ 
-    $Revision: 1.52 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:55:57 $ 
+    $Revision: 1.53 $ 
 
 */
 
@@ -32,6 +32,40 @@ Attribute *attr_xmlns;
 Attribute *attr_datafld;
 Attribute *attr_width;
 Attribute *attr_height;
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+/* Additions by Mike Lam */
+Attribute* attr_for;
+Attribute* attr_selected;
+Attribute* attr_checked;
+Attribute* attr_lang;
+Attribute* attr_target;
+Attribute* attr_httpEquiv;
+Attribute* attr_rel;
+Attribute* attr_onMouseMove;
+Attribute* attr_onMouseDown;
+Attribute* attr_onMouseUp;
+Attribute* attr_onClick;
+Attribute* attr_onMouseOver;
+Attribute* attr_onMouseOut;
+Attribute* attr_onKeyDown;
+Attribute* attr_onKeyUp;
+Attribute* attr_onKeyPress;
+Attribute* attr_onFocus;
+Attribute* attr_onBlur;
+Attribute* attr_bgcolor;
+Attribute* attr_text;
+Attribute* attr_link;
+Attribute* attr_alink;
+Attribute* attr_vlink;
+Attribute* attr_style;
+Attribute* attr_abbr;
+Attribute* attr_colspan;
+Attribute* attr_font;
+Attribute* attr_basefont;
+Attribute* attr_rowspan;
+#endif
 
 AttrCheck CheckUrl;
 AttrCheck CheckScript;
@@ -616,6 +650,40 @@ void InitAttrs(void)
     attr_content = lookup("content");
     attr_width = lookup("width");
     attr_height = lookup("height");
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+	/* Additions by Mike Lam */
+    attr_for = lookup("for");
+	attr_selected = lookup("selected");
+	attr_checked = lookup("checked");
+	attr_lang = lookup("lang");
+	attr_target = lookup("target");
+	attr_httpEquiv = lookup("http-equiv");
+	attr_rel = lookup("rel");
+	attr_onMouseMove = lookup ("onmousemove");
+	attr_onMouseDown = lookup ("onmousedown");
+	attr_onMouseUp = lookup ("onmouseup");
+	attr_onClick = lookup ("onclick");
+	attr_onMouseOver = lookup ("onmouseover");
+	attr_onMouseOut = lookup ("onmouseout");
+	attr_onKeyDown = lookup ("onkeydown");
+	attr_onKeyUp = lookup ("onkeyup");
+	attr_onKeyPress = lookup ("onkeypress");
+	attr_onFocus = lookup ("onfocus");
+	attr_onBlur = lookup ("onblur");
+	attr_bgcolor = lookup("bgcolor");
+	attr_text = lookup("text");
+	attr_link = lookup("link");
+	attr_alink = lookup("alink");
+	attr_vlink = lookup("vlink");
+	attr_style = lookup("style");
+	attr_abbr = lookup("abbr");
+	attr_colspan = lookup("colspan");
+	attr_font = lookup ("font");
+	attr_basefont = lookup ("basefont");
+	attr_rowspan = lookup ("rowspan");
+#endif
 
     SetNoWrap(attr_alt);
     SetNoWrap(attr_value);
@@ -1425,7 +1493,14 @@ void CheckLang(Lexer *lexer, Node *node, AttVal *attval)
 {
     if (attval == null || attval->value == null)
     {
-        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel == 0)
+#endif
+        {
+            ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+        }
+        
         return;
     }
 
@@ -1484,9 +1559,15 @@ void CheckIMG(Lexer *lexer, Node *node)
 
     if (!HasAlt)
     {
-        lexer->badAccess |= MISSING_IMAGE_ALT;
-        ReportMissingAttr(lexer, node, "alt");
-
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel == 0)
+#endif
+        {
+            lexer->badAccess |= MISSING_IMAGE_ALT;
+            ReportMissingAttr(lexer, node, "alt");
+        }
+  
         if (alt_text)
             AddAttribute(node, "alt", alt_text);
     }
@@ -1494,8 +1575,14 @@ void CheckIMG(Lexer *lexer, Node *node)
     if (!HasSrc && !HasDataFld)
         ReportMissingAttr(lexer, node, "src");
 
-    if (HasIsMap && !HasUseMap)
-        ReportMissingAttr(lexer, node, "ismap");
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+    if (AccessibilityCheckLevel == 0)
+#endif 
+    {
+        if (HasIsMap && !HasUseMap)
+            ReportMissingAttr(lexer, node, "ismap");
+    }
 }
 
 void CheckAnchor(Lexer *lexer, Node *node)
@@ -1596,9 +1683,16 @@ void CheckAREA(Lexer *lexer, Node *node)
 
     if (!HasAlt)
     {
-        lexer->badAccess |= MISSING_LINK_ALT;
-        ReportMissingAttr(lexer, node, "alt");
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel == 0)
+#endif
+        {
+            lexer->badAccess |= MISSING_LINK_ALT;
+            ReportMissingAttr(lexer, node, "alt");
+        }
     }
+
     if (!HasHref)
         ReportMissingAttr(lexer, node, "href");
 }
@@ -1618,10 +1712,16 @@ void CheckTABLE(Lexer *lexer, Node *node)
     }
 
     /* suppress warning for missing summary for HTML 2.0 and HTML 3.2 */
-    if (!HasSummary && lexer->doctype != VERS_HTML20 && lexer->doctype != VERS_HTML32)
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+    if (AccessibilityCheckLevel == 0)
+#endif
     {
-        lexer->badAccess |= MISSING_SUMMARY;
-        ReportMissingAttr(lexer, node, "summary");
+        if (!HasSummary && lexer->doctype != VERS_HTML20 && lexer->doctype != VERS_HTML32)
+        {
+            lexer->badAccess |= MISSING_SUMMARY;
+            ReportMissingAttr(lexer, node, "summary");
+        }
     }
 
     /* convert <table border> to <table border="1"> */

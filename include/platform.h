@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/04/12 07:54:49 $ 
-    $Revision: 1.25 $ 
+    $Date: 2002/05/31 21:52:23 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -38,6 +38,24 @@
 /* Enable/disable support for UTF-16 character encodings */
 #ifndef SUPPORT_UTF16_ENCODINGS
 #define SUPPORT_UTF16_ENCODINGS 0
+#endif
+
+/* Enable/disable support for additional accessibility checks */
+#ifndef SUPPORT_ACCESSIBILITY_CHECKS
+#define SUPPORT_ACCESSIBILITY_CHECKS 1
+#endif
+
+/* Enable/disable original accessibility checks */
+
+/* Also at runtime : 
+   if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+       if (AccessibilityCheckLevel == 0) then
+           do the original accessibility checks anyway
+*/
+
+/* If additional accessibility checks are enabled, disable the original accessibility checks by default */
+#ifndef USE_ORIGINAL_ACCESSIBILITY_CHECKS
+#define USE_ORIGINAL_ACCESSIBILITY_CHECKS 0
 #endif
 
 /* Convenience defines for Mac platforms */

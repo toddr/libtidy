@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/08/19 19:19:20 $ 
-    $Revision: 1.6 $ 
+    $Date: 2002/05/31 21:57:35 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -246,7 +246,12 @@ Node *InsertedToken(Lexer *lexer)
         lexer->columns = lexer->in->curcol;
     }
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;

@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: krusch $ 
-    $Date: 2002/05/23 23:19:35 $ 
-    $Revision: 1.51 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 22:00:12 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -156,7 +156,7 @@ void InsertNodeAtEnd(Node *element, Node *node)
 }
 
 /*
- insert node into markup tree in pace of element
+ insert node into markup tree in place of element
  which is moved to become the child of the node
 */
 static void InsertNodeAsParent(Node *element, Node *node)
@@ -360,7 +360,12 @@ static void TrimTrailingSpace(Lexer *lexer, Node *element, Node *last)
 static Node *EscapeTag(Lexer *lexer, Node *element)
 {
     char *p;
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    Node *node = NewNode(lexer);
+#else
     Node *node = NewNode();
+#endif
     node->start = lexer->lexsize;
     AddByte(lexer, '<');
 
@@ -446,7 +451,12 @@ static void TrimInitialSpace(Lexer *lexer, Node *element, Node *text)
             }
             else /* create new node */
             {
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+                node = NewNode(lexer);
+#else
                 node = NewNode();
+#endif
                 node->start = (element->start)++;
                 node->end = element->start;
                 lexer->lexbuf[node->start] = ' ';
@@ -2877,9 +2887,17 @@ void ParseHead(Lexer *lexer, Node *head, uint mode)
   
     if (HasTitle == 0)
     {
-        if (!BodyOnly) /* Feature request #434940 - fix by Ignacio Vazquez-Abrams 21 Jun 01 */
-            ReportWarning(lexer, head, null, MISSING_TITLE_ELEMENT);
-        InsertNodeAtEnd(head, InferredTag(lexer, "title"));
+
+/* Mike Lam/TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel == 0)
+#endif
+        {
+            if (!BodyOnly) /* Feature request #434940 - fix by Ignacio Vazquez-Abrams 21 Jun 01 */
+                ReportWarning(lexer, head, null, MISSING_TITLE_ELEMENT);
+ 
+            InsertNodeAtEnd(head, InferredTag(lexer, "title"));
+        }
     }
 }
 
@@ -3153,7 +3171,13 @@ void ParseNoFrames(Lexer *lexer, Node *noframes, uint mode)
     Node *node;
     Bool checkstack;
 
-    lexer->badAccess |=  USING_NOFRAMES;
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+    if (AccessibilityCheckLevel == 0)
+#endif
+    {
+        lexer->badAccess |=  USING_NOFRAMES;
+    }
     mode = IgnoreWhitespace;
     checkstack = yes;
 
@@ -3256,8 +3280,14 @@ void ParseFrameSet(Lexer *lexer, Node *frameset, uint mode)
 {
     Node *node;
 
-    lexer->badAccess |=  USING_FRAMES;
-
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+    if (AccessibilityCheckLevel == 0)
+#endif
+    {
+        lexer->badAccess |=  USING_FRAMES;
+    }
+    
     while ((node = GetToken(lexer, IgnoreWhitespace)) != null)
     {
         if (node->tag == frameset->tag && node->type == EndTag)
@@ -3397,19 +3427,25 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
                 continue;
             }
 
-            if (frameset != null)
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+            if (AccessibilityCheckLevel == 0)
+#endif
             {
-                UngetToken(lexer);
-
-                if (noframes == null)
+                if (frameset != null)
                 {
-                    noframes = InferredTag(lexer, "noframes");
-                    InsertNodeAtEnd(frameset, noframes);
-                    ReportWarning(lexer, html, noframes, INSERTING_TAG);
-                }
+                    UngetToken(lexer);
 
-                ParseTag(lexer, noframes, mode);
-                continue;
+                    if (noframes == null)
+                    {
+                        noframes = InferredTag(lexer, "noframes");
+                        InsertNodeAtEnd(frameset, noframes);
+                        ReportWarning(lexer, html, noframes, INSERTING_TAG);
+                    }
+
+                    ParseTag(lexer, noframes, mode);
+                    continue;
+                }
             }
 
             ConstrainVersion(lexer, ~VERS_FRAMESET);
@@ -3530,9 +3566,13 @@ Node *ParseDocument(Lexer *lexer)
 {
     Node *node, *document, *html, *doctype = null;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    document = NewNode(lexer);
+#else
     document = NewNode();
+#endif
     document->type = RootNode;
-
     lexer->root = document;
 
     while ((node = GetToken(lexer, IgnoreWhitespace)) != null)
@@ -3689,7 +3729,12 @@ Node *ParseXMLDocument(Lexer *lexer)
 {
     Node *node, *document, *doctype;
 
+ /* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    document = NewNode(lexer);
+#else
     document = NewNode();
+#endif
     document->type = RootNode;
     doctype = null;
     XmlTags = yes;

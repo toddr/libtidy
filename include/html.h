@@ -1,13 +1,13 @@
 /* html.h
 
-  (c) 1998-2001 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2002 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/08 03:45:17 $ 
-    $Revision: 1.69 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:52:04 $ 
+    $Revision: 1.70 $ 
 
 */
 
@@ -216,6 +216,11 @@ struct _node
     uint start;             /* start of span onto text array */
     uint end;               /* end of span onto text array */
     uint type;              /* TextNode, StartTag, EndTag etc. */
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    uint line;				/* current line of document */
+    uint column;            /* current column of document */
+#endif
     Bool closed;            /* true if closed by explicit end tag */
     Bool implicit;          /* true if inferred */
     Bool linebreak;         /* true if followed by a line break */
@@ -486,7 +491,12 @@ Node *NewLineNode(Lexer *lexer);
 Node *NewLiteralTextNode(Lexer *lexer, char* txt );
 
 /* Parser calls this to create RootNode */
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+Node *NewNode(Lexer *lexer);
+#else
 Node *NewNode(void);
+#endif
 AttVal *NewAttribute(void);
 AttVal *NewAttributeEx(char *name, char *value);
 
@@ -947,6 +957,17 @@ extern Bool OutputBOM;
 extern Bool SmartBOM;
 extern Bool ReplaceColor; /* #477643 - replace hex color attribute values with names */
 extern char *CSSPrefix;   /* #508936 - CSS class naming for -clean option */
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+extern uint AccessibilityCheckLevel;
+/* extern Node *access_tree; */
+
+void InitAccessibilityChecks(int theAccessibilityCheckLevel);
+void AccessibilityChecks(Lexer* lexer, Node* node);
+/* void AccessibilityChecksSummary(Lexer* lexer); */
+void CleanupAccessibilityChecks (void);
+#endif
 
 /* Parser methods for tags */
 

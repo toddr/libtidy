@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/04/01 03:36:59 $ 
-    $Revision: 1.42 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:57:15 $ 
+    $Revision: 1.43 $ 
 
 */
 
@@ -131,6 +131,13 @@ Bool OutputBOM = no;        /* output a Byte Order Mark (BOM) when using UTF-8/U
 Bool SmartBOM = yes;        /* if input stream has BOM, do we automatically output a BOM? */
 Bool ReplaceColor = no;     /* #477643 - replace hex color attribute values with names */
 char *CSSPrefix = null;     /* #508936 - CSS class naming for -clean option */
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+/* '-access <n>, where n = priorities 1, 2 and 3. */
+/* '--accessibility-check <n>' */
+uint AccessibilityCheckLevel = 0;
+#endif
 
 static uint c;      /* current char in input stream */
 static FILE *fin;   /* file pointer for input stream */
@@ -263,6 +270,13 @@ static struct Flag
     {"output-bom",      {(int *)&OutputBOM},        ParseBOM},
     {"replace-color",   {(int *)&ReplaceColor},     ParseBool}, /* #477643 - replace hex color attribute values with names */
     {"css-prefix",      {(int *)&CSSPrefix},        ParseCSS1Selector}, /* #508936 - CSS class naming for -clean option    */
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+/* '-access <n>, where n = priorities 1, 2 and 3. */
+/* '--accessibility-check <n>' */
+    {"accessibility-check", {(int *)&AccessibilityCheckLevel}, ParseInt},
+#endif
 
   /* this must be the final entry */
     {0,          0,             0}

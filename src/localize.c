@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/06 06:22:44 $ 
-    $Revision: 1.58 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:59:12 $ 
+    $Revision: 1.59 $ 
 
 */
 
@@ -20,6 +20,9 @@
 
 /* used to point to Web Accessibility Guidelines */
 #define ACCESS_URL  "http://www.w3.org/WAI/GL"
+/* TRT */
+/* points to the Adaptive Technology Resource Centre at the University of Toronto */
+#define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
 char *release_date = "1st May 2002";
 
@@ -772,6 +775,17 @@ void ErrorSummary(Lexer *lexer)
     
     if (lexer->badAccess)
     {
+/* TRT */
+#if !USE_ORIGINAL_ACCESSIBILITY_CHECKS
+        if (AccessibilityCheckLevel != 0)
+        {
+            tidy_out(lexer->errout, "For further advice on how to make your pages accessible, see\n");
+            tidy_out(lexer->errout, "\"%s\" and \n\"%s\".\n", ACCESS_URL, ATRC_ACCESS_URL);
+            tidy_out(lexer->errout, "You may also want to try \"http://www.cast.org/bobby/\" which is a free Web-based\n");
+            tidy_out(lexer->errout, "service for checking URLs for accessibility.\n\n");
+        } else
+#endif
+        {
         if (lexer->badAccess & MISSING_SUMMARY)
         {
             tidy_out(lexer->errout, "The table summary attribute should be used to describe\n");
@@ -817,6 +831,7 @@ void ErrorSummary(Lexer *lexer)
         tidy_out(lexer->errout, "see \"%s\". You may also want to try\n", ACCESS_URL);
         tidy_out(lexer->errout, "\"http://www.cast.org/bobby/\" which is a free Web-based\n");
         tidy_out(lexer->errout, "service for checking URLs for accessibility.\n\n");
+        }
     }
 
     if (lexer->badLayout)
@@ -1040,6 +1055,12 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -asxhtml          to convert HTML to well formed XHTML\n");
     tidy_out(out, "  -ashtml           to force XHTML to well formed HTML\n");
     tidy_out(out, "  -slides           to burst into slides on H2 elements\n");
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    tidy_out(out, "  -access <level>   to do additional accessibility checks (<level> = 1, 2, 3)\n");
+#endif
+
     tidy_out(out, "\n");
 
     tidy_out(out, "Character encodings\n");

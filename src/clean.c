@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/05 04:02:19 $ 
-    $Revision: 1.16 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 21:56:39 $ 
+    $Revision: 1.17 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -507,7 +507,12 @@ static void CreateStyleElement(Lexer *lexer, Node *doc)
     if (lexer->styles == null && NiceBody(lexer, doc))
         return;
 
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    node = NewNode(lexer);
+#else
     node = NewNode();
+#endif
     node->type = StartTag;
     node->implicit = yes;
     node->element = wstrdup("style");
@@ -981,7 +986,7 @@ static void TextAlign(Lexer *lexer, Node *node)
 
 /*
    The clean up rules use the pnode argument to return the
-   next node when the orignal node has been deleted
+   next node when the original node has been deleted
 */
 
 /*

@@ -1,16 +1,16 @@
 /*
   tidy.c - HTML parser and pretty printer
 
-  Copyright (c) 1998-2001 World Wide Web Consortium
+  Copyright (c) 1998-2002 World Wide Web Consortium
   (Massachusetts Institute of Technology, Institut National de
   Recherche en Informatique et en Automatique, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2002/05/08 03:09:52 $ 
-    $Revision: 1.43 $ 
+    $Author: terry_teague $ 
+    $Date: 2002/05/31 22:01:11 $ 
+    $Revision: 1.44 $ 
 
   Contributing Author(s):
 
@@ -795,7 +795,7 @@ static int ReadCharFromStream(StreamIn *in)
             if (in->encoding != UTF16 && in->encoding != UTF16BE)
             {
                 /* tidy_out(errout, "Input is encoded as UTF16BE\n"); */ /* debug */
-                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16BE); /* fatal error */
+                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16BE); /* non-fatal error */
             }
             in->encoding = UTF16BE;
             inCharEncoding = UTF16BE;
@@ -808,7 +808,7 @@ static int ReadCharFromStream(StreamIn *in)
             if (in->encoding != UTF16 && in->encoding != UTF16LE)
             {
                 /* tidy_out(errout, "Input is encoded as UTF16LE\n"); */ /* debug */
-                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16LE); /* fatal error */
+                ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF16LE); /* non-fatal error */
             }
             in->encoding = UTF16LE;
             inCharEncoding = UTF16LE;
@@ -831,7 +831,7 @@ static int ReadCharFromStream(StreamIn *in)
                 if (in->encoding != UTF8)
                 {
                     /* tidy_out(errout, "Input is encoded as UTF8\n"); */ /* debug */
-                    ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF8); /* fatal error */
+                    ReportEncodingError(in->lexer, ENCODING_MISMATCH, UTF8); /* non-fatal error */
                 }
                 in->encoding = UTF8;
                 inCharEncoding = UTF8;
@@ -2017,6 +2017,21 @@ int main(int argc, char **argv)
                     --argc;
                 }
             }
+            /* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+
+            else if (wstrcasecmp(arg, "access") == 0)
+            {
+                if (argc >= 3)
+                {
+                    sscanf(argv[2], "%d", &AccessibilityCheckLevel);
+                    --argc;
+                    ++argv;
+                }
+            }
+            
+#endif
+
             else
             {
                 s = argv[1];
@@ -2216,6 +2231,19 @@ int main(int argc, char **argv)
 
                     if (TidyMark)
                         AddGenerator(lexer, document);
+					
+                   /* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+                   if (AccessibilityCheckLevel > 0)
+                   {
+                       InitAccessibilityChecks(AccessibilityCheckLevel);
+
+                       AccessibilityChecks(lexer, document);
+
+                       tidy_out(lexer->errout, "\n");
+                   }
+#endif
+
                 }
 
                 /* ensure presence of initial <?XML version="1.0"?> */
@@ -2362,10 +2390,25 @@ int main(int argc, char **argv)
             }
 
             if (!Quiet)
+            {
                 ErrorSummary(lexer);
 
+#if SUPPORT_ACCESSIBILITY_CHECKS
+
+                /* if (AccessibilityCheckLevel > 0)
+                    AccessibilityChecksSummary(lexer); */
+
+#endif
+            }
+            
             FreeNode(document);
             FreeLexer(lexer);
+
+/* TRT */
+#if SUPPORT_ACCESSIBILITY_CHECKS
+            if (AccessibilityCheckLevel > 0)
+                CleanupAccessibilityChecks();
+#endif
         }
         else
             UnknownFile(errout, prog, file);
