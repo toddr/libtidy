@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/12 05:57:10 $ 
-    $Revision: 1.14 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/12 09:08:53 $ 
+    $Revision: 1.15 $ 
 
 */
 
@@ -676,7 +676,7 @@ void ParseBlock(Lexer *lexer, Node *element, uint mode)
               HTML4 strict doesn't allow mixed content for
               elements with %block; as their content model
             */
-            lexer->versions &= ~VERS_HTML40_STRICT;
+            ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
             continue;
         }
 
@@ -2806,8 +2806,8 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
                 mode = MixedContent;
                 continue;
             }
-            else /* strict doesn't allow text here */
-                lexer->versions &= ~(VERS_HTML40_STRICT | VERS_HTML20);
+            else /* HTML 2 and HTML4 strict don't allow text here */
+                ConstrainVersion(lexer, ~(VERS_HTML40_STRICT | VERS_HTML20));
 
 
             if (checkstack)
@@ -2924,9 +2924,9 @@ void ParseBody(Lexer *lexer, Node *body, uint mode)
                 /* HTML4 strict doesn't allow inline content here */
                 /* but HTML2 does allow img elements as children of body */
                 if (node->tag == tag_img)
-                    lexer->versions &= ~VERS_HTML40_STRICT;
+                    ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
                 else
-                    lexer->versions &= ~(VERS_HTML40_STRICT | VERS_HTML20);
+                    ConstrainVersion(lexer, ~(VERS_HTML40_STRICT|VERS_HTML20));
 
                 if (checkstack && !node->implicit)
                 {
