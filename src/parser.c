@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/14 14:50:58 $ 
-    $Revision: 1.133 $ 
+    $Date: 2005/02/14 15:02:41 $ 
+    $Revision: 1.134 $ 
 
 */
 
@@ -2068,9 +2068,11 @@ static void MoveBeforeTable( TidyDocImpl* doc, Node *row, Node *node )
         if ( nodeIsTABLE(table) )
         {
             InsertNodeBeforeElement( table, node );
-            break;
+            return;
         }
     }
+    /* No table element */
+    InsertNodeBeforeElement( row->parent, node );
 }
 
 /*
