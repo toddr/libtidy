@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/13 09:11:20 $ 
-    $Revision: 1.89 $ 
+    $Date: 2003/05/14 23:11:49 $ 
+    $Revision: 1.90 $ 
 
 */
 
@@ -472,6 +472,100 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
 
         /* discard the space in current node */
         ++(text->start);
+    }
+}
+
+static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    if (!nodeIsText(node))
+        return no;
+
+    if (node->parent->tag->parser == ParsePre)
+        return no;
+
+    if (node->parent->tag->parser == ParseScript)
+        return no;
+
+    next = node->next;
+
+    /* <p>... </p> */
+    if (!next && !nodeHasCM(node->parent, CM_INLINE))
+        return yes;
+
+    if (!next)
+        return no;
+
+    if (nodeHasCM(next, CM_INLINE))
+        return no;
+
+    /* <a href='/'>...</a> <p>...</p> */
+    if (next->type == StartTag)
+        return yes;
+
+    /* <strong>...</strong> <hr /> */
+    if (next->type == StartEndTag)
+        return yes;
+
+    /* evil adjacent text nodes, Tidy should not generate these :-( */
+    if (next->type == TextNode && next->start < next->end
+        && IsWhite(doc->lexer->lexbuf[next->start]))
+        return yes;
+
+    return no;
+}
+
+static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
+{
+    if (!nodeIsText(node))
+        return no;
+
+    if (node->parent->tag->parser == ParsePre)
+        return no;
+
+    if (node->parent->tag->parser == ParseScript)
+        return no;
+
+    /* <p>...<br> <em>...</em>...</p> */
+    if (nodeIsBR(node->prev))
+        return yes;
+
+    /* <p> ...</p> */
+    if (node->prev == NULL && !nodeHasCM(node->parent, CM_INLINE))
+        return yes;
+
+    return no;
+}
+
+static void CleanSpaces(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (nodeIsText(node) && CleanLeadingWhitespace(doc, node))
+            while (node->start < node->end && IsWhite(doc->lexer->lexbuf[node->start]))
+                ++(node->start);
+
+        if (nodeIsText(node) && CleanTrailingWhitespace(doc, node))
+            while (node->end > node->start && IsWhite(doc->lexer->lexbuf[node->end - 1]))
+                --(node->end);
+
+        if (nodeIsText(node) && !(node->start < node->end))
+        {
+            RemoveNode(node);
+            FreeNode(doc, node);
+            node = next;
+            continue;
+        }
+
+        if (node->content)
+            CleanSpaces(doc, node->content);
+
+        node = next;
     }
 }
 
@@ -3883,6 +3977,8 @@ void ParseDocument(TidyDocImpl* doc)
         InsertNodeAtEnd( &doc->root, html);
         ParseHTML(doc, html, no);
     }
+
+    CleanSpaces(doc, &doc->root);
 }
 
 Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element)
