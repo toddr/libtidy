@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/14 23:11:49 $ 
-    $Revision: 1.77 $ 
+    $Date: 2003/05/17 15:32:27 $ 
+    $Revision: 1.78 $ 
 
 */
 
@@ -2067,13 +2067,12 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
         else
             PPrintTag( doc, mode, indent, node );
 
-        if ( node->next )
+        if (node->next)
         {
-          if ( nodeIsPARAM(node) || nodeIsAREA(node) )
-              PCondFlushLine( doc, indent );
-          else if ( (nodeIsBR(node) && !(mode & PREFORMATTED)) || 
-                    nodeIsHR(node) )
-              PFlushLine( doc, indent );
+          if (nodeIsPARAM(node) || nodeIsAREA(node))
+              PCondFlushLine(doc, indent);
+          else if (nodeIsBR(node) || nodeIsHR(node))
+              PFlushLine(doc, indent);
         }
     }
     else /* some kind of container element */
