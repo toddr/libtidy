@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2003/05/22 19:10:59 $ 
-    $Revision: 1.7 $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.8 $ 
 
   Contributing Author(s):
 
@@ -231,6 +231,15 @@ TIDY_EXPORT Bool        tidyFileExists( ctmbstr filename );
 **  win1252, utf16le, utf16be, utf16, big5 and shiftjis.  Case in-sensitive.
 */
 TIDY_EXPORT int         tidySetCharEncoding( TidyDoc tdoc, ctmbstr encnam );
+
+/** Set the input encoding for parsing markup.
+** As for tidySetCharEncoding but only affects the input encoding
+**/
+TIDY_EXPORT int         tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam );
+
+/** Set the output encoding.
+**/
+TIDY_EXPORT int         tidySetOutCharEncoding( TidyDoc tdoc, ctmbstr encnam );
 
 /** @} end Basic group */
 

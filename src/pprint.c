@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/08/16 01:44:08 $ 
-    $Revision: 1.85 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:03 $ 
+    $Revision: 1.86 $ 
 
 */
 
@@ -982,11 +982,13 @@ static void PPrintText( TidyDocImpl* doc, uint mode, uint indent,
     }
 }
 
+#if 0
 static void PPrintString( TidyDocImpl* doc, uint indent, ctmbstr str )
 {
     while ( *str != '\0' )
         AddChar( &doc->pprint, *str++ );
 }
+#endif /* 0 */
 
 
 static void PPrintAttrValue( TidyDocImpl* doc, uint indent,

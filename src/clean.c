@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/26 03:46:26 $ 
-    $Revision: 1.50 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.51 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -379,7 +379,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
             if (classattr->value)
                 MemFree(classattr->value);
             classattr->value = s;
-            RemoveAttribute( node, styleattr);
+            RemoveAttribute( doc, node, styleattr );
         }
         else /* reuse style attribute for class attribute */
         {
@@ -424,21 +424,21 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
     {
         bgurl = attr->value;
         attr->value = NULL;
-        RemoveAttribute( body, attr );
+        RemoveAttribute( doc, body, attr );
     }
 
     if (attr = AttrGetById(body, TidyAttr_BGCOLOR))
     {
         bgcolor = attr->value;
         attr->value = NULL;
-        RemoveAttribute( body, attr );
+        RemoveAttribute( doc, body, attr );
     }
 
     if (attr = AttrGetById(body, TidyAttr_TEXT))
     {
         color = attr->value;
         attr->value = NULL;
-        RemoveAttribute(body, attr);
+        RemoveAttribute( doc, body, attr );
     }
 
     if ( bgurl || bgcolor || color )
@@ -472,19 +472,19 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
     if (attr = AttrGetById(body, TidyAttr_LINK))
     {
         AddColorRule(lexer, " :link", attr->value);
-        RemoveAttribute(body, attr);
+        RemoveAttribute( doc, body, attr );
     }
 
     if (attr = AttrGetById(body, TidyAttr_VLINK))
     {
         AddColorRule(lexer, " :visited", attr->value);
-        RemoveAttribute(body, attr);
+        RemoveAttribute( doc, body, attr );
     }
 
     if (attr = AttrGetById(body, TidyAttr_ALINK))
     {
         AddColorRule(lexer, " :active", attr->value);
-        RemoveAttribute(body, attr);
+        RemoveAttribute( doc, body, attr );
     }
 }
 
@@ -1328,7 +1328,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
             }
             else
             {
-                FreeAttribute( av );
+                FreeAttribute( doc, av );
             }
             av = next;
         }
@@ -1677,17 +1677,17 @@ static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
             }
         }
 
-        if (attrIsCLASS(attr) || attrIsSTYLE(attr) || attrIsLANG(attr) ||
-            ((attrIsHEIGHT(attr) || attrIsWIDTH(attr)) &&
-            (nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node))) ||
-            tmbstrncmp(attr->attribute, "x:", 2) == 0)
+        if ( attrIsCLASS(attr) || attrIsSTYLE(attr) || attrIsLANG(attr) ||
+             ( (attrIsHEIGHT(attr) || attrIsWIDTH(attr)) &&
+               (nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node)) ) ||
+             (attr->attribute && tmbstrncmp(attr->attribute, "x:", 2) == 0) )
         {
             if (prev)
                 prev->next = next;
             else
                 node->attributes = next;
 
-            FreeAttribute( attr );
+            FreeAttribute( doc, attr );
         }
         else
             prev = attr;
@@ -2145,8 +2145,8 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         AttVal* httpEquiv = AttrGetById(pNode, TidyAttr_HTTP_EQUIV);
         AttVal* metaContent = AttrGetById(pNode, TidyAttr_CONTENT);
 
-        if (!nodeIsMETA(pNode) || !httpEquiv || !metaContent ||
-            (0 != tmbstrcasecmp(httpEquiv->value, "Content-Type")))
+        if ( !nodeIsMETA(pNode) || !metaContent ||
+             !AttrMatches(httpEquiv, "Content-Type") )
             continue;
 
         pszBegin = s = tmbstrdup( metaContent->value );

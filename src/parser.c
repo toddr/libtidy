@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/07/14 12:01:30 $ 
-    $Revision: 1.105 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.106 $ 
 
 */
 
@@ -241,13 +241,13 @@ void InsertNodeAfterElement(Node *element, Node *node)
 
 static Bool CanPrune( TidyDocImpl* doc, Node *element )
 {
-    if (element->type == TextNode)
+    if ( element->type == TextNode )
         return yes;
 
-    if (element->content)
+    if ( element->content )
         return no;
 
-    if (!element->tag)
+    if ( element->tag == NULL )
         return no;
 
     if ( element->tag->model & CM_BLOCK && element->attributes != NULL )
@@ -257,9 +257,6 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
         return no;
 
     if ( nodeIsP(element) && !cfgBool(doc, TidyDropEmptyParas) )
-        return no;
-
-    if ( element->tag == NULL )
         return no;
 
     if ( element->tag->model & CM_ROW )
@@ -414,6 +411,7 @@ static void TrimTrailingSpace( TidyDocImpl* doc, Node *element, Node *last )
     }
 }
 
+#if 0
 static Node *EscapeTag(Lexer *lexer, Node *element)
 {
     Node *node = NewNode(lexer);
@@ -446,6 +444,7 @@ static Node *EscapeTag(Lexer *lexer, Node *element)
 
     return node;
 }
+#endif /* 0 */
 
 /* Only true for text nodes. */
 Bool IsBlank(Lexer *lexer, Node *node)
@@ -1795,7 +1794,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
 
         /* discard unexpected tags */
         ReportError(doc, element, node, DISCARDING_UNEXPECTED);
-        FreeNode( doc, node);
+        FreeNode( doc, node );
         continue;
     }
 
@@ -1810,11 +1809,17 @@ void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
     if ( lexer->isvoyager )
     {
         Node *node = GetToken( doc, mode);
-        if ( node &&
-             !(node->type == EndTag && node->tag == element->tag) )
+        if ( node )
         {
-            ReportError(doc, element, node, ELEMENT_NOT_EMPTY);
-            UngetToken( doc );
+            if ( !(node->type == EndTag && node->tag == element->tag) )
+            {
+                ReportError(doc, element, node, ELEMENT_NOT_EMPTY);
+                UngetToken( doc );
+            }
+            else
+            {
+                FreeNode( doc, node );
+            }
         }
     }
 }
@@ -1866,6 +1871,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
             {
                 BadForm( doc );
                 ReportError(doc, list, node, DISCARDING_UNEXPECTED);
+                FreeNode( doc, node );
                 continue;
             }
 
@@ -1996,6 +2002,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
             {
                 BadForm( doc );
                 ReportError(doc, list, node, DISCARDING_UNEXPECTED);
+                FreeNode( doc, node );
                 continue;
             }
 
@@ -2007,8 +2014,8 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
                 continue;
             }
 
-            for (parent = list->parent;
-                    parent != NULL; parent = parent->parent)
+            for ( parent = list->parent;
+                  parent != NULL; parent = parent->parent )
             {
                 if (node->tag == parent->tag)
                 {
@@ -2976,8 +2983,8 @@ Bool IsJavaScript(Node *node)
 
     for (attr = node->attributes; attr; attr = attr->next)
     {
-        if ((attrIsLANGUAGE(attr) || attrIsTYPE(attr))
-             && tmbsubstr(attr->value, "javascript"))
+        if ( (attrIsLANGUAGE(attr) || attrIsTYPE(attr))
+             && AttrContains(attr, "javascript") )
         {
             result = yes;
             break;
@@ -3341,13 +3348,14 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
             }
             else
             {
-                if (!(node->tag->model & (CM_ROW | CM_FIELD)))
+                if ( !nodeHasCM(node, CM_ROW | CM_FIELD) )
                 {
                     UngetToken( doc );
                     return;
                 }
 
                 /* ignore </td> </th> <option> etc. */
+                FreeNode( doc, node );
                 continue;
             }
         }
@@ -3363,13 +3371,13 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 InsertNodeAtEnd(body, node);
                 node = InferredTag(doc, "br");
             }
-            else if (node->tag->model & CM_INLINE)
+            else if ( nodeHasCM(node, CM_INLINE) )
                 PopInline( doc, node );
         }
 
         if (node->type == StartTag || node->type == StartEndTag)
         {
-            if ((node->tag->model & CM_INLINE) && !(node->tag->model & CM_MIXED))
+            if ( nodeHasCM(node, CM_INLINE) && !nodeHasCM(node, CM_MIXED) )
             {
                 /* HTML4 strict doesn't allow inline content here */
                 /* but HTML2 does allow img elements as children of body */

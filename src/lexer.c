@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/07/16 14:30:08 $ 
-    $Revision: 1.131 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.132 $ 
 
 */
 
@@ -667,6 +667,9 @@ void FreeLexer( TidyDocImpl* doc )
     {
         FreeStyles( doc );
 
+        if ( lexer->pushed )
+            FreeNode( doc, lexer->token );
+
         while ( lexer->istacksize > 0 )
             PopInline( doc, NULL );
 
@@ -1045,26 +1048,23 @@ void FreeAttrs( TidyDocImpl* doc, Node *node )
 
         if ( av->attribute )
         {
-            if ((attrIsID(av) || attrIsNAME(av)) &&
-                IsAnchorElement(doc, node) )
+            if ( (attrIsID(av) || attrIsNAME(av)) &&
+                 IsAnchorElement(doc, node) )
             {
                 RemoveAnchorByNode( doc, node );
             }
-            MemFree( av->attribute );
         }
 
-        MemFree( av->value );
-        FreeNode( doc, av->asp );
-        FreeNode( doc, av->php );
-
         node->attributes = av->next;
-        MemFree(av);
+        FreeAttribute( doc, av );
     }
 }
 
 /* doesn't repair attribute list linkage */
-void FreeAttribute( AttVal *av )
+void FreeAttribute( TidyDocImpl* doc, AttVal *av )
 {
+    FreeNode( doc, av->asp );
+    FreeNode( doc, av->php );
     MemFree( av->attribute );
     MemFree( av->value );
     MemFree( av );
@@ -1072,7 +1072,7 @@ void FreeAttribute( AttVal *av )
 
 /* remove attribute from node then free it
 */
-void RemoveAttribute( Node *node, AttVal *attr )
+void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr )
 {
     AttVal *av, *prev = NULL;
 
@@ -1088,7 +1088,7 @@ void RemoveAttribute( Node *node, AttVal *attr )
         }
         prev = av;
     }
-    FreeAttribute( attr );
+    FreeAttribute( doc, attr );
 }
 
 /*
@@ -1447,11 +1447,9 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 
 ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
 {
-    ctmbstr name = GetNameFromVers(vers);
-
-    if (!name)
+    ctmbstr name = GetNameFromVers( vers );
+    if ( !name )
         name = "HTML Proprietary";
-
     return name;
 }
 
@@ -1461,10 +1459,10 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
     Node* node = FindHTML( doc );
     if ( node )
     {
-        AttVal *attr = AttrGetById(node, TidyAttr_XMLNS);
+        AttVal *attr = AttrGetById( node, TidyAttr_XMLNS );
         if ( attr )
         {
-            if ( tmbstrcmp(attr->value, profile) != 0 )
+            if ( !AttrMatches(attr, profile) )
             {
                 ReportError(doc, node, NULL, INCONSISTENT_NAMESPACE );
                 MemFree( attr->value );
@@ -1473,13 +1471,7 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
         }
         else
         {
-            attr = NewAttribute();
-            attr->delim = '"';
-            attr->attribute = tmbstrdup("xmlns");
-            attr->value = tmbstrdup(profile);
-            attr->dict = FindAttribute( doc, attr );
-            attr->next = node->attributes;
-            node->attributes = attr;
+            attr = AddAttribute( doc, node, "xmlns", profile );
         }
     }
 }
@@ -1724,7 +1716,7 @@ Bool FixXmlDecl( TidyDocImpl* doc )
     {
         ctmbstr enc = GetEncodingNameFromTidyId(cfg(doc, TidyOutCharEncoding));
         if ( enc )
-            AddAttribute( doc, xml, "encoding", tmbstrdup(enc) );
+            AddAttribute( doc, xml, "encoding", enc );
     }
 
     if ( version == NULL )
@@ -2326,17 +2318,14 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexsize = lexer->txtend = lexer->txtstart;
 
                 /* skip to '>' */
-                while (c != '>')
+                while ( c != '>' && c != EndOfStream )
                 {
                     c = ReadChar(doc->docIn);
-
-                    if (c == EndOfStream)
-                        break;
                 }
 
                 if (c == EndOfStream)
                 {
-                    UngetChar(c, doc->docIn);
+                    FreeNode( doc, lexer->token );
                     continue;
                 }
 
@@ -2835,12 +2824,13 @@ static Node *ParseAsp( TidyDocImpl* doc )
         AddCharToLexer(lexer, c);
 
         if (c == '>')
+        {
+            lexer->lexsize -= 2;
             break;
+        }
     }
 
-    lexer->lexsize -= 2;
     lexer->txtend = lexer->lexsize;
-
     if (lexer->txtend > lexer->txtstart)
         asp = AspToken(lexer);
 
@@ -2878,12 +2868,13 @@ static Node *ParsePhp( TidyDocImpl* doc )
         AddCharToLexer(lexer, c);
 
         if (c == '>')
+        {
+            lexer->lexsize -= 2;
             break;
+        }
     }
 
-    lexer->lexsize -= 2;
     lexer->txtend = lexer->lexsize;
-
     if (lexer->txtend > lexer->txtstart)
         php = PhpToken(lexer);
 
@@ -3516,7 +3507,7 @@ AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             else
                 ReportAttrError(doc, lexer->token, av, INVALID_ATTRIBUTE);
 
-            FreeAttribute(av);
+            FreeAttribute( doc, av );
         }
     }
 

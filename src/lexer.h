@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: hoehrmann $ 
-    $Date: 2003/05/12 16:34:50 $ 
-    $Revision: 1.12 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -414,11 +414,11 @@ Node *CloneNodeEx( TidyDocImpl* doc, Node *element );
 void FreeAttrs( TidyDocImpl* doc, Node *node );
 
 /* doesn't repair attribute list linkage */
-void FreeAttribute( AttVal *av );
+void FreeAttribute( TidyDocImpl* doc, AttVal *av );
 
 /* remove attribute from node then free it
 */
-void RemoveAttribute( Node *node, AttVal *attr );
+void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr );
 
 /*
   Free document nodes by iterating through peers and recursing

@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.91 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.92 $ 
 
 */
 
@@ -825,7 +825,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                 temp = second->next;
 
                 ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
-                RemoveAttribute(node, second);
+                RemoveAttribute( doc, node, second );
 
                 second = temp;
             }
@@ -876,8 +876,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                 temp = second->next;
 
                 ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
-
-                RemoveAttribute(node, second);
+                RemoveAttribute( doc, node, second );
                 second = temp;
 
             }
@@ -885,7 +884,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             {
                 temp = first->next;
                 ReportAttrError( doc, node, first, REPEATED_ATTRIBUTE);
-                RemoveAttribute(node, first);
+                RemoveAttribute( doc, node, first );
                 first = temp;
                 second = second->next;
             }
@@ -894,7 +893,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                 temp = second->next;
 
                 ReportAttrError( doc, node, second, REPEATED_ATTRIBUTE);
-                RemoveAttribute(node, second);
+                RemoveAttribute( doc, node, second );
 
                 second = temp;
             }
@@ -931,7 +930,7 @@ const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval )
         ReportAttrError(doc, node, attval, PROPRIETARY_ATTRIBUTE);
 
         if (cfgBool(doc, TidyDropPropAttrs))
-            RemoveAttribute(node, attval);
+            RemoveAttribute( doc, node, attval );
     }
 
     return attribute;

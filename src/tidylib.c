@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/08/16 01:41:24 $ 
-    $Revision: 1.37 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:03 $ 
+    $Revision: 1.38 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -207,6 +207,34 @@ int         tidySetCharEncoding( TidyDoc tdoc, ctmbstr encnam )
             return 0;
 
         ReportBadArgument( impl, "char-encoding" );
+    }
+    return -EINVAL;
+}
+
+int		tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam )
+{
+    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+    if ( impl )
+    {
+        int enc = CharEncodingId( encnam );
+        if ( enc >= 0 && SetOptionInt( impl, TidyInCharEncoding, enc ) )
+            return 0;
+
+        ReportBadArgument( impl, "in-char-encoding" );
+    }
+    return -EINVAL;
+}
+
+int		tidySetOutCharEncoding( TidyDoc tdoc, ctmbstr encnam )
+{
+    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+    if ( impl )
+    {
+        int enc = CharEncodingId( encnam );
+        if ( enc >= 0 && SetOptionInt( impl, TidyOutCharEncoding, enc ) )
+            return 0;
+
+        ReportBadArgument( impl, "out-char-encoding" );
     }
     return -EINVAL;
 }
@@ -1192,7 +1220,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
             {
               AttVal* av = AttrGetById( node, TidyAttr_XMLNS );
               if ( av )
-                  RemoveAttribute( node, av );
+                  RemoveAttribute( doc, node, av );
             }
         }
 
@@ -1417,9 +1445,9 @@ Bool  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf )
 
       PFlushLine( doc, 0 );
       doc->docOut = NULL;
-
   
       MemFree( out );
+      return yes;
   }
   return no;
 }

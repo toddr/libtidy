@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/18 20:53:57 $ 
-    $Revision: 1.13 $ 
+    $Author: creitzel $ 
+    $Date: 2003/09/26 13:28:02 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -122,14 +122,8 @@ void PopInline( TidyDocImpl* doc, Node *node )
                 while (istack->attributes)
                 {
                     av = istack->attributes;
-
-                    if (av->attribute)
-                        MemFree(av->attribute);
-                    if (av->value)
-                        MemFree(av->value);
-
                     istack->attributes = av->next;
-                    MemFree(av);
+                    FreeAttribute( doc, av );
                 }
 
                 if ( istack->tag->id == TidyTag_A )
@@ -153,14 +147,8 @@ void PopInline( TidyDocImpl* doc, Node *node )
         while (istack->attributes)
         {
             av = istack->attributes;
-
-            if (av->attribute)
-                MemFree(av->attribute);
-            if (av->value)
-                MemFree(av->value);
-
             istack->attributes = av->next;
-            MemFree(av);
+            FreeAttribute( doc, av );
         }
 
         MemFree(istack->element);
