@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/08/29 17:44:57 $ 
-    $Revision: 1.51 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/09/04 02:57:00 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -898,7 +898,11 @@ Bool AddGenerator(Lexer *lexer, Node *root)
         }
 
         node = InferredTag(lexer, "meta");
+#ifdef PLATFORM_NAME
+        AddAttribute(node, "content", "HTML Tidy for "PLATFORM_NAME", see www.w3.org");
+#else
         AddAttribute(node, "content", "HTML Tidy, see www.w3.org");
+#endif
         AddAttribute(node, "name", "generator");
         InsertNodeAtStart(head, node);
         return yes;
@@ -3169,4 +3173,3 @@ AttVal *ParseAttrs(Lexer *lexer, Bool *isempty)
 
     return list;
 }
-
