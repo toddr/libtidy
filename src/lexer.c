@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/17 14:06:59 $ 
-    $Revision: 1.164 $ 
+    $Date: 2005/02/17 14:33:35 $ 
+    $Revision: 1.165 $ 
 
 */
 
@@ -1041,9 +1041,9 @@ void FreeAttribute( TidyDocImpl* doc, AttVal *av )
     MemFree( av );
 }
 
-/* remove attribute from node then free it
+/* detach attribute from node
 */
-void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr )
+void DetachAttribute( TidyDocImpl* doc, Node *node, AttVal *attr )
 {
     AttVal *av, *prev = NULL;
 
@@ -1059,6 +1059,13 @@ void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr )
         }
         prev = av;
     }
+}
+
+/* detach attribute from node then free it
+*/
+void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr )
+{
+    DetachAttribute( doc, node, attr );
     FreeAttribute( doc, attr );
 }
 
