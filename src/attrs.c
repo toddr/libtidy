@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/10 14:50:05 $ 
-    $Revision: 1.64 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/17 15:52:39 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -616,21 +616,16 @@ void FreeAnchors( TidyDocImpl* doc )
 void InitAttrs( TidyDocImpl* doc )
 {
     ClearMemory( &doc->attribs, sizeof(TidyAttribImpl) );
-#if 0
 #ifdef _DEBUG
     {
-      ctmbstr prev = NULL;
-      TidyAttrId id;
-      for ( id=1; id < N_TIDY_ATTRIBS; ++id )
+      /* Attribute ID is index position in Attribute type lookup table */
+      uint ix;
+      for ( ix=0; ix < N_TIDY_ATTRIBS; ++ix )
       {
-        const Attribute* dict = &attribute_defs[ id ];
-        assert( dict->id == id );
-        if ( prev )
-            assert( tmbstrcmp( prev, dict->name ) < 0 );
-        prev = dict->name;
+        const Attribute* dict = &attribute_defs[ ix ];
+        assert( (uint) dict->id == ix );
       }
     }
-#endif
 #endif
 }
 

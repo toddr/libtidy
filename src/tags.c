@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/11 16:21:38 $ 
-    $Revision: 1.32 $ 
+    $Author: creitzel $ 
+    $Date: 2003/04/17 15:52:40 $ 
+    $Revision: 1.33 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -455,6 +455,19 @@ void InitTags( TidyDocImpl* doc )
 {
     Dict* xml;
     TidyTagImpl* tags = &doc->tags;
+
+#ifdef _DEBUG
+    {
+        /* Tag ID is index position in element type lookup table */
+        uint ix;
+        for ( ix=0; ix < N_TIDY_TAGS; ++ix )
+        {
+          const Dict* dict = &tag_defs[ ix ];
+          assert( (uint) dict->id == ix );
+        }
+    }
+#endif
+
     ClearMemory( tags, sizeof(TidyTagImpl) );
 
     /* create dummy entry for all xml tags */
