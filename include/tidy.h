@@ -18,9 +18,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/18 19:34:22 $ 
-    $Revision: 1.6 $ 
+    $Author: creitzel $ 
+    $Date: 2003/05/22 19:10:59 $ 
+    $Revision: 1.7 $ 
 
   Contributing Author(s):
 
@@ -720,6 +720,9 @@ TIDY_EXPORT Bool tidyNodeHasText( TidyDoc tdoc, TidyNode tnod );
 TIDY_EXPORT Bool tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* buf );
 
 TIDY_EXPORT TidyTagId tidyNodeGetId( TidyNode tnod );
+
+TIDY_EXPORT uint tidyNodeLine( TidyNode tnod );
+TIDY_EXPORT uint tidyNodeColumn( TidyNode tnod );
 
 TIDY_EXPORT Bool tidyNodeIsHTML( TidyNode tnod );
 TIDY_EXPORT Bool tidyNodeIsHEAD( TidyNode tnod );
