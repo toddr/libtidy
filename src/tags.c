@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/29 08:23:30 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/07/09 00:59:53 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -97,20 +97,20 @@ static struct tag
     CheckAttribs *chkattrs;
 } tags[] =
 {
-    {"html",       (VERS_ALL|VERS_FRAMES),     (CM_HTML|CM_OPT|CM_OMITST),  ParseHTML, CheckHTML},
+    {"html",       (VERS_ALL|VERS_FRAMESET),     (CM_HTML|CM_OPT|CM_OMITST),  ParseHTML, CheckHTML},
 
-    {"head",       (VERS_ALL|VERS_FRAMES),     (CM_HTML|CM_OPT|CM_OMITST), ParseHead, null},
+    {"head",       (VERS_ALL|VERS_FRAMESET),     (CM_HTML|CM_OPT|CM_OMITST), ParseHead, null},
 
-    {"title",      (VERS_ALL|VERS_FRAMES),     CM_HEAD, ParseTitle, null},
-    {"base",       (VERS_ALL|VERS_FRAMES),     (CM_HEAD|CM_EMPTY), null, null},
-    {"link",       (VERS_ALL|VERS_FRAMES),     (CM_HEAD|CM_EMPTY), null, CheckLINK},
-    {"meta",       (VERS_ALL|VERS_FRAMES),     (CM_HEAD|CM_EMPTY), null, null},
-    {"style",      (VERS_FROM32|VERS_FRAMES),  CM_HEAD, ParseScript, CheckSTYLE},
-    {"script",     (VERS_FROM32|VERS_FRAMES),  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
+    {"title",      (VERS_ALL|VERS_FRAMESET),     CM_HEAD, ParseTitle, null},
+    {"base",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, null},
+    {"link",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, CheckLINK},
+    {"meta",       (VERS_ALL|VERS_FRAMESET),     (CM_HEAD|CM_EMPTY), null, null},
+    {"style",      (VERS_FROM32|VERS_FRAMESET),  CM_HEAD, ParseScript, CheckSTYLE},
+    {"script",     (VERS_FROM32|VERS_FRAMESET),  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, CheckSCRIPT},
     {"server",     VERS_NETSCAPE,  (CM_HEAD|CM_MIXED|CM_BLOCK|CM_INLINE), ParseScript, null},
 
     {"body",       VERS_ALL,     (CM_HTML|CM_OPT|CM_OMITST), ParseBody, null},
-    {"frameset",   VERS_FRAMES,  (CM_HTML|CM_FRAMES), ParseFrameSet, null},
+    {"frameset",   VERS_FRAMESET,  (CM_HTML|CM_FRAMES), ParseFrameSet, null},
 
     {"p",          VERS_ALL,     (CM_BLOCK|CM_OPT), ParseInline, null},
     {"h1",         VERS_ALL,     (CM_BLOCK|CM_HEADING), ParseInline, null},
@@ -171,9 +171,9 @@ static struct tag
     {"embed",      VERS_NETSCAPE, (CM_INLINE|CM_IMG|CM_EMPTY), null, null},
     {"noembed",    VERS_NETSCAPE, CM_INLINE, ParseInline, null},
     {"iframe",     VERS_HTML40_LOOSE, CM_INLINE, ParseBlock, null},
-    {"frame",      VERS_FRAMES,  (CM_FRAMES|CM_EMPTY), null, null},
-    {"noframes",   VERS_IFRAMES, (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
-    {"noscript",   (VERS_FRAMES|VERS_HTML40),  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
+    {"frame",      VERS_FRAMESET,  (CM_FRAMES|CM_EMPTY), null, null},
+    {"noframes",   VERS_IFRAME, (CM_BLOCK|CM_FRAMES), ParseNoFrames,  null},
+    {"noscript",   (VERS_FRAMESET|VERS_HTML40),  (CM_BLOCK|CM_INLINE|CM_MIXED), ParseBlock, null},
     {"b",          VERS_ALL,     CM_INLINE, ParseInline, null},
     {"i",          VERS_ALL,     CM_INLINE, ParseInline, null},
     {"u",          VERS_LOOSE,   CM_INLINE, ParseInline, null},
@@ -242,8 +242,8 @@ int HTMLVersion(Lexer *lexer)
     if (versions & VERS_HTML40_LOOSE)
         return VERS_HTML40_LOOSE;
 
-    if (versions & VERS_FRAMES)
-        return VERS_FRAMES;
+    if (versions & VERS_FRAMESET)
+        return VERS_FRAMESET;
 
     return VERS_UNKNOWN;
 }

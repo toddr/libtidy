@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/08 07:30:17 $ 
-    $Revision: 1.2 $ 
+    $Date: 2001/07/09 00:57:13 $ 
+    $Revision: 1.3 $ 
 
 */
 
@@ -142,14 +142,14 @@ static struct _attrlist
     {"codebase",         VERS_HTML40,            URL},      /* OBJECT */
     {"codetype",         VERS_HTML40,            TYPE},     /* OBJECT */
     {"color",            VERS_LOOSE,             COLOR},    /* BASEFONT, FONT */
-    {"cols",             VERS_IFRAMES,           COLS},     /* TABLE & FRAMESET */
+    {"cols",             VERS_IFRAME,            COLS},     /* TABLE & FRAMESET */
     {"colspan",          VERS_FROM32,            NUMBER},
     {"compact",          VERS_ALL,               BOOL},     /* lists */
     {"content",          VERS_ALL,               TEXT},     /* META */
     {"coords",           VERS_FROM32,            COORDS},   /* AREA, A */    
     {"data",             VERS_HTML40,            URL},      /* OBJECT */
     {"datafld",          VERS_MICROSOFT,         TEXT},     /* used on DIV, IMG */
-    {"dataformatas",    VERS_MICROSOFT,         TEXT},     /* used on DIV, IMG */
+    {"dataformatas",     VERS_MICROSOFT,         TEXT},     /* used on DIV, IMG */
     {"datapagesize",     VERS_MICROSOFT,         NUMBER},   /* used on DIV, IMG */
     {"datasrc",          VERS_MICROSOFT,         URL},      /* used on TABLE */
     {"datetime",         VERS_HTML40,            DATE},     /* INS, DEL */
@@ -161,7 +161,7 @@ static struct _attrlist
     {"face",             VERS_LOOSE,             TEXT},     /* BASEFONT, FONT */
     {"for",              VERS_HTML40,            IDREF},    /* LABEL */
     {"frame",            VERS_HTML40,            TFRAME},   /* TABLE */
-    {"frameborder",      VERS_FRAMES,            FBORDER},  /* 0 or 1 */
+    {"frameborder",      VERS_FRAMESET,          FBORDER},  /* 0 or 1 */
     {"framespacing",     VERS_PROPRIETARY,       NUMBER},   /* pixel value */
     {"gridx",            VERS_PROPRIETARY,       NUMBER},   /* TABLE Adobe golive*/
     {"gridy",            VERS_PROPRIETARY,       NUMBER},   /* TABLE Adobe golive */
@@ -182,15 +182,15 @@ static struct _attrlist
     {"link",             VERS_LOOSE,             COLOR},    /* BODY */
     {"longdesc",         VERS_HTML40,            URL},      /* IMG */
     {"lowsrc",           VERS_PROPRIETARY,       URL},      /* IMG */
-    {"marginheight",     VERS_IFRAMES,           NUMBER},   /* FRAME, IFRAME, BODY */
-    {"marginwidth",      VERS_IFRAMES,           NUMBER},   /* ditto */
+    {"marginheight",     VERS_IFRAME,            NUMBER},   /* FRAME, IFRAME, BODY */
+    {"marginwidth",      VERS_IFRAME,            NUMBER},   /* ditto */
     {"maxlength",        VERS_ALL,               NUMBER},   /* INPUT */
     {"media",            VERS_HTML40,            MEDIA},    /* STYLE, LINK */
     {"method",           VERS_ALL,               FSUBMIT},  /* FORM: get or post */
     {"multiple",         VERS_ALL,               BOOL},     /* SELECT */
     {"name",             VERS_ALL,               NAME},
     {"nohref",           VERS_FROM32,            BOOL},     /* AREA */
-    {"noresize",         VERS_FRAMES,            BOOL},     /* FRAME */
+    {"noresize",         VERS_FRAMESET,          BOOL},     /* FRAME */
     {"noshade",          VERS_LOOSE,             BOOL},     /* HR */
     {"nowrap",           VERS_LOOSE,             BOOL},     /* table cells */
     {"object",           VERS_HTML40_LOOSE,      TEXT},     /* APPLET */
@@ -231,7 +231,7 @@ static struct _attrlist
     {"rules",            VERS_HTML40,            TRULES},   /* TABLE */
     {"scheme",           VERS_HTML40,            TEXT},     /* META */
     {"scope",            VERS_HTML40,            SCOPE},    /* table cells */
-    {"scrolling",        VERS_IFRAMES,           SCROLL},   /* yes, no or auto */
+    {"scrolling",        VERS_IFRAME,            SCROLL},   /* yes, no or auto */
     {"selected",         VERS_ALL,               BOOL},     /* OPTION */
     {"shape",            VERS_FROM32,            SHAPE},    /* AREA, A */
     {"showgrid",         VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive */
@@ -239,7 +239,7 @@ static struct _attrlist
     {"showgridy",        VERS_PROPRIETARY,       BOOL},     /* TABLE Adobe golive*/
     {"size",             VERS_LOOSE,             NUMBER},   /* HR, FONT, BASEFONT, SELECT */
     {"span",             VERS_HTML40,            NUMBER},   /* COL, COLGROUP */
-    {"src",              (VERS_ALL|VERS_FRAMES), URL},      /* IMG, FRAME, IFRAME */
+    {"src",              (VERS_ALL|VERS_FRAMESET), URL},      /* IMG, FRAME, IFRAME */
     {"standby",          VERS_HTML40,            TEXT},     /* OBJECT */
     {"start",            VERS_ALL,               NUMBER},   /* OL */
     {"style",            VERS_HTML40,            TEXT},
@@ -727,7 +727,7 @@ void CheckCaption(Lexer *lexer, Node *node)
     if (value != null)
     {
         if (wstrcasecmp(value, "left") == 0 || wstrcasecmp(value, "right") == 0)
-            lexer->versions &= (VERS_HTML40_LOOSE|VERS_FRAMES);
+            lexer->versions &= (VERS_HTML40_LOOSE|VERS_FRAMESET);
         else if (wstrcasecmp(value, "top") == 0 || wstrcasecmp(value, "bottom") == 0)
             lexer->versions &= VERS_FROM32;
         else

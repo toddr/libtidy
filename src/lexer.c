@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/09 00:35:06 $ 
-    $Revision: 1.16 $ 
+    $Date: 2001/07/09 00:58:28 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -65,10 +65,10 @@ struct _vers
 {
     {"HTML 4.01", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
     {"HTML 4.01 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
-    {"HTML 4.01 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMES},
+    {"HTML 4.01 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
     {"HTML 4.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML40_STRICT},
     {"HTML 4.0 Transitional", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML40_LOOSE},
-    {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMES},
+    {"HTML 4.0 Frameset", "XHTML 1.0 Frameset", voyager_frameset, VERS_FRAMESET},
     {"HTML 3.2", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
     {"HTML 3.2 Final", "XHTML 1.0 Transitional", voyager_loose, VERS_HTML32},
     {"HTML 2.0", "XHTML 1.0 Strict", voyager_strict, VERS_HTML20}
@@ -1039,7 +1039,7 @@ Bool SetXHTMLDocType(Lexer *lexer, Node *root)
             fpi = "-//W3C//DTD XHTML 1.0 Transitional//EN";
             sysid = voyager_loose;
         }
-        else if (lexer->versions & VERS_FRAMES)
+        else if (lexer->versions & VERS_FRAMESET)
         {   /* use XHTML frames */
             fpi = "-//W3C//DTD XHTML 1.0 Frameset//EN";
             sysid = voyager_frameset;
@@ -1136,9 +1136,9 @@ int ApparentVersion(Lexer *lexer)
 
         break; /* to replace old version by new */
 
-    case VERS_FRAMES:
-        if (lexer->versions & VERS_FRAMES)
-            return VERS_FRAMES;
+    case VERS_FRAMESET:
+        if (lexer->versions & VERS_FRAMESET)
+            return VERS_FRAMESET;
 
         break;
     }
@@ -1218,8 +1218,8 @@ Bool FixDocType(Lexer *lexer, Node *root)
 
                 break; /* to replace old version by new */
 
-            case VERS_FRAMES:
-                if (lexer->versions & VERS_FRAMES)
+            case VERS_FRAMESET:
+                if (lexer->versions & VERS_FRAMESET)
                     return yes;
 
                 break; /* to replace old version by new */
