@@ -1,8 +1,15 @@
 /*
   pprint.c -- pretty print parse tree  
   
- (c) 1998-2000 (W3C) MIT, INRIA, Keio University
+  (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/03 01:39:47 $ 
+    $Revision: 1.2 $ 
+
 */
 
 #include <stdio.h>
@@ -1565,21 +1572,21 @@ static void PrintNavBar(Out *fout, uint indent)
 
     if (slide > 1)
     {
-        sprintf(buf, "<a href=\"slide%d.html\">previous</a> | ", slide-1);
+        sprintf(buf, "<a href=\"slide%03d.html\">previous</a> | ", slide-1);	/* #427666 - fix by Eric Rossen 02 Aug 00 */
         PPrintString(fout, indent , buf);
         PCondFlushLine(fout, indent);
 
         if (slide < count)
-            PPrintString(fout, indent , "<a href=\"slide1.html\">start</a> | ");
+            PPrintString(fout, indent , "<a href=\"slide001.html\">start</a> | ");	/* #427666 - fix by Eric Rossen 02 Aug 00 */
         else
-            PPrintString(fout, indent , "<a href=\"slide1.html\">start</a>");
+            PPrintString(fout, indent , "<a href=\"slide001.html\">start</a>");	/* #427666 - fix by Eric Rossen 02 Aug 00 */
 
         PCondFlushLine(fout, indent);
     }
 
     if (slide < count)
     {
-        sprintf(buf, "<a href=\"slide%d.html\">next</a>", slide+1);
+        sprintf(buf, "<a href=\"slide%03d.html\">next</a>", slide+1);	/* #427666 - fix by Eric Rossen 02 Aug 00 */
         PPrintString(fout, indent , buf);
     }
 
@@ -1599,7 +1606,7 @@ void PPrintSlide(Out *fout, uint mode, uint indent, Lexer *lexer)
     char buf[256];
 
     /* insert div for onclick handler */
-    sprintf(buf, "<div onclick=\"document.location='slide%d.html'\">",
+    sprintf(buf, "<div onclick=\"document.location='slide%03d.html'\">",	/* #427666 - fix by Eric Rossen 02 Aug 00 */
                     (slide < count ? slide + 1 : 1));
     PPrintString(fout, indent, buf);
     PCondFlushLine(fout, indent);
@@ -1729,7 +1736,7 @@ void CreateSlides(Lexer *lexer, Node *root)
 
     for (slide = 1; slide <= count; ++slide)
     {
-        sprintf(buf, "slide%d.html", slide);
+        sprintf(buf, "slide%03d.html", slide);	/* #427666 - fix by Eric Rossen 02 Aug 00 */
         out.state = FSM_ASCII;
         out.encoding = CharEncoding;
 
@@ -1750,7 +1757,7 @@ void CreateSlides(Lexer *lexer, Node *root)
 
     for (;;)
     {
-        sprintf(buf, "slide%d.html", slide);
+        sprintf(buf, "slide%03d.html", slide);	/* #427666 - fix by Eric Rossen 02 Aug 00 */
 
         if (unlink(buf) != 0)
             break;
