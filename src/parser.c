@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/22 09:53:03 $ 
-    $Revision: 1.119 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/07/07 01:09:21 $ 
+    $Revision: 1.120 $ 
 
 */
 
@@ -4228,7 +4228,7 @@ void ParseXMLDocument(TidyDocImpl* doc)
 
     }
 
-    /* ensure presence of initial <?XML version="1.0"?> */
+    /* ensure presence of initial <?xml version="1.0"?> */
     if ( cfgBool(doc, TidyXmlDecl) )
         FixXmlDecl( doc );
 }

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/06/03 14:25:24 $ 
-    $Revision: 1.44 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/07/07 01:10:30 $ 
+    $Revision: 1.45 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1252,7 +1252,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
             AddGenerator(doc);
     }
 
-    /* ensure presence of initial <?XML version="1.0"?> */
+    /* ensure presence of initial <?xml version="1.0"?> */
     if ( xmlOut && xmlDecl )
         FixXmlDecl( doc );
 

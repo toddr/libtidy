@@ -7,9 +7,9 @@
    See tidy.h for the copyright notice.
   
    CVS Info:
-    $Author: hoehrmann $ 
-    $Date: 2004/03/08 14:42:25 $ 
-    $Revision: 1.19 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/07/07 01:08:23 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -475,7 +475,7 @@ Bool SetXHTMLDocType( TidyDocImpl* doc );
 /* fixup doctype if missing */
 Bool FixDocType( TidyDocImpl* doc );
 
-/* ensure XML document starts with <?XML version="1.0"?> */
+/* ensure XML document starts with <?xml version="1.0"?> */
 /* add encoding attribute if not using ASCII or UTF-8 output */
 Bool FixXmlDecl( TidyDocImpl* doc );
 
