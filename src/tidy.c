@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2001/10/26 13:57:03 $ 
-    $Revision: 1.39 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/10/28 21:16:10 $ 
+    $Revision: 1.40 $ 
 
   Contributing Author(s):
 
@@ -1527,6 +1527,7 @@ static void outcUTF8Bytes(Out *out, unsigned char *buf, int *count)
 /* For mac users, should we map Unicode back to MacRoman? */
 void outc(uint c, Out *out)
 {
+    uint ch;
 
 #if 1
     if (out->encoding == MACROMAN)
@@ -1571,7 +1572,6 @@ void outc(uint c, Out *out)
     if (out->encoding == UTF8)
 #if 0
     {
-        uint ch;
         if (c < 128)
             putc(c, out->fp);
         else if (c <= 0x7FF)
