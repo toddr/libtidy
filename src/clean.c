@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 23:40:10 $ 
-    $Revision: 1.47 $ 
+    $Date: 2003/05/19 00:52:52 $ 
+    $Revision: 1.48 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1735,7 +1735,7 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
 }
 
 /* map non-breaking spaces to regular spaces */
-static void NormalizeSpaces( Lexer *lexer, Node *node )
+void NormalizeSpaces(Lexer *lexer, Node *node)
 {
     while ( node )
     {
@@ -2346,6 +2346,46 @@ void DowngradeTypography(TidyDocImpl* doc, Node* node)
 
         if (node->content)
             DowngradeTypography(doc, node->content);
+
+        node = next;
+    }
+}
+
+void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->tag && node->tag->parser == ParsePre)
+        {
+            NormalizeSpaces(doc->lexer, node);
+            node = next;
+            continue;
+        }
+
+        if (node->content)
+            ReplacePreformattedSpaces(doc, node->content);
+
+        node = next;
+    }
+}
+
+void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->type == CDATATag)
+            node->type = TextNode;
+
+        if (node->content)
+            ConvertCDATANodes(doc, node->content);
 
         node = next;
     }

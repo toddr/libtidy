@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 23:40:11 $ 
-    $Revision: 1.80 $ 
+    $Date: 2003/05/19 00:52:52 $ 
+    $Revision: 1.81 $ 
 
 */
 
@@ -777,9 +777,7 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
 
         if ( c == 160 && outenc != RAW )
         {
-            if ( cfgBool(doc, TidyMakeBare) )
-                AddChar( pprint, ' ' );
-            else if ( cfgBool(doc, TidyQuoteNbsp) )
+            if ( cfgBool(doc, TidyQuoteNbsp) )
             {
                 if ( cfgBool(doc, TidyNumEntities) ||
                      cfgBool(doc, TidyXmlTags) )
@@ -851,13 +849,6 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     }
 
 #endif /* SUPPORT_ASIAN_ENCODINGS */
-
-    /* if preformatted text, map &nbsp; to space */
-    if ( c == 160 && (mode & PREFORMATTED) )
-    {
-        AddChar( pprint, ' ' ); 
-        return;
-    }
 
     /* don't map latin-1 chars to entities */
     if ( outenc == LATIN1 )
@@ -1974,8 +1965,7 @@ void PPrintTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     if ( node == NULL )
         return;
 
-    if ( node->type == TextNode ||
-         (node->type == CDATATag && cfgBool(doc, TidyEscapeCdata)) )
+    if (node->type == TextNode)
     {
         PPrintText( doc, mode, indent, node );
     }

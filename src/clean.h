@@ -8,8 +8,8 @@
 
   CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 23:40:11 $ 
-    $Revision: 1.6 $ 
+    $Date: 2003/05/19 00:52:52 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -81,5 +81,8 @@ void DropComments(TidyDocImpl* doc, Node* node);
 void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode);
 void WbrToSpace(TidyDocImpl* doc, Node* node);
 void DowngradeTypography(TidyDocImpl* doc, Node* node);
+void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node);
+void NormalizeSpaces(Lexer *lexer, Node *node);
+void ConvertCDATANodes(TidyDocImpl* doc, Node* node);
 
 #endif /* __CLEAN_H__ */
