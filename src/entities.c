@@ -2,7 +2,14 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
- */
+
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/08 06:59:24 $ 
+    $Revision: 1.2 $ 
+
+*/
 
 #include <stdio.h>
 #include "platform.h"
@@ -334,7 +341,7 @@ uint EntityCode(char *name)
         c = 0;  /* zero on missing/bad number */
 
         /* 'x' prefix denotes hexadecimal number format */
-        if (name[2] == 'x')
+        if (name[2] == 'x' || (!XmlTags && name[2] == 'X'))	/* #427833 - fix by Bjšrn Hšhrmann 05 Jun 01 */
             sscanf(name+3, "%x", &c);
         else
             sscanf(name+2, "%d", &c);
