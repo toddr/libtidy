@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/23 00:09:25 $ 
-    $Revision: 1.10 $ 
+    $Date: 2003/05/23 00:10:04 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -71,9 +71,6 @@ void ReportAttrError( TidyDocImpl* doc, Node* node, AttVal* av, uint code );
 void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name );
 void ReportWarning( TidyDocImpl* doc, Node* element, Node* node, uint code );
 void ReportError( TidyDocImpl* doc, Node* element, Node* node, uint code );
-
-void ReportNonCompliantAttr( TidyDocImpl* doc, Node* node, AttVal* attr, uint versWanted );
-void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versWanted );
 
 /* error codes for entities/numeric character references */
 
@@ -162,34 +159,6 @@ void ReportNonCompliantNode( TidyDocImpl* doc, Node* node, uint code, uint versW
 #define BAD_ATTRIBUTE_VALUE_REPLACED     26
 
 #define INVALID_XML_ID          27
-
-/* page transition effects */
-
-#define EFFECT_BLEND               -1
-#define EFFECT_BOX_IN               0
-#define EFFECT_BOX_OUT              1
-#define EFFECT_CIRCLE_IN            2
-#define EFFECT_CIRCLE_OUT           3
-#define EFFECT_WIPE_UP              4
-#define EFFECT_WIPE_DOWN            5
-#define EFFECT_WIPE_RIGHT           6
-#define EFFECT_WIPE_LEFT            7
-#define EFFECT_VERT_BLINDS          8
-#define EFFECT_HORZ_BLINDS          9
-#define EFFECT_CHK_ACROSS          10
-#define EFFECT_CHK_DOWN            11
-#define EFFECT_RND_DISSOLVE        12
-#define EFFECT_SPLIT_VIRT_IN       13
-#define EFFECT_SPLIT_VIRT_OUT      14
-#define EFFECT_SPLIT_HORZ_IN       15
-#define EFFECT_SPLIT_HORZ_OUT      16
-#define EFFECT_STRIPS_LEFT_DOWN    17
-#define EFFECT_STRIPS_LEFT_UP      18
-#define EFFECT_STRIPS_RIGHT_DOWN   19
-#define EFFECT_STRIPS_RIGHT_UP     20
-#define EFFECT_RND_BARS_HORZ       21
-#define EFFECT_RND_BARS_VERT       22
-#define EFFECT_RANDOM              23
 
 /* accessibility flaws */
 
