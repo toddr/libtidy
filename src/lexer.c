@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/22 18:42:00 $ 
-    $Revision: 1.80 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/06 20:35:58 $ 
+    $Revision: 1.81 $ 
 
 */
 
@@ -3401,8 +3401,8 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 
         if (c == '&')
         {
-            /* no entities in ID attributes */
-            if (tmbstrcasecmp(name, "id") == 0)
+            /* no entities in ID attributes for XHTML/HTML */
+            if (tmbstrcasecmp(name, "id") == 0 && !cfgBool(doc, TidyXmlTags))
             {
                 ReportAttrError( doc, NULL, NULL, ENTITY_IN_ID );
                 continue;
