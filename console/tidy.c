@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/03/30 04:33:47 $ 
-    $Revision: 1.8 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/03/31 03:54:47 $ 
+    $Revision: 1.9 $ 
 */
 
 #include "tidy.h"
@@ -435,7 +435,7 @@ int main( int argc, char** argv )
 
             else if ( strcasecmp(arg, "indent") == 0 )
             {
-                tidyOptSetInt( tdoc, TidyIndentContent, TidyYesState );
+                tidyOptSetInt( tdoc, TidyIndentContent, TidyAutoState );
                 if ( tidyOptGetInt(tdoc, TidyIndentSpaces) == 0 )
                     tidyOptResetToDefault( tdoc, TidyIndentSpaces );
             }
@@ -626,7 +626,7 @@ int main( int argc, char** argv )
                     switch ( c )
                     {
                     case 'i':
-                        tidyOptSetInt( tdoc, TidyIndentContent, TidyYesState );
+                        tidyOptSetInt( tdoc, TidyIndentContent, TidyAutoState );
                         if ( tidyOptGetInt(tdoc, TidyIndentSpaces) == 0 )
                             tidyOptResetToDefault( tdoc, TidyIndentSpaces );
                         break;
