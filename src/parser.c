@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 03:46:26 $ 
-    $Revision: 1.103 $ 
+    $Date: 2003/05/26 04:25:15 $ 
+    $Revision: 1.104 $ 
 
 */
 
@@ -1412,11 +1412,11 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
              && !nodeIsQ(node)
            )
         {
-            if ( element->content != NULL && node->attributes == NULL )
+            if (element->content != NULL && node->attributes == NULL)
             {
-                ReportError(doc, element, node, COERCE_TO_ENDTAG );
+                ReportWarning(doc, element, node, COERCE_TO_ENDTAG_WARN);
                 node->type = EndTag;
-                UngetToken( doc );
+                UngetToken(doc);
                 continue;
             }
 

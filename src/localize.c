@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 03:46:26 $ 
-    $Revision: 1.98 $ 
+    $Date: 2003/05/26 04:25:15 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -42,8 +42,10 @@ struct _msgfmt
     ctmbstr fmt;
 } const msgFormat[] = 
 {
+/* ReportEncodingWarning */
+  { ENCODING_MISMATCH,            "specified input encoding (%s) does not match actual input encoding (%s)" }, /* Warning */
+
 /* ReportEncodingError */
-  { ENCODING_MISMATCH,            "specified input encoding (%s) does not match actual input encoding (%s)" }, /* Warning (user knows better than Tidy) */
   { VENDOR_SPECIFIC_CHARS,        "%s invalid character code %s"                                            }, /* Error */
   { INVALID_SGML_CHARS,           "%s invalid character code %s"                                            }, /* Error */
   { INVALID_UTF8,                 "%s invalid UTF-8 bytes (char. code %s)"                                  }, /* Error */
@@ -100,13 +102,14 @@ struct _msgfmt
   { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
   { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
   { OBSOLETE_ELEMENT,             "replacing obsolete element %s by %s"                                     }, /* Warning */
+  { COERCE_TO_ENDTAG_WARN,        "<%s> is probably intended as </%s>"                                      }, /* Warning */
 
 /* ReportNotice */
   { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
   { REPLACING_ELEMENT,            "replacing %s by %s"                                                      }, /* Notice */
 
 /* ReportError */
-  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Warning, Error, Error (occurence in parser.c) */
+  { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Error */
   { REPLACING_UNEX_ELEMENT,       "replacing unexpected %s by %s"                                           }, /* Error */
   { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           }, /* Error */
   { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 }, /* Error */
@@ -423,6 +426,18 @@ static void NtoS(int n, tmbstr str)
     str[n+1] = '\0';
 }
 
+void ReportEncodingWarning(TidyDocImpl* doc, uint code, uint encoding)
+{
+    switch(code)
+    {
+    case ENCODING_MISMATCH:
+        messageLexer(doc, TidyWarning, GetFormatFromCode(code), 
+                     CharEncodingName(doc->docIn->encoding),
+                     CharEncodingName(encoding));
+        doc->badChars |= BC_ENCODING_MISMATCH;
+        break;
+    }
+}
 
 void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 {
@@ -435,15 +450,6 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
     /* An encoding mismatch is currently treated as a non-fatal error */
     switch (code)
     {
-    case ENCODING_MISMATCH:
-        /* actual encoding passed in "c" */
-        messageLexer( doc, TidyWarning,
-                      fmt,
-                       CharEncodingName( doc->docIn->encoding ),
-                       CharEncodingName(c) );
-        doc->badChars |= BC_ENCODING_MISMATCH;
-        break;
-
     case VENDOR_SPECIFIC_CHARS:
         NtoS(c, buf);
         doc->badChars |= BC_VENDOR_SPECIFIC_CHARS;
@@ -595,7 +601,9 @@ void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
     case NESTED_EMPHASIS:
         messageNode(doc, TidyWarning, rpt, fmt, nodedesc);
         break;
-
+    case COERCE_TO_ENDTAG_WARN:
+        messageNode(doc, TidyWarning, rpt, fmt, node->element, node->element);
+        break;
     }
 }
 
@@ -617,7 +625,7 @@ void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code)
         messageNode(doc, TidyWarning, element, fmt, elemdesc);
         break;
 
-    case REPLACING_UNEX_ELEMENT:
+    case REPLACING_ELEMENT:
         TagToString(element, elemdesc);
         messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
         break;
