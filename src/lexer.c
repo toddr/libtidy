@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/08 12:24:08 $ 
-    $Revision: 1.149 $ 
+    $Date: 2004/03/08 14:42:25 $ 
+    $Revision: 1.150 $ 
 
 */
 
@@ -1715,8 +1715,6 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     uint c;
     Bool hasSrc = AttrGetById(container, TidyAttr_SRC) != NULL;
 
-    /* todo: GetCDATA needs to be called from GetToken not parser.c */
-
     lexer->lines = doc->docIn->curline;
     lexer->columns = doc->docIn->curcol;
     lexer->waswhite = no;
@@ -1929,6 +1927,12 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
      
     if (lexer->insert || lexer->inode)
         return InsertedToken( doc );
+
+    if (mode == CdataContent)
+    {
+        assert( lexer->parent != NULL );
+        return GetCDATA(doc, lexer->parent);
+    }
 
     lexer->lines = doc->docIn->curline;
     lexer->columns = doc->docIn->curcol;

@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 17:06:57 $ 
-    $Revision: 1.18 $ 
+    $Date: 2004/03/08 14:42:25 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -323,6 +323,7 @@ struct _Lexer
 
     Node* token;            /* current parse point */
     Node* root;             /* remember root node of the document */
+    Node* parent;           /* remember parent node for CDATA elements */
     
     Bool seenEndBody;       /* true if a </body> tag has been encountered */
     Bool seenEndHtml;       /* true if a </html> tag has been encountered */
@@ -497,6 +498,7 @@ void UngetToken( TidyDocImpl* doc );
 #define MixedContent        1
 #define Preformatted        2
 #define IgnoreMarkup        3
+#define CdataContent        4
 
 Node* GetToken( TidyDocImpl* doc, uint mode );
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/07 16:00:36 $ 
-    $Revision: 1.113 $ 
+    $Date: 2004/03/08 14:42:25 $ 
+    $Revision: 1.114 $ 
 
 */
 
@@ -2955,7 +2955,11 @@ void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
 {
 #pragma unused(mode)
 
-    Node *node = GetCDATA(doc, script);
+    Node *node;
+    
+    doc->lexer->parent = script;
+    node = GetToken(doc, CdataContent);
+    doc->lexer->parent = NULL;
 
     if (node)
         InsertNodeAtEnd(script, node);
