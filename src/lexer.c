@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/07 04:27:17 $ 
-    $Revision: 1.104 $ 
+    $Date: 2003/05/08 02:42:03 $ 
+    $Revision: 1.105 $ 
 
 */
 
@@ -1736,7 +1736,12 @@ Bool ExpectsContent(Node *node)
     return yes;
 }
 
-#ifndef OLD_CDATA_CODE
+/*
+  create a text node for the contents of
+  a CDATA element like style or script
+  which ends with </foo> for some foo.
+*/
+
 #define CDATA_INTERMEDIATE 1
 #define CDATA_STARTTAG     2
 #define CDATA_ENDTAG       3
@@ -1943,153 +1948,6 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     return NULL;
 }
 
-#else /* defined(OLD_CDATA_CODE) */
-
-/*
-  create a text node for the contents of
-  a CDATA element like style or script
-  which ends with </foo> for some foo.
-*/
-static Bool IsQuote( int c )
-{
-  return ( c == '\'' || c == '\"' );
-}
-
-Node *GetCDATA( TidyDocImpl* doc, Node *container )
-{
-    Lexer* lexer = doc->lexer;
-    uint c, lastc = 0, len, qt = 0, esc = 0;
-    int i, start = -1;
-    Bool endtag = no;
-    Bool begtag = no;
-
-    if ( IsJavaScript(container) )
-      esc = '\\';
-
-    lexer->lines = doc->docIn->curline;
-    lexer->columns = doc->docIn->curcol;
-    lexer->waswhite = no;
-    lexer->txtstart = lexer->txtend = lexer->lexsize;
-
-
-    while ( (c = ReadChar(doc->docIn)) != EndOfStream )
-    {
-        /* treat \r\n as \n and \r as \n */
-        if ( qt > 0 )
-        {
-            if ( c == qt && (!esc || lastc != esc) )
-            {
-                qt = 0;
-            }
-            else if (c == '/' && lastc == '<')
-            {
-                start = lexer->lexsize + 1;  /* to first letter */
-            }
-            else if ( c == '>' && start > 0 )
-            {
-                lexer->lines = doc->docIn->curline;
-                lexer->columns = doc->docIn->curcol - 3;
-
-                ReportWarning( doc, NULL, NULL, BAD_CDATA_CONTENT );
-
-                /* if javascript insert backslash before / */
-                if ( esc )
-                {
-                    for (i = lexer->lexsize; i > start-1; --i)
-                        lexer->lexbuf[i] = lexer->lexbuf[i-1];
-
-                    lexer->lexbuf[start-1] = (byte) esc;
-                    lexer->lexsize++;
-                }
-
-                start = -1;
-            }
-        }
-        else if ( IsQuote(c) && (!esc || lastc != esc) )
-        {
-          qt = c;
-        }
-        else if ( IsXMLLetter(c) && lastc == '<' )
-        {
-            start = lexer->lexsize;  /* to first letter */
-            endtag = no;
-            begtag = yes;
-        }
-        /*
-        else if (c == '!' && lastc == '<')  Cancel start tag
-        {
-            start = -1;
-            endtag = no;
-            begtag = no;
-        }
-        */
-        else if (c == '/' && lastc == '<')
-        {
-            start = lexer->lexsize + 1;  /* to first letter */
-            endtag = yes;
-            begtag = no;
-        }
-        else if ( c == '>' && start > 0 )  /* End of begin or end tag */
-        {
-            uint decr = 2;
-            if ( endtag && 
-                 ( (len = lexer->lexsize - start) == tmbstrlen(container->element) ) &&
-                 tmbstrncasecmp(lexer->lexbuf+start, container->element, len) == 0 )
-            {
-                lexer->txtend = start - decr;
-                lexer->lexsize = start - decr; /* #433857 - fix by Huajun Zeng 26 Apr 01 */
-                break;
-            }
-
-            /* Unquoted markup will end SCRIPT or STYLE elements 
-            */
-            lexer->lines = doc->docIn->curline;
-            lexer->columns = doc->docIn->curcol - 3;
-
-            ReportWarning( doc, NULL, NULL, BAD_CDATA_CONTENT );
-            if ( begtag )
-              decr = 1;
-            lexer->txtend = start - decr;
-            lexer->lexsize = start - decr;
-            break;
-        }
-        /* #427844 - fix by Markus Hoenicka 21 Oct 00 */
-        else if (c == '\r')
-        {
-            if (begtag || endtag) 
-            { 
-                continue; /* discard whitespace in endtag */ 
-            } 
-            else 
-            { 
-                c = ReadChar(doc->docIn);
-
-                if (c != '\n')
-                    UngetChar(c, doc->docIn);
-
-                c = '\n';
-            }
-        } 
-        else if ((c == '\n' || c == '\t' || c == ' ') && (begtag||endtag) )
-        { 
-            continue; /* discard whitespace in endtag */ 
-        }
-        
-        AddCharToLexer(lexer, (uint)c);
-        lexer->txtend = lexer->lexsize;
-        lastc = c;
-    }
-
-    if (c == EndOfStream)
-        ReportWarning( doc, container, NULL, MISSING_ENDTAG_FOR );
-
-    if (lexer->txtend > lexer->txtstart)
-        return lexer->token = TextToken(lexer);
-
-    return NULL;
-}
-#endif /* defined(OLD_CDATA_CODE) */
-
 void UngetToken( TidyDocImpl* doc )
 {
     doc->lexer->pushed = yes;
@@ -2108,9 +1966,6 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
     Lexer* lexer = doc->lexer;
     uint c, lastc, badcomment = 0;
     Bool isempty = no;
-#if 0
-    Bool inDTDSubset = no;
-#endif
     AttVal *attributes = NULL;
 
     if (lexer->pushed)
@@ -2631,34 +2486,6 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
             case LEX_DOCTYPE:  /* seen <!d so look for '>' munging whitespace */
 
-#if 0
-                if (IsWhite(c))
-                {
-                    if (lexer->waswhite)
-                        lexer->lexsize -= 1;
-
-                    lexer->waswhite = yes;
-                }
-                else
-                    lexer->waswhite = no;
-
-                if (inDTDSubset) {
-                    if (c == ']')
-                        inDTDSubset = no;
-                }
-                else if (c == '[')
-                    inDTDSubset = yes;
-
-                if (inDTDSubset || c != '>')
-                    continue;
-
-                lexer->lexsize -= 1;
-                lexer->txtend = lexer->lexsize;
-                lexer->lexbuf[lexer->lexsize] = '\0';
-                lexer->state = LEX_CONTENT;
-                lexer->waswhite = no;
-                lexer->token = DocTypeToken(lexer);
-#endif
                 /* use ParseDocTypeDecl() to tokenize doctype declaration */
                 UngetChar(c, doc->docIn);
                 lexer->lexsize -= 1;
@@ -2668,9 +2495,7 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 lexer->lexbuf[lexer->lexsize] = '\0';
                 lexer->state = LEX_CONTENT;
                 lexer->waswhite = no;
-#if 0
-                lexer->token = DocTypeToken(lexer);
-#endif
+
                 /* make a note of the version named by the 1st doctype */
                 if ( lexer->doctype == VERS_UNKNOWN )
                     lexer->doctype = FindGivenVersion( doc, lexer->token );
