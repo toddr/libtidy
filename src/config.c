@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/09/04 07:55:07 $ 
-    $Revision: 1.29 $ 
+    $Date: 2001/09/04 08:08:11 $ 
+    $Revision: 1.30 $ 
 
 */
 
@@ -40,15 +40,15 @@ typedef union
 typedef void (ParseProperty)(Location location, char *option);
 
 ParseProperty ParseInt;     /* parser for integer values */
-ParseProperty ParseBool;    /* parser for 'true' or 'false' or 'yes' or 'no' */
-ParseProperty ParseInvBool; /* parser for 'true' or 'false' or 'yes' or 'no' */
+ParseProperty ParseBool;    /* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
+ParseProperty ParseInvBool; /* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
 ParseProperty ParseName;    /* a string excluding whitespace */
 ParseProperty ParseString;  /* a string including whitespace */
 ParseProperty ParseTagNames; /* a space or comma separated list of tag names */
 /* RAW, ASCII, LATIN1, UTF8, ISO2022, MACROMAN, UTF16LE, UTF16BE, UTF16, WIN1252, BIG5, SHIFTJIS */
 ParseProperty ParseCharEncoding;
-ParseProperty ParseIndent;   /* specific to the indent option */
-ParseProperty ParseDocType;  /* omit | auto | strict | loose | <fpi> */
+ParseProperty ParseIndent;  /* specific to the indent option - Bool and 'auto' */
+ParseProperty ParseDocType; /* omit | auto | strict | loose | <fpi> */
 ParseProperty ParseRepeatedAttribute; /* keep-first or keep-last? */
 
 uint spaces =  2;           /* default indentation */
@@ -136,6 +136,14 @@ static char *pre_tags;
 
 /* track what types of tags user has defined to eliminate unnecessary searches */
 static int defined_tags = 0;
+
+/* used by ParseBool, ParseInvBool, ParseTriState, ParseIndent, ParseBOM */
+typedef enum
+{
+   boolState,    /* also maps to 'no' */
+   invBoolState, /* also maps to 'yes' */
+   autoState
+} triState;
 
 typedef struct _plist PList;
 
@@ -714,37 +722,40 @@ void ParseInt(Location location, char *option)
     NextProperty();
 }
 
-/* true/false or yes/no only looks at 1st char */
-void ParseBool(Location location, char *option)
+/* true/false or yes/no or 0/1 or "auto" only looks at 1st char */
+int ParseTriState(triState theState, Location location, char *option)
 {
-    Bool flag = no;
+    int flag = no;
     SkipWhite();
 
     if (c == 't' || c == 'T' || c == 'y' || c == 'Y' || c == '1')
         flag = yes;
     else if (c == 'f' || c == 'F' || c == 'n' || c == 'N' || c == '0')
         flag = no;
+    else if (theState == autoState && (c == 'a' || c =='A'))
+        flag = autoState;
     else
         ReportBadArgument(option);
 
-    *location.logical = flag;
+    if (theState == boolState)
+        *location.logical = (Bool)flag;
+    else if (theState == invBoolState)
+        *location.logical = (Bool)(!flag);
+    /* else if (theState == autoState) */ /* handled by the caller */
+    
     NextProperty();
+    
+    return flag;
+}
+
+void ParseBool(Location location, char *option)
+{
+   ParseTriState(boolState, location, option);
 }
 
 void ParseInvBool(Location location, char *option)
 {
-    Bool flag = no;
-    SkipWhite();
-
-    if (c == 't' || c == 'T' || c == 'y' || c == 'Y')
-        flag = yes;
-    else if (c == 'f' || c == 'F' || c == 'n' || c == 'N')
-        flag = no;
-    else
-        ReportBadArgument(option);
-
-    *location.logical = (Bool)(!flag);
-    NextProperty();
+   ParseTriState(invBoolState, location, option);
 }
 
 /* a string excluding whitespace */
@@ -1014,48 +1025,20 @@ char *CharEncodingName(int encoding)
 
 void ParseIndent(Location location, char *option)
 {
-    char buf[64];
-    int i = 0;
-
-    SkipWhite();
-
-    while (i < 62 && c != EOF && !IsWhite(c))
-    {
-        buf[i++] = c;
-        AdvanceChar();
-    }
-
-    buf[i] = '\0';
-
-    if (wstrcasecmp(buf, "yes") == 0)
-    {
-        IndentContent = yes;
-        SmartIndent = no;
-    }
-    else if (wstrcasecmp(buf, "true") == 0)
-    {
-        IndentContent = yes;
-        SmartIndent = no;
-    }
-    else if (wstrcasecmp(buf, "no") == 0)
-    {
-        IndentContent = no;
-        SmartIndent = no;
-    }
-    else if (wstrcasecmp(buf, "false") == 0)
-    {
-        IndentContent = no;
-        SmartIndent = no;
-    }
-    else if (wstrcasecmp(buf, "auto") == 0)
+    int flag = no;
+    
+    flag = ParseTriState(autoState, location, option);
+    
+    if (flag == autoState)
     {
         IndentContent = yes;
         SmartIndent = yes;
     }
     else
-        ReportBadArgument(option);
-
-    NextProperty();
+    {
+        IndentContent = (Bool)(flag);
+        SmartIndent = no;
+    }
 }
 
 /*
@@ -1106,6 +1089,31 @@ void ParseDocType(Location location, char *option)
     NextProperty();
 }
 
+void ParseRepeatedAttribute(Location location, char *option)
+{
+    char buf[64];
+    int i = 0;
+
+    SkipWhite();
+
+    while (i < 62 && c != EOF && !IsWhite(c))
+    {
+        buf[i++] = c;
+        AdvanceChar();
+    }
+
+    buf[i] = '\0';
+
+    if (wstrcasecmp(buf, "keep-first") == 0)
+        DuplicateAttrs = keep_first;
+    else if (wstrcasecmp(buf, "keep-last") == 0)
+        DuplicateAttrs = keep_last;
+    else
+        ReportBadArgument(option);
+
+    NextProperty();
+}
+
 void PrintConfigOptions(FILE *errout, Bool showCurrent)
 {
 #define kMaxValFieldWidth 40
@@ -1141,7 +1149,7 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
                 else
                     vals = *(configItem->location.logical)?"no":"yes";
             else
-                vals = "yes, no, true, false";
+                vals = "y/n, yes/no, t/f, true/false, 1/0";
         }
 
         else if ( configItem->parser == ParseInt )
@@ -1156,7 +1164,7 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
 
         else if ( configItem->parser == ParseIndent )
         {
-            type = "Indent";
+            type = "AutoBool";
              
             if (showCurrent)
             {
@@ -1166,7 +1174,7 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
                     vals = *(configItem->location.logical)?"yes":"no";
             }
             else
-                vals = "auto, yes, no, true, false";
+                vals = "auto, y/n, yes/no, t/f, true/false, 1/0";
         }
 
         else if ( configItem->parser == ParseDocType )
@@ -1313,29 +1321,4 @@ void PrintConfigOptions(FILE *errout, Bool showCurrent)
             tidy_out( errout, fmt, name, type, vals );
     }
     
-}
-
-void ParseRepeatedAttribute(Location location, char *option)
-{
-    char buf[64];
-    int i = 0;
-
-    SkipWhite();
-
-    while (i < 62 && c != EOF && !IsWhite(c))
-    {
-        buf[i++] = c;
-        AdvanceChar();
-    }
-
-    buf[i] = '\0';
-
-    if (wstrcasecmp(buf, "keep-first") == 0)
-        DuplicateAttrs = keep_first;
-    else if (wstrcasecmp(buf, "keep-last") == 0)
-        DuplicateAttrs = keep_last;
-    else
-        ReportBadArgument(option);
-
-    NextProperty();
 }
