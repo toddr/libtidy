@@ -6,6 +6,9 @@
 content="HTML Tidy for Mac OS X (vers 1st April 2002 (Terry's build)), see www.w3.org" />
 <link type="text/css" rel="stylesheet" href="tidy.css" />
 <title>HTML Tidy - Frequently Asked Questions</title>
+<style type="text/css">
+code { font-weight: bold; }
+</style>
 </head>
 <body>
 <h1>HTML Tidy - Frequently Asked Questions</h1>
@@ -63,14 +66,17 @@ the tidied file back to the same filename as it read from
 (mywebpage.html). Tidy will give you a breakdown of the problems it
 found and the version of HTML the file appears to be using.</p>
 
-<p>See also Dave Raggett's <a href="http://tidy.sourceforge.net/docs/Overview.html">User Guide</a>.</p>
+<p>To get a listing of Tidy command line options, just type 
+<code>tidy -?</code>.  To see a listing on configuration options,
+try <code>tidy -help-config</code>.  To get more info on the
+config options, see the <a 
+href="http://tidy.sourceforge.net/docs/quickref.html">Quick Reference</a>.</p>
+
+<p>See also Dave Raggett's <a href="http://tidy.sourceforge.net/docs/Overview.html#help">User Guide</a>.</p>
 
 <p>If you're not comfortable with the DOS command line, you should
-try one of the GUI versions:<br /><br />
-
-   <a href="http://users.rcn.com/creitzel/tidy.html">Windows</a><br />
-   <a href="http://www.geocities.com/terry_teague/tidy.html">MacIntosh</a><br />
-</p>
+try one of the <a href="http://tidy.sourceforge.net/#tidylibapps">GUI
+Applications</a>.</p>
 </dd>
 
 <dt><a name="support" id="support"></a>How To Get Support</dt>
@@ -160,13 +166,12 @@ possible about what you want Tidy to <em>do</em>.</p>
 I Use?</dt>
 
 <dd>
-<p>The current Source Forge builds - which you can find at <a
-href="http://tidy.sourceforge.net">http://tidy.sourceforge.net</a>
-- are recommended. People continue to report examples where Tidy
-does not catch some ill-formed HTML or, worse, generates ill-formed
-HTML. These cases have been significantly reduced. That said, be
-sure to test Tidy with some representative files from your
-environment.</p>
+<p>The current Source Forge builds are recommended.  You can find these at 
+<a href="http://tidy.sourceforge.net">http://tidy.sourceforge.net</a>.
+People continue to report examples where Tidy does not catch some 
+ill-formed HTML or, worse, generates ill-formed HTML. These cases have 
+been significantly reduced. That said, be sure to test Tidy with some 
+representative files from your environment.</p>
 
 <p>For development work, use CVS directly on your development
 system. For information on how to pull Tidy sources from <a
@@ -174,16 +179,10 @@ href="http://sourceforge.net/cvs/?group_id=27659">CVS</a>. This way
 you can keep abreast of changes to Tidy and quickly resolve
 conflicts.</p>
 
-<p>For building a front end (e.g. GUI or Perl wrapper), the
-simplest approach is to shell out to the command line tool and
-parse the output. This way, users of your tool can drop in the
-latest version of Tidy without even a re-link.</p>
-
-<p>The other basic approach is to replace Tidy's
-<code>main()</code> function with some other calls to use Tidy
-source as a library. This approach requires more work to
-synchronize changes with Tidy proper. It is more flexible in
-deployment, however.</p>
+<p>For building a front end (e.g. GUI or language binding), the
+simplest approach is to use TidyLib.  For more information
+about building and coding with TidyLib, see the <a 
+href="libintro.html">Introduction To TidyLib</a>.</p>
 </dd>
 
 <!--
