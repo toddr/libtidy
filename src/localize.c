@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 00:28:36 $ 
-    $Revision: 1.97 $ 
+    $Date: 2003/05/26 03:46:26 $ 
+    $Revision: 1.98 $ 
 
 */
 
@@ -96,11 +96,18 @@ struct _msgfmt
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              }, /* Error */
   { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but defuncted) */
 
-/* ReportError */
-  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
+/* ReportWarning */
   { NESTED_EMPHASIS,              "nested emphasis %s"                                                      }, /* Warning */
+  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
+  { OBSOLETE_ELEMENT,             "replacing obsolete element %s by %s"                                     }, /* Warning */
+
+/* ReportNotice */
+  { TRIM_EMPTY_ELEMENT,           "trimming empty %s"                                                       }, /* Notice */
+  { REPLACING_ELEMENT,            "replacing %s by %s"                                                      }, /* Notice */
+
+/* ReportError */
   { COERCE_TO_ENDTAG,             "<%s> is probably intended as </%s>"                                      }, /* Warning, Error, Error (occurence in parser.c) */
-  { OBSOLETE_ELEMENT,             "replacing %s element %s by %s"                                           }, /* Warning from ReplaceObsoleteElements, Error otherwise */
+  { REPLACING_UNEX_ELEMENT,       "replacing unexpected %s by %s"                                           }, /* Error */
   { MISSING_ENDTAG_FOR,           "missing </%s>"                                                           }, /* Error */
   { MISSING_ENDTAG_BEFORE,        "missing </%s> before %s"                                                 }, /* Error */
   { DISCARDING_UNEXPECTED,        "discarding unexpected %s"                                                }, /* Error */
@@ -122,7 +129,6 @@ struct _msgfmt
   { UNESCAPED_ELEMENT,            "unescaped %s in pre content"                                             }, /* Error (but defuncted) */
 
   /* no arguments */
-  { NESTED_QUOTATION,             "nested q elements, possible typo."                                       }, /* Warning */
   { DOCTYPE_AFTER_TAGS,           "<!DOCTYPE> isn't allowed after elements"                                 }, /* Error */
   { MISSING_TITLE_ELEMENT,        "inserting missing 'title' element"                                       }, /* Error */
   { INCONSISTENT_VERSION,         "HTML DOCTYPE doesn't match content"                                      }, /* Error */
@@ -486,6 +492,8 @@ void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     char *name = "NULL", *value = "NULL", tagdesc[64];
     ctmbstr fmt = GetFormatFromCode(code);
 
+    assert( fmt != NULL );
+
     TagToString(node, tagdesc);
 
     if (av)
@@ -562,12 +570,69 @@ void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
                  "%s lacks \"%s\" attribute", tagdesc, name );
 }
 
-void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code )
+void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
+{
+    Node* rpt = (element ? element : node);
+    ctmbstr fmt = GetFormatFromCode(code);
+    char nodedesc[256] = { 0 };
+    char elemdesc[256] = { 0 };
+
+    assert( fmt != NULL );
+
+    TagToString(node, nodedesc);
+
+    switch (code)
+    {
+    case NESTED_QUOTATION:
+        messageNode(doc, TidyWarning, rpt, fmt);
+        break;
+
+    case OBSOLETE_ELEMENT:
+        TagToString(element, elemdesc);
+        messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
+        break;
+
+    case NESTED_EMPHASIS:
+        messageNode(doc, TidyWarning, rpt, fmt, nodedesc);
+        break;
+
+    }
+}
+
+void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code)
+{
+    Node* rpt = ( element ? element : node );
+    ctmbstr fmt = GetFormatFromCode(code);
+    char nodedesc[256] = { 0 };
+    char elemdesc[256] = { 0 };
+
+    assert( fmt != NULL );
+
+    TagToString(node, nodedesc);
+
+    switch (code)
+    {
+    case TRIM_EMPTY_ELEMENT:
+        TagToString(element, elemdesc);
+        messageNode(doc, TidyWarning, element, fmt, elemdesc);
+        break;
+
+    case REPLACING_UNEX_ELEMENT:
+        TagToString(element, elemdesc);
+        messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
+        break;
+    }
+}
+
+void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     char nodedesc[ 256 ] = {0};
     char elemdesc[ 256 ] = {0};
     Node* rpt = ( element ? element : node );
     ctmbstr fmt = GetFormatFromCode(code);
+
+    assert( fmt != NULL );
+
     TagToString( node, nodedesc );
 
     switch ( code )
@@ -597,7 +662,6 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code )
     case BAD_CDATA_CONTENT:
     case INCONSISTENT_NAMESPACE:
     case DOCTYPE_AFTER_TAGS:
-    case NESTED_QUOTATION:
     case DTYPE_NOT_UPPER_CASE:
         messageNode(doc, TidyWarning, rpt, fmt);
         break;
@@ -626,10 +690,6 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code )
         messageNode(doc, TidyWarning, element, fmt, elemdesc);
         break;
 
-    case NESTED_EMPHASIS:
-        messageNode(doc, TidyWarning, rpt, fmt, nodedesc);
-        break;
-
 
     case MISSING_ENDTAG_FOR:
         messageNode(doc, TidyWarning, rpt, fmt, element->element);
@@ -648,17 +708,10 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code )
         messageNode(doc, TidyWarning, rpt, fmt, nodedesc, element->element);
         break;
 
-    case OBSOLETE_ELEMENT:
-        {
-          ctmbstr obsolete = "";
-          if ( element->tag && (element->tag->model & CM_OBSOLETE) )
-              obsolete = " obsolete";
-
-          TagToString( element, elemdesc );
-          messageNode(doc, TidyWarning, rpt, fmt, obsolete, elemdesc, nodedesc);
-        }
+    case REPLACING_UNEX_ELEMENT:
+        TagToString(element, elemdesc);
+        messageNode(doc, TidyWarning, rpt, fmt, elemdesc, nodedesc);
         break;
-
     }
 }
 

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.49 $ 
+    $Date: 2003/05/26 03:46:26 $ 
+    $Revision: 1.50 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1852,7 +1852,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             if (NoMargins(node))
             {
                 Node *pre, *next;
-                CoerceNode( doc, node, TidyTag_PRE );
+                CoerceNode(doc, node, TidyTag_PRE, no, yes);
 
                 PurgeWord2000Attributes( doc, node );
 
@@ -1941,7 +1941,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 if ( attr && tmbstrcmp(attr->value, "MsoListNumber") == 0 )
                     listType = TidyTag_OL;
 
-                CoerceNode( doc, node, TidyTag_LI );
+                CoerceNode(doc, node, TidyTag_LI, no, yes);
 
                 if ( !list || TagId(list) != listType )
                 {

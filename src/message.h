@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 00:28:37 $ 
-    $Revision: 1.18 $ 
+    $Date: 2003/05/26 03:46:26 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -66,6 +66,9 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded);
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c );
 void ReportAttrError( TidyDocImpl* doc, Node* node, AttVal* av, uint code );
 void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name );
+
+void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code);
+void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code);
 void ReportError(TidyDocImpl* doc, Node* element, Node* node, uint code);
 void ReportFatal(TidyDocImpl* doc, Node* element, Node* node, uint code);
 
@@ -121,6 +124,8 @@ void ReportFatal(TidyDocImpl* doc, Node* element, Node* node, uint code);
 #define SPACE_PRECEDING_XMLDECL      45
 #define TOO_MANY_ELEMENTS_IN         46
 #define UNEXPECTED_ENDTAG_IN         47
+#define REPLACING_ELEMENT            83
+#define REPLACING_UNEX_ELEMENT       84 /* last */
 
 /* error codes used for attribute messages */
 

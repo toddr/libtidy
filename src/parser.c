@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/26 00:28:37 $ 
-    $Revision: 1.102 $ 
+    $Date: 2003/05/26 03:46:26 $ 
+    $Revision: 1.103 $ 
 
 */
 
@@ -79,20 +79,27 @@ Bool IsNewNode(Node *node)
     return yes;
 }
 
-void CoerceNode( TidyDocImpl* doc, Node *node, TidyTagId tid )
+void CoerceNode(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete, Bool expected)
 {
-    const Dict* tag = LookupTagDef( tid );
-    Node* tmp = InferredTag( doc, tag->name );
-    ReportError(doc, node, tmp, OBSOLETE_ELEMENT );
-    MemFree( tmp->element );
-    MemFree( tmp );
+    const Dict* tag = LookupTagDef(tid);
+    Node* tmp = InferredTag(doc, tag->name);
+
+    if (obsolete)
+        ReportWarning(doc, node, tmp, OBSOLETE_ELEMENT);
+    else if (expected)
+        ReportError(doc, node, tmp, REPLACING_UNEX_ELEMENT);
+    else
+        ReportNotice(doc, node, tmp, REPLACING_ELEMENT);
+
+    MemFree(tmp->element);
+    MemFree(tmp);
 
     node->was = node->tag;
     node->tag = tag;
     node->type = StartTag;
     node->implicit = yes;
-    MemFree( node->element );
-    node->element = tmbstrdup( tag->name );
+    MemFree(node->element);
+    node->element = tmbstrdup(tag->name);
 }
 
 /* extract a node and its children from a markup tree */
@@ -302,8 +309,9 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
 {
     if ( CanPrune(doc, element) )
     {
-       if ( element->type != TextNode )
-            ReportError(doc, element, NULL, TRIM_EMPTY_ELEMENT);
+       if (element->type != TextNode)
+            ReportNotice(doc, element, NULL, TRIM_EMPTY_ELEMENT);
+
         return DiscardElement(doc, element);
     }
     else if ( nodeIsP(element) && element->content == NULL )
@@ -925,7 +933,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( element, node );
                 node = InferredTag( doc, "br" );
@@ -1412,12 +1420,12 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                 continue;
             }
 
-            ReportError(doc, element, node, NESTED_EMPHASIS );
+            ReportWarning(doc, element, node, NESTED_EMPHASIS);
         }
         else if ( IsPushed(doc, node) && node->type == StartTag && 
                   nodeIsQ(node) )
         {
-            ReportError(doc, element, node, NESTED_QUOTATION );
+            ReportWarning(doc, element, node, NESTED_QUOTATION);
         }
 
         if ( node->type == TextNode )
@@ -1497,7 +1505,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
                /* coerce unmatched </p> to <br><br> */
                 if ( !DescendantOf(element, TidyTag_P) )
                 {
-                    CoerceNode( doc, node, TidyTag_BR );
+                    CoerceNode(doc, node, TidyTag_BR, no, no);
                     TrimSpaces( doc, element );
                     InsertNodeAtEnd( element, node );
                     node = InferredTag(doc, "br");
@@ -2704,7 +2712,7 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
                 TrimSpaces(doc, pre);
             
                 /* coerce both <p> and </p> to <br> */
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd( pre, node );
             }
@@ -3346,7 +3354,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
                 node->type = StartTag;
             else if ( nodeIsP(node) )
             {
-                CoerceNode( doc, node, TidyTag_BR );
+                CoerceNode(doc, node, TidyTag_BR, no, no);
                 FreeAttrs( doc, node ); /* discard align attribute etc. */
                 InsertNodeAtEnd(body, node);
                 node = InferredTag(doc, "br");
@@ -3456,7 +3464,7 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
 
             if (seen_body)
             {
-                CoerceNode(doc, node, TidyTag_DIV );
+                CoerceNode(doc, node, TidyTag_DIV, no, no);
                 MoveNodeToBody(doc, node);
             }
             continue;
@@ -3863,11 +3871,11 @@ void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
         next = node->next;
 
         if (nodeIsDIR(node) || nodeIsMENU(node))
-            CoerceNode(doc, node, TidyTag_UL);
+            CoerceNode(doc, node, TidyTag_UL, yes, yes);
 
         if (nodeIsXMP(node) || nodeIsLISTING(node) ||
             (node->tag && node->tag->id == TidyTag_PLAINTEXT))
-            CoerceNode(doc, node, TidyTag_PRE);
+            CoerceNode(doc, node, TidyTag_PRE, yes, yes);
 
         if (node->content)
             ReplaceObsoleteElements(doc, node->content);

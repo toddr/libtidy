@@ -8,9 +8,9 @@
   
   CVS Info :
 
-    $Author: lpassey $ 
-    $Date: 2003/05/09 19:52:25 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/05/26 03:46:26 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -26,7 +26,7 @@ Bool CheckNodeIntegrity(Node *node);
 */
 Bool IsNewNode(Node *node);
 
-void CoerceNode( TidyDocImpl* doc, Node *node, TidyTagId tid );
+void CoerceNode(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete, Bool expected);
 
 /* extract a node and its children from a markup tree */
 Node *RemoveNode(Node *node);
