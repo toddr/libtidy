@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: creitzel $ 
-    $Date: 2002/03/01 03:40:37 $ 
-    $Revision: 1.35 $ 
+    $Date: 2002/03/21 18:41:44 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -1557,7 +1557,7 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     char* commentEnd = DEFAULT_COMMENT_END;
     Bool  hasCData = no;
 
-    PCondFlushLine(fout, indent);
+    /* PCondFlushLine(fout, indent); */
 
     indent = 0;
     PPrintTag(lexer, fout, mode, indent, node);
@@ -1631,9 +1631,12 @@ void PPrintScriptStyle( Out* fout, uint mode, uint indent,
     }
 
     PPrintEndTag(fout, mode, indent, node);
+    /* 
     PFlushLine(fout, indent);
+    */
 
-    if (IndentContent == no && node->next != null)
+    if ( IndentContent == no && node->next != null &&
+         !( (node->tag && node->tag->model & CM_INLINE) || node->type != TextNode ) )
         PFlushLine(fout, indent);
 }
 
@@ -1868,9 +1871,9 @@ void PPrintTree(Out *fout, uint mode, uint indent,
                 {
                     /* kludge for naked text before block level tag */
                     if (last && !IndentContent && last->type == TextNode &&
-                        content->tag && content->tag->model & CM_BLOCK)
+                        content->tag && !(content->tag->model & CM_INLINE) )
                     {
-                        PFlushLine(fout, indent);
+                        /* PFlushLine(fout, indent); */
                         PFlushLine(fout, indent);
                     }
 
