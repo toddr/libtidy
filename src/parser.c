@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/14 16:48:19 $ 
-    $Revision: 1.128 $ 
+    $Date: 2005/02/11 15:30:29 $ 
+    $Revision: 1.129 $ 
 
 */
 
@@ -484,7 +484,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
 
             if (prev && prev->type == TextNode)
             {
-                if (lexer->lexbuf[prev->end - 1] != ' ')
+                if (prev->end == 0 || lexer->lexbuf[prev->end - 1] != ' ')
                     lexer->lexbuf[(prev->end)++] = ' ';
 
                 ++(element->start);
