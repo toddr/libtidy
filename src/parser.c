@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/04 12:07:35 $ 
-    $Revision: 1.138 $ 
+    $Date: 2005/03/14 17:23:30 $ 
+    $Revision: 1.139 $ 
 
 */
 
@@ -3871,7 +3871,8 @@ static void EncloseBodyText(TidyDocImpl* doc)
         {
             Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(node, p);
-            while (node && (!nodeIsElement(node) || nodeHasCM(node, CM_INLINE)))
+            while (node &&
+                   (!nodeIsElement(node) || nodeHasCM(node, CM_INLINE)))
             {
                 Node* next = node->next;
                 RemoveNode(node);
@@ -3885,6 +3886,9 @@ static void EncloseBodyText(TidyDocImpl* doc)
     }
 }
 
+/* <form>, <blockquote> and <noscript> do not allow #PCDATA in
+   HTML 4.01 Strict (%block; model instead of %flow;).
+  When requested, text nodes in these elements are wrapped in <p>. */
 static void EncloseBlockText(TidyDocImpl* doc, Node* node)
 {
     Node *next;
@@ -3897,7 +3901,9 @@ static void EncloseBlockText(TidyDocImpl* doc, Node* node)
         if (node->content)
             EncloseBlockText(doc, node->content);
 
-        if (!(nodeIsFORM(node) || nodeIsNOSCRIPT(node) || nodeIsBLOCKQUOTE(node)) || !node->content)
+        if (!(nodeIsFORM(node) || nodeIsNOSCRIPT(node) ||
+              nodeIsBLOCKQUOTE(node))
+            || !node->content)
         {
             node = next;
             continue;
@@ -3910,7 +3916,8 @@ static void EncloseBlockText(TidyDocImpl* doc, Node* node)
         {
             Node* p = InferredTag(doc, TidyTag_P);
             InsertNodeBeforeElement(block, p);
-            while (block && (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
+            while (block &&
+                   (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
             {
                 Node* tempNext = block->next;
                 RemoveNode(block);
