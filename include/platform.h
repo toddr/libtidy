@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2002/08/04 22:20:53 $ 
-    $Revision: 1.32 $ 
+    $Date: 2002/08/06 01:12:33 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -134,7 +134,9 @@
  
 #if defined(WINDOWS) || defined(_WIN32)
 #define WINDOWS_OS
+#ifndef PLATFORM_NAME
 #define PLATFORM_NAME "Windows"
+#endif
 #endif
 
 /* Convenience defines for Linux platforms */
