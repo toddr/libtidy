@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 22:04:06 $ 
-    $Revision: 1.46 $ 
+    $Date: 2003/05/18 23:40:10 $ 
+    $Revision: 1.47 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -370,6 +370,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
             int len = tmbstrlen(classattr->value) +
                       tmbstrlen(classname) + 2;
             tmbstr s = (tmbstr) MemAlloc( len );
+            /* todo: tmbstrcpy() segfaults if class="" */
             tmbstrcpy(s, classattr->value);
             tmbstrcat(s, " ");
             tmbstrcat(s, classname);
@@ -1759,6 +1760,7 @@ static void NormalizeSpaces( Lexer *lexer, Node *node )
 
                 p = PutUTF8(p, c);
             }
+            node->end = p - lexer->lexbuf;
         }
 
         node = node->next;
@@ -1979,6 +1981,9 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         }
         else
             list = NULL;
+
+        if (!node)
+            return;
 
         /* strip out style and class attributes */
         if (node->type == StartTag || node->type == StartEndTag)
@@ -2254,4 +2259,94 @@ void WbrToSpace(TidyDocImpl* doc, Node* node)
 
         node = next;
    }
+}
+
+/*
+  Filters from Word and PowerPoint often use smart
+  quotes resulting in character codes between 128
+  and 159. Unfortunately, the corresponding HTML 4.0
+  entities for these are not widely supported. The
+  following converts dashes and quotation marks to
+  the nearest ASCII equivalent. My thanks to
+  Andrzej Novosiolov for his help with this code.
+
+  Note: The old code in the pretty printer applied
+  this to all node types and attribute values while
+  this routine applies it only to text nodes. First,
+  Microsoft Office products rarely put the relevant
+  characters into these tokens, second support for
+  them is much better now and last but not least, it
+  can be harmful to replace these characters since
+  US-ASCII quote marks are often used as syntax
+  characters, a simple
+
+    <a onmouseover="alert('&#x2018;')">...</a>
+
+  would be broken if the U+2018 is replaced by "'".
+  The old code would neither take care whether the
+  quote mark is already used as delimiter,
+
+    <p title='&#x2018;'>...</p>
+
+  got
+  
+    <p title='''>...</p>
+
+  Since browser support is much better nowadays and
+  high-quality typography is better than ASCII it'd
+  be probably a good idea to drop the feature...
+*/
+void DowngradeTypography(TidyDocImpl* doc, Node* node)
+{
+    Node* next;
+    Lexer* lexer = doc->lexer;
+
+    while (node)
+    {
+        next = node->next;
+
+        if (node->type == TextNode)
+        {
+            uint i, c;
+            tmbstr p = lexer->lexbuf + node->start;
+
+            for (i = node->start; i < node->end; ++i)
+            {
+                c = (unsigned char) lexer->lexbuf[i];
+
+                if (c > 0x7F)
+                    i += GetUTF8(lexer->lexbuf + i, &c);
+
+                if (c >= 0x2013 && c <= 0x201E)
+                {
+                    switch (c)
+                    {
+                    case 0x2013: /* en dash */
+                    case 0x2014: /* em dash */
+                        c = '-';
+                        break;
+                    case 0x2018: /* left single  quotation mark */
+                    case 0x2019: /* right single quotation mark */
+                    case 0x201A: /* single low-9 quotation mark */
+                        c = '\'';
+                        break;
+                    case 0x201C: /* left double  quotation mark */
+                    case 0x201D: /* right double quotation mark */
+                    case 0x201E: /* double low-9 quotation mark */
+                        c = '"';
+                        break;
+                    }
+                }
+
+                p = PutUTF8(p, c);
+            }
+
+            node->end = p - lexer->lexbuf;
+        }
+
+        if (node->content)
+            DowngradeTypography(doc, node->content);
+
+        node = next;
+    }
 }

@@ -8,8 +8,8 @@
 
   CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 21:50:59 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/05/18 23:40:11 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -80,5 +80,6 @@ void VerifyHTTPEquiv( TidyDocImpl* pDoc, Node *pParent );
 void DropComments(TidyDocImpl* doc, Node* node);
 void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode);
 void WbrToSpace(TidyDocImpl* doc, Node* node);
+void DowngradeTypography(TidyDocImpl* doc, Node* node);
 
 #endif /* __CLEAN_H__ */

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 21:50:59 $ 
-    $Revision: 1.28 $ 
+    $Date: 2003/05/18 23:40:11 $ 
+    $Revision: 1.29 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1217,6 +1217,8 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 
     Bool dropComments = cfgBool(doc, TidyHideComments);
     Bool makeClean    = cfgBool(doc, TidyMakeClean);
+    Bool asciiChars   = cfgBool(doc, TidyAsciiChars);
+    Bool makeBare     = cfgBool(doc, TidyMakeBare);
 
     /* drop comments */
     if (dropComments)
@@ -1228,6 +1230,9 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
         DropFontElements(doc, &doc->root, NULL);
         WbrToSpace(doc, &doc->root);
     }
+
+    if ((makeClean && asciiChars) || makeBare)
+        DowngradeTypography(doc, &doc->root);
 
     if ( showMarkup && (doc->errors == 0 || forceOutput) )
     {

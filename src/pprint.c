@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/18 21:50:59 $ 
-    $Revision: 1.79 $ 
+    $Date: 2003/05/18 23:40:11 $ 
+    $Revision: 1.80 $ 
 
 */
 
@@ -857,40 +857,6 @@ static void PPrintChar( TidyDocImpl* doc, uint c, uint mode )
     {
         AddChar( pprint, ' ' ); 
         return;
-    }
-
-    /*
-     Filters from Word and PowerPoint often use smart
-     quotes resulting in character codes between 128
-     and 159. Unfortunately, the corresponding HTML 4.0
-     entities for these are not widely supported. The
-     following converts dashes and quotation marks to
-     the nearest ASCII equivalent. My thanks to
-     Andrzej Novosiolov for his help with this code.
-    */
-
-    if ( (cfgBool(doc, TidyMakeClean) && cfgBool(doc, TidyAsciiChars))
-         || cfgBool(doc, TidyMakeBare) )
-    {
-        if (c >= 0x2013 && c <= 0x201E)
-        {
-            switch (c) {
-              case 0x2013: /* en dash */
-              case 0x2014: /* em dash */
-                c = '-';
-                break;
-              case 0x2018: /* left single  quotation mark */
-              case 0x2019: /* right single quotation mark */
-              case 0x201A: /* single low-9 quotation mark */
-                c = '\'';
-                break;
-              case 0x201C: /* left double  quotation mark */
-              case 0x201D: /* right double quotation mark */
-              case 0x201E: /* double low-9 quotation mark */
-                c = '"';
-                break;
-              }
-        }
     }
 
     /* don't map latin-1 chars to entities */
