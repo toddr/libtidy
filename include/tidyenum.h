@@ -1,21 +1,21 @@
 #ifndef __TIDYENUM_H__
 #define __TIDYENUM_H__
 
-/* tidyenum.h -- Split public enums into separate header
+/* @file tidyenum.h -- Split public enums into separate header
 
-  Simplifies enum re-use in various wrappers.  E.g. SWIG
+  Simplifies enum re-use in various wrappers.  e.g. SWIG
   generated wrappers and COM IDL files.
 
-  Copyright (c) 1998-2003 World Wide Web Consortium
+  Copyright (c) 1998-2004 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/03/05 10:06:08 $ 
-    $Revision: 1.10 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/12/09 00:52:27 $ 
+    $Revision: 1.11 $ 
 
   Contributing Author(s):
 
@@ -59,9 +59,7 @@
 
   Created 2001-05-20 by Charles Reitzel
   Updated 2002-07-01 by Charles Reitzel - 1st Implementation
-*/
 
-/** @file tidyenum.h - Enumerations defined for use with TidyLib.
 */
 
 #ifdef __cplusplus
@@ -103,7 +101,7 @@ typedef enum
   TidyDuplicateAttrs,  /**< Keep first or last duplicate attribute */
   TidyAltText,         /**< Default text for alt attribute */
   
-  /* obsolte */
+  /* obsolete */
   TidySlideStyle,      /**< Style sheet for slides: not used for anything yet */
 
   TidyErrFile,         /**< File name to write errors to */
@@ -172,10 +170,15 @@ typedef enum
 #if SUPPORT_ASIAN_ENCODINGS
   TidyLanguage,        /**< Language property: not used for anything yet */
   TidyNCR,             /**< Allow numeric character references */
+#else
+  TidyLanguageNotUsed,
+  TidyNCRNotUsed,
 #endif
 #if SUPPORT_UTF16_ENCODINGS
   TidyOutputBOM,      /**< Output a Byte Order Mark (BOM) for UTF-16 encodings */
                       /**< auto: if input stream has BOM, we output a BOM */
+#else
+  TidyOutputBOMNotUsed,
 #endif
 
   TidyReplaceColor,    /**< Replace hex color attribute values with names */
@@ -192,8 +195,10 @@ typedef enum
   TidyVertSpace,       /**< degree to which markup is spread out vertically */
 #if SUPPORT_ASIAN_ENCODINGS
   TidyPunctWrap,       /**< consider punctuation and breaking spaces for wrapping */
+#else
+  TidyPunctWrapNotUsed,
 #endif
-  TidyMergeDivs,
+  TidyMergeDivs,       /**< Merge multiple DIVs */
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 
@@ -382,7 +387,7 @@ typedef enum
   TidyTag_OPTION,   /**< OPTION */
   TidyTag_P,        /**< P */
   TidyTag_PARAM,    /**< PARAM */
-  TidyTag_PLAINTEXT,    /**< PLAINTEXT */
+  TidyTag_PLAINTEXT,/**< PLAINTEXT */
   TidyTag_PRE,      /**< PRE */
   TidyTag_Q,        /**< Q */
   TidyTag_RB,       /**< RB */
