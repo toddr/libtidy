@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/12 09:06:51 $ 
-    $Revision: 1.21 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/13 09:52:12 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -1943,10 +1943,7 @@ Node *GetToken(Lexer *lexer, uint mode)
                     }
 
                     if (lexer->token->tag->chkattrs)
-                    {
-                        CheckUniqueAttributes(lexer, lexer->token);
                         lexer->token->tag->chkattrs(lexer, lexer->token);
-                    }
                     else
                         CheckAttributes(lexer, lexer->token);
                 }

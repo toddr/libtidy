@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/13 05:04:19 $ 
-    $Revision: 1.16 $ 
+    $Date: 2001/07/13 09:52:12 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -838,6 +838,10 @@ void CheckAttributes(Lexer *lexer, Node *node)
 void CheckHR(Lexer *lexer, Node *node)
 {
     AttVal *av = GetAttrByName(node, "src");
+
+    CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
+
     if (av)
         ReportAttrError(lexer, node, av, PROPRIETARY_ATTR_VALUE);
 }
@@ -851,8 +855,6 @@ void CheckIMG(Lexer *lexer, Node *node)
     Bool HasUseMap = no;
     Bool HasIsMap = no;
     Bool HasDataFld = no;
-
-    CheckUniqueAttributes(lexer, node);
 
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
@@ -899,6 +901,7 @@ void CheckAnchor(Lexer *lexer, Node *node)
 void CheckMap(Lexer *lexer, Node *node)
 {
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     FixId(lexer, node);
 }
@@ -906,6 +909,7 @@ void CheckMap(Lexer *lexer, Node *node)
 void CheckTableCell(Lexer *lexer, Node *node)
 {
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     /*
       HTML4 strict doesn't allow mixed content for
@@ -921,6 +925,7 @@ void CheckCaption(Lexer *lexer, Node *node)
     char *value = null;
 
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
@@ -947,8 +952,6 @@ void CheckHTML(Lexer *lexer, Node *node)
     AttVal *attval;
     Attribute *attribute;
 
-    CheckUniqueAttributes(lexer, node);
-
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
         attribute = CheckAttribute(lexer, node, attval);
@@ -964,8 +967,6 @@ void CheckAREA(Lexer *lexer, Node *node)
     Attribute *attribute;
     Bool HasAlt = no;
     Bool HasHref = no;
-
-    CheckUniqueAttributes(lexer, node);
 
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
@@ -991,8 +992,6 @@ void CheckTABLE(Lexer *lexer, Node *node)
     AttVal *attval;
     Attribute *attribute;
     Bool HasSummary = no;
-
-    CheckUniqueAttributes(lexer, node);
 
     for (attval = node->attributes; attval != null; attval = attval->next)
     {
@@ -1024,6 +1023,7 @@ void CheckSCRIPT(Lexer *lexer, Node *node)
     char buf[16];
 
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     lang = GetAttrByName(node, "language");
     type = GetAttrByName(node, "type");
@@ -1057,6 +1057,7 @@ void CheckSTYLE(Lexer *lexer, Node *node)
     AttVal *type = GetAttrByName(node, "type");
 
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     if (!type)
     {
@@ -1072,6 +1073,7 @@ void CheckLINK(Lexer *lexer, Node *node)
     AttVal *rel = GetAttrByName(node, "rel");
 
     CheckUniqueAttributes(lexer, node);
+    CheckAttributes(lexer, node);
 
     if (rel && rel->value &&
           wstrcmp(rel->value, "stylesheet") == 0)
