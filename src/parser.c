@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 00:36:18 $ 
-    $Revision: 1.27 $ 
+    $Date: 2001/08/01 01:04:17 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -532,7 +532,8 @@ static void ParseTag(Lexer *lexer, Node *node, uint mode)
     if (node->tag->model & CM_EMPTY)
     {
         lexer->waswhite = no;
-        return;
+        if (node->tag->parser == null)
+            return;
     }
     else if (!(node->tag->model & CM_INLINE))
         lexer->insertspace = no;
@@ -1594,6 +1595,19 @@ void ParseInline(Lexer *lexer, Node *element, uint mode)
         ReportWarning(lexer, element, node, MISSING_ENDTAG_FOR);
 
     TrimEmptyElement(lexer, element);
+}
+
+void ParseEmpty(Lexer *lexer, Node *element, uint mode)
+{
+    if (lexer->isvoyager)
+    {
+        Node *node = GetToken(lexer, MixedContent);
+        if (!(node->type == EndTag && node->tag == element->tag))
+        {
+            ReportWarning(lexer, element, node, ELEMENT_NOT_EMPTY);
+            UngetToken(lexer);
+        }
+    }
 }
 
 void ParseDefList(Lexer *lexer, Node *list, uint mode)

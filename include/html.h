@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/31 04:11:29 $ 
-    $Revision: 1.40 $ 
+    $Date: 2001/08/01 01:04:17 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -688,6 +688,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define TOO_MANY_ELEMENTS       33
 #define UNESCAPED_ELEMENT       34
 #define NESTED_QUOTATION        35
+#define ELEMENT_NOT_EMPTY       36
 
 /* error codes used for attribute messages */
 
@@ -876,6 +877,7 @@ Parser ParseLI;
 Parser ParseDefList;
 Parser ParseBlock;
 Parser ParseInline;
+Parser ParseEmpty;
 Parser ParseTableTag;
 Parser ParseColGroup;
 Parser ParseRowGroup;

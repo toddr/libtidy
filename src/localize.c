@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 22:54:15 $ 
-    $Revision: 1.23 $ 
+    $Date: 2001/08/01 01:04:17 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -542,6 +542,12 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
         else if (code == NESTED_QUOTATION)
         {
             tidy_out(lexer->errout, "Warning: nested q elements, possible typo.");
+        }
+        else if (code == ELEMENT_NOT_EMPTY)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, element);
+            tidy_out(lexer->errout, " element not empty or not closed");
         }
 
         tidy_out(lexer->errout, "\n");
