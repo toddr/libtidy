@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/30 04:21:51 $ 
-    $Revision: 1.96 $ 
+    $Date: 2003/04/30 15:49:08 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -931,8 +931,9 @@ Node *CloneNode( TidyDocImpl* doc, Node *element )
     return node;
 }
 
-/* Does, what CloneNode should do, clones the given node */
-/* Maybe CloneNode is just buggy and could be modified   */
+/* Just like CloneNode but also copies node->start */
+/* and node->end; note that it does not clone the  */
+/* lexbuf pointed to by these values               */
 Node *CloneNodeEx( TidyDocImpl* doc, Node *element )
 {
     Node *node = NULL;
