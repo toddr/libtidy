@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/12/09 01:13:02 $ 
-    $Revision: 1.15 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/02/11 13:31:26 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -441,7 +441,7 @@ static tmbstr getTextNodeClear( TidyDocImpl* doc, Node* node )
     ClearMemory( doc->access.textNode, TEXTBUF_SIZE );
     doc->access.counter = 0;
 
-    getTextNode( doc, node );
+    getTextNode( doc, node->content );
     return doc->access.textNode;
 }
     
