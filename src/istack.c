@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/07/14 21:47:59 $ 
-    $Revision: 1.4 $ 
+    $Date: 2001/07/22 17:31:19 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -250,7 +250,8 @@ Node *InsertedToken(Lexer *lexer)
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;
-    node->end = lexer->txtstart;	/* suggested fix by Gary Peskin */ /* lexer->txtend; */ 
+    /* #431734 [JTidy bug #226261 (was 126261)] - fix by Gary Peskin 20 Dec 00 */ 
+    node->end = lexer->txtend; /* was : lexer->txtstart; */
     istack = lexer->insert;
     if (lexer->istacksize == 0)	/* Andy Quick 13 Jun 99 */
         tidy_out(lexer->errout, "0-size istack!\n");
