@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 02:00:46 $ 
-    $Revision: 1.79 $ 
+    $Date: 2003/05/06 22:58:52 $ 
+    $Revision: 1.80 $ 
 
 */
 
@@ -591,6 +591,7 @@ static Anchor* NewAnchor( ctmbstr name, Node* node )
     Anchor *a = (Anchor*) MemAlloc( sizeof(Anchor) );
 
     a->name = tmbstrdup( name );
+    a->name = tmbstrtolower(a->name);
     a->node = node;
     a->next = NULL;
 
@@ -623,7 +624,7 @@ Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
     Anchor *found;
     for ( found = attribs->anchor_list; found != NULL; found = found->next )
     {
-        if ( tmbstrcasecmp(found->name, name) == 0 )
+        if ( tmbstrcmp(found->name, name) == 0 )
             break;
     }
     
@@ -735,7 +736,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             AttVal *temp;
 
             if (!(second->asp == NULL && second->php == NULL &&
-                tmbstrcasecmp(first->attribute, second->attribute) == 0))
+                AttrsHaveSameId(first, second)))
             {
                 second = second->next;
                 continue;

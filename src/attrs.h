@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:48 $ 
-    $Revision: 1.9 $ 
+    $Date: 2003/05/06 22:58:53 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -223,6 +223,10 @@ AttVal* AttrGetById( Node* node, TidyAttrId id );
 #define AttrContains(attr, val) (AttrHasValue(attr) && \
                                  tmbsubstr((attr)->value, val) != NULL)
 #define AttrVersions(attr)      ((attr) && (attr)->dict ? (attr)->dict->versions : VERS_PROPRIETARY)
+
+#define AttrsHaveSameId(a, b) (a && b && a->dict && b->dict && a->dict->id && \
+                               b->dict->id && a->dict->id == b->dict->id)
+
 
 
 #define attrIsABBR(av)              AttrIsId( av, TidyAttr_ABBR  )

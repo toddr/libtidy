@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 03:57:34 $ 
-    $Revision: 1.102 $ 
+    $Date: 2003/05/06 22:58:53 $ 
+    $Revision: 1.103 $ 
 
 */
 
@@ -1039,9 +1039,8 @@ void FreeAttrs( TidyDocImpl* doc, Node *node )
 
         if ( av->attribute )
         {
-            if ( ( tmbstrcasecmp(av->attribute, "id") == 0 ||
-                   tmbstrcasecmp(av->attribute, "name") == 0 )
-                 && IsAnchorElement(doc, node) )
+            if ((attrIsID(av) || attrIsNAME(av)) &&
+                IsAnchorElement(doc, node) )
             {
                 RemoveAnchorByNode( doc, node );
             }
