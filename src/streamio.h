@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/02/16 19:33:11 $ 
-    $Revision: 1.2 $ 
+    $Author: lpassey $ 
+    $Date: 2003/02/25 21:12:03 $ 
+    $Revision: 1.3 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -20,7 +20,6 @@
 */
 
 #include "forward.h"
-#include "tidy.h"
 #include "buffio.h"
 #include "fileio.h"
 
@@ -82,9 +81,9 @@ struct _StreamOut
     TidyOutputSink sink;
 };
 
-StreamOut* FileOutput( FILE* fp, int encoding, uint newline );
-StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint newline );
-StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint newline );
+StreamOut* FileOutput( FILE* fp, int encoding, uint newln );
+StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint newln );
+StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint newln );
 
 StreamOut* StdErrOutput();
 StreamOut* StdOutOutput();
