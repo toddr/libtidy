@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/19 07:22:21 $ 
-    $Revision: 1.32 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/19 11:36:38 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -525,7 +525,7 @@ Node *GetNodeByAnchor(char *name)
 }
 
 /* free all anchors */
-FreeAnchors(void)
+void FreeAnchors(void)
 {
     Anchor *a;
     
@@ -780,7 +780,6 @@ void CheckName(Lexer *lexer, Node *node, AttVal *attval)
 void CheckId(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *p = attval->value;
-    uint i = 0;
     Node *old;
     
     if (p == null)

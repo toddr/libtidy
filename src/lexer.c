@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/19 07:08:37 $ 
-    $Revision: 1.35 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/19 11:36:38 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -41,8 +41,8 @@
 
 AttVal *ParseAttrs(Lexer *lexer, Bool *isempty);  /* forward references */
 Node *CommentToken(Lexer *lexer);
-char *ParseAttribute(Lexer *lexer, Bool *isempty, Node **asp, Node **php);
-char *ParseValue(Lexer *lexer, char *name, Bool foldCase, Bool *isempty, int *pdelim);
+static char *ParseAttribute(Lexer *lexer, Bool *isempty, Node **asp, Node **php);
+static char *ParseValue(Lexer *lexer, char *name, Bool foldCase, Bool *isempty, int *pdelim);
 
 /* used to classify chars for lexical purposes */
 #define MAP(c) ((unsigned)c < 128 ? lexmap[(unsigned)c] : 0)

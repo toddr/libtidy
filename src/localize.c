@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 09:35:20 $ 
-    $Revision: 1.20 $ 
+    $Date: 2001/07/19 11:36:38 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -384,7 +384,7 @@ void ReportWarning(Lexer *lexer, Node *element, Node *node, uint code)
         }
         else if (code == DISCARDING_UNEXPECTED)
         {
-            tidy_out(lexer->errout, node->tag == tag_form ? "Error:" : "Warning");
+            tidy_out(lexer->errout, lexer->errors ? "Error:" : "Warning");
             tidy_out(lexer->errout, " discarding unexpected ");
             ReportTag(lexer, node);
         }

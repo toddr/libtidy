@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 22:51:30 $ 
-    $Revision: 1.33 $ 
+    $Date: 2001/07/19 11:36:38 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -373,7 +373,7 @@ typedef void (CheckAttribs)(Lexer *lexer, Node *node);
 typedef void (AttrCheck)(Lexer *lexer, Node *node, AttVal *attval);
 
 /* each tag/attribute helps to constrain the version of HTML */
-void ConstrainVersion(Lexer *lexer, unsigned int vers);
+void ConstrainVersion(Lexer *lexer, uint vers);
 
 struct _attribute
 {
@@ -535,7 +535,7 @@ void RemoveAnchorByNode(Node *node);
 Anchor *NewAnchor(void);
 Anchor *AddAnchor(char *name, Node *node);
 Node *GetNodeByAnchor(char *name);
-FreeAnchors(void);
+void FreeAnchors(void);
 
 /* istack.c */
 void PushInline(Lexer *lexer, Node *node);
