@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/14 15:02:41 $ 
-    $Revision: 1.134 $ 
+    $Date: 2005/02/15 13:04:02 $ 
+    $Revision: 1.135 $ 
 
 */
 
@@ -477,8 +477,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
          text->start < text->end )
     {
         if ( (element->tag->model & CM_INLINE) &&
-             !(element->tag->model & CM_FIELD) &&
-             element->parent->content != element )
+             !(element->tag->model & CM_FIELD) )
         {
             prev = element->prev;
 
@@ -495,14 +494,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
                 node->start = (element->start)++;
                 node->end = element->start;
                 lexer->lexbuf[node->start] = ' ';
-                node->prev = prev;
-
-                if (prev)
-                    prev->next = node;
-
-                node->next = element;
-                element->prev = node;
-                node->parent = element->parent;
+                InsertNodeBeforeElement(element ,node);
             }
         }
 
