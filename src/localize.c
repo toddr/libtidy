@@ -6,6 +6,13 @@
 
   You should only need to edit this file and tidy.c
   to localize HTML tidy.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/02 08:52:42 $ 
+    $Revision: 1.2 $ 
+
 */
 
 #include "platform.h"
@@ -189,18 +196,18 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         ReportPosition(lexer);
 
         if (code == UNKNOWN_ATTRIBUTE)
-            tidy_out(lexer->errout, "Warning: unknown attribute \"%s\"", attr);
+            tidy_out(lexer->errout, "Warning: unknown attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         else if (code == MISSING_ATTRIBUTE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " lacks \"%s\" attribute", attr);
+            tidy_out(lexer->errout, " lacks \"%s\" attribute", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == MISSING_ATTR_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " attribute \"%s\" lacks value", attr);
+            tidy_out(lexer->errout, " attribute \"%s\" lacks value", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == MISSING_IMAGEMAP)
         {
@@ -213,13 +220,13 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " unknown attribute value \"%s\"", attr);
+            tidy_out(lexer->errout, " unknown attribute value \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == XML_ATTRIBUTE_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " has XML attribute \"%s\"", attr);
+            tidy_out(lexer->errout, " has XML attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == UNEXPECTED_GT)
         {
@@ -238,13 +245,13 @@ void ReportAttrError(Lexer *lexer, Node *node, char *attr, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " repeated attribute \"%s\"", attr);
+            tidy_out(lexer->errout, " repeated attribute \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == PROPRIETARY_ATTR_VALUE)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " proprietary attribute value \"%s\"", attr);
+            tidy_out(lexer->errout, " proprietary attribute value \"%s\"", attr?attr:"NULL");	/* #427676 - fix by Tony Goodwin 11 Oct 00 */
         }
         else if (code == UNEXPECTED_END_OF_FILE)
         {
