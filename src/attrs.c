@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/14 16:02:45 $ 
-    $Revision: 1.23 $ 
+    $Date: 2001/07/14 20:44:32 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -48,6 +48,9 @@ AttrCheck CheckShape;
 AttrCheck CheckNumber;
 AttrCheck CheckScope;
 AttrCheck CheckColor;
+AttrCheck CheckVType;
+AttrCheck CheckScroll;
+AttrCheck CheckTextDir;
 
 extern Bool XmlTags;
 extern Bool XmlOut;
@@ -93,7 +96,7 @@ static Attribute *hashtab[HASHSIZE];
 #define LENGTH      CheckLength
 #define COORDS      null
 #define DATE        null
-#define TEXTDIR     null
+#define TEXTDIR     CheckTextDir
 #define IDREFS      null
 #define IDREF       null
 #define IDDEF       CheckId
@@ -106,9 +109,9 @@ static Attribute *hashtab[HASHSIZE];
 #define TRULES      null
 #define SCOPE       CheckScope
 #define SHAPE       CheckShape
-#define SCROLL      null
+#define SCROLL      CheckScroll
 #define TARGET      CheckTarget
-#define VTYPE       null
+#define VTYPE       CheckVType
 
 static struct _attrlist
 {
@@ -894,6 +897,16 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
                 found = yes;
                 break;
             }
+            else
+            {
+                /* we could search for more colors and mark the file as HTML
+                   Proprietary, but I don't thinks it's worth the effort,
+                   so values not in HTML 4.01 are invalid */
+
+                ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+                invalid = yes;
+                break;
+            }
         }
         else
         {
@@ -923,6 +936,63 @@ void CheckColor(Lexer *lexer, Node *node, AttVal *attval)
         }
     }
 }
+
+/* check valuetype attribute for element param */
+void CheckVType(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
+    value = attval->value;
+
+    if (value == null)
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "data") == 0 ||
+        wstrcasecmp(value, "object") == 0 ||
+        wstrcasecmp(value, "ref")  == 0))
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+}
+
+/* checks scrolling attribute */
+void CheckScroll(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
+    value = attval->value;
+
+    if (value == null)
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "no") == 0 ||
+        wstrcasecmp(value, "auto") == 0 ||
+        wstrcasecmp(value, "yes") == 0))
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+}
+
+/* checks dir attribute */
+void CheckTextDir(Lexer *lexer, Node *node, AttVal *attval)
+{
+    char *value;
+
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
+    value = attval->value;
+
+    if (value == null)
+        ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
+    
+    if (! (wstrcasecmp(value, "rtl") == 0 ||
+           wstrcasecmp(value, "ltr") == 0))
+        ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
+}
+
 
 /* default method for checking an element's attributes */
 void CheckAttributes(Lexer *lexer, Node *node)
