@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/05 21:26:51 $ 
-    $Revision: 1.82 $ 
+    $Date: 2003/05/06 03:15:46 $ 
+    $Revision: 1.83 $ 
 
 */
 
@@ -1108,9 +1108,18 @@ void ReportMarkupVersion( TidyDocImpl* doc )
 
     if ( ! cfgBool(doc, TidyXmlTags) )
     {
-        uint apparentVers = HTMLVersion( doc );
         Bool isXhtml = doc->lexer->isvoyager;
-        ctmbstr vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
+        uint apparentVers;
+        ctmbstr vers;
+
+        if ((doc->lexer->doctype == XH11 || 
+             doc->lexer->doctype == XB10) &&
+            (doc->lexer->versions & doc->lexer->doctype))
+            apparentVers = doc->lexer->doctype;
+        else
+            apparentVers = HTMLVersion(doc);
+
+        vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
         message( doc, TidyInfo, "Document content looks like %s", vers );
     }
 }
