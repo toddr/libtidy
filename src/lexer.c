@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/09 09:08:43 $ 
-    $Revision: 1.85 $ 
+    $Date: 2003/04/10 03:56:13 $ 
+    $Revision: 1.86 $ 
 
 */
 
@@ -2004,6 +2004,32 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 start = lexer->lexsize;
                 state = CDATA_ENDTAG;
             }
+            else if (c == '\\')
+            {
+                /* recognize document.write("<script><\/script>") */
+                AddCharToLexer(lexer, (uint)c);
+
+                c = ReadChar(doc->docIn);
+
+                if (c != '/')
+                {
+                    UngetChar(c, doc->docIn);
+                    continue;
+                }
+
+                AddCharToLexer(lexer, (uint)c);
+                c = ReadChar(doc->docIn);
+                
+                if (!IsLetter(c))
+                {
+                    UngetChar(c, doc->docIn);
+                    continue;
+                }
+                UngetChar(c, doc->docIn);
+
+                start = lexer->lexsize;
+                state = CDATA_ENDTAG;
+            }
             else
             {
                 UngetChar(c, doc->docIn);
@@ -2051,8 +2077,9 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 lexer->lexsize -= (lexer->lexsize - start) + 2;
                 break;
             }
-            else
+            else if (lexer->lexbuf[start - 2] != '\\')
             {
+                /* if the end tag is not already escaped using backslash */
                 lexer->lines = doc->docIn->curline;
                 lexer->columns = doc->docIn->curcol - 3;
                 ReportWarning(doc, NULL, NULL, BAD_CDATA_CONTENT);
