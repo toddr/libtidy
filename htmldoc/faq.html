@@ -33,6 +33,8 @@ mailing lists. If you don't see your question addressed here, see
 <li><a href="#layout">How Do I Control the Output Layout?</a></li>
 
 <li><a href="#version">What Version of Tidy Should I Use?</a></li>
+
+<li><a href="#regression">How Do I Run A Regression Test?</a></li>
 </ul>
 
 <hr />
@@ -197,10 +199,10 @@ indent: auto
 indent-attributes: no
 vertical-space: yes
 </pre>
-</dd>
 
 <p>You can read about more <em>Pretty Print</em> options
 <a href="quickref.html#PrettyPrintHeader">here</a>.</p>
+</dd>
 
 <dt><a name="version" id="version"></a>What Version of Tidy Should
 I Use?</dt>
@@ -223,6 +225,60 @@ conflicts.</p>
 simplest approach is to use TidyLib.  For more information
 about building and coding with TidyLib, see the <a 
 href="libintro.html">Introduction To TidyLib</a>.</p>
+</dd>
+
+<dt><a name="regression" id="regression">How Do I Run A 
+Regression Test?</a></dt>
+<dd>
+<p>You might ask, "Why should I run a regression test?".  If you
+are a Tidy user, you might want to compare a new version of Tidy
+to the version you are currently running.  This is a good idea
+if you are using Tidy in production applications such as web
+publishing.  If you are a Tidy developer, it is a good idea to
+run the regression test suite to make sure your fix or enhancement
+doesn't add new bugs.</p>
+
+<p>Detecting new bugs is easier said than done, because sometimes
+they are subtle and can only be seen in browsers (or one particular
+browser you don't even have).  But you can catch most crashes and
+many layout problems by running the test suite as described here.</p>
+
+<p>The basic process is simple: run the test suite <strong>before</strong>
+and <strong>after</strong> making changes to TidyLib and compare the output
+markup and messages.  Be aware that the test scripts for WinNT/2K/XP
+(alltest.cmd) and Linux/Unix (testall.sh) place the output files in
+<code>tidy/test/tmp</code>.  If you forget to run the <strong>before</strong>
+test, you can always download a binary from the <a 
+href="http://tidy.sourceforge.net/#binaries">Project Page</a>.  If you
+are not a TidyLib developer, you can download the <a 
+href="http://tidy.sourceforge.net/test/tidy_test.tgz">Test Suite</a> 
+directly.  Here are the steps to evaluate the impact of a TidyLib change.</p>
+
+<h3>For Windows</h3>
+<p><strong>Before</strong> making changes:</p>
+<pre>
+C:\tidy\test> alltest.cmd
+C:\tidy\test> ren tmp baseline
+</pre>
+
+<p><strong>After</strong> making changes and building Tidy:</p>
+<pre>
+C:\tidy\test> alltest.cmd
+C:\tidy\test> windiff tmp baseline
+</pre>
+
+<h3>For Linux/Unix</h3>
+<p><strong>Before</strong> making changes:</p>
+<pre>
+~/tidy/test$ ./testall.sh
+~/tidy/test$ mv tmp baseline
+</pre>
+
+<p><strong>After</strong> making changes and building Tidy:</p>
+<pre>
+~/tidy/test$ ./testall.sh
+~/tidy/test$ diff -u tmp baseline > diff.txt
+</pre>
 </dd>
 
 <!--
