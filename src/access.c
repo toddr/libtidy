@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/12/09 01:07:18 $ 
-    $Revision: 1.13 $ 
+    $Date: 2004/12/09 01:10:26 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -2362,7 +2362,7 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
            Text within header element cannot contain more than 20 words without
            a separate description
         */
-        if (node->content->tag == NULL)
+        if (node->content != NULL && node->content->tag == NULL)
         {
             word = textFromOneNode( doc, node->content);
 
