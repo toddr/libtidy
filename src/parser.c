@@ -3,6 +3,13 @@
 
   (c) 1998-2000 (W3C) MIT, INRIA, Keio University
   See tidy.c for the copyright notice.
+  
+  CVS Info :
+
+    $Author: terry_teague $ 
+    $Date: 2001/06/02 09:03:57 $ 
+    $Revision: 1.2 $ 
+
 */
 
 #include "platform.h"   /* platform independent stuff */
@@ -2082,7 +2089,7 @@ void ParseTableTag(Lexer *lexer, Node *table, uint mode)
                 ReportWarning(lexer, table, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
 
-                if (!node->type == TextNode)
+                if (!(node->type == TextNode))	/* #427662 - was (!node->type == TextNode) - fix by Young 04 Aug 00 */
                     ParseTag(lexer, node, IgnoreWhitespace);
 
                 lexer->exiled = no;
