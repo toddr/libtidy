@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/06 17:07:02 $ 
-    $Revision: 1.42 $ 
+    $Date: 2004/03/07 13:42:52 $ 
+    $Revision: 1.43 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -811,7 +811,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
         StreamIn* in = FileInput( doc, fin, cfg( doc, TidyInCharEncoding ));
         status = tidyDocParseStream( doc, in );
         freeFileSource(&in->source, yes);
-        MemFree(in);
+        freeStreamIn(in);
     }
     else /* Error message! */
         FileError( doc, filnam, TidyError );
@@ -822,7 +822,7 @@ int   tidyDocParseStdin( TidyDocImpl* doc )
 {
     StreamIn* in = FileInput( doc, stdin, cfg( doc, TidyInCharEncoding ));
     int status = tidyDocParseStream( doc, in );
-    MemFree( in );
+    freeStreamIn(in);
     return status;
 }
 
@@ -833,7 +833,7 @@ int   tidyDocParseBuffer( TidyDocImpl* doc, TidyBuffer* inbuf )
     {
         StreamIn* in = BufferInput( doc, inbuf, cfg( doc, TidyInCharEncoding ));
         status = tidyDocParseStream( doc, in );
-        MemFree( in );
+        freeStreamIn(in);
     }
     return status;
 }
@@ -850,7 +850,7 @@ int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
         in = BufferInput( doc, &inbuf, cfg( doc, TidyInCharEncoding ));
         status = tidyDocParseStream( doc, in );
         tidyBufDetach( &inbuf );
-        MemFree( in );
+        freeStreamIn(in);
     }
     return status;
 }
@@ -859,7 +859,7 @@ int   tidyDocParseSource( TidyDocImpl* doc, TidyInputSource* source )
 {
     StreamIn* in = UserInput( doc, source, cfg( doc, TidyInCharEncoding ));
     int status = tidyDocParseStream( doc, in );
-    MemFree( in );
+    freeStreamIn(in);
     return status;
 }
 

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/03/04 06:54:10 $ 
-    $Revision: 1.21 $ 
+    $Date: 2004/03/07 13:42:51 $ 
+    $Revision: 1.22 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -122,6 +122,15 @@ static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
     in->otextsize = 0;
 #endif
     return in;
+}
+
+void freeStreamIn(StreamIn* in)
+{
+#ifdef TIDY_STORE_ORIGINAL_TEXT
+    if (in->otextbuf)
+        MemFree(in->otextbuf);
+#endif
+    MemFree(in);
 }
 
 StreamIn* FileInput( TidyDocImpl* doc, FILE *fp, int encoding )
