@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/08/19 19:22:06 $ 
-    $Revision: 1.27 $ 
+    $Author: creitzel $ 
+    $Date: 2001/08/25 00:47:12 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -856,7 +856,8 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -asxml          to convert html to wellformed xml\n");
     tidy_out(out, "  -slides         to burst into slides on h2 elements\n");
     tidy_out(out, "  -version or -v  show version\n");
-    tidy_out(out, "  -help   or -h   list command line options\n");
+    tidy_out(out, "  -help   or -h   list command line options (this message)\n");
+    tidy_out(out, "  -help-config    list all configuration file options\n");
     tidy_out(out, "Input/Output default to stdin/stdout respectively\n");
     tidy_out(out, "Single letter options apart from -f may be combined\n");
     tidy_out(out, "as in:  tidy -f errs.txt -imu foo.html\n");
@@ -876,6 +877,7 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "  -wrap 72        wrap text at column 72 (default is 68)\n");
     tidy_out(out, "  -upper  or -u   force tags to upper case (default is lower)\n");
     tidy_out(out, "  -clean  or -c   replace font, nobr & center tags by CSS\n");
+    tidy_out(out, "  -bare   or -b   Strip out smart quotes and em dashes, etc.\n");
     tidy_out(out, "  -numeric or -n  output numeric rather than named entities\n");
     tidy_out(out, "  -errors or -e   only show errors\n");
     tidy_out(out, "  -quiet or -q    suppress nonessential output\n");
@@ -912,7 +914,8 @@ void HelpText(FILE *out, char *prog)
     tidy_out(out, "Miscellaneous\n");
     tidy_out(out, "------------\n");
     tidy_out(out, "  -version or -v  show version\n");
-    tidy_out(out, "  -help   or -h   list command line options\n");
+    tidy_out(out, "  -help   or -h   list command line options (this message)\n");
+    tidy_out(out, "  -help-config    list all configuration file options\n");
     tidy_out(out, "You can also use --blah for any config file option blah\n");
     tidy_out(out, "\n");
 
