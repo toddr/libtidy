@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 00:08:32 $ 
-    $Revision: 1.16 $ 
+    $Date: 2001/07/30 22:54:15 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -54,6 +54,8 @@ int CharEncoding = ASCII;
 int tabsize = 4;
 
 DocTypeMode doctype_mode = doctype_auto; /* see doctype property */
+DupAttrMode DuplicateAttrs = keep_last; /* Keep first or last duplicate attribute */
+
 char *alt_text = null;      /* default text for alt attribute */
 char *slide_style = null;   /* style sheet for slides */
 char *doctype_str = null;   /* user specified doctype */
@@ -110,6 +112,8 @@ Bool IndentCdata = no;      /* indent <!CDATA[ ... ]]> section */
 Bool ForceOutput = no;      /* output document even if errors were found */
 uint ShowErrors = 6;        /* number of errors to put out */
 Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char */
+Bool JoinClasses = no;      /* join multiple class attributes */
+Bool JoinStyles = yes;      /* join multiple style attributes */
 
 typedef struct _lex PLex;
 
@@ -211,6 +215,8 @@ static struct Flag
     {"force-output",    {(int *)&ForceOutput},      ParseBool},
     {"show-errors",     {(int *)&ShowErrors},       ParseInt},
     {"ascii-chars",     {(int *)&AsciiChars},       ParseBool},
+    {"join-classes",    {(int *)&JoinClasses},      ParseBool},
+    {"join-styles",     {(int *)&JoinStyles},       ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}

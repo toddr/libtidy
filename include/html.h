@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/30 00:08:32 $ 
-    $Revision: 1.38 $ 
+    $Date: 2001/07/30 22:54:15 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -141,6 +141,13 @@ typedef enum
     doctype_user
 } DocTypeMode;
 
+/* mode controlling treatment of duplicate Attributes */
+
+typedef enum
+{
+    keep_first,
+    keep_last
+} DupAttrMode;
 
 /*
  Attribute/Value linked list node
@@ -523,7 +530,7 @@ void FreeAttrTable(void);
 Attribute *FindAttribute(AttVal *attval);
 AttVal *GetAttrByName(Node *node, char *name);
 void AddAttribute(Node *node, char *name, char *value);
-void CheckUniqueAttributes(Lexer *lexer, Node *node);
+void RepairDuplicateAttributes(Lexer *lexer, Node *node);
 void CheckAttributes(Lexer *lexer, Node *node);
 Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval);
 Bool IsUrl(char *attrname);
@@ -706,6 +713,7 @@ void tidy_out(FILE *fp, const char* msg, ...);
 #define NEWLINE_IN_URI          18
 #define ANCHOR_NOT_UNIQUE       19
 #define ENTITY_IN_ID            20
+#define JOINING_ATTRIBUTE       21
 
 /* page transition effects */
 
@@ -848,6 +856,9 @@ extern Bool IndentCdata;
 extern Bool ForceOutput;
 extern uint ShowErrors;
 extern Bool AsciiChars;
+extern Bool JoinClasses;
+extern Bool JoinStyles;
+extern DupAttrMode DuplicateAttrs;
 
 /* Parser methods for tags */
 

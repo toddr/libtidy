@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/19 11:36:38 $ 
-    $Revision: 1.33 $ 
+    $Date: 2001/07/30 22:54:15 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -617,40 +617,140 @@ void FreeAttrTable(void)
  more than once in each element
 */
 
-static void CheckUniqueAttribute(Lexer *lexer, Node *node, AttVal *attval)
-{
-    AttVal *attr;
-    int count = 0;
-
-    for (attr = attval->next; attr; attr = attr->next)
-    {
-        if (attr->asp == null && attr->php == null &&
-            wstrcasecmp(attval->attribute, attr->attribute) == 0)
-                ++count;
-    }
-
-    if (count > 0)
-        ReportAttrError(lexer, node, attval, REPEATED_ATTRIBUTE);
-}
-
-void CheckUniqueAttributes(Lexer *lexer, Node *node)
+void RepairDuplicateAttributes(Lexer *lexer, Node *node)
 {
     AttVal *attval;
 
-    for (attval = node->attributes; attval != null; attval = attval->next)
+    for (attval = node->attributes; attval;)
     {
         if (attval->asp == null && attval->php == null)
-            CheckUniqueAttribute(lexer, node, attval);
+        {
+            AttVal *current;
+            
+            for (current = attval->next; current;)
+            {
+                if (current->asp == null && current->php == null &&
+                    wstrcasecmp(attval->attribute, current->attribute) == 0)
+                {
+                    AttVal *temp;
+
+                    if (wstrcasecmp(current->attribute, "class") == 0 && JoinClasses)
+                    {
+                        /* concatenate classes */
+
+                        current->value = (char *)MemRealloc(current->value, wstrlen(current->value) +
+                                                                            wstrlen(attval->value)  + 2);
+                        wstrcat(current->value, " ");
+                        wstrcat(current->value, attval->value);
+
+                        temp = attval->next;
+
+                        if (temp->next == null)
+                            current = null;
+                        else
+                            current = current->next;
+
+                        ReportAttrError(lexer, node, attval, JOINING_ATTRIBUTE);
+
+                        RemoveAttribute(node, attval);
+                        attval = temp;
+                    }
+                    else if (wstrcasecmp(current->attribute, "style") == 0 && JoinStyles)
+                    {
+                        /* concatenate styles */
+
+                        /*
+                          this doesn't handle CSS comments and
+                          leading/trailing white-space very well
+                          see http://www.w3.org/TR/css-style-attr
+                        */
+
+                        size_t end = strlen(current->value);
+
+                        if (current->value[end] == ';')
+                        {
+                            /* attribute ends with declaration seperator */
+
+                            current->value = (char *)MemRealloc(current->value,
+                                end + wstrlen(attval->value) + 2);
+
+                            wstrcat(current->value, " ");
+                            wstrcat(current->value, attval->value);
+                        }
+                        else if (current->value[end] == '}')
+                        {
+                            /* attribute ends with rule set */
+
+                            current->value = (char *)MemRealloc(current->value,
+                                end + wstrlen(attval->value) + 6);
+
+                            wstrcat(current->value, " { ");
+                            wstrcat(current->value, attval->value);
+                            wstrcat(current->value, " }");
+                        }
+                        else
+                        {
+                            /* attribute ends with property value */
+
+                            current->value = (char *)MemRealloc(current->value,
+                                end + wstrlen(attval->value) + 3);
+
+                            wstrcat(current->value, "; ");
+                            wstrcat(current->value, attval->value);
+                        }
+
+                        temp = attval->next;
+
+                        if (temp->next == null)
+                            current = null;
+                        else
+                            current = current->next;
+
+                        ReportAttrError(lexer, node, attval, JOINING_ATTRIBUTE);
+
+                        RemoveAttribute(node, attval);
+                        attval = temp;
+
+                    }
+                    else if (DuplicateAttrs == keep_last)
+                    {
+                        temp = current->next;
+
+                        ReportAttrError(lexer, node, current, REPEATED_ATTRIBUTE);
+                        
+                        RemoveAttribute(node, current);
+                        current = temp;
+                    }
+                    else
+                    {
+                        temp = attval->next;
+
+                        if (attval->next == null)
+                            current = null;
+                        else
+                            current = current->next;
+
+                        ReportAttrError(lexer, node, attval, REPEATED_ATTRIBUTE);
+
+                        RemoveAttribute(node, attval);
+                        attval = temp;
+                    }
+                }
+                else
+                    current = current->next;
+            }
+            attval = attval->next;
+        }
+        else
+            attval = attval->next;
     }
 }
+
 
 /* ignore unknown attributes for proprietary elements */
 Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
 {
     Attribute *attribute;
-
-    if (attval->asp == null && attval->php == null)
-        CheckUniqueAttribute(lexer, node, attval);
 
     if ((attribute = attval->dict) != null)
     {
@@ -930,6 +1030,9 @@ void CheckFsubmit(Lexer *lexer, Node *node, AttVal *attval)
 {
     char *value = attval->value;
     
+    if (LowerLiterals)
+        attval->value = wstrtolower(attval->value);
+
     if (value == null)
         ReportAttrError(lexer, node, attval, MISSING_ATTR_VALUE);
     
@@ -1182,7 +1285,6 @@ void CheckHR(Lexer *lexer, Node *node)
 {
     AttVal *av = GetAttrByName(node, "src");
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     if (av)
@@ -1235,7 +1337,6 @@ void CheckIMG(Lexer *lexer, Node *node)
 
 void CheckAnchor(Lexer *lexer, Node *node)
 {
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     FixId(lexer, node);
@@ -1243,7 +1344,6 @@ void CheckAnchor(Lexer *lexer, Node *node)
 
 void CheckMap(Lexer *lexer, Node *node)
 {
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     FixId(lexer, node);
@@ -1251,7 +1351,6 @@ void CheckMap(Lexer *lexer, Node *node)
 
 void CheckTableCell(Lexer *lexer, Node *node)
 {
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     /*
@@ -1267,7 +1366,6 @@ void CheckCaption(Lexer *lexer, Node *node)
     AttVal *attval;
     char *value = null;
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     for (attval = node->attributes; attval != null; attval = attval->next)
@@ -1372,7 +1470,6 @@ void CheckSCRIPT(Lexer *lexer, Node *node)
     AttVal *lang, *type;
     char buf[16];
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     lang = GetAttrByName(node, "language");
@@ -1406,7 +1503,6 @@ void CheckSTYLE(Lexer *lexer, Node *node)
 {
     AttVal *type = GetAttrByName(node, "type");
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     if (!type)
@@ -1422,7 +1518,6 @@ void CheckLINK(Lexer *lexer, Node *node)
 {
     AttVal *rel = GetAttrByName(node, "rel");
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     if (rel && rel->value &&
@@ -1444,7 +1539,6 @@ void CheckFORM(Lexer *lexer, Node *node)
 {
     AttVal *action = GetAttrByName(node, "action");
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     if (!action)
@@ -1456,7 +1550,6 @@ void CheckMETA(Lexer *lexer, Node *node)
 {
     AttVal *content = GetAttrByName(node, "content");
 
-    CheckUniqueAttributes(lexer, node);
     CheckAttributes(lexer, node);
 
     if (!content)

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/24 12:46:39 $ 
-    $Revision: 1.39 $ 
+    $Date: 2001/07/30 22:54:15 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -2010,6 +2010,9 @@ Node *GetToken(Lexer *lexer, uint mode)
                         lexer->token->tag->chkattrs(lexer, lexer->token);
                     else
                         CheckAttributes(lexer, lexer->token);
+
+                    /* should this be called before attribute checks? */
+                    RepairDuplicateAttributes(lexer, lexer->token);
                 }
 
                  return lexer->token;  /* return start tag */

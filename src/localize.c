@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/20 19:37:22 $ 
-    $Revision: 1.22 $ 
+    $Date: 2001/07/30 22:54:15 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -272,7 +272,7 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " repeated attribute \"%s\"", name);
+            tidy_out(lexer->errout, " dropping value \"%s\" for repeated attribute \"%s\"", value, name);
         }
         else if (code == PROPRIETARY_ATTR_VALUE)
         {
@@ -330,11 +330,17 @@ void ReportAttrError(Lexer *lexer, Node *node, AttVal *av, uint code)
         {
             tidy_out(lexer->errout, "Warning: ");
             ReportTag(lexer, node);
-            tidy_out(lexer->errout, " Anchor \"%s\" already defined", av->value);
+            tidy_out(lexer->errout, " Anchor \"%s\" already defined", value);
         }
         else if (code == ENTITY_IN_ID)
         {
             tidy_out(lexer->errout, "Warning: No entities allowed in id attribute, discarding \"&\"");
+        }
+        else if (code == JOINING_ATTRIBUTE)
+        {
+            tidy_out(lexer->errout, "Warning: ");
+            ReportTag(lexer, node);
+            tidy_out(lexer->errout, " joining values of repeated attribute \"%s\"", name);
         }
 
         tidy_out(lexer->errout, "\n");
