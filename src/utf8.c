@@ -1,13 +1,13 @@
 /* utf8.c -- convert characters to/from UTF-8
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/04/25 18:24:14 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:48:36 $ 
+    $Revision: 1.6 $ 
 
   Uses public interfaces to abstract input source and output
   sink, which may be user supplied or either FILE* or memory
@@ -328,7 +328,7 @@ int DecodeUTF8BytesToChar( uint* c, uint firstByte, tmbstr successorBytes,
        fprintf( stderr, "0x%02x ", firstByte );
        for (i = 1; i < bytes; i++)
            fprintf( stderr, "0x%02x ", buf[i - 1] );
-       fprintf( stderr, " = U+%04lx\n", n );
+       fprintf( stderr, " = U+%04ulx\n", n );
     }
 #endif
 
@@ -507,13 +507,13 @@ tchar   CombineSurrogatePair( tchar high, tchar low )
 
 Bool   SplitSurrogatePair( tchar utf16, tchar* low, tchar* high )
 {
-    Bool ok = ( IsValidCombinedChar( utf16 ) && high && low );
-    if ( ok )
+    Bool status = ( IsValidCombinedChar( utf16 ) && high && low );
+    if ( status )
     {
         *low  = (utf16 - kUTF16SurrogatesBegin) / 0x400 + kUTF16LowSurrogateBegin;
         *high = (utf16 - kUTF16SurrogatesBegin) % 0x400 + kUTF16HighSurrogateBegin;
     }
-    return ok;
+    return status;
 }
 
 Bool    IsValidCombinedChar( tchar ch )

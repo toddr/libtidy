@@ -1,13 +1,13 @@
 /* lexer.c -- Lexer for html parser
   
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/01/05 05:12:16 $ 
-    $Revision: 1.133 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:54:30 $ 
+    $Revision: 1.134 $ 
 
 */
 
@@ -98,7 +98,7 @@ struct _doctypes
   { 13, XB10, "XHTML Basic 1.0",        "-//W3C//DTD XHTML Basic 1.0//EN",        "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd"       },
 
   /* final entry */
-  {  0,    0, NULL,                     NULL,                                     NULL                                                       }
+  {  0,    (TidyDoctypeModes)0, NULL,                     NULL,                                     NULL                                                       }
 };
 
 int HTMLVersion(TidyDocImpl* doc)
@@ -108,7 +108,7 @@ int HTMLVersion(TidyDocImpl* doc)
     uint score = 0;
     uint vers = doc->lexer->versions;
     uint dtver = doc->lexer->doctype;
-    TidyDoctypeModes dtmode = cfg(doc, TidyDoctypeMode);
+    TidyDoctypeModes dtmode = (TidyDoctypeModes)cfg(doc, TidyDoctypeMode);
     Bool xhtml = (cfgBool(doc, TidyXmlOut) || doc->lexer->isvoyager) &&
                  !cfgBool(doc, TidyHtmlOut);
     Bool html4 = dtmode == TidyDoctypeStrict || dtmode == TidyDoctypeLoose || VERS_FROM40 & dtver;
@@ -133,7 +133,7 @@ int HTMLVersion(TidyDocImpl* doc)
     return VERS_UNKNOWN;
 }
 
-ctmbstr GetFPIFromVers(uint vers)
+static ctmbstr GetFPIFromVers(uint vers)
 {
     uint i;
 
@@ -144,7 +144,7 @@ ctmbstr GetFPIFromVers(uint vers)
     return NULL;
 }
 
-ctmbstr GetSIFromVers(uint vers)
+static ctmbstr GetSIFromVers(uint vers)
 {
     uint i;
 
@@ -155,7 +155,7 @@ ctmbstr GetSIFromVers(uint vers)
     return NULL;
 }
 
-ctmbstr GetNameFromVers(uint vers)
+static ctmbstr GetNameFromVers(uint vers)
 {
     uint i;
 
@@ -166,7 +166,7 @@ ctmbstr GetNameFromVers(uint vers)
     return NULL;
 }
 
-uint GetVersFromFPI(ctmbstr fpi)
+static uint GetVersFromFPI(ctmbstr fpi)
 {
     uint i;
 
@@ -1247,7 +1247,7 @@ static Node *CDATAToken(Lexer *lexer)
 void AddStringLiteral( Lexer* lexer, ctmbstr str )
 {
     byte c;
-    while( c = *str++ )
+    while(NULL != (c = *str++) )
         AddCharToLexer( lexer, c );
 }
 
@@ -1330,7 +1330,7 @@ Node *FindTITLE(TidyDocImpl* doc)
     if (node)
         for (node = node->content;
              node && !nodeIsTITLE(node);
-             node = node->next);
+             node = node->next) {}
 
     return node;
 }
@@ -1448,9 +1448,13 @@ int FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 
 ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml )
 {
-    ctmbstr name = GetNameFromVers( vers );
-    if ( !name )
+#pragma unused(isXhtml)
+
+    ctmbstr name = GetNameFromVers(vers);
+
+    if (!name)
         name = "HTML Proprietary";
+
     return name;
 }
 
@@ -1460,7 +1464,7 @@ static void FixHTMLNameSpace( TidyDocImpl* doc, ctmbstr profile )
     Node* node = FindHTML( doc );
     if ( node )
     {
-        AttVal *attr = AttrGetById( node, TidyAttr_XMLNS );
+        AttVal *attr = AttrGetById(node, TidyAttr_XMLNS);
         if ( attr )
         {
             if ( !AttrMatches(attr, profile) )
@@ -1884,7 +1888,6 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
             if (isEmpty && !matches)
             {
                 Node* node = NewNode(lexer);
-                uint i = 0;
 
                 node->element = tmbstrndup(lexer->lexbuf + start, lexer->lexsize - start - 1);
 

@@ -1,13 +1,13 @@
 /* entities.c -- recognize HTML ISO entities
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.13 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:55:35 $ 
+    $Revision: 1.14 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -343,7 +343,7 @@ uint EntityCode( ctmbstr name, uint versions )
     }
 
    /* Named entity: name ="&" followed by a name */
-    if ( np = lookup(name+1) )
+    if ( NULL != (np = lookup(name+1)) )
     {
         /* Only recognize entity name if version supports it.  */
         if ( np->versions & versions )
@@ -377,7 +377,7 @@ Bool EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions )
     }
 
     /* Named entity: name ="&" followed by a name */
-    if ( np = lookup(name+1) )
+    if ( NULL != (np = lookup(name+1)) )
     {
         *code = np->code;
         *versions = np->versions;

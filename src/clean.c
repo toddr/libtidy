@@ -1,14 +1,14 @@
 /*
   clean.c -- clean up misuse of presentation markup
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/01/04 23:44:19 $ 
-    $Revision: 1.52 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:56:52 $ 
+    $Revision: 1.53 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -227,7 +227,8 @@ static tmbstr CreatePropString(StyleProp *props)
     {
         s = prop->name;
 
-        while((*p++ = *s++));
+        while((*p++ = *s++))
+        	continue;
 
         if (prop->value)
         {
@@ -236,7 +237,8 @@ static tmbstr CreatePropString(StyleProp *props)
             ++p;
 
             s = prop->value;
-            while((*p++ = *s++));
+            while((*p++ = *s++))
+            	continue;
         }
         if (prop->next == NULL)
             break;
@@ -269,7 +271,7 @@ void FreeStyles( TidyDocImpl* doc )
     Lexer* lexer = doc->lexer;
     if ( lexer )
     {
-        Style *style, *next;
+        TagStyle *style, *next;
         for ( style = lexer->styles; style; style = next )
         {
             next = style->next;
@@ -295,7 +297,7 @@ static tmbstr GensymClass( TidyDocImpl* doc )
 static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
 {
     Lexer* lexer = doc->lexer;
-    Style* style;
+    TagStyle* style;
 
     for (style = lexer->styles; style; style=style->next)
     {
@@ -304,7 +306,7 @@ static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
             return style->tag_class;
     }
 
-    style = (Style *)MemAlloc( sizeof(Style) );
+    style = (TagStyle *)MemAlloc( sizeof(TagStyle) );
     style->tag = tmbstrdup(tag);
     style->tag_class = GensymClass( doc );
     style->properties = tmbstrdup( properties );
@@ -350,7 +352,6 @@ void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
 */
 static void Style2Rule( TidyDocImpl* doc, Node *node)
 {
-    Lexer *lexer = doc->lexer;
     AttVal *styleattr, *classattr;
     ctmbstr classname;
 
@@ -427,21 +428,21 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
     tmbstr color   = NULL;
     AttVal* attr;
     
-    if (attr = AttrGetById(body, TidyAttr_BACKGROUND))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_BACKGROUND)))
     {
         bgurl = attr->value;
         attr->value = NULL;
         RemoveAttribute( doc, body, attr );
     }
 
-    if (attr = AttrGetById(body, TidyAttr_BGCOLOR))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_BGCOLOR)))
     {
         bgcolor = attr->value;
         attr->value = NULL;
         RemoveAttribute( doc, body, attr );
     }
 
-    if (attr = AttrGetById(body, TidyAttr_TEXT))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_TEXT)))
     {
         color = attr->value;
         attr->value = NULL;
@@ -476,19 +477,19 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
         AddStringLiteral(lexer, " }\n");
     }
 
-    if (attr = AttrGetById(body, TidyAttr_LINK))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_LINK)))
     {
         AddColorRule(lexer, " :link", attr->value);
         RemoveAttribute( doc, body, attr );
     }
 
-    if (attr = AttrGetById(body, TidyAttr_VLINK))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_VLINK)))
     {
         AddColorRule(lexer, " :visited", attr->value);
         RemoveAttribute( doc, body, attr );
     }
 
-    if (attr = AttrGetById(body, TidyAttr_ALINK))
+    if (NULL != (attr = AttrGetById(body, TidyAttr_ALINK)))
     {
         AddColorRule(lexer, " :active", attr->value);
         RemoveAttribute( doc, body, attr );
@@ -520,7 +521,7 @@ static void CreateStyleElement( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     Node *node, *head, *body;
-    Style *style;
+    TagStyle *style;
     AttVal *av;
 
     if ( lexer->styles == NULL && NiceBody(doc) )
@@ -568,7 +569,7 @@ static void CreateStyleElement( TidyDocImpl* doc )
      doc is root node. search its children for html node
      the head node should be first child of html node
     */
-    if ( head = FindHEAD( doc ) )
+    if ( NULL != (head = FindHEAD( doc )) )
         InsertNodeAtEnd( head, node );
 }
 
@@ -885,7 +886,7 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
             FindTag( doc, node );
         }
     }
-    else if ( value = FontSize2Name(size, work) )
+    else if ( NULL != (value = FontSize2Name(size, work)) )
     {
         tmbchar buf[64];
         sprintf(buf, "font-size: %s", value);
@@ -906,8 +907,10 @@ static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
     tmbchar buf[128], *p;
 
     tmbstrcpy( buf, "text-align: " );
-    for ( p = buf + 12; *p++ = (tmbchar)ToLower(*align++); /**/ )
-      /**/;
+    for ( p = buf + 12; (NULL != (*p++ = (tmbchar)ToLower(*align++))); /**/ )
+    {
+    	/**/
+	}
     AddStyleProperty( doc, node, buf );
 }
 
@@ -977,6 +980,8 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
 
 static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 {
+#pragma unused(pnode)
+
     Node *child;
 
     if ( nodeIsDIR(node) || nodeIsUL(node) || nodeIsOL(node) )
@@ -1016,8 +1021,6 @@ static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 
 static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 {
-    Lexer *lexer = doc->lexer;
-
     if ( nodeIsCENTER(node) )
     {
         if ( cfgBool(doc, TidyDropFontTags) )
@@ -1081,6 +1084,8 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
 */
 static Bool MergeDivs( TidyDocImpl* doc, Node *node, Node **pnode)
 {
+#pragma unused(pnode)
+
     Node *child;
 
     if ( !nodeIsDIV(node) )
@@ -1205,6 +1210,8 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
 */
 static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 {
+#pragma unused(pnode)
+
     Node *child;
 
     if (node->tag->model & (CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE))
@@ -1255,6 +1262,8 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 /* the only child of table cell or an inline element such as em */
 static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **pnode )
 {
+#pragma unused(pnode)
+
     Node *child;
 
     if ( !nodeIsFONT(node) && nodeHasCM(node, CM_INLINE|CM_ROW) )
@@ -1581,6 +1590,8 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
 
 Node* FindEnclosingCell( TidyDocImpl* doc, Node *node)
 {
+#pragma unused(doc)
+
     Node *check;
 
     for ( check=node; check; check = check->parent )
@@ -1666,6 +1677,8 @@ void DropSections( TidyDocImpl* doc, Node* node )
 
 static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 {
+#pragma unused(doc)
+
     AttVal *attr, *next, *prev = NULL;
 
     for ( attr = node->attributes; attr; attr = next )
@@ -1797,7 +1810,7 @@ Bool NoMargins(Node *node)
 }
 
 /* does element have a single space as its content? */
-Bool SingleSpace( Lexer* lexer, Node* node )
+static Bool SingleSpace( Lexer* lexer, Node* node )
 {
     if ( node->content )
     {
@@ -2191,7 +2204,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
                 continue;
 
             MemFree( prop->name );
-            prop->name = MemAlloc( 32 );
+            prop->name = (char*)MemAlloc( 32 );
             sprintf( prop->name, "charset=%s", enc );
             s = CreatePropString( pFirstProp );
             MemFree( metaContent->value );
@@ -2229,6 +2242,8 @@ void DropComments(TidyDocImpl* doc, Node* node)
 
 void DropFontElements(TidyDocImpl* doc, Node* node, Node **pnode)
 {
+#pragma unused(pnode)
+
     Node* next;
 
     while (node)

@@ -1,13 +1,13 @@
 /* parser.c -- HTML Parser
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/01/31 00:31:42 $ 
-    $Revision: 1.108 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:52:25 $ 
+    $Revision: 1.109 $ 
 
 */
 
@@ -327,7 +327,7 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
     return element;
 }
 
-Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
+static Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
 {
     Node* next;
 
@@ -579,6 +579,8 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
 
 static Bool CleanLeadingWhitespace(TidyDocImpl* doc, Node* node)
 {
+#pragma unused(doc)
+
     if (!nodeIsText(node))
         return no;
 
@@ -629,8 +631,6 @@ static void CleanSpaces(TidyDocImpl* doc, Node* node)
 
         if (nodeIsText(node) && !(node->start < node->end))
         {
-            Node *parent = node->parent;
-
             RemoveNode(node);
             FreeNode(doc, node);
             node = next;
@@ -1964,6 +1964,8 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
 
 void ParseList(TidyDocImpl* doc, Node *list, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
 
@@ -2060,6 +2062,8 @@ void ParseList(TidyDocImpl* doc, Node *list, uint mode)
 */
 static void MoveBeforeTable( TidyDocImpl* doc, Node *row, Node *node )
 {
+#pragma unused(doc)
+
     Node *table;
 
     /* first find the table element */
@@ -2102,6 +2106,8 @@ static void FixEmptyRow(TidyDocImpl* doc, Node *row)
 
 void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node;
     Bool exclude_state;
@@ -2249,6 +2255,8 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint mode)
 
 void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
 
@@ -2394,6 +2402,8 @@ void ParseRowGroup(TidyDocImpl* doc, Node *rowgroup, uint mode)
 
 void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
 {
+#pragma unused(mode)
+
     Node *node, *parent;
 
     if (colgroup->tag->model & CM_EMPTY)
@@ -2473,6 +2483,8 @@ void ParseColGroup(TidyDocImpl* doc, Node *colgroup, uint mode)
 
 void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
     uint istackbase;
@@ -2596,6 +2608,8 @@ void ParseTableTag(TidyDocImpl* doc, Node *table, uint mode)
 /* acceptable content for pre elements */
 Bool PreContent( TidyDocImpl* doc, Node* node )
 {
+#pragma unused(doc)
+
     /* p is coerced to br's, Text OK too */
     if ( nodeIsP(node) || nodeIsText(node) )
         return yes;
@@ -2610,7 +2624,8 @@ Bool PreContent( TidyDocImpl* doc, Node* node )
 
 void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
 {
-    Lexer* lexer = doc->lexer;
+#pragma unused(mode)
+
     Node *node;
 
     if (pre->tag->model & CM_EMPTY)
@@ -2764,6 +2779,8 @@ void ParsePre( TidyDocImpl* doc, Node *pre, uint mode )
 
 void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node;
 
@@ -2803,6 +2820,8 @@ void ParseOptGroup(TidyDocImpl* doc, Node *field, uint mode)
 
 void ParseSelect(TidyDocImpl* doc, Node *field, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node;
 
@@ -2911,6 +2930,8 @@ void ParseText(TidyDocImpl* doc, Node *field, uint mode)
 
 void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
 {
+#pragma unused(mode)
+
     Node *node;
     while ((node = GetToken(doc, MixedContent)) != NULL)
     {
@@ -2976,6 +2997,8 @@ void ParseTitle(TidyDocImpl* doc, Node *title, uint mode)
 
 void ParseScript(TidyDocImpl* doc, Node *script, uint mode)
 {
+#pragma unused(mode)
+
     Node *node = GetCDATA(doc, script);
     if ( node )
         InsertNodeAtEnd(script, node);
@@ -3004,6 +3027,8 @@ Bool IsJavaScript(Node *node)
 
 void ParseHead(TidyDocImpl* doc, Node *head, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node;
     int HasTitle = 0;
@@ -3528,6 +3553,8 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
 
 void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint mode)
 {
+#pragma unused(mode)
+
     Lexer* lexer = doc->lexer;
     Node *node;
 
@@ -3812,7 +3839,7 @@ void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
     ParseTag(doc, node, mode);
 }
 
-void EncloseBodyText(TidyDocImpl* doc)
+static void EncloseBodyText(TidyDocImpl* doc)
 {
     Node* node;
     Node* body = FindBody(doc);
@@ -3843,7 +3870,7 @@ void EncloseBodyText(TidyDocImpl* doc)
     }
 }
 
-void EncloseBlockText(TidyDocImpl* doc, Node* node)
+static void EncloseBlockText(TidyDocImpl* doc, Node* node)
 {
     Node *next;
     Node *block;
@@ -3870,10 +3897,10 @@ void EncloseBlockText(TidyDocImpl* doc, Node* node)
             InsertNodeBeforeElement(block, p);
             while (block && (!nodeIsElement(block) || nodeHasCM(block, CM_INLINE)))
             {
-                Node* next = block->next;
+                Node* tempNext = block->next;
                 RemoveNode(block);
                 InsertNodeAtEnd(p, block);
-                block = next;
+                block = tempNext;
             }
             TrimSpaces(doc, p);
             continue;
@@ -3883,7 +3910,7 @@ void EncloseBlockText(TidyDocImpl* doc, Node* node)
     }
 }
 
-void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
+static void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
 {
     Node *next;
 
@@ -3905,7 +3932,7 @@ void ReplaceObsoleteElements(TidyDocImpl* doc, Node* node)
     }
 }
 
-void AttributeChecks(TidyDocImpl* doc, Node* node)
+static void AttributeChecks(TidyDocImpl* doc, Node* node)
 {
     Node *next;
 
@@ -4154,7 +4181,6 @@ static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
 
 void ParseXMLDocument(TidyDocImpl* doc)
 {
-    Lexer* lexer = doc->lexer;
     Node *node, *doctype = NULL;
 
     SetOptionBool( doc, TidyXmlTags, yes );

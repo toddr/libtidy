@@ -3,14 +3,14 @@
 
 /** @file buffio.h - Treat buffer as an I/O stream.
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:40 $ 
-    $Revision: 1.3 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 04:00:03 $ 
+    $Revision: 1.4 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -53,7 +53,7 @@ TIDY_EXPORT void tidyBufFree( TidyBuffer* buf );
 TIDY_EXPORT void tidyBufClear( TidyBuffer* buf );
 
 /** Attach to existing buffer */
-TIDY_EXPORT void tidyBufAttach( TidyBuffer* buf, void* bp, uint size );
+TIDY_EXPORT void tidyBufAttach( TidyBuffer* buf, byte* bp, uint size );
 
 /** Detach from buffer.  Caller must free. */
 TIDY_EXPORT void tidyBufDetach( TidyBuffer* buf );

@@ -1,13 +1,13 @@
 /* fileio.c -- does standard I/O
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 19:33:16 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:55:22 $ 
+    $Revision: 1.6 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -26,7 +26,7 @@ typedef struct _fp_input_source
     TidyBuffer   unget;
 } FileSource;
 
-int filesrc_getByte( ulong sourceData )
+static int filesrc_getByte( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   int bv;
@@ -36,7 +36,8 @@ int filesrc_getByte( ulong sourceData )
     bv = fgetc( fin->fp );
   return bv;
 }
-Bool filesrc_eof( ulong sourceData )
+
+static Bool filesrc_eof( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   Bool isEOF = ( fin->unget.size == 0 );
@@ -44,7 +45,8 @@ Bool filesrc_eof( ulong sourceData )
     isEOF = feof( fin->fp );
   return isEOF;
 }
-void filesrc_ungetByte( ulong sourceData, byte bv )
+
+static void filesrc_ungetByte( ulong sourceData, byte bv )
 {
   FileSource* fin = (FileSource*) sourceData;
   tidyBufPutByte( &fin->unget, bv );

@@ -1,13 +1,13 @@
 /* tagask.c -- Interrogate node type
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:48 $ 
-    $Revision: 1.3 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:50:25 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -18,12 +18,15 @@
 Bool tidyNodeIsText( TidyNode tnod )
 { return nodeIsText( tidyNodeToImpl(tnod) );
 }
+Bool tidyNodeCMIsBlock( TidyNode tnod ); /* not exported yet */
 Bool tidyNodeCMIsBlock( TidyNode tnod )
 { return nodeCMIsBlock( tidyNodeToImpl(tnod) );
 }
+Bool tidyNodeCMIsInline( TidyNode tnod ); /* not exported yet */
 Bool tidyNodeCMIsInline( TidyNode tnod )
 { return nodeCMIsInline( tidyNodeToImpl(tnod) );
 }
+Bool tidyNodeCMIsEmpty( TidyNode tnod ); /* not exported yet */
 Bool tidyNodeCMIsEmpty( TidyNode tnod )
 { return nodeCMIsEmpty( tidyNodeToImpl(tnod) );
 }

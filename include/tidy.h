@@ -11,16 +11,16 @@
   this-equivalent as 1st arg.
 
 
-  Copyright (c) 1998-2003 World Wide Web Consortium
+  Copyright (c) 1998-2004 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:02 $ 
-    $Revision: 1.8 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:59:25 $ 
+    $Revision: 1.9 $ 
 
   Contributing Author(s):
 
@@ -84,22 +84,22 @@ extern "C" {
 /** @struct TidyDoc
 **  Opaque document datatype
 */
-opaque( TidyDoc );
+opaque_type( TidyDoc );
 
 /** @struct TidyOption
 **  Opaque option datatype
 */
-opaque( TidyOption );
+opaque_type( TidyOption );
 
 /** @struct TidyNode
 **  Opaque node datatype
 */
-opaque( TidyNode );
+opaque_type( TidyNode );
 
 /** @struct TidyAttr
 **  Opaque attribute datatype
 */
-opaque( TidyAttr );
+opaque_type( TidyAttr );
 
 /** @} */
 

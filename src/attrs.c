@@ -1,13 +1,13 @@
 /* attrs.c -- recognize HTML attributes
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:02 $ 
-    $Revision: 1.92 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:58:38 $ 
+    $Revision: 1.93 $ 
 
 */
 
@@ -188,7 +188,7 @@ static const Attribute attribute_defs [] =
   { N_TIDY_ATTRIBS,             NULL,                VERS_UNKNOWN,      NULL      }
 };
 
-uint AttributeVersions(Node* node, AttVal* attval)
+static uint AttributeVersions(Node* node, AttVal* attval)
 {
     uint i;
 
@@ -210,7 +210,7 @@ uint AttributeVersions(Node* node, AttVal* attval)
 
 /* returns true if the element is a W3C defined element */
 /* but the element/attribute combination is not         */
-Bool AttributeIsProprietary(Node* node, AttVal* attval)
+static Bool AttributeIsProprietary(Node* node, AttVal* attval)
 {
     if (!node || !attval)
         return no;
@@ -255,7 +255,7 @@ static const struct _colors colors[] =
     { NULL,      NULL      }
 };
 
-ctmbstr GetColorCode(ctmbstr name)
+static ctmbstr GetColorCode(ctmbstr name)
 {
     uint i;
 
@@ -266,7 +266,7 @@ ctmbstr GetColorCode(ctmbstr name)
     return NULL;
 }
 
-ctmbstr GetColorName(ctmbstr code)
+static ctmbstr GetColorName(ctmbstr code)
 {
     uint i;
 
@@ -277,6 +277,7 @@ ctmbstr GetColorName(ctmbstr code)
     return NULL;
 }
 
+#if 0
 static const struct _colors fancy_colors[] =
 {
     { "darkgreen",            "#006400" },
@@ -421,6 +422,7 @@ static const struct _colors fancy_colors[] =
     { "yellowgreen",          "#9ACD32" },
     { NULL,                   NULL      }
 };
+#endif
 
 #ifdef ATTRIBUTE_HASH_LOOKUP
 static uint hash(ctmbstr s)
@@ -470,6 +472,8 @@ static const Attribute* lookup(TidyAttribImpl* attribs, ctmbstr atnam)
         if (tmbstrcmp(atnam, np->name) == 0)
             return install(attribs, np);
 #else
+#pragma unused(attribs)
+
     for (np = attribute_defs; np && np->name; ++np)
         if (tmbstrcmp(atnam, np->name) == 0)
             return np;
@@ -571,7 +575,8 @@ Bool IsScript( TidyDocImpl* doc, ctmbstr attrname )
 /* may id or name serve as anchor? */
 Bool IsAnchorElement( TidyDocImpl* doc, Node *node)
 {
-    TidyTagImpl* tags = &doc->tags;
+#pragma unused(doc)
+
     TidyTagId tid = TagId( node );
     if ( tid == TidyTag_A      ||
          tid == TidyTag_APPLET ||
@@ -626,7 +631,7 @@ Bool IsCSS1Selector( ctmbstr buf )
                 esclen > 0                       /* Escaped? Anything goes. */
                 || ( pos>0 && c == '-' )         /* Dash cannot be 1st char */
                 || isalpha(c)                    /* a-z, A-Z anywhere */
-                || ( c >= 161 && c <= 255 )      /* Unicode 161-255 anywhere */
+                || ( c >= 161 )      			 /* Unicode 161-255 anywhere */
             );
             esclen = 0;
         }
@@ -717,7 +722,7 @@ void FreeAnchors( TidyDocImpl* doc )
 {
     TidyAttribImpl* attribs = &doc->attribs;
     Anchor* a;
-    while ( a = attribs->anchor_list )
+    while (NULL != (a = attribs->anchor_list) )
     {
         attribs->anchor_list = a->next;
         MemFree( a->name );
@@ -747,7 +752,7 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
 {
     TidyAttribImpl* attribs = &doc->attribs;
     Attribute* dict;
-    while ( dict = attribs->declared_attr_list )
+    while ( NULL != (dict = attribs->declared_attr_list) )
     {
         attribs->declared_attr_list = dict->next;
         MemFree( dict->name );
@@ -1026,7 +1031,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     p = attval->value;
     
-    for (i = 0; c = p[i]; ++i)
+    for (i = 0; NULL != (c = p[i]); ++i)
     {
         if (c == '\\')
         {
@@ -1043,7 +1048,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
         len = tmbstrlen(p) + escape_count * 2 + 1;
         dest = (tmbstr) MemAlloc(len);
         
-        for (i = 0; c = p[i]; ++i)
+        for (i = 0; NULL != (c = p[i]); ++i)
         {
             if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
                 pos += sprintf( dest + pos, "%%%02X", (byte)c );
@@ -1075,9 +1080,12 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckScript( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
+#pragma unused(doc)
+#pragma unused(node)
+#pragma unused(attval)
 }
 
-Bool IsValidHTMLID(tmbstr id)
+static Bool IsValidHTMLID(tmbstr id)
 {
     tmbstr s = id;
 
@@ -1126,7 +1134,7 @@ Bool IsValidXMLID(tmbstr id)
     return yes;
 }
 
-Bool IsValidNMTOKEN(tmbstr name)
+static Bool IsValidNMTOKEN(tmbstr name)
 {
     tmbstr s = name;
     tchar c;
@@ -1423,7 +1431,7 @@ void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
 }
 
 /* check hexadecimal color value */
-Bool IsValidColorCode(ctmbstr color)
+static Bool IsValidColorCode(ctmbstr color)
 {
     uint i;
 
@@ -1460,7 +1468,8 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 
         cp = s = (tmbstr) MemAlloc(2 + tmbstrlen (given));
         *cp++ = '#';
-        while(*cp++ = *given++);
+        while (NULL != (*cp++ = *given++))
+        	continue;
 
         ReportAttrError(doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
 

@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/09/26 13:28:03 $ 
-    $Revision: 1.38 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:49:22 $ 
+    $Revision: 1.39 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -25,6 +25,7 @@
 */
 
 #include <errno.h>
+
 #include "tidy-int.h"
 #include "parser.h"
 #include "clean.h"
@@ -101,7 +102,7 @@ void          tidyRelease( TidyDoc tdoc )
 
 TidyDocImpl* tidyDocCreate(void)
 {
-    TidyDocImpl* doc = MemAlloc( sizeof(TidyDocImpl) );
+    TidyDocImpl* doc = (TidyDocImpl*)MemAlloc( sizeof(TidyDocImpl) );
     ClearMemory( doc, sizeof(*doc) );
 
     InitMap();
@@ -269,11 +270,15 @@ TidyOption    tidyGetNextOption( TidyDoc tdoc, TidyIterator* pos )
 
 TidyOption    tidyGetOption( TidyDoc tdoc, TidyOptionId optId )
 {
+#pragma unused(tdoc)
+
     const TidyOptionImpl* option = getOption( optId );
     return tidyImplToOption( option );
 }
 TidyOption    tidyGetOptionByName( TidyDoc doc, ctmbstr optnam )
 {
+#pragma unused(doc)
+
     const TidyOptionImpl* option = lookupOption( optnam );
     return tidyImplToOption( option );
 }
@@ -668,24 +673,30 @@ int     tidySetErrorSink( TidyDoc tdoc, TidyOutputSink* sink )
 int         tidyStatus( TidyDoc tdoc )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
-    int stat = -EINVAL;
+    int tidyStat = -EINVAL;
     if ( impl )
-        stat = tidyDocStatus( impl );
-    return stat;
+        tidyStat = tidyDocStatus( impl );
+    return tidyStat;
 }
 int         tidyDetectedHtmlVersion( TidyDoc tdoc )
 {
-    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+#pragma unused(tdoc)
+
+/*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return 0;
 }
 Bool        tidyDetectedXhtml( TidyDoc tdoc )
 {
-    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+#pragma unused(tdoc)
+
+/*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return no;
 }
 Bool        tidyDetectedGenericXml( TidyDoc tdoc )
 {
-    TidyDocImpl* impl = tidyDocToImpl( tdoc );
+#pragma unused(tdoc)
+
+/*    TidyDocImpl* impl = tidyDocToImpl( tdoc ); */
     return no;
 }
 
@@ -1069,7 +1080,6 @@ static ctmbstr integrity = "\nPanic - tree has lost its integrity\n";
 
 int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
 {
-    int status = -EINVAL;
     Bool xmlIn = cfgBool( doc, TidyXmlTags );
     int bomEnc;
 
@@ -1216,7 +1226,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
             /* Remove reference, but do not free */
             if ( node )
               RemoveNode( node );  
-            if ( node = FindHTML(doc) )
+            if ( NULL != (node = FindHTML(doc)) )
             {
               AttVal* av = AttrGetById( node, TidyAttr_XMLNS );
               if ( av )
@@ -1455,6 +1465,8 @@ Bool  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf )
 
 Bool tidyNodeIsProp( TidyDoc tdoc, TidyNode tnod )
 {
+#pragma unused(tdoc)
+
   Node* nimp = tidyNodeToImpl( tnod );
   Bool isProprietary = yes;
   if ( nimp )

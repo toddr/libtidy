@@ -3,14 +3,14 @@
 
 /* config.h -- read config file and manage config properties
   
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 19:33:16 $ 
-    $Revision: 1.5 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:55:50 $ 
+    $Revision: 1.6 $ 
 
   config files associate a property name with a value.
 
@@ -85,15 +85,12 @@ void ResetConfigToSnapshot( TidyDocImpl* doc );
 
 void CopyConfig( TidyDocImpl* docTo, TidyDocImpl* docFrom );
 
-
-#ifdef SUPPORT_GETPWNAM
 /*
- Tod Lewis contributed this code for expanding
+ Todd Lewis contributed this code for expanding
  ~/foo or ~your/foo according to $HOME and your
  user name. This will only work on Unix systems.
 */
 ctmbstr ExpandTilde(ctmbstr filename);
-#endif /* SUPPORT_GETPWNAM */
 
 int  ParseConfigFile( TidyDocImpl* doc, ctmbstr cfgfil );
 int  ParseConfigFileEnc( TidyDocImpl* doc,

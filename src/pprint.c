@@ -1,14 +1,14 @@
 /*
   pprint.c -- pretty print parse tree  
   
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/02/06 02:43:16 $ 
-    $Revision: 1.88 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:51:20 $ 
+    $Revision: 1.89 $ 
 
 */
 
@@ -246,7 +246,7 @@ typedef enum
   if the next normal wrapping point would exceed the user
   chosen wrapping column.
 */
-WrapPoint CharacterWrapPoint(tchar c)
+static WrapPoint CharacterWrapPoint(tchar c)
 {
     int i;
     for (i = 0; unicode4cat[i].code && unicode4cat[i].code <= c; ++i)
@@ -262,7 +262,7 @@ WrapPoint CharacterWrapPoint(tchar c)
     return NoWrapPoint;
 }
 
-WrapPoint Big5WrapPoint(tchar c)
+static WrapPoint Big5WrapPoint(tchar c)
 {
     if ((c & 0xFF00) == 0xA100)
     { 
@@ -392,18 +392,19 @@ static Bool WantIndent( TidyDocImpl* doc )
 }
 
 
-uint  WrapOff( TidyDocImpl* doc )
+static uint  WrapOff( TidyDocImpl* doc )
 {
     uint saveWrap = cfg( doc, TidyWrapLen );
     SetOptionInt( doc, TidyWrapLen, 0xFFFFFFFF );  /* very large number */
     return saveWrap;
 }
-void  WrapOn( TidyDocImpl* doc, uint saveWrap )
+
+static void  WrapOn( TidyDocImpl* doc, uint saveWrap )
 {
     SetOptionInt( doc, TidyWrapLen, saveWrap );
 }
 
-uint  WrapOffCond( TidyDocImpl* doc, Bool onoff )
+static uint  WrapOffCond( TidyDocImpl* doc, Bool onoff )
 {
     if ( onoff )
         return WrapOff( doc );
@@ -411,11 +412,11 @@ uint  WrapOffCond( TidyDocImpl* doc, Bool onoff )
 }
 
 
-static void AddC( TidyPrintImpl* pprint, uint c, uint index)
+static void AddC( TidyPrintImpl* pprint, uint c, uint string_index)
 {
-    if ( index + 1 >= pprint->lbufsize )
-        expand( pprint, index + 1 );
-    pprint->linebuf[index] = c;
+    if ( string_index + 1 >= pprint->lbufsize )
+        expand( pprint, string_index + 1 );
+    pprint->linebuf[string_index] = c;
 }
 
 static uint AddChar( TidyPrintImpl* pprint, uint c )
@@ -424,15 +425,15 @@ static uint AddChar( TidyPrintImpl* pprint, uint c )
     return ++pprint->linelen;
 }
 
-static uint AddAsciiString( TidyPrintImpl* pprint, ctmbstr str, uint index )
+static uint AddAsciiString( TidyPrintImpl* pprint, ctmbstr str, uint string_index )
 {
     uint ix, len = tmbstrlen( str );
-    if ( index + len >= pprint->lbufsize )
-        expand( pprint, index + len );
+    if ( string_index + len >= pprint->lbufsize )
+        expand( pprint, string_index + len );
 
     for ( ix=0; ix<len; ++ix )
-        pprint->linebuf[index + ix] = str[ ix ];
-    return index + len;
+        pprint->linebuf[string_index + ix] = str[ ix ];
+    return string_index + len;
 }
 
 static uint AddString( TidyPrintImpl* pprint, ctmbstr str )
@@ -537,7 +538,6 @@ static void ResetLine( TidyPrintImpl* pprint )
 */
 static void ResetLineAfterWrap( TidyPrintImpl* pprint )
 {
-    TidyIndent* ind = pprint->indent + 0;
     if ( pprint->linelen > pprint->wraphere )
     {
         uint *p = pprint->linebuf;
@@ -652,7 +652,6 @@ void PFlushLine( TidyDocImpl* doc, uint indent )
     if ( pprint->linelen > 0 )
     {
         uint i;
-        Bool indentAttrs = cfgBool( doc, TidyIndentAttributes );
 
         CheckWrapLine( doc );
 
@@ -682,7 +681,6 @@ void PCondFlushLine( TidyDocImpl* doc, uint indent )
     if ( pprint->linelen > 0 )
     {
         uint i;
-        Bool indentAttrs = cfgBool( doc, TidyIndentAttributes );
 
         CheckWrapLine( doc );
 
@@ -946,7 +944,7 @@ static void PPrintText( TidyDocImpl* doc, uint mode, uint indent,
 {
     uint start = node->start;
     uint end = node->end;
-    uint ix, c, skipped = 0;
+    uint ix, c = 0;
     int  ixNL = TextEndsWithNewline( doc->lexer, node, mode );
     int  ixWS = TextStartsWithWhitespace( doc->lexer, node, start, mode );
     if ( ixNL > 0 )
@@ -985,6 +983,8 @@ static void PPrintText( TidyDocImpl* doc, uint mode, uint indent,
 #if 0
 static void PPrintString( TidyDocImpl* doc, uint indent, ctmbstr str )
 {
+#pragma unused(indent)
+
     while ( *str != '\0' )
         AddChar( &doc->pprint, *str++ );
 }
@@ -1099,6 +1099,8 @@ static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
 
 static uint AttrIndent( TidyDocImpl* doc, Node* node, AttVal* attr )
 {
+#pragma unused(attr)
+
   uint spaces = cfg( doc, TidyIndentSpaces );
   uint xtra = 2;  /* 1 for the '<', another for the ' ' */
   if ( node->element == NULL )
@@ -1108,12 +1110,12 @@ static uint AttrIndent( TidyDocImpl* doc, Node* node, AttVal* attr )
        !ShouldIndent(doc, node->parent ? node->parent: node) )
     return xtra + tmbstrlen( node->element );
 
-  if ( node = FindContainer(node) )
+  if ( NULL != (node = FindContainer(node)) )
     return xtra + tmbstrlen( node->element );
   return spaces;
 }
 
-static Bool AttrNoIndentFirst( TidyDocImpl* doc, Node* node, AttVal* attr )
+static Bool AttrNoIndentFirst( /*TidyDocImpl* doc,*/ Node* node, AttVal* attr )
 {
   return ( attr==node->attributes );
   
@@ -1133,7 +1135,7 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
     Bool ucAttrs   = cfgBool( doc, TidyUpperCaseAttrs );
     Bool indAttrs  = cfgBool( doc, TidyIndentAttributes );
     uint xtra      = AttrIndent( doc, node, attr );
-    Bool first     = AttrNoIndentFirst( doc, node, attr );
+    Bool first     = AttrNoIndentFirst( /*doc,*/ node, attr );
     tmbstr name    = attr->attribute;
     Bool wrappable = no;
     tchar c;
@@ -1203,7 +1205,7 @@ static void PPrintAttribute( TidyDocImpl* doc, uint indent,
         Bool scriptAttr = attrIsEvent(attr);
 
         if ( xmlOut )
-            PPrintAttrValue( doc, indent, isB ? attr->attribute : "",
+            PPrintAttrValue( doc, indent, isB ? attr->attribute : NULLSTR,
                              attr->delim, no, scriptAttr );
 
         else if ( !isB && !IsNewNode(node) )
@@ -1286,7 +1288,6 @@ static void PPrintTag( TidyDocImpl* doc,
     Bool uc = cfgBool( doc, TidyUpperCaseTags );
     Bool xhtmlOut = cfgBool( doc, TidyXhtmlOut );
     Bool xmlOut = cfgBool( doc, TidyXmlOut );
-    Bool xml = cfgBool(doc, TidyXmlTags);
     tchar c;
     tmbstr s = node->element;
 
@@ -1354,6 +1355,9 @@ static void PPrintEndTag( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 #if 0
     if ( !(mode & NOWRAP) )
         SetWrap( doc, indent );
+#else
+#pragma unused(mode)
+#pragma unused(indent)
 #endif
 
     AddString( pprint, "</" );
@@ -1506,11 +1510,11 @@ static void PPrintXmlDecl( TidyDocImpl* doc, uint indent, Node *node )
 
     /* Force order of XML declaration attributes */
     /* PPrintAttrs( doc, indent, node ); */
-    if ( att = AttrGetById(node, TidyAttr_VERSION) )
+    if ( NULL != (att = AttrGetById(node, TidyAttr_VERSION)) )
       PPrintAttribute( doc, indent, node, att );
-    if ( att = AttrGetById(node, TidyAttr_ENCODING) )
+    if ( NULL != (att = AttrGetById(node, TidyAttr_ENCODING)) )
       PPrintAttribute( doc, indent, node, att );
-    if ( att = GetAttrByName(node, "standalone") )
+    if ( NULL != (att = GetAttrByName(node, "standalone")) )
       PPrintAttribute( doc, indent, node, att );
 
     /* restore old config value */
@@ -1547,7 +1551,6 @@ static void PPrintJste( TidyDocImpl* doc, uint indent, Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
     Bool wrapAsp = cfgBool( doc, TidyWrapAsp );
-    Bool wrapJste = cfgBool( doc, TidyWrapJste );
     uint saveWrap = WrapOffCond( doc, !wrapAsp  );
 
     AddString( pprint, "<#" );

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/01/11 03:30:00 $ 
-    $Revision: 1.44 $ 
+    $Date: 2004/02/29 03:59:50 $ 
+    $Revision: 1.45 $ 
 
 */
 
@@ -515,6 +515,7 @@ typedef char tmbchar;       /* single, possibly partial character */
 #ifndef TMBSTR_DEFINED
 typedef tmbchar* tmbstr;    /* pointer to buffer of possibly partial chars */
 typedef const tmbchar* ctmbstr; /* Ditto, but const */
+#define NULLSTR (tmbstr)""
 #define TMBSTR_DEFINED
 #endif
 
@@ -554,11 +555,11 @@ void FatalError( ctmbstr msg );
 /*
 *  Please note - this definition assumes your compiler uses 'int' for enums.
 */
-#define opaque( typenam )\
+#define opaque_type( typenam )\
 struct _##typenam { int _opaque; };\
 typedef struct _##typenam* typenam
 #else
-#define opaque(typenam) typedef void* typenam
+#define opaque_type(typenam) typedef void* typenam
 #endif
 
 /* Opaque data structure used to pass back

@@ -1,13 +1,13 @@
 /* buffio.c -- Treat buffer as an I/O stream.
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2003/04/12 02:56:52 $ 
-    $Revision: 1.6 $ 
+    $Date: 2004/02/29 03:58:12 $ 
+    $Revision: 1.7 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -106,7 +106,7 @@ void tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
         while ( allocAmt < allocSize )
             allocAmt *= 2;
 
-        bp = MemRealloc( buf->bp, allocAmt );
+        bp = (byte*)MemRealloc( buf->bp, allocAmt );
         if ( bp != NULL )
         {
             ClearMemory( bp + buf->allocated, allocAmt - buf->allocated );
@@ -117,7 +117,7 @@ void tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
 }
 
 /* Attach buffer to a chunk O' memory w/out allocation */
-void      tidyBufAttach( TidyBuffer* buf, void* bp, uint size )
+void      tidyBufAttach( TidyBuffer* buf, byte* bp, uint size )
 {
     assert( buf != NULL );
     buf->bp = bp;

@@ -1,13 +1,13 @@
 /* streamio.c -- handles character stream I/O
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2004/01/05 03:24:42 $ 
-    $Revision: 1.18 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:50:43 $ 
+    $Revision: 1.19 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -903,28 +903,30 @@ Bool tidyInitSource( TidyInputSource*  source,
                      TidyUngetByteFunc ugbFunc,
                      TidyEOFFunc       endFunc )
 {
-  Bool ok = ( source && srcData && gbFunc && ugbFunc && endFunc );
-  if ( ok )
+  Bool status = ( source && srcData && gbFunc && ugbFunc && endFunc );
+
+  if ( status )
   {
     source->sourceData = (ulong) srcData;
     source->getByte    = gbFunc;
     source->ungetByte  = ugbFunc;
     source->eof        = endFunc;
   }
-  return ok;
+
+  return status;
 }
 
 Bool tidyInitSink( TidyOutputSink* sink,
                    void*           snkData,
                    TidyPutByteFunc pbFunc )
 {
-  Bool ok = ( sink && snkData && pbFunc );
-  if ( ok )
+  Bool status = ( sink && snkData && pbFunc );
+  if ( status )
   {
     sink->sinkData = (ulong) snkData;
     sink->putByte  = pbFunc;
   }
-  return ok;
+  return status;
 }
 
 /* GetByte must return a byte value in a signed
@@ -1018,7 +1020,9 @@ static void ReadRawBytesFromStream( StreamIn *in, byte* buf, int *count )
 uint ReadCharFromStream( StreamIn* in )
 {
     uint c, n;
+#ifdef TIDY_WIN32_MLANG_SUPPORT
     uint bytesRead = 0;
+#endif
 
     if ( IsEOF(in) )
         return EndOfStream;

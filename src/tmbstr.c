@@ -1,13 +1,13 @@
 /* tmbstr.c -- Tidy string utility functions
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/03 01:48:25 $ 
-    $Revision: 1.6 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:48:57 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -22,7 +22,7 @@ tmbstr tmbstrdup( ctmbstr str )
     {
         uint len = tmbstrlen( str );
         tmbstr cp = s = (tmbstr) MemAlloc( 1+len );
-        while ( *cp++ = *str++ )
+        while ( NULL != (*cp++ = *str++) )
             /**/;
     }
     return s;
@@ -60,7 +60,7 @@ uint tmbstrncpy( tmbstr s1, ctmbstr s2, uint size )
 uint tmbstrcpy( tmbstr s1, ctmbstr s2 )
 {
     uint ncpy = 0;
-    while ( *s1++ = *s2++ )
+    while (NULL != (*s1++ = *s2++) )
         ++ncpy;
     return ncpy;
 }
@@ -73,7 +73,7 @@ uint tmbstrcat( tmbstr s1, ctmbstr s2 )
     while ( *s1 )
         ++s1;
 
-    while ( *s1++ = *s2++ )
+    while (NULL != (*s1++ = *s2++) )
         ++ncpy;
     return ncpy;
 }

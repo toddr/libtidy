@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2004/02/01 23:38:25 $ 
-    $Revision: 1.109 $ 
+    $Date: 2004/02/29 03:53:21 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -29,7 +29,7 @@
 */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-const static char *release_date = "1st February 2004";
+const static char *release_date = "1st March 2004";
 
 ctmbstr ReleaseDate(void)
 {
@@ -155,7 +155,7 @@ struct _msgfmt
   { 0,                            NULL                                                                      }
 };
 
-ctmbstr GetFormatFromCode(uint code)
+static ctmbstr GetFormatFromCode(uint code)
 {
     uint i;
 
@@ -261,16 +261,16 @@ static char* ReportPosition( TidyDocImpl* doc, int line, int col, char* buf )
 static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
                         int line, int col, ctmbstr msg, va_list args )
 {
-    char message[ 2048 ];
+    char messageBuf[ 2048 ];
     Bool go = UpdateCount( doc, level );
 
     if ( go )
     {
-        vsprintf( message, msg, args );
+        vsprintf( messageBuf, msg, args );
         if ( doc->mssgFilt )
         {
             TidyDoc tdoc = tidyImplToDoc( doc );
-            go = doc->mssgFilt( tdoc, level, line, col, message );
+            go = doc->mssgFilt( tdoc, level, line, col, messageBuf );
         }
     }
 
@@ -288,7 +288,7 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
         for ( cp = buf; *cp; ++cp )
             WriteChar( *cp, doc->errout );
 
-        for ( cp = message; *cp; ++cp )
+        for ( cp = messageBuf; *cp; ++cp )
             WriteChar( *cp, doc->errout );
         WriteChar( '\n', doc->errout );
     }
@@ -441,7 +441,6 @@ void ReportEncodingWarning(TidyDocImpl* doc, uint code, uint encoding)
 
 void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 {
-    Lexer* lexer = doc->lexer;
     char buf[ 32 ] = {'\0'};
 
     ctmbstr action = discarded ? "discarding" : "replacing";
@@ -484,6 +483,8 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 
 void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c )
 {
+#pragma unused(c)
+
     ctmbstr entityname = ( entity ? entity : "NULL" );
     ctmbstr fmt = GetFormatFromCode(code);
 

@@ -1,13 +1,13 @@
 /* tags.c -- recognize HTML tags
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2003/05/25 03:22:20 $ 
-    $Revision: 1.44 $ 
+    $Author: terry_teague $ 
+    $Date: 2004/02/29 03:49:59 $ 
+    $Revision: 1.45 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -248,7 +248,7 @@ static const Dict tag_defs[] =
   { TidyTag_WBR,        "wbr",        VERS_PROPRIETARY,     NULL,                       (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
 
   /* this must be the final entry */
-  { 0,                  NULL,         0,                    NULL,                       (0),                                           NULL,          NULL           }
+  { (TidyTagId)0,        NULL,         0,                    NULL,                       (0),                                           NULL,          NULL           }
 };
 
 #ifdef ELEMENT_HASH_LOOKUP
@@ -430,6 +430,8 @@ TidyIterator   GetDeclaredTagList( TidyDocImpl* doc )
 ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, int tagType,
                                    TidyIterator* iter )
 {
+#pragma unused(doc)
+
     ctmbstr name = NULL;
     Dict* curr;
     for ( curr = (Dict*) *iter; name == NULL && curr != NULL; curr = curr->next )
@@ -693,7 +695,6 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
        what HTML version is involved; a document wihtout is valid */
     if (cfg(doc, TidyAccessibilityCheckLevel) == 0)
     {
-        Lexer* lexer = doc->lexer;
         if (!HasSummary)
         {
             doc->badAccess |= MISSING_SUMMARY;
@@ -893,6 +894,10 @@ uint nodeHeaderLevel( Node* node )
         return 5;
     case TidyTag_H6:
         return 6;
+    default:
+    {
+    	/* fall through */
+    }
     }
     return 0;
 }
