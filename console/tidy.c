@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 16:27:25 $ 
-    $Revision: 1.23 $ 
+    $Date: 2005/03/22 17:34:37 $ 
+    $Revision: 1.24 $ 
 */
 
 #include "tidy.h"
@@ -27,7 +27,7 @@ static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 #endif
 }
 
-static void help( TidyDoc tdoc, ctmbstr prog )
+static void help( ctmbstr prog )
 {
     printf( "%s [option...] [file...] [option...] [file...]\n", prog );
     printf( "Utility to clean up and pretty print HTML/XHTML/XML\n");
@@ -197,7 +197,7 @@ static Bool isAutoBool( TidyOption topt )
     return no;
 }
 
-static void optionhelp( TidyDoc tdoc, ctmbstr prog )
+static void optionhelp( TidyDoc tdoc )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
@@ -311,7 +311,7 @@ static void optionhelp( TidyDoc tdoc, ctmbstr prog )
     }
 }
 
-static void optionvalues( TidyDoc tdoc, ctmbstr prog )
+static void optionvalues( TidyDoc tdoc )
 {
     TidyIterator pos = tidyGetOptionList( tdoc );
 
@@ -439,7 +439,7 @@ static void optionvalues( TidyDoc tdoc, ctmbstr prog )
             "internally by HTML Tidy\n\n" );
 }
 
-static void version( TidyDoc tdoc, ctmbstr prog )
+static void version( void )
 {
 #ifdef PLATFORM_NAME
     printf( "HTML Tidy for %s released on %s\n",
@@ -449,7 +449,7 @@ static void version( TidyDoc tdoc, ctmbstr prog )
 #endif
 }
 
-static void unknownOption( TidyDoc tdoc, uint c )
+static void unknownOption( uint c )
 {
     fprintf( errout, "HTML Tidy: unknown option: %c\n", (char)c );
 }
@@ -573,19 +573,19 @@ int main( int argc, char** argv )
             else if ( strcasecmp(arg, "help") == 0 ||
                       strcasecmp(arg,    "h") == 0 || *arg == '?' )
             {
-                help( tdoc, prog );
+                help( prog );
                 tidyRelease( tdoc );
                 return 0; /* success */
             }
             else if ( strcasecmp(arg, "help-config") == 0 )
             {
-                optionhelp( tdoc, prog );
+                optionhelp( tdoc );
                 tidyRelease( tdoc );
                 return 0; /* success */
             }
             else if ( strcasecmp(arg, "show-config") == 0 )
             {
-                optionvalues( tdoc, prog );
+                optionvalues( tdoc );
                 tidyRelease( tdoc );
                 return 0; /* success */
             }
@@ -663,7 +663,7 @@ int main( int argc, char** argv )
                       strcasecmp(arg, "-version") == 0 ||
                       strcasecmp(arg,        "v") == 0 )
             {
-                version( tdoc, prog );
+                version();
                 tidyRelease( tdoc );
                 return 0;  /* success */
 
@@ -749,7 +749,7 @@ int main( int argc, char** argv )
                         break;
 
                     default:
-                        unknownOption( tdoc, c );
+                        unknownOption( c );
                         break;
                     }
                 }
