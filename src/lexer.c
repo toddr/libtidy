@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/05/06 22:58:53 $ 
-    $Revision: 1.103 $ 
+    $Date: 2003/05/07 04:27:17 $ 
+    $Revision: 1.104 $ 
 
 */
 
@@ -1552,6 +1552,11 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
             if (!GetAttrByName(doctype, sys))
                 RepairAttrValue(doc, doctype, sys, GetSIFromVers(XH11));
             return yes;
+        }
+        else if (lexer->versions & XH11 && !(lexer->versions & VERS_HTML40))
+        {
+            RepairAttrValue(doc, doctype, pub, GetFPIFromVers(XH11));
+            RepairAttrValue(doc, doctype, sys, GetSIFromVers(XH11));
         }
         else if (lexer->versions & XB10 && lexer->doctype == XB10)
         {
