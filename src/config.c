@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2001/07/24 07:09:06 $ 
-    $Revision: 1.15 $ 
+    $Author: hoehrmann $ 
+    $Date: 2001/07/30 00:08:32 $ 
+    $Revision: 1.16 $ 
 
 */
 
@@ -109,6 +109,7 @@ Bool HideComments = no;     /* hides all (real) comments in output */
 Bool IndentCdata = no;      /* indent <!CDATA[ ... ]]> section */
 Bool ForceOutput = no;      /* output document even if errors were found */
 uint ShowErrors = 6;        /* number of errors to put out */
+Bool AsciiChars = yes;      /* convert quotes and dashes to nearest ASCII char */
 
 typedef struct _lex PLex;
 
@@ -209,6 +210,7 @@ static struct Flag
     {"indent-cdata",    {(int *)&IndentCdata},      ParseBool},
     {"force-output",    {(int *)&ForceOutput},      ParseBool},
     {"show-errors",     {(int *)&ShowErrors},       ParseInt},
+    {"ascii-chars",     {(int *)&AsciiChars},       ParseBool},
 
   /* this must be the final entry */
     {0,          0,             0}

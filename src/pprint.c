@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/18 22:51:31 $ 
-    $Revision: 1.18 $ 
+    $Date: 2001/07/30 00:08:32 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -463,7 +463,7 @@ static void PPrintChar(uint c, uint mode)
      Andrzej Novosiolov for his help with this code.
     */
 
-    if (MakeClean)
+    if (MakeClean && AsciiChars)
     {
         if (c >= 0x2013 && c <= 0x201E)
         {

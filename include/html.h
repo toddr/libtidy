@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2001/07/24 12:46:39 $ 
-    $Revision: 1.37 $ 
+    $Date: 2001/07/30 00:08:32 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -847,6 +847,7 @@ extern Bool HideComments;
 extern Bool IndentCdata;
 extern Bool ForceOutput;
 extern uint ShowErrors;
+extern Bool AsciiChars;
 
 /* Parser methods for tags */
 
