@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2004/10/25 21:18:03 $ 
-    $Revision: 1.67 $ 
+    $Date: 2004/10/26 14:09:55 $ 
+    $Revision: 1.68 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -222,6 +222,7 @@ static tmbstr CreatePropString(StyleProp *props)
     }
 
     style = (tmbstr) MemAlloc(len+1);
+    style[0] = '\0';
 
     for (p = style, prop = props; prop; prop = prop->next)
     {
