@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2001/07/12 05:57:10 $ 
-    $Revision: 1.13 $ 
+    $Author: terry_teague $ 
+    $Date: 2001/07/12 09:04:12 $ 
+    $Revision: 1.14 $ 
 
 */
 
@@ -515,20 +515,20 @@ Attribute *CheckAttribute(Lexer *lexer, Node *node, AttVal *attval)
 
     if ((attribute = attval->dict) != null)
     {
-        /* title is vers 2.0 for A and LINK otherwise vers 4.0 */
-        if (attribute == attr_title &&
-                (node->tag == tag_a || node->tag == tag_link))
-                lexer->versions &= VERS_ALL;
-        else if (attribute->versions & VERS_XML)
+        /* if attribute looks like <foo/> check XML is ok */
+        if (attribute->versions & VERS_XML)
         {
             if (!(XmlTags || XmlOut))
                 ReportAttrError(lexer, node, attval, XML_ATTRIBUTE_VALUE);
-        }
-        else
-            lexer->versions &= attribute->versions;
+        } /* title first appeared in HTML 4.0 except for a/link */
+        else if (attribute != attr_title ||
+                    !(node->tag == tag_a || node->tag == tag_link))
+            ConstrainVersion(lexer, attribute->versions);
         
         if (attribute->attrchk)
             attribute->attrchk(lexer, node, attval);
+        else if (attval->dict->versions & VERS_PROPRIETARY)
+            ReportAttrError(lexer, node, attval, PROPRIETARY_ATTRIBUTE);
     }
     else if (!XmlTags && !(node->tag == null) && attval->asp == null &&
              !(node->tag && (node->tag->versions & VERS_PROPRIETARY)))
@@ -692,7 +692,7 @@ void CheckValign(Lexer *lexer, Node *node, AttVal *attval)
            wstrcasecmp(value, "absbottom") == 0 ||
            wstrcasecmp(value, "textbottom") == 0)
     {
-        lexer->versions &= VERS_PROPRIETARY;
+        ConstrainVersion(lexer, VERS_PROPRIETARY);
         ReportAttrError(lexer, node, attval, PROPRIETARY_ATTR_VALUE);
     }
     else
@@ -861,7 +861,7 @@ void CheckIMG(Lexer *lexer, Node *node)
         else if (attribute == attr_datafld)
             HasDataFld = yes;
         else if (attribute == attr_width || attribute == attr_height)
-            lexer->versions &= ~VERS_HTML20;
+            ConstrainVersion(lexer, ~VERS_HTML20);
     }
 
     if (!HasAlt)
@@ -904,7 +904,7 @@ void CheckTableCell(Lexer *lexer, Node *node)
       elements with %block; as their content model
     */
     if (GetAttrByName(node, "width") || GetAttrByName(node, "height"))
-        lexer->versions &= ~VERS_HTML40_STRICT;
+        ConstrainVersion(lexer, ~VERS_HTML40_STRICT);
 }
 
 void CheckCaption(Lexer *lexer, Node *node)
@@ -926,9 +926,9 @@ void CheckCaption(Lexer *lexer, Node *node)
     if (value != null)
     {
         if (wstrcasecmp(value, "left") == 0 || wstrcasecmp(value, "right") == 0)
-            lexer->versions &= (VERS_HTML40_LOOSE|VERS_FRAMESET);
+            ConstrainVersion(lexer, VERS_HTML40_LOOSE);
         else if (wstrcasecmp(value, "top") == 0 || wstrcasecmp(value, "bottom") == 0)
-            lexer->versions &= VERS_FROM32;
+            ConstrainVersion(lexer, ~(VERS_HTML20|VERS_HTML32));
         else
             ReportAttrError(lexer, node, attval, BAD_ATTRIBUTE_VALUE);
     }
