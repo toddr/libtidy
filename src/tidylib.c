@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 23:15:28 $ 
-    $Revision: 1.13 $ 
+    $Date: 2003/04/18 19:34:30 $ 
+    $Revision: 1.14 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -83,7 +83,7 @@ TidyOption   tidyImplToOption( const TidyOptionImpl* option )
 ** 
 */
 
-TidyDoc       tidyCreate()
+TidyDoc       tidyCreate(void)
 {
   TidyDocImpl* impl = tidyDocCreate();
   return tidyImplToDoc( impl );
@@ -95,7 +95,7 @@ void          tidyRelease( TidyDoc tdoc )
   tidyDocRelease( impl );
 }
 
-TidyDocImpl* tidyDocCreate()
+TidyDocImpl* tidyDocCreate(void)
 {
     TidyDocImpl* doc = MemAlloc( sizeof(TidyDocImpl) );
     ClearMemory( doc, sizeof(*doc) );
@@ -155,7 +155,7 @@ ulong       tidyGetAppData( TidyDoc tdoc )
   return 0;
 }
 
-ctmbstr     tidyReleaseDate()
+ctmbstr     tidyReleaseDate(void)
 {
     return ReleaseDate();
 }

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 22:12:47 $ 
-    $Revision: 1.94 $ 
+    $Date: 2003/04/18 19:34:24 $ 
+    $Revision: 1.95 $ 
 
 */
 
@@ -560,7 +560,7 @@ static tmbchar LastChar( tmbstr str )
     #define StartEndTag 4
 */
 
-Lexer* NewLexer()
+Lexer* NewLexer(void)
 {
     Lexer* lexer = (Lexer*) MemAlloc( sizeof(Lexer) );
 
@@ -3793,7 +3793,7 @@ Bool IsValidAttrName( ctmbstr attr )
 
 
 /* create a new attribute */
-AttVal *NewAttribute()
+AttVal *NewAttribute(void)
 {
     AttVal *av = (AttVal*) MemAlloc( sizeof(AttVal) );
     ClearMemory( av, sizeof(AttVal) );

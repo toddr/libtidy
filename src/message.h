@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 04:40:46 $ 
-    $Revision: 1.5 $ 
+    $Date: 2003/04/18 19:34:26 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -30,7 +30,7 @@
 ** Keeps track of ShowWarnings, ShowErrors, etc.
 */
 
-ctmbstr ReleaseDate();
+ctmbstr ReleaseDate(void);
 
 /* Reports error at current Lexer line/column. */ 
 void message( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... );

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/10 16:08:35 $ 
-    $Revision: 1.4 $ 
+    $Date: 2003/04/18 19:34:29 $ 
+    $Revision: 1.5 $ 
 
 */
 
@@ -111,7 +111,7 @@ TidyOption   tidyImplToOption( const TidyOptionImpl* option );
 #endif
 
 /* Create/Destroy a Tidy "document" object */
-TidyDocImpl* tidyDocCreate();
+TidyDocImpl* tidyDocCreate(void);
 void         tidyDocRelease( TidyDocImpl* impl );
 
 int          tidyDocStatus( TidyDocImpl* impl );

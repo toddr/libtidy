@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/22 18:42:00 $ 
-    $Revision: 1.11 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 19:34:23 $ 
+    $Revision: 1.12 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -323,11 +323,11 @@ static const entity* lookup( ctmbstr s )
     return NULL;
 }
 
-void InitEntities()
+void InitEntities(void)
 {
 }
 
-void FreeEntities()
+void FreeEntities(void)
 {
 }
 

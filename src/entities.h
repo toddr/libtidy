@@ -8,16 +8,16 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/22 18:41:59 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 19:34:24 $ 
+    $Revision: 1.5 $ 
 
 */
 
 #include "forward.h"
 
-void InitEntities();
-void FreeEntities();
+void InitEntities(void);
+void FreeEntities(void);
 
 /* entity starting with "&" returns zero on error */
 uint    EntityCode( ctmbstr name, uint versions );

@@ -5,9 +5,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2003/04/02 08:33:35 $ 
-    $Revision: 1.7 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 19:34:26 $ 
+    $Revision: 1.8 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -67,14 +67,14 @@ static StreamOut stdoutStreamOut =
     { 0, filesink_putByte }
 };
 
-StreamOut* StdErrOutput()
+StreamOut* StdErrOutput(void)
 {
   if ( stderrStreamOut.sink.sinkData == 0 )
       stderrStreamOut.sink.sinkData = (ulong) stderr;
   return &stderrStreamOut;
 }
 
-StreamOut* StdOutOutput()
+StreamOut* StdOutOutput(void)
 {
   if ( stdoutStreamOut.sink.sinkData == 0 )
       stdoutStreamOut.sink.sinkData = (ulong) stdout;

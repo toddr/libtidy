@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:47 $ 
-    $Revision: 1.4 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 19:34:27 $ 
+    $Revision: 1.5 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -85,8 +85,8 @@ StreamOut* FileOutput( FILE* fp, int encoding, uint newln );
 StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint newln );
 StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint newln );
 
-StreamOut* StdErrOutput();
-StreamOut* StdOutOutput();
+StreamOut* StdErrOutput(void);
+StreamOut* StdOutOutput(void);
 void       ReleaseStreamOut( StreamOut* out );
 
 void WriteChar( uint c, StreamOut* out );

@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 22:12:48 $ 
-    $Revision: 1.7 $ 
+    $Date: 2003/04/18 19:34:25 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -385,7 +385,7 @@ uint ToUpper(uint c);
 char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps );
 
 
-Lexer* NewLexer();
+Lexer* NewLexer(void);
 Bool EndOfInput( TidyDocImpl* doc );
 void FreeLexer( TidyDocImpl* doc );
 
@@ -502,13 +502,13 @@ void UngetToken( TidyDocImpl* doc );
 
 Node* GetToken( TidyDocImpl* doc, uint mode );
 
-void InitMap();
+void InitMap(void);
 
 Bool IsValidAttrName( ctmbstr attr );
 
 
 /* create a new attribute */
-AttVal *NewAttribute();
+AttVal *NewAttribute(void);
 
 /* create a new attribute with given name and value */
 AttVal *NewAttributeEx(ctmbstr name, ctmbstr value);

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/11 20:20:39 $ 
-    $Revision: 1.78 $ 
+    $Date: 2003/04/18 19:34:25 $ 
+    $Revision: 1.79 $ 
 
 */
 
@@ -31,7 +31,7 @@
 
 const static char *release_date = "1st April 2003";
 
-ctmbstr ReleaseDate()
+ctmbstr ReleaseDate(void)
 {
   return release_date;
 }

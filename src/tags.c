@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/17 19:04:56 $ 
-    $Revision: 1.35 $ 
+    $Date: 2003/04/18 19:34:28 $ 
+    $Revision: 1.36 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -422,8 +422,8 @@ ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, int tagType,
                                    TidyIterator* iter )
 {
     ctmbstr name = NULL;
-    Dict* curr = (Dict*) *iter;
-    for ( curr; name == NULL && curr != NULL; curr = curr->next )
+    Dict* curr;
+    for ( curr = (Dict*) *iter; name == NULL && curr != NULL; curr = curr->next )
     {
         switch ( tagType )
         {
