@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: hoehrmann $ 
-    $Date: 2003/04/13 13:47:38 $ 
-    $Revision: 1.32 $ 
+    $Date: 2003/04/18 20:53:57 $ 
+    $Revision: 1.33 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1524,7 +1524,7 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
 {
     tmbchar indent_buf[ 32 ];
     int indent;
-    size_t len;
+    uint len;
     AttVal *attval;
 
     while (node)

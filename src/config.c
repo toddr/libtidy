@@ -6,9 +6,9 @@
 
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/25 20:01:32 $ 
-    $Revision: 1.57 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 20:53:57 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -749,7 +749,7 @@ Bool ParseConfigValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optval )
     else
     {
         TidyBuffer inbuf = {0};            /* Set up input source */
-        tidyBufAttach( &inbuf, (void*)optval, strlen(optval)+1 );
+        tidyBufAttach( &inbuf, (void*)optval, tmbstrlen(optval)+1 );
         doc->config.cfgIn = BufferInput( doc, &inbuf, ASCII );
         doc->config.c = GetC( &doc->config );
 

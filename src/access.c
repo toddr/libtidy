@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/03/19 18:37:42 $ 
-    $Revision: 1.6 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 20:53:55 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -853,7 +853,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             {
                 if (av->value != NULL) 
                 {
-                    if ((strlen(av->value) < 150) &&
+                    if ((tmbstrlen(av->value) < 150) &&
                         (IsPlaceholderAlt (av->value) == no) &&
                         (IsPlaceHolderObject (av->value) == no) &&
                         (EndsWithBytes (av->value) == no) &&
@@ -862,7 +862,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                         HasAlt = yes;
                     }
 
-                    else if (strlen (av->value) > 150)
+                    else if (tmbstrlen (av->value) > 150)
                     {
                         HasAlt = yes;
                         AccessReport( doc, node, TidyWarning,
@@ -933,7 +933,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             */
             else if ( attrIsLONGDESC(av) )
             {
-                if ( hasValue(av) && strlen(av->value) > 1 )
+                if ( hasValue(av) && tmbstrlen(av->value) > 1 )
                     HasLongDesc = yes;
               }
 
@@ -1279,7 +1279,7 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
             /* Checks if 'LONGDESC' value is valid only if present */
             if ( attrIsLONGDESC(av) )
             {
-                if ( hasValue(av) && strlen(av->value) > 1 )
+                if ( hasValue(av) && tmbstrlen(av->value) > 1 )
                 {
                     doc->access.HasCheckedLongDesc++;
                 }
@@ -1302,14 +1302,14 @@ static void CheckFrame( TidyDocImpl* doc, Node* node )
 
                 if ( !HasTitle )
                 {
-                    if ( av->value == NULL || strlen(av->value) == 0 )
+                    if ( av->value == NULL || tmbstrlen(av->value) == 0 )
                     {
                         HasTitle = yes;
                         AccessReport( doc, node, TidyError, FRAME_TITLE_INVALID_NULL);
                     }
                     else
                     {
-                        if ( IsWhitespace(av->value) && strlen(av->value) > 0 )
+                        if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
                         {
                             HasTitle = yes;
                             AccessReport( doc, node, TidyError, FRAME_TITLE_INVALID_SPACES );
@@ -1400,7 +1400,7 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                         the file is described within the document, or by a link
                         that is present which gives the description.
                     */
-                    if ( strlen(ext) < 6 && strlen(ext) > 0 )
+                    if ( tmbstrlen(ext) < 6 && tmbstrlen(ext) > 0 )
                     {
                         int errcode = IsSoundFile( av->value );
                         if ( errcode )
@@ -1483,13 +1483,13 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
 
                 if (HasTriggeredLink == no)
                 {
-                    if (strlen (word) < 6)
+                    if (tmbstrlen (word) < 6)
                     {
                         AccessReport( doc, node, TidyWarning, LINK_TEXT_NOT_MEANINGFUL);
                     }
                 }
 
-                if (strlen (word) > 60)
+                if (tmbstrlen (word) > 60)
                 {
                     AccessReport( doc, node, TidyWarning, LINK_TEXT_TOO_LONG);
                 }
@@ -1734,14 +1734,14 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
                 }
 
                 if ((av->value == NULL)||
-                    (strlen (av->value) == 0))
+                    (tmbstrlen (av->value) == 0))
                 {
                     HasAbbr = yes;
                     AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR_NULL);
                 }
                 
                 if ((IsWhitespace (av->value) == yes)&&
-                    (strlen (av->value) > 0))
+                    (tmbstrlen (av->value) > 0))
                 {
                     HasAbbr = yes;
                     AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR_SPACES);
@@ -1756,7 +1756,7 @@ static void CheckTH( TidyDocImpl* doc, Node* node )
             (IsWhitespace (word) == no))
         {
             /* Must have 'ABBR' attribute if header is > 15 characters */
-            if ((strlen (word) > 15)&&
+            if ((tmbstrlen (word) > 15)&&
                 (HasAbbr == no))
             {
                 AccessReport( doc, node, TidyWarning, TABLE_MAY_REQUIRE_HEADER_ABBR);
@@ -1917,12 +1917,12 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
                     }
                 }
 
-                if ( av->value == NULL || strlen(av->value) == 0 )
+                if ( av->value == NULL || tmbstrlen(av->value) == 0 )
                 {
                     HasSummary = yes;
                     AccessReport( doc, node, TidyError, TABLE_SUMMARY_INVALID_NULL );
                 }
-                else if ( IsWhitespace(av->value) && strlen(av->value) > 0 )
+                else if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
                 {
                     HasSummary = yes;
                     AccessReport( doc, node, TidyError, TABLE_SUMMARY_INVALID_SPACES );
@@ -2469,13 +2469,13 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
             {
                 HasValue = yes;
             }
-            else if ( av->value == NULL || strlen(av->value) == 0 )
+            else if ( av->value == NULL || tmbstrlen(av->value) == 0 )
             {
                 HasValue = yes;
                 AccessReport( doc, node, TidyError,
                               FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL );
             }
-            else if ( IsWhitespace(av->value) && strlen(av->value) > 0 )
+            else if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
             {
                 HasValue = yes;
                 AccessReport( doc, node, TidyError,
@@ -2594,7 +2594,7 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
         {
             word = textFromOneNode( doc, node->content);
 
-            for(i = 0; i < strlen (word); i++)
+            for(i = 0; i < tmbstrlen (word); i++)
             {
                 if (word[i] == ' ')
                 {

@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/17 15:52:39 $ 
-    $Revision: 1.65 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 20:53:56 $ 
+    $Revision: 1.66 $ 
 
 */
 
@@ -735,7 +735,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
                           see http://www.w3.org/TR/css-style-attr
                         */
 
-                        size_t end = strlen(current->value);
+                        uint end = tmbstrlen(current->value);
 
                         if (current->value[end] == ';')
                         {
@@ -928,7 +928,7 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
     tmbstr dest, p;
     uint escape_count = 0, backslash_count = 0;
     uint i, pos = 0;
-    size_t len;
+    uint len;
     
     if (attval == NULL || attval->value == NULL)
     {

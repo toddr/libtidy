@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: creitzel $ 
-    $Date: 2003/04/03 18:58:47 $ 
-    $Revision: 1.12 $ 
+    $Author: hoehrmann $ 
+    $Date: 2003/04/18 20:53:57 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -271,7 +271,7 @@ Node *InsertedToken( TidyDocImpl* doc )
     node->attributes = DupAttrs( doc, istack->attributes );
 
     /* advance lexer to next item on the stack */
-    n = lexer->insert - &(lexer->istack[0]);
+    n = (uint)(lexer->insert - &(lexer->istack[0]));
 
     /* and recover state if we have reached the end */
     if (++n < lexer->istacksize)
