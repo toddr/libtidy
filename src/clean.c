@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/07 16:26:59 $ 
-    $Revision: 1.88 $ 
+    $Date: 2005/03/08 17:16:14 $ 
+    $Revision: 1.89 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -2023,7 +2023,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             else if (AttrValueIs(attr, "Code"))
             {
                 Node *br = NewLineNode(lexer);
-                NormalizeSpaces(lexer, node);
+                NormalizeSpaces(lexer, node->content);
 
                 if ( !list || TagId(list) != TidyTag_PRE )
                 {
@@ -2434,7 +2434,7 @@ void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node)
 
         if (node->tag && node->tag->parser == ParsePre)
         {
-            NormalizeSpaces(doc->lexer, node);
+            NormalizeSpaces(doc->lexer, node->content);
             node = next;
             continue;
         }
