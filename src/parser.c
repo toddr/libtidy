@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: terry_teague $ 
-    $Date: 2001/06/02 09:09:14 $ 
-    $Revision: 1.3 $ 
+    $Date: 2001/06/02 09:16:15 $ 
+    $Revision: 1.4 $ 
 
 */
 
@@ -3194,6 +3194,13 @@ void ParseHTML(Lexer *lexer, Node *html, uint mode)
                 MoveToHead(lexer, html, node);
                 continue;
             }
+			
+			/* #427675 - discard illegal frame element following a frameset - fix by Randy Waki 11 Oct 00 */
+			if (frameset != null && node->tag == tag_frame)
+			{
+				ReportWarning(lexer, html, node, DISCARDING_UNEXPECTED);
+				continue;
+			}
         }
 
         UngetToken(lexer);
