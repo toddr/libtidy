@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:12 $ 
-    $Revision: 1.52 $ 
+    $Date: 2005/04/08 10:33:27 $ 
+    $Revision: 1.53 $ 
 
 */
 
@@ -535,6 +535,13 @@ typedef const tmbchar* ctmbstr; /* Ditto, but const */
 # define ARG_UNUSED(x) x __attribute__((unused))
 #else
 # define ARG_UNUSED(x) x
+#endif
+
+/* HAS_VSNPRINTF triggers the use of "vsnprintf", which is safe related to
+   buffer overflow. Therefore, we make it the default unless HAS_VSNPRINTF
+   has been defined. */
+#ifndef HAS_VSNPRINTF
+# define HAS_VSNPRINTF 1
 #endif
 
 /*

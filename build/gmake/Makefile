@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/03/24 10:54:53 $ 
-#     $Revision: 1.12 $ 
+#     $Date: 2005/04/08 10:33:27 $ 
+#     $Revision: 1.13 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -84,7 +84,7 @@ CFLAGS= -g -Wall -Wno-switch -Wno-parentheses -I $(INCDIR)
 # CFLAGS += -Wunused-parameter
 
 OTHERCFLAGS=
-OTHERCFLAGS+= -D_DEBUG=1 -DHAS_VSNPRINTF=1
+OTHERCFLAGS+= -D_DEBUG=1
 # OTHERCFLAGS+= -DSUPPORT_ACCESSIBILITY_CHECKS=1 -DSUPPORT_UTF16_ENCODINGS=1 -DSUPPORT_ASIAN_ENCODINGS=1
 ifdef SUPPORT_UTF16_ENCODINGS
 CFLAGS += -DSUPPORT_UTF16_ENCODINGS=$(SUPPORT_UTF16_ENCODINGS)
