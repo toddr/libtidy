@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/31 12:43:06 $ 
-    $Revision: 1.86 $ 
+    $Date: 2005/04/08 09:11:13 $ 
+    $Revision: 1.87 $ 
 
 */
 
@@ -614,7 +614,7 @@ ctmbstr ExpandTilde( ctmbstr filename )
     return (ctmbstr) filename;
 }
 
-Bool tidyFileExists( ctmbstr filename )
+Bool TIDY_CALL tidyFileExists( ctmbstr filename )
 {
   ctmbstr fname = (tmbstr) ExpandTilde( filename );
 #ifndef NO_ACCESS_SUPPORT

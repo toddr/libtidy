@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 13:03:44 $ 
-    $Revision: 1.28 $ 
+    $Date: 2005/04/08 09:11:13 $ 
+    $Revision: 1.29 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -970,11 +970,11 @@ uint DecodeSymbolFont(uint c)
 ** an entry point to marshal pointers-to-functions.
 ** Needed by .NET and possibly other language bindings.
 */
-Bool tidyInitSource( TidyInputSource*  source,
-                     void*             srcData,
-                     TidyGetByteFunc   gbFunc,
-                     TidyUngetByteFunc ugbFunc,
-                     TidyEOFFunc       endFunc )
+Bool TIDY_CALL tidyInitSource( TidyInputSource*  source,
+                               void*             srcData,
+                               TidyGetByteFunc   gbFunc,
+                               TidyUngetByteFunc ugbFunc,
+                               TidyEOFFunc       endFunc )
 {
   Bool status = ( source && srcData && gbFunc && ugbFunc && endFunc );
 
@@ -989,9 +989,9 @@ Bool tidyInitSource( TidyInputSource*  source,
   return status;
 }
 
-Bool tidyInitSink( TidyOutputSink* sink,
-                   void*           snkData,
-                   TidyPutByteFunc pbFunc )
+Bool TIDY_CALL tidyInitSink( TidyOutputSink* sink,
+                             void*           snkData,
+                             TidyPutByteFunc pbFunc )
 {
   Bool status = ( sink && snkData && pbFunc );
   if ( status )
@@ -1006,20 +1006,20 @@ Bool tidyInitSink( TidyOutputSink* sink,
 ** integer so that a negative value can signal EOF
 ** without interfering w/ 0-255 legitimate byte values.
 */
-uint  tidyGetByte( TidyInputSource* source )
+uint TIDY_CALL tidyGetByte( TidyInputSource* source )
 {
   int bv = source->getByte( source->sourceData );
   return (uint) bv;
 }
-Bool  tidyIsEOF( TidyInputSource* source )
+Bool TIDY_CALL tidyIsEOF( TidyInputSource* source )
 {
   return source->eof( source->sourceData );
 }
-void tidyUngetByte( TidyInputSource* source, uint ch )
+void TIDY_CALL tidyUngetByte( TidyInputSource* source, uint ch )
 {
     source->ungetByte( source->sourceData, (byte) ch );
 }
-void tidyPutByte( TidyOutputSink* sink, uint ch )
+void TIDY_CALL tidyPutByte( TidyOutputSink* sink, uint ch )
 {
     sink->putByte( sink->sinkData, (byte) ch );
 }

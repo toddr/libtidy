@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:34 $ 
-    $Revision: 1.51 $ 
+    $Date: 2005/04/08 09:11:12 $ 
+    $Revision: 1.52 $ 
 
 */
 
@@ -490,6 +490,10 @@ extern "C" {
 #define TIDY_EXPORT __declspec( dllexport ) 
 #endif
 
+#ifndef TIDY_CALL
+#define TIDY_CALL __stdcall
+#endif
+
 #endif /* _WIN32 */
 
 /* hack for gnu sys/types.h file which defines uint and ulong */
@@ -521,6 +525,10 @@ typedef tmbchar* tmbstr;    /* pointer to buffer of possibly partial chars */
 typedef const tmbchar* ctmbstr; /* Ditto, but const */
 #define NULLSTR (tmbstr)""
 #define TMBSTR_DEFINED
+#endif
+
+#ifndef TIDY_CALL
+#define TIDY_CALL
 #endif
 
 #if defined(__GNUC__) || defined(__INTEL_COMPILER)

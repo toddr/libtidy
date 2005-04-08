@@ -1,13 +1,13 @@
 /* fileio.c -- does standard I/O
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/02/29 03:55:22 $ 
-    $Revision: 1.6 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/04/08 09:11:13 $ 
+    $Revision: 1.7 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -26,7 +26,7 @@ typedef struct _fp_input_source
     TidyBuffer   unget;
 } FileSource;
 
-static int filesrc_getByte( ulong sourceData )
+static int TIDY_CALL filesrc_getByte( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   int bv;
@@ -37,7 +37,7 @@ static int filesrc_getByte( ulong sourceData )
   return bv;
 }
 
-static Bool filesrc_eof( ulong sourceData )
+static Bool TIDY_CALL filesrc_eof( ulong sourceData )
 {
   FileSource* fin = (FileSource*) sourceData;
   Bool isEOF = ( fin->unget.size == 0 );
@@ -46,13 +46,13 @@ static Bool filesrc_eof( ulong sourceData )
   return isEOF;
 }
 
-static void filesrc_ungetByte( ulong sourceData, byte bv )
+static void TIDY_CALL filesrc_ungetByte( ulong sourceData, byte bv )
 {
   FileSource* fin = (FileSource*) sourceData;
   tidyBufPutByte( &fin->unget, bv );
 }
 
-void initFileSource( TidyInputSource* inp, FILE* fp )
+void TIDY_CALL initFileSource( TidyInputSource* inp, FILE* fp )
 {
   FileSource* fin = NULL;
 
@@ -66,7 +66,7 @@ void initFileSource( TidyInputSource* inp, FILE* fp )
   inp->sourceData = (ulong) fin;
 }
 
-void freeFileSource( TidyInputSource* inp, Bool closeIt )
+void TIDY_CALL freeFileSource( TidyInputSource* inp, Bool closeIt )
 {
     FileSource* fin = (FileSource*) inp->sourceData;
     if ( closeIt && fin && fin->fp )
@@ -75,13 +75,13 @@ void freeFileSource( TidyInputSource* inp, Bool closeIt )
     MemFree( fin );
 }
 
-void filesink_putByte( ulong sinkData, byte bv )
+void TIDY_CALL filesink_putByte( ulong sinkData, byte bv )
 {
   FILE* fout = (FILE*) sinkData;
   fputc( bv, fout );
 }
 
-void  initFileSink( TidyOutputSink* outp, FILE* fp )
+void TIDY_CALL initFileSink( TidyOutputSink* outp, FILE* fp )
 {
   outp->putByte  = filesink_putByte;
   outp->sinkData = (ulong) fp;
