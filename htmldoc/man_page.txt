@@ -1,4 +1,4 @@
-.TH TIDY 1 "$Date: 2005/04/12 09:48:35 $"
+.TH TIDY 1 "$Date: 2005/04/12 16:20:18 $"
 .SH NAME
 tidy \- validate, correct, and pretty-print HTML files
 .SH SYNOPSIS
@@ -21,7 +21,7 @@ writes messages to the standard error.
 .SH OPTIONS
 .SS File manipulation
 .TP 15
-.B -output, -o <file>
+.B -output <file>, -o <file>
 write output to the specified <file>
 (output-file: <file>)
 .TP 15
@@ -184,26 +184,15 @@ There were warnings.
 .IP 2
 There were errors.
 .SH "SEE ALSO"
+.B tidy-config(7)
 .P
-HTML Tidy Project Page at http://tidy.sourceforge.net
+HTML Tidy Project Page at \fIhttp://tidy.sourceforge.net\fR
 .P
-Dave Raggett's Tidy Overview at http://www.w3.org/People/Raggett/tidy/
+Dave Raggett's Tidy Overview at \fIhttp://www.w3.org/People/Raggett/tidy/\fR
 .P
-Tidy Quick Reference at http://tidy.sourceforge.net/docs/quickref.html
+Tidy Quick Reference at \fIhttp://tidy.sourceforge.net/docs/quickref.html\fR
 .P
-For information about TidyLib, see http://tidy.sourceforge.net/libintro.html
+For information about TidyLib, see \fIhttp://tidy.sourceforge.net/libintro.html\fR
 .SH AUTHORS
-.P
-Dave Raggett <dsr@w3.org>.
-.P
-Terry Teague <terry_teague@users.sourceforge.net>.
-.P
-Bjoern Hoehrmann <bjoern@hoehrmann.de>
-.P
-Charles Reitzel <creitzel@rcn.com>
-.P
-and the tidy contributors.
-.Pq
-This manual page was written by Matej Vela <vela@debian.org> and updated
-by the tidy team.
+\fBTidy\fR was written by Dave Raggett <\fIdsr@w3.org\fR>, and is now maintained and developed by the Tidy team at \fIhttp://tidy.sourceforge.net/\fR.  It is released under the \fIMIT Licence\fR.
 
