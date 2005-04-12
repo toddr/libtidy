@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/12 11:58:56 $ 
-    $Revision: 1.132 $ 
+    $Date: 2005/04/12 12:43:56 $ 
+    $Revision: 1.133 $ 
 
 */
 
@@ -168,12 +168,9 @@ static struct _msgfmt
   { IMG_ALT_SUSPICIOUS_FILE_SIZE,                  "[1.1.1.3]: suspicious 'alt' text (file size)."                            }, /* Access */
   { IMG_ALT_SUSPICIOUS_PLACEHOLDER,                "[1.1.1.4]: suspicious 'alt' text (placeholder)."                          }, /* Access */
   { IMG_ALT_SUSPICIOUS_TOO_LONG,                   "[1.1.1.10]: suspicious 'alt' text (too long)."                            }, /* Access */
-  { IMG_MISSING_ALT_BULLET,                        "[1.1.1.11]: <img> missing 'alt' text (bullet)."                           }, /* Access */
-  { IMG_MISSING_ALT_H_RULE,                        "[1.1.1.12]: <img> missing 'alt' text (horizontal rule)."                  }, /* Access */
   { IMG_MISSING_LONGDESC_DLINK,                    "[1.1.2.1]: <img> missing 'longdesc' and d-link."                          }, /* Access */
   { IMG_MISSING_DLINK,                             "[1.1.2.2]: <img> missing d-link."                                         }, /* Access */
   { IMG_MISSING_LONGDESC,                          "[1.1.2.3]: <img> missing 'longdesc'."                                     }, /* Access */
-  { LONGDESC_NOT_REQUIRED,                         "[1.1.2.5]: 'longdesc' not required."                                      }, /* Access */
   { IMG_BUTTON_MISSING_ALT,                        "[1.1.3.1]: <img> (button) missing 'alt' text."                            }, /* Access */
   { APPLET_MISSING_ALT,                            "[1.1.4.1]: <applet> missing alternate content."                           }, /* Access */
   { OBJECT_MISSING_ALT,                            "[1.1.5.1]: <object> missing alternate content."                           }, /* Access */
@@ -263,8 +260,6 @@ static struct _msgfmt
   { SCRIPT_NOT_KEYBOARD_ACCESSIBLE_ON_MOUSE_MOVE,  "[9.3.1.6]: <script> not keyboard accessible (onMouseMove)."               }, /* Access */
   { NEW_WINDOWS_REQUIRE_WARNING_NEW,               "[10.1.1.1]: new windows require warning (_new)."                          }, /* Access */
   { NEW_WINDOWS_REQUIRE_WARNING_BLANK,             "[10.1.1.2]: new windows require warning (_blank)."                        }, /* Access */
-  { LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT,        "[10.2.1.1]: <label> needs repositioning (<label> before <input>)."        }, /* Access */
-  { LABEL_NEEDS_REPOSITIONING_AFTER_INPUT,         "[10.2.1.2]: <label> needs repositioning (<label> after <input>)."         }, /* Access */
   { FORM_CONTROL_REQUIRES_DEFAULT_TEXT,            "[10.4.1.1]: form control requires default text."                          }, /* Access */
   { FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL,        "[10.4.1.2]: form control default text invalid (null)."                    }, /* Access */
   { FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES,      "[10.4.1.3]: form control default text invalid (spaces)."                  }, /* Access */
@@ -288,8 +283,6 @@ static struct _msgfmt
   { LINK_TEXT_MISSING,                             "[13.1.1.2]: link text missing."                                           }, /* Access */
   { LINK_TEXT_TOO_LONG,                            "[13.1.1.3]: link text too long."                                          }, /* Access */
   { LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE,           "[13.1.1.4]: link text not meaningful (click here)."                       }, /* Access */
-  { LINK_TEXT_NOT_MEANINGFUL_MORE,                 "[13.1.1.5]: link text not meaningful (more)."                             }, /* Access */
-  { LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS,          "[13.1.1.6]: link text not meaningful (follow this)."                      }, /* Access */
   { METADATA_MISSING,                              "[13.2.1.1]: Metadata missing."                                            }, /* Access */
   { METADATA_MISSING_LINK,                         "[13.2.1.2]: Metadata missing (link element)."                             }, /* Access */
   { METADATA_MISSING_REDIRECT_AUTOREFRESH,         "[13.2.1.3]: Metadata missing (redirect/auto-refresh)."                    }, /* Access */

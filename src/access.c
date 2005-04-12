@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/30 10:01:40 $ 
-    $Revision: 1.27 $ 
+    $Date: 2005/04/12 12:43:40 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -681,7 +681,6 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
     Bool HasValidHeight = no;
     Bool HasValidWidthBullet = no;
     Bool HasValidWidthHR = no; 
-    Bool HasTriggeredMissingAlt = no;
     Bool HasTriggeredMissingLongDesc = no;
 
     AttVal* av;
@@ -854,40 +853,32 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                         HasDLINK = yes;
                     }
                 }
-            }    
+            }
         }
 
         if ((HasAlt == no)&&
             (HasValidWidthBullet == yes)&&
             (HasValidHeight == yes))
         {
-            ReportAccessError( doc, node, IMG_MISSING_ALT_BULLET);
-            HasTriggeredMissingAlt = yes;
         }
 
         if ((HasAlt == no)&&
             (HasValidWidthHR == yes)&&
             (HasValidHeight == yes))
         {
-            ReportAccessError( doc, node, IMG_MISSING_ALT_H_RULE);
-            HasTriggeredMissingAlt = yes;
         }
-        
-        if (HasTriggeredMissingAlt == no)
+
+        if (HasAlt == no)
         {
-            if (HasAlt == no)
-            {
-                ReportAccessError( doc, node, IMG_MISSING_ALT);
-            }
+            ReportAccessError( doc, node, IMG_MISSING_ALT);
         }
 
         if ((HasLongDesc == no)&&
             (HasValidHeight ==yes)&&
-            (HasValidWidthHR == yes)||
-            (HasValidWidthBullet == yes))
+            ((HasValidWidthHR == yes)||
+             (HasValidWidthBullet == yes)))
         {
             HasTriggeredMissingLongDesc = yes;
-            ReportAccessWarning( doc, node, LONGDESC_NOT_REQUIRED);
         }
 
         if (HasTriggeredMissingLongDesc == no)
@@ -903,14 +894,14 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
             {
                 ReportAccessWarning( doc, node, IMG_MISSING_DLINK);
             }
-            
+
             if ((HasLongDesc == no)&&
                 (HasDLINK == no))
             {
                 ReportAccessWarning( doc, node, IMG_MISSING_LONGDESC_DLINK);
             }
         }
-        
+
         if (HasIsMap == yes)
         {
             ReportAccessError( doc, node, IMAGE_MAP_SERVER_SIDE_REQUIRES_CONVERSION);
@@ -1289,12 +1280,6 @@ static void CheckAnchorAccess( TidyDocImpl* doc, Node* node )
                 if (strcmp (word, "more") == 0)
                 {
                     HasTriggeredLink = yes;
-                    ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL_MORE);
-                }
-
-                if (strcmp (word, "follow this") == 0)
-                {
-                    ReportAccessWarning( doc, node, LINK_TEXT_NOT_MEANINGFUL_FOLLOW_THIS);
                 }
 
                 if (strcmp (word, "click here") == 0)
@@ -2053,76 +2038,6 @@ static void CheckLabel( TidyDocImpl* doc, Node* node )
 
 
 /************************************************************
-* CheckLabelPosition
-*
-* Checks for a LABEL immediately before of after an element.
-************************************************************/
-
-typedef struct LabelProp
-{
-    Bool HasLabelBefore;
-    Bool HasLabelAfter;
-    Bool HasValidLabel;
-} LabelProp;
-
-static void CheckLabelPosition( TidyDocImpl* doc, Node* node,
-                                LabelProp *lprop )
-{
-    Bool foundLabel = no;
-
-    if ( node->prev != NULL && node->prev->prev != NULL )
-    {
-        Node* temp = node->prev->prev;
-        if ( nodeIsLABEL(temp) )
-        {
-            foundLabel = yes;
-            if ( nodeIsText(temp->content) )
-            {
-                ctmbstr word = textFromOneNode( doc, temp->content );
-                if ( !IsWhitespace(word) )
-                    lprop->HasLabelBefore = yes;
-            }
-        }
-
-        if ( lprop->HasLabelBefore && nodeIsText(node->prev) )
-        {
-           ctmbstr  text = textFromOneNode( doc, node->prev );
-            if ( IsWhitespace(text) )
-                lprop->HasValidLabel = yes;
-        }
-    }
-
-    if ( !foundLabel
-         && node->next != NULL && node->next->next != NULL )
-    {
-        Node* temp = node->next->next;
-        if ( nodeIsLABEL(temp) &&
-             nodeIsText(temp->content) )
-        {
-            ctmbstr word = textFromOneNode( doc, temp->content);
-            if ( !IsWhitespace(word) )
-                lprop->HasLabelAfter = yes;
-        }
-        if ( lprop->HasLabelAfter && nodeIsText(node->next) )
-        {
-            ctmbstr text = textFromOneNode( doc, node->next);
-            if ( IsWhitespace(text) )
-                lprop->HasValidLabel = yes;
-        }
-    }
-}
-
-static void ReportErrorLabelPosition( TidyDocImpl* doc, Node* node,
-                                      LabelProp* lprop )
-{
-    if ( !lprop->HasValidLabel && lprop->HasLabelBefore )
-        ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_BEFORE_INPUT );
-
-    if ( !lprop->HasValidLabel && lprop->HasLabelAfter )
-        ReportAccessError( doc, node, LABEL_NEEDS_REPOSITIONING_AFTER_INPUT );
-}
-
-/************************************************************
 * CheckInputLabel
 * 
 * Checks for valid 'ID' attribute within the INPUT element.
@@ -2133,12 +2048,9 @@ static void ReportErrorLabelPosition( TidyDocImpl* doc, Node* node,
 
 static void CheckInputLabel( TidyDocImpl* doc, Node* node )
 {
-    AttVal* av;
-
-    LabelProp lprop = { no, no, no };
-
     if (Level2_Enabled( doc ))
     {
+        AttVal* av;
 
         /* Checks attributes within the INPUT element */
         for (av = node->attributes; av != NULL; av = av->next)
@@ -2146,34 +2058,7 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
             /* Must have valid 'ID' value */
             if ( attrIsID(av) && hasValue(av) )
                 doc->access.HasValidId = yes;
-    
-            /* 
-               Determines where the LABEL should be located determined by 
-               the 'TYPE' of form the INPUT is.
-            */
-            else if ( attrIsTYPE(av) && hasValue(av) )
-            {
-                if (AttrValueIs(av, "checkbox") ||
-                    AttrValueIs(av, "radio")    ||
-                    AttrValueIs(av, "text")     ||
-                    AttrValueIs(av, "password") ||
-                    AttrValueIs(av, "file"))
-                {
-                    CheckLabelPosition( doc, node, &lprop );
-                }
-                else
-                /* The following 'TYPES' do not require a LABEL */
-                if (AttrValueIs(av, "image")  ||
-                    AttrValueIs(av, "submit") ||
-                    AttrValueIs(av, "reset")  ||
-                    AttrValueIs(av, "button"))
-                {
-                    lprop.HasValidLabel = yes;
-                }
-            }
         }
-
-        ReportErrorLabelPosition( doc, node, &lprop);
 
         if ( ++doc->access.ForID == 2 )
         {
@@ -2193,10 +2078,8 @@ static void CheckInputLabel( TidyDocImpl* doc, Node* node )
 
 static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
 {
-    Bool HasValue = no;
     Bool HasAlt = no;
     Bool MustHaveAlt = no;
-    Bool MustHaveValue = no;
     AttVal* av;
 
     /* Checks attributes within the INPUT element */
@@ -2213,37 +2096,11 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
                 }
             }
 
-            if (Level3_Enabled( doc ))
-            {
-                if (AttrValueIs(av, "text") ||
-                    AttrValueIs(av, "checkbox"))
-                {    
-                    MustHaveValue = yes;
-                }
-            }
         }
-        
+
         if ( attrIsALT(av) && hasValue(av) )
         {
             HasAlt = yes;
-        }
-
-        if ( attrIsVALUE(av) )
-        {
-            if ( hasValue(av) )
-            {
-                HasValue = yes;
-            }
-            else if ( av->value == NULL || tmbstrlen(av->value) == 0 )
-            {
-                HasValue = yes;
-                ReportAccessError( doc, node, FORM_CONTROL_DEFAULT_TEXT_INVALID_NULL );
-            }
-            else if ( IsWhitespace(av->value) && tmbstrlen(av->value) > 0 )
-            {
-                HasValue = yes;
-                ReportAccessError( doc, node, FORM_CONTROL_DEFAULT_TEXT_INVALID_SPACES );
-            }
         }
     }
 
@@ -2252,10 +2109,6 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
         ReportAccessError( doc, node, IMG_BUTTON_MISSING_ALT );
     }
 
-    if ( MustHaveValue && !HasValue )
-    {
-        ReportAccessError( doc, node, FORM_CONTROL_REQUIRES_DEFAULT_TEXT );
-    }
 }
 
 
@@ -2446,42 +2299,6 @@ static void CheckParagraphHeader( TidyDocImpl* doc, Node* node )
                 }
             }
         }
-    }
-}
-
-
-/*********************************************************
-* CheckSelect
-*
-* Checks to see if a LABEL follows the SELECT element.
-*********************************************************/
-
-static void CheckSelect( TidyDocImpl* doc, Node* node )
-{
-    if (Level2_Enabled( doc ))
-    {
-        LabelProp lprop = { no, no, no };
-        CheckLabelPosition( doc, node, &lprop );
-        ReportErrorLabelPosition( doc, node, &lprop);
-    }
-}
-
-
-/************************************************************
-* CheckTextArea
-*
-* TEXTAREA must contain a label description either before 
-* or after the TEXTAREA element. Text must exist within 
-* TEXTAREA.
-************************************************************/
-
-static void CheckTextArea( TidyDocImpl* doc, Node* node )
-{
-    if (Level2_Enabled( doc ))
-    {
-        LabelProp lprop = { no, no, no };
-        CheckLabelPosition( doc, node, &lprop );
-        ReportErrorLabelPosition( doc, node, &lprop);
     }
 }
 
@@ -3379,18 +3196,6 @@ static void AccessibilityCheckNode( TidyDocImpl* doc, Node* node )
     else if ( nodeIsP(node) )
     {
         CheckParagraphHeader( doc, node );
-    }
-
-    /* Checks SELECT element for LABEL */
-    else if ( nodeIsSELECT(node) )
-    {
-        CheckSelect( doc, node );
-    }
-
-    /* Checks TEXTAREA element for LABEL */
-    else if ( nodeIsTEXTAREA(node) )
-    {
-        CheckTextArea( doc, node );
     }
 
     /* Checks HTML elemnt for valid 'LANG' */
