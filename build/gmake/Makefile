@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/04/08 10:33:27 $ 
-#     $Revision: 1.13 $ 
+#     $Date: 2005/04/12 17:24:12 $ 
+#     $Revision: 1.14 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -74,6 +74,7 @@ SRCDIR = ${TOPDIR}/src
 OBJDIR = ./obj
 LIBDIR = ${TOPDIR}/lib
 BINDIR = ${TOPDIR}/bin
+DOCDIR = ${TOPDIR}/htmldoc
 
 # CFLAGS etc..
 # For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1
@@ -118,6 +119,10 @@ AR=ar -r
 
 EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
+DOCS = $(DOCDIR)/quickref.html $(DOCDIR)/tidy-config.7
+
+CONFIGXML = $(DOCDIR)/tidy-config.xml
+
 OBJFILES=\
         $(OBJDIR)/access$(OBJSUF)     $(OBJDIR)/attrs$(OBJSUF)      $(OBJDIR)/istack$(OBJSUF) \
         $(OBJDIR)/parser$(OBJSUF)     $(OBJDIR)/tags$(OBJSUF)       $(OBJDIR)/entities$(OBJSUF) \
@@ -150,8 +155,7 @@ LIBHFILES= \
         $(SRCDIR)/tidy-int.h
 
 
-
-all:    $(LIBRARY) $(EXES)
+all:    $(LIBRARY) $(EXES) $(DOCS)
 
 $(LIBRARY): $(OBJFILES)
 	if [ ! -d $(LIBDIR) ]; then mkdir $(LIBDIR); fi
@@ -172,11 +176,20 @@ $(BINDIR)/tab2space: $(APPDIR)/tab2space.c
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
 	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tab2space.c $(LIBS)
 
+$(CONFIGXML): $(BINDIR)/$(PROJECT)
+	$(BINDIR)/$(PROJECT) -xml-config > $@
+
+$(DOCDIR)/quickref.html: $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
+	xsltproc -o $@ $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
+
+$(DOCDIR)/tidy-config.7: $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
+	xsltproc -o $@ $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
+
 debug:
 	@$(MAKE) CFLAGS='$(CFLAGS) $(DEBUGFLAGS)' LIBS='$(LIBS) $(DEBUGLIBS)' all
 
 clean:
-	rm -f $(OBJFILES) $(EXES) $(LIBRARY) $(OBJDIR)/*.lo
+	rm -f $(OBJFILES) $(EXES) $(LIBRARY) $(DOCS) $(CONFIGXML) $(OBJDIR)/*.lo
 	if [ -d $(OBJDIR)/.libs ]; then rmdir $(OBJDIR)/.libs; fi
 	if [ -d $(LIBDIR)/.libs ]; then rmdir $(LIBDIR)/.libs; fi
 	if [ "$(OBJDIR)" != "$(TOPDIR)" -a -d $(OBJDIR) ]; then rmdir $(OBJDIR); fi
@@ -195,10 +208,12 @@ installexes: $(EXES)
 	if [ ! -d "$(bininst)" ]; then mkdir -p "$(bininst)"; fi
 	cp -f $(EXES) "$(bininst)/"
 
-installmanpage:
-	if [ -f "$(TOPDIR)/htmldoc/man_page.txt" ] ; then \
+installmanpage: $(DOCDIR)/tidy-config.7
+	if [ -f "$(DOCDIR)/man_page.txt" ] ; then \
 	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi; \
-	cp -f $(TOPDIR)/htmldoc/man_page.txt "$(maninst)/man1/tidy.1"; \
+	if [ ! -d "$(maninst)/man7" ]; then mkdir -p "$(maninst)/man7"; fi; \
+	cp -f $(DOCDIR)/man_page.txt "$(maninst)/man1/tidy.1"; \
+	cp -f $(DOCDIR)/tidy-config.7 "$(maninst)/man7/tidy-config.7"; \
 	fi
 
 install: installhdrs installib installmanpage installexes
