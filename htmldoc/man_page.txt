@@ -1,4 +1,4 @@
-.TH TIDY 1 "April 12, 2005"
+.TH TIDY 1 "$Date: 2005/04/12 09:48:35 $"
 .SH NAME
 tidy \- validate, correct, and pretty-print HTML files
 .SH SYNOPSIS
@@ -203,7 +203,7 @@ Bjoern Hoehrmann <bjoern@hoehrmann.de>
 Charles Reitzel <creitzel@rcn.com>
 .P
 and the tidy contributors.
-.P
+.Pq
 This manual page was written by Matej Vela <vela@debian.org> and updated
 by the tidy team.
 
