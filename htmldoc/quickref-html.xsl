@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/04/12 16:20:19 $
-    $Revision: 1.1 $
+    $Date: 2005/04/13 11:10:58 $
+    $Revision: 1.2 $
 
 -->
 
@@ -239,9 +239,9 @@
 
 <!-- Regular Templates: -->
 <xsl:template match="a | code | em | strong | br">
-  <xsl:copy-of select=".">
-   <xsl:apply-templates select="@* | node()" />
-  </xsl:copy-of>
+    <xsl:element name="{local-name(.)}">
+        <xsl:copy-of select="@* | node()" />
+    </xsl:element>
 </xsl:template>
 
 </xsl:stylesheet>
