@@ -1,4 +1,4 @@
-.TH TIDY 1 "$Date: 2005/04/12 16:20:18 $"
+.TH TIDY 1 "$Date: 2005/04/13 16:37:18 $"
 .SH NAME
 tidy \- validate, correct, and pretty-print HTML files
 .SH SYNOPSIS
@@ -146,11 +146,14 @@ show the version of Tidy
 .B -help, -h, -?
 list the command line options
 .TP 15
-.B -xml-config
-list all configuration options in XML format
+.B -xml-help
+list the command line options in XML format
 .TP 15
 .B -help-config
 list all configuration options
+.TP 15
+.B -xml-config
+list all configuration options in XML format
 .TP 15
 .B -show-config
 list the current configuration settings

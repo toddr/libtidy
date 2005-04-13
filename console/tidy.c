@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/06 14:39:41 $ 
-    $Revision: 1.31 $ 
+    $Date: 2005/04/13 16:37:17 $ 
+    $Revision: 1.32 $ 
 */
 
 #include "tidy.h"
@@ -25,97 +25,6 @@ static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 #else
     return ( strcasecmp( filename1, filename2 ) == 0 );
 #endif
-}
-
-static void help( ctmbstr prog )
-{
-    printf( "%s [option...] [file...] [option...] [file...]\n", prog );
-    printf( "Utility to clean up and pretty print HTML/XHTML/XML\n");
-    printf( "see http://tidy.sourceforge.net/\n");
-    printf( "\n");
-
-#ifdef PLATFORM_NAME
-    printf( "Options for HTML Tidy for %s released on %s:\n",
-             PLATFORM_NAME, tidyReleaseDate() );
-#else
-    printf( "Options for HTML Tidy released on %s:\n", tidyReleaseDate() );
-#endif
-    printf( "\n");
-
-    printf( "File manipulation\n");
-    printf( "-----------------\n");
-    printf( "  -out or -o <file> specify the output markup file\n");
-    printf( "  -config <file>    set configuration options from the specified <file>\n");
-    printf( "  -f      <file>    write errors to the specified <file>\n");
-    printf( "  -modify or -m     modify the original input files\n");
-    printf( "\n");
-
-    printf( "Processing directives\n");
-    printf( "---------------------\n");
-    printf( "  -indent  or -i    indent element content\n");
-    printf( "  -wrap <column>    wrap text at the specified <column> (default is 68)\n");
-    printf( "  -upper   or -u    force tags to upper case (default is lower case)\n");
-    printf( "  -clean   or -c    replace FONT, NOBR and CENTER tags by CSS\n");
-    printf( "  -bare    or -b    strip out smart quotes and em dashes, etc.\n");
-    printf( "  -numeric or -n    output numeric rather than named entities\n");
-    printf( "  -errors  or -e    only show errors\n");
-    printf( "  -quiet   or -q    suppress nonessential output\n");
-    printf( "  -omit             omit optional end tags\n");
-    printf( "  -xml              specify the input is well formed XML\n");
-    printf( "  -asxml            convert HTML to well formed XHTML\n");
-    printf( "  -asxhtml          convert HTML to well formed XHTML\n");
-    printf( "  -ashtml           force XHTML to well formed HTML\n");
-
-/* TRT */
-#if SUPPORT_ACCESSIBILITY_CHECKS
-    printf( "  -access <level>   do additional accessibility checks (<level> = 1, 2, 3)\n");
-#endif
-
-    printf( "\n");
-
-    printf( "Character encodings\n");
-    printf( "-------------------\n");
-    printf( "  -raw              output values above 127 without conversion to entities\n");
-    printf( "  -ascii            use ISO-8859-1 for input, US-ASCII for output\n");
-    printf( "  -latin0           use ISO-8859-15 for input, US-ASCII for output\n");
-    printf( "  -latin1           use ISO-8859-1 for both input and output\n");
-#ifndef NO_NATIVE_ISO2022_SUPPORT
-    printf( "  -iso2022          use ISO-2022 for both input and output\n");
-#endif
-    printf( "  -utf8             use UTF-8 for both input and output\n");
-    printf( "  -mac              use MacRoman for input, US-ASCII for output\n");
-    printf( "  -win1252          use Windows-1252 for input, US-ASCII for output\n");
-    printf( "  -ibm858           use IBM-858 (CP850+Euro) for input, US-ASCII for output\n");
-
-#if SUPPORT_UTF16_ENCODINGS
-    printf( "  -utf16le          use UTF-16LE for both input and output\n");
-    printf( "  -utf16be          use UTF-16BE for both input and output\n");
-    printf( "  -utf16            use UTF-16 for both input and output\n");
-#endif
-
-#if SUPPORT_ASIAN_ENCODINGS /* #431953 - RJ */
-    printf( "  -big5             use Big5 for both input and output\n"); 
-    printf( "  -shiftjis         use Shift_JIS for both input and output\n");
-    printf( "  -language <lang>  set the two-letter language code <lang> (for future use)\n");
-#endif
-    printf( "\n");
-
-    printf( "Miscellaneous\n");
-    printf( "-------------\n");
-    printf( "  -version  or -v   show the version of Tidy\n");
-    printf( "  -help, -h or -?   list the command line options\n");
-    printf( "  -help-config      list all configuration options\n");
-    printf( "  -xml-config       list all configuration options in XML format\n");
-    printf( "  -show-config      list the current configuration settings\n");
-    printf( "\n");
-    printf( "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
-    printf( "\n");
-
-    printf( "Input/Output default to stdin/stdout respectively\n");
-    printf( "Single letter options apart from -f may be combined\n");
-    printf( "as in:  tidy -f errs.txt -imu foo.html\n");
-    printf( "For further info on HTML see http://www.w3.org/MarkUp\n");
-    printf( "\n");
 }
 
 static const char *cutToWhiteSpace(const char *s, uint offset, char *sbuf)
@@ -151,6 +60,25 @@ static const char *cutToWhiteSpace(const char *s, uint offset, char *sbuf)
     }
 }
 
+static void print2Columns( const char* fmt, uint l1, uint l2,
+                           const char *c1, const char *c2 )
+{
+    const char *pc1=c1, *pc2=c2;
+    char *c1buf = malloc(l1+1);
+    char *c2buf = malloc(l2+1);
+
+    do
+    {
+        pc1 = cutToWhiteSpace(pc1, l1, c1buf);
+        pc2 = cutToWhiteSpace(pc2, l2, c2buf);
+        printf(fmt,
+               c1buf[0]!='\0'?c1buf:"",
+               c2buf[0]!='\0'?c2buf:"");
+    } while (pc1 || pc2);
+    free(c1buf);
+    free(c2buf);
+}
+
 static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
                            const char *c1, const char *c2, const char *c3 )
 {
@@ -174,10 +102,263 @@ static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
     free(c3buf);
 }
 
-static const char* fmt = "%-27.27s %-9.9s  %-40.40s\n";
-static const char* valfmt = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
-static const char* ul
+static const char helpfmt[] = " %-19.19s %-58.58s\n";
+static const char helpul[]
+        = "-----------------------------------------------------------------";
+static const char fmt[] = "%-27.27s %-9.9s  %-40.40s\n";
+static const char valfmt[] = "%-27.27s %-9.9s %-1.1s%-39.39s\n";
+static const char ul[]
         = "=================================================================";
+
+typedef enum
+{
+  CmdOptFileManip,
+  CmdOptCatFIRST = CmdOptFileManip,
+  CmdOptProcDir,
+  CmdOptCharEnc,
+  CmdOptMisc,
+  CmdOptCatLAST,
+} CmdOptCategory;
+
+static const struct {
+    ctmbstr mnemonic;
+    ctmbstr name;
+} cmdopt_catname[] = {
+    { "file-manip", "File manipulation" },
+    { "process-directives", "Processing directives" },
+    { "char-encoding", "Character encodings" },
+    { "misc", "Miscellaneous" }
+};
+
+typedef struct {
+    ctmbstr name1;      /**< Name */
+    ctmbstr desc;       /**< Description */
+    ctmbstr eqconfig;   /**< Equivalent configuration option */
+    CmdOptCategory cat; /**< Category */
+    ctmbstr name2;      /**< Name */
+    ctmbstr name3;      /**< Name */
+} CmdOptDesc;
+
+static const CmdOptDesc cmdopt_defs[] =  {
+    { "-out <file>",
+      "specify the output markup file",
+      "output-file: <file>", CmdOptFileManip, "-o <file>" },
+    { "-config <file>",
+      "set configuration options from the specified <file>",
+      NULL, CmdOptFileManip },
+    { "-f <file>",
+      "write errors to the specified <file>",
+      NULL, CmdOptFileManip },
+    { "-modify",
+      "modify the original input files",
+      "write-back: yes", CmdOptFileManip, "-m" },
+    { "-indent",
+      "indent element content",
+      "(indent: auto)", CmdOptProcDir, "-i" },
+    { "-wrap <column>",
+      "wrap text at the specified <column> (default is 68)",
+      "wrap: <column>", CmdOptProcDir },
+    { "-upper",
+      "force tags to upper case (default is lower case)",
+      "uppercase-tags: yes", CmdOptProcDir, "-u" },
+    { "-clean",
+      "replace FONT, NOBR and CENTER tags by CSS",
+      "clean: yes", CmdOptProcDir, "-c" },
+    { "-bare",
+      "strip out smart quotes and em dashes, etc.",
+      "bare: yes", CmdOptProcDir, "-b" },
+    { "-numeric",
+      "output numeric rather than named entities",
+      "numeric-entities: yes", CmdOptProcDir, "-n" },
+    { "-errors",
+      "only show errors",
+      "markup: no", CmdOptProcDir, "-e" },
+    { "-quiet",
+      "suppress nonessential output",
+      "", CmdOptProcDir, "-q" },
+    { "-omit",
+      "omit optional end tags",
+      "hide-endtags: yes", CmdOptProcDir },
+    { "-xml",
+      "specify the input is well formed XML",
+      "input-xml: yes", CmdOptProcDir },
+    { "-asxml",
+      "convert HTML to well formed XHTML",
+      "output-xhtml: yes", CmdOptProcDir, "-asxhtml" },
+    { "-ashtml",
+      "force XHTML to well formed HTML",
+      "output-html: yes", CmdOptProcDir },
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    { "-access <level>",
+      "do additional accessibility checks (<level> = 1, 2, 3)",
+      "accessibility-check: <level>", CmdOptProcDir },
+#endif
+    { "-raw",
+      "output values above 127 without conversion to entities",
+      NULL, CmdOptCharEnc },
+    { "-ascii",
+      "use ISO-8859-1 for input, US-ASCII for output",
+      NULL, CmdOptCharEnc },
+    { "-latin0",
+      "use ISO-8859-15 for input, US-ASCII for output",
+      NULL, CmdOptCharEnc },
+    { "-latin1",
+      "use ISO-8859-1 for both input and output",
+      NULL, CmdOptCharEnc },
+#ifndef NO_NATIVE_ISO2022_SUPPORT
+    { "-iso2022",
+      "use ISO-2022 for both input and output",
+      NULL, CmdOptCharEnc },
+#endif
+    { "-utf8",
+      "use UTF-8 for both input and output",
+      NULL, CmdOptCharEnc },
+    { "-mac",
+      "use MacRoman for input, US-ASCII for output",
+      NULL, CmdOptCharEnc },
+    { "-win1252",
+      "use Windows-1252 for input, US-ASCII for output",
+      NULL, CmdOptCharEnc },
+    { "-ibm858",
+      "use IBM-858 (CP850+Euro) for input, US-ASCII for output",
+      NULL, CmdOptCharEnc },
+#if SUPPORT_UTF16_ENCODINGS
+    { "-utf16le",
+      "use UTF-16LE for both input and output",
+      NULL, CmdOptCharEnc },
+    { "-utf16be",
+      "use UTF-16BE for both input and output",
+      NULL, CmdOptCharEnc },
+    { "-utf16",
+      "use UTF-16 for both input and output",
+      NULL, CmdOptCharEnc },
+#endif
+#if SUPPORT_ASIAN_ENCODINGS /* #431953 - RJ */
+    { "-big5",
+      "use Big5 for both input and output",
+      NULL, CmdOptCharEnc },
+    { "-shiftjis",
+      "use Shift_JIS for both input and output",
+      NULL, CmdOptCharEnc },
+    { "-language <lang>",
+      "set the two-letter language code <lang> (for future use)",
+      "language: <lang>", CmdOptCharEnc },
+#endif
+    { "-version",
+      "show the version of Tidy",
+      NULL, CmdOptMisc, "-v" },
+    { "-help",
+      "list the command line options",
+      NULL, CmdOptMisc, "-h", "-?" },
+    { "-xml-help",
+      "list the command line options in XML format",
+      NULL, CmdOptMisc },
+    { "-help-config",
+      "list all configuration options",
+      NULL, CmdOptMisc },
+    { "-xml-config",
+      "list all configuration options in XML format",
+      NULL, CmdOptMisc },
+    { "-show-config",
+      "list the current configuration settings",
+      NULL, CmdOptMisc },
+    { NULL, NULL, NULL, CmdOptMisc }
+};
+
+static tmbstr get_option_names( const CmdOptDesc* pos )
+{
+    tmbstr name;
+    uint len = strlen(pos->name1);
+    if (pos->name2)
+        len += 2+strlen(pos->name2);
+    if (pos->name3)
+        len += 2+strlen(pos->name3);
+
+    name = malloc(len+1);
+    strcpy(name, pos->name1);
+    if (pos->name2)
+    {
+        strcat(name, ", ");
+        strcat(name, pos->name2);
+    }
+    if (pos->name3)
+    {
+        strcat(name, ", ");
+        strcat(name, pos->name3);
+    }
+    return name;
+}
+
+static void print_help_option( void )
+{
+    CmdOptCategory cat = CmdOptCatFIRST;
+    const CmdOptDesc* pos = cmdopt_defs;
+
+    for( cat=CmdOptCatFIRST; cat!=CmdOptCatLAST; ++cat)
+    {
+        size_t len =  strlen(cmdopt_catname[cat].name);
+        printf("%s\n", cmdopt_catname[cat].name );
+        printf("%*.*s\n", len, len, helpul );
+        for( pos=cmdopt_defs; pos->name1; ++pos)
+        {
+            tmbstr name;
+            if (pos->cat != cat)
+                continue;
+            name = get_option_names( pos );
+            print2Columns( helpfmt, 19, 58, name, pos->desc );
+            free(name);
+        }
+        printf("\n");
+    }
+}
+
+static void xml_help( void )
+{
+    const CmdOptDesc* pos = cmdopt_defs;
+
+    for( pos=cmdopt_defs; pos->name1; ++pos)
+    {
+        printf("<option class=\"%s\">\n", cmdopt_catname[pos->cat].mnemonic );
+        printf(" <name>%s</name>\n", pos->name1 );
+        if (pos->name2)
+            printf(" <name>%s</name>\n", pos->name2 );
+        if (pos->name3)
+            printf(" <name>%s</name>\n", pos->name3 );
+        printf(" <description>%s</description>\n", pos->desc);
+        if (pos->eqconfig)
+            printf(" <eqconfig>%s</eqconfig>\n", pos->eqconfig);
+        else
+            printf(" <eqconfig />\n");
+        printf("</option>\n");
+    }
+}
+
+static void help( ctmbstr prog )
+{
+    printf( "%s [option...] [file...] [option...] [file...]\n", prog );
+    printf( "Utility to clean up and pretty print HTML/XHTML/XML\n");
+    printf( "see http://tidy.sourceforge.net/\n");
+    printf( "\n");
+
+#ifdef PLATFORM_NAME
+    printf( "Options for HTML Tidy for %s released on %s:\n",
+             PLATFORM_NAME, tidyReleaseDate() );
+#else
+    printf( "Options for HTML Tidy released on %s:\n", tidyReleaseDate() );
+#endif
+    printf( "\n");
+
+    print_help_option();
+
+    printf( "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
+    printf( "\n");
+
+    printf( "Input/Output default to stdin/stdout respectively\n");
+    printf( "Single letter options apart from -f may be combined\n");
+    printf( "as in:  tidy -f errs.txt -imu foo.html\n");
+    printf( "For further info on HTML see http://www.w3.org/MarkUp\n");
+    printf( "\n");
+}
 
 static Bool isAutoBool( TidyOption topt )
 {
@@ -768,6 +949,12 @@ int main( int argc, char** argv )
                       strcasecmp(arg,    "h") == 0 || *arg == '?' )
             {
                 help( prog );
+                tidyRelease( tdoc );
+                return 0; /* success */
+            }
+            else if ( strcasecmp(arg, "xml-help") == 0)
+            {
+                xml_help( );
                 tidyRelease( tdoc );
                 return 0; /* success */
             }
