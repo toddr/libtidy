@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/04/14 15:23:38 $ 
-#     $Revision: 1.16 $ 
+#     $Date: 2005/04/14 16:00:07 $ 
+#     $Revision: 1.17 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -158,7 +158,9 @@ LIBHFILES= \
         $(SRCDIR)/tidy-int.h
 
 
-all:    $(LIBRARY) $(EXES) $(DOCS)
+all:    $(LIBRARY) $(EXES)
+
+doc:    $(DOCS)
 
 $(LIBRARY): $(OBJFILES)
 	if [ ! -d $(LIBDIR) ]; then mkdir $(LIBDIR); fi
@@ -218,11 +220,9 @@ installexes: $(EXES)
 	cp -f $(EXES) "$(bininst)/"
 
 installmanpage: $(DOCDIR)/tidy.1 $(DOCDIR)/tidy-config.7
-	if [ -f "$(DOCDIR)/man_page.txt" ] ; then \
-	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi; \
-	if [ ! -d "$(maninst)/man7" ]; then mkdir -p "$(maninst)/man7"; fi; \
-	cp -f $(DOCDIR)/tidy.1 "$(maninst)/man1/tidy.1"; \
-	cp -f $(DOCDIR)/tidy-config.7 "$(maninst)/man7/tidy-config.7"; \
-	fi
+	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi;
+	if [ ! -d "$(maninst)/man7" ]; then mkdir -p "$(maninst)/man7"; fi;
+	cp -f $(DOCDIR)/tidy.1 "$(maninst)/man1/tidy.1";
+	cp -f $(DOCDIR)/tidy-config.7 "$(maninst)/man7/tidy-config.7";
 
 install: installhdrs installib installmanpage installexes
