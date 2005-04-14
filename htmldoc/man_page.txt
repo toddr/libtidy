@@ -1,4 +1,4 @@
-.TH TIDY 1 "$Date: 2005/04/14 09:36:43 $"
+.TH TIDY 1 "$Date: 2005/04/14 14:54:46 $"
 .SH NAME
 tidy \- validate, correct, and pretty-print HTML files
 .SH SYNOPSIS
@@ -20,143 +20,139 @@ to the standard output.  If no error file is specified, Tidy
 writes messages to the standard error.
 .SH OPTIONS
 .SS File manipulation
-.TP 15
-.B -output <file>, -o <file>
+.TP
+\fB-output <file>\fR, \fB-o <file>\fR
 write output to the specified <file>
 (output-file: <file>)
-.TP 15
-.B -file <file>, -f <file>
+.TP
+\fB-config <file>\fR
+set configuration options from the specified <file>
+.TP
+\fB-file <file>\fR, \fB-f <file>\fR
 write errors to the specified <file>
 (error-file: <file>)
-.TP 15
-.B -config <file>
-set configuration options from the specified <file>
-.TP 15
-.B -modify, -m
+.TP
+\fB-modify\fR, \fB-m\fR
 modify the original input files
 (write-back: yes)
 .SS Processing directives
-.TP 15
-.B -indent, -i
+.TP
+\fB-indent\fR, \fB-i\fR
 indent element content
 (indent: auto)
-.TP 15
-.B -wrap <column>, -w <column>
+.TP
+\fB-wrap <column>\fR, \fB-w <column>\fR
 wrap text at the specified <column> (default is 68)
 (wrap: <column>)
-.TP 15
-.B -upper, -u
+.TP
+\fB-upper\fR, \fB-u\fR
 force tags to upper case (default is lower case)
 (uppercase-tags: yes)
-.TP 15
-.B -clean, -c
+.TP
+\fB-clean\fR, \fB-c\fR
 replace FONT, NOBR and CENTER tags by CSS
 (clean: yes)
-.TP 15
-.B -bare, -b
+.TP
+\fB-bare\fR, \fB-b\fR
 strip out smart quotes and em dashes, etc.
 (bare: yes)
-.TP 15
-.B -numeric, -n
+.TP
+\fB-numeric\fR, \fB-n\fR
 output numeric rather than named entities
 (numeric-entities: yes)
-.TP 15
-.B -errors, -e
+.TP
+\fB-errors\fR, \fB-e\fR
 only show errors
 (markup: no)
-.TP 15
-.B -quiet, -q
+.TP
+\fB-quiet\fR, \fB-q\fR
 suppress nonessential output
 (quiet: yes)
-.TP 15
-.B -omit
+.TP
+\fB-omit\fR
 omit optional end tags
 (hide-endtags: yes)
-.TP 15
-.B -xml
+.TP
+\fB-xml\fR
 specify the input is well formed XML
 (input-xml: yes)
-.TP 15
-.B -asxml
+.TP
+\fB-asxml\fR, \fB-asxhtml\fR
 convert HTML to well formed XHTML
 (output-xhtml: yes)
-.TP 15
-.B -asxhtml
-convert HTML to well formed XHTML
-(output-xhtml: yes)
-.TP 15
-.B -ashtml
+.TP
+\fB-ashtml\fR
 force XHTML to well formed HTML
 (output-html: yes)
-.TP 15
-.B -access \<level\>
+.TP
+\fB-access \<level\>\fR
 do additional accessibility checks (\<level\> = 1, 2, 3)
 (accessibility-check: <level>)
 .SS Character encodings
-.TP 15
-.B -raw
+.TP
+\fB-raw\fR
 output values above 127 without conversion to entities
-.TP 15
-.B -ascii
+.TP
+\fB-ascii\fR
 use ISO-8859-1 for input, US-ASCII for output
-.TP 15
-.B -latin0
+.TP
+\fB-latin0\fR
 use ISO-8859-15 for input, US-ASCII for output
-.TP 15
-.B -latin1
+.TP
+\fB-latin1\fR
 use ISO-8859-1 for both input and output
-.TP 15
-.B -iso2022
+.TP
+\fB-iso2022\fR
 use ISO-2022 for both input and output
-.TP 15
-.B -utf8
+.TP
+\fB-utf8\fR
 use UTF-8 for both input and output
-.TP 15
-.B -mac
+.TP
+\fB-mac\fR
 use MacRoman for input, US-ASCII for output
-.TP 15
-.B -utf16le
-use UTF-16LE for both input and output
-.TP 15
-.B -utf16be
-use UTF-16BE for both input and output
-.TP 15
-.B -utf16
-use UTF-16 for both input and output
-.TP 15
-.B -win1252
+.TP
+\fB-win1252\fR
 use Windows-1252 for input, US-ASCII for output
-.TP 15
-.B -ibm858
+.TP
+\fB-ibm858\fR
 use IBM-858 (CP850+Euro) for input, US-ASCII for output
-.TP 15
-.B -big5
+.TP
+\fB-utf16le\fR
+use UTF-16LE for both input and output
+.TP
+\fB-utf16be\fR
+use UTF-16BE for both input and output
+.TP
+\fB-utf16\fR
+use UTF-16 for both input and output
+.TP
+\fB-big5\fR
 use Big5 for both input and output
-.TP 15
-.B -shiftjis
+.TP
+\fB-shiftjis\fR
 use Shift_JIS for both input and output
-.TP 15
-.B -language \<lang\>
+.TP
+\fB-language \<lang\>\fR
 set the two-letter language code <lang> (for future use)
 (language: <lang>)
 .SS Miscellaneous
-.TP 15
-.B -version, -v
+.TP
+\fB-version\fR, \fB-v\fR
 show the version of Tidy
-.TP 15
-.B -help, -h, -?
+.TP
+\fB-help\fR, \fB-h\fR, \fB-?\fR
 list the command line options
-.TP 15
-.B -xml-help
+.TP
+\fB-xml-help\fR
 list the command line options in XML format
-.TP 15
-.B -help-config
+.TP
+\fB-help-config\fR
 list all configuration options
-.TP 15
-.B -xml-config
+.TP
+\fB-xml-config\fR
 list all configuration options in XML format
-.TP 15
-.B -show-config
+.TP
+\fB-show-config\fR
 list the current configuration settings
 .SH USAGE
 .P
