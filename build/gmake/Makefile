@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/04/13 11:12:12 $ 
-#     $Revision: 1.15 $ 
+#     $Date: 2005/04/14 15:23:38 $ 
+#     $Revision: 1.16 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -121,9 +121,10 @@ XSLTPROC = xsltproc
 
 EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
-DOCS = $(DOCDIR)/quickref.html $(DOCDIR)/tidy-config.7
+DOCS = $(DOCDIR)/quickref.html $(DOCDIR)/tidy.1 $(DOCDIR)/tidy-config.7
 
 CONFIGXML = $(DOCDIR)/tidy-config.xml
+HELPXML = $(DOCDIR)/tidy-help.xml
 
 OBJFILES=\
         $(OBJDIR)/access$(OBJSUF)     $(OBJDIR)/attrs$(OBJSUF)      $(OBJDIR)/istack$(OBJSUF) \
@@ -178,11 +179,17 @@ $(BINDIR)/tab2space: $(APPDIR)/tab2space.c
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
 	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tab2space.c $(LIBS)
 
+$(HELPXML): $(BINDIR)/$(PROJECT)
+	$(BINDIR)/$(PROJECT) -xml-help > $@
+
 $(CONFIGXML): $(BINDIR)/$(PROJECT)
 	$(BINDIR)/$(PROJECT) -xml-config > $@
 
 $(DOCDIR)/quickref.html: $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
 	$(XSLTPROC) -o $@ $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
+
+$(DOCDIR)/tidy.1: $(DOCDIR)/tidy1.xsl $(HELPXML)
+	$(XSLTPROC) -o $@ $(DOCDIR)/tidy1.xsl $(HELPXML)
 
 $(DOCDIR)/tidy-config.7: $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
 	$(XSLTPROC) -o $@ $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
@@ -210,11 +217,11 @@ installexes: $(EXES)
 	if [ ! -d "$(bininst)" ]; then mkdir -p "$(bininst)"; fi
 	cp -f $(EXES) "$(bininst)/"
 
-installmanpage: $(DOCDIR)/tidy-config.7
+installmanpage: $(DOCDIR)/tidy.1 $(DOCDIR)/tidy-config.7
 	if [ -f "$(DOCDIR)/man_page.txt" ] ; then \
 	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi; \
 	if [ ! -d "$(maninst)/man7" ]; then mkdir -p "$(maninst)/man7"; fi; \
-	cp -f $(DOCDIR)/man_page.txt "$(maninst)/man1/tidy.1"; \
+	cp -f $(DOCDIR)/tidy.1 "$(maninst)/man1/tidy.1"; \
 	cp -f $(DOCDIR)/tidy-config.7 "$(maninst)/man7/tidy-config.7"; \
 	fi
 
