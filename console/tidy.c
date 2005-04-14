@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/13 16:37:17 $ 
-    $Revision: 1.32 $ 
+    $Date: 2005/04/14 09:35:25 $ 
+    $Revision: 1.33 $ 
 */
 
 #include "tidy.h"
@@ -140,15 +140,15 @@ typedef struct {
 } CmdOptDesc;
 
 static const CmdOptDesc cmdopt_defs[] =  {
-    { "-out <file>",
+    { "-output <file>",
       "specify the output markup file",
       "output-file: <file>", CmdOptFileManip, "-o <file>" },
     { "-config <file>",
       "set configuration options from the specified <file>",
       NULL, CmdOptFileManip },
-    { "-f <file>",
+    { "-file <file>",
       "write errors to the specified <file>",
-      NULL, CmdOptFileManip },
+      "error-file: <file>", CmdOptFileManip, "-f <file>" },
     { "-modify",
       "modify the original input files",
       "write-back: yes", CmdOptFileManip, "-m" },
@@ -157,7 +157,7 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "(indent: auto)", CmdOptProcDir, "-i" },
     { "-wrap <column>",
       "wrap text at the specified <column> (default is 68)",
-      "wrap: <column>", CmdOptProcDir },
+      "wrap: <column>", CmdOptProcDir, "-w <column>" },
     { "-upper",
       "force tags to upper case (default is lower case)",
       "uppercase-tags: yes", CmdOptProcDir, "-u" },
@@ -289,6 +289,52 @@ static tmbstr get_option_names( const CmdOptDesc* pos )
     return name;
 }
 
+static tmbstr get_escaped_name( ctmbstr name )
+{
+    tmbstr escpName;
+    char aux[2];
+    uint len = 0;
+    ctmbstr c;
+    for(c=name; *c!='\0'; ++c)
+        switch(*c)
+        {
+        case '<':
+        case '>':
+            len += 4;
+            break;
+        case '"':
+            len += 6;
+            break;
+        default:
+            len += 1;
+            break;
+        }
+
+    escpName = malloc(len+1);
+    escpName[0] = '\0';
+
+    aux[1] = '\0';
+    for(c=name; *c!='\0'; ++c)
+        switch(*c)
+        {
+        case '<':
+            strcat(escpName, "&lt;");
+            break;
+        case '>':
+            strcat(escpName, "&gt;");
+            break;
+        case '"':
+            strcat(escpName, "&quot;");
+            break;
+        default:
+            aux[0] = *c;
+            strcat(escpName, aux);
+            break;
+        }
+
+    return escpName;
+}
+
 static void print_help_option( void )
 {
     CmdOptCategory cat = CmdOptCatFIRST;
@@ -312,25 +358,41 @@ static void print_help_option( void )
     }
 }
 
-static void xml_help( void )
+static void print_xml_help_option_element( ctmbstr element, ctmbstr name )
+{
+    tmbstr escpName;
+    if (!name)
+        return;
+    printf("  <%s>%s</%s>\n", element, escpName = get_escaped_name(name),
+           element);
+    free(escpName);
+}
+
+static void print_xml_help_option( void )
 {
     const CmdOptDesc* pos = cmdopt_defs;
 
     for( pos=cmdopt_defs; pos->name1; ++pos)
     {
-        printf("<option class=\"%s\">\n", cmdopt_catname[pos->cat].mnemonic );
-        printf(" <name>%s</name>\n", pos->name1 );
-        if (pos->name2)
-            printf(" <name>%s</name>\n", pos->name2 );
-        if (pos->name3)
-            printf(" <name>%s</name>\n", pos->name3 );
-        printf(" <description>%s</description>\n", pos->desc);
+        printf(" <option class=\"%s\">\n", cmdopt_catname[pos->cat].mnemonic );
+        print_xml_help_option_element("name", pos->name1);
+        print_xml_help_option_element("name", pos->name2);
+        print_xml_help_option_element("name", pos->name3);
+        print_xml_help_option_element("description", pos->desc);
         if (pos->eqconfig)
-            printf(" <eqconfig>%s</eqconfig>\n", pos->eqconfig);
+            print_xml_help_option_element("eqconfig", pos->eqconfig);
         else
-            printf(" <eqconfig />\n");
-        printf("</option>\n");
+            printf("  <eqconfig />\n");
+        printf(" </option>\n");
     }
+}
+
+static void xml_help( void )
+{
+    printf( "<?xml version=\"1.0\"?>\n"
+            "<cmdline version=\"%s\">\n", tidyReleaseDate());
+    print_xml_help_option();
+    printf( "</cmdline>\n" );
 }
 
 static void help( ctmbstr prog )
@@ -659,8 +721,8 @@ void printXMLOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
 
 static void XMLoptionhelp( TidyDoc tdoc )
 {
-    printf( "<?xml version=\"1.0\"?>\n<config version=\"%s\">\n"
-            , tidyReleaseDate());
+    printf( "<?xml version=\"1.0\"?>\n"
+            "<config version=\"%s\">\n", tidyReleaseDate());
     ForEachOption( tdoc, printXMLOption );
     printf( "</config>\n" );
 }
