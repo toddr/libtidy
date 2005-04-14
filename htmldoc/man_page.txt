@@ -1,4 +1,4 @@
-.TH TIDY 1 "$Date: 2005/04/13 16:37:18 $"
+.TH TIDY 1 "$Date: 2005/04/14 09:36:43 $"
 .SH NAME
 tidy \- validate, correct, and pretty-print HTML files
 .SH SYNOPSIS
@@ -25,8 +25,9 @@ writes messages to the standard error.
 write output to the specified <file>
 (output-file: <file>)
 .TP 15
-.B -f <file>
+.B -file <file>, -f <file>
 write errors to the specified <file>
+(error-file: <file>)
 .TP 15
 .B -config <file>
 set configuration options from the specified <file>
@@ -40,7 +41,7 @@ modify the original input files
 indent element content
 (indent: auto)
 .TP 15
-.B -wrap <column>
+.B -wrap <column>, -w <column>
 wrap text at the specified <column> (default is 68)
 (wrap: <column>)
 .TP 15
