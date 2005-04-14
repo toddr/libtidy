@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/14 09:35:25 $ 
-    $Revision: 1.33 $ 
+    $Date: 2005/04/14 14:51:01 $ 
+    $Revision: 1.34 $ 
 */
 
 #include "tidy.h"
@@ -141,7 +141,7 @@ typedef struct {
 
 static const CmdOptDesc cmdopt_defs[] =  {
     { "-output <file>",
-      "specify the output markup file",
+      "write output to the specified <file>",
       "output-file: <file>", CmdOptFileManip, "-o <file>" },
     { "-config <file>",
       "set configuration options from the specified <file>",
@@ -154,7 +154,7 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "write-back: yes", CmdOptFileManip, "-m" },
     { "-indent",
       "indent element content",
-      "(indent: auto)", CmdOptProcDir, "-i" },
+      "indent: auto", CmdOptProcDir, "-i" },
     { "-wrap <column>",
       "wrap text at the specified <column> (default is 68)",
       "wrap: <column>", CmdOptProcDir, "-w <column>" },
@@ -175,7 +175,7 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "markup: no", CmdOptProcDir, "-e" },
     { "-quiet",
       "suppress nonessential output",
-      "", CmdOptProcDir, "-q" },
+      "quiet: yes", CmdOptProcDir, "-q" },
     { "-omit",
       "omit optional end tags",
       "hide-endtags: yes", CmdOptProcDir },
