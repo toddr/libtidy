@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:36 $ 
-    $Revision: 1.109 $ 
+    $Date: 2005/04/15 13:52:06 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -1258,7 +1258,13 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
           AttrValueIs(attval, "right")  ||
           AttrValueIs(attval, "center") ||
           AttrValueIs(attval, "justify")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    {
+        /* align="char" is allowed for elements with CM_TABLE|CM_ROW
+           except CAPTION which is excluded above, */
+        if( !(AttrValueIs(attval, "char")
+              && node->tag && (node->tag->model & CM_TABLE|CM_ROW)))
+             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    }
 }
 
 void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
