@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 10:33:27 $ 
-    $Revision: 1.53 $ 
+    $Date: 2005/04/21 10:12:58 $ 
+    $Revision: 1.54 $ 
 
 */
 
@@ -549,6 +549,11 @@ typedef const tmbchar* ctmbstr; /* Ditto, but const */
   not all C++ compilers depending on age
   work around is to avoid bool altogether
   by introducing a new enum called Bool
+*/
+/* We could use the C99 definition where supported
+typedef _Bool Bool;
+#define no (_Bool)0
+#define yes (_Bool)1
 */
 typedef enum
 {
