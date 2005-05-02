@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/14 14:51:01 $ 
-    $Revision: 1.34 $ 
+    $Date: 2005/05/02 14:59:38 $ 
+    $Revision: 1.35 $ 
 */
 
 #include "tidy.h"
@@ -344,7 +344,7 @@ static void print_help_option( void )
     {
         size_t len =  strlen(cmdopt_catname[cat].name);
         printf("%s\n", cmdopt_catname[cat].name );
-        printf("%*.*s\n", len, len, helpul );
+        printf("%*.*s\n", (int)len, (int)len, helpul );
         for( pos=cmdopt_defs; pos->name1; ++pos)
         {
             tmbstr name;
