@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/05/02 15:17:55 $ 
-    $Revision: 1.134 $ 
+    $Date: 2005/05/02 15:23:29 $ 
+    $Revision: 1.135 $ 
 
 */
 
@@ -744,8 +744,8 @@ static const TidyOptionDoc option_docs[] =
    ,TidyErrFileLinks
   },
   {TidyFixBackslash,
-   "This option specifies if Tidy should replace backslash characters \"\\\" "
-   "in URLs by forward slashes \"/\". "
+   "This option specifies if Tidy should replace backslash characters "
+   "\"<code>\\</code>\" in URLs by forward slashes \"<code>/</code>\". "
   },
   {TidyForceOutput,
    "This option specifies if Tidy should produce output even if errors are "
