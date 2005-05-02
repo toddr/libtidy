@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/12 12:43:56 $ 
-    $Revision: 1.133 $ 
+    $Date: 2005/05/02 15:17:55 $ 
+    $Revision: 1.134 $ 
 
 */
 
@@ -388,13 +388,11 @@ static const TidyOptionDoc option_docs[] =
    "contents of the document. If set to \"strict\", Tidy will set the DOCTYPE "
    "to the strict DTD. If set to \"loose\", the DOCTYPE is set to the loose "
    "(transitional) DTD. Alternatively, you can supply a string for the formal "
-   "public identifier (FPI).<br /> "
-   "<br /> "
-   "For example: <br /> "
-   "<br /> "
-   "doctype: \"-//ACME//DTD HTML 3.14159//EN\"<br /> "
-   "<br /> "
-   "<br /> "
+   "public identifier (FPI).<br />"
+   "<br />"
+   "For example: <br />"
+   "doctype: \"-//ACME//DTD HTML 3.14159//EN\"<br />"
+   "<br />"
    "If you specify the FPI for an XHTML document, Tidy will set the "
    "system identifier to the empty string.  Tidy leaves the DOCTYPE for "
    "generic XML documents unchanged. <code>--doctype omit</code> implies "
