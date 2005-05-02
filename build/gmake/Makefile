@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/04/14 16:02:35 $ 
-#     $Revision: 1.18 $ 
+#     $Date: 2005/05/02 16:12:47 $ 
+#     $Revision: 1.19 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -121,7 +121,7 @@ XSLTPROC = xsltproc
 
 EXES = $(BINDIR)/$(PROJECT) $(BINDIR)/tab2space
 
-DOCS = $(DOCDIR)/quickref.html $(DOCDIR)/tidy.1 $(DOCDIR)/tidy-config.7
+DOCS = $(DOCDIR)/quickref.html $(DOCDIR)/tidy.1
 
 CONFIGXML = $(DOCDIR)/tidy-config.xml
 HELPXML = $(DOCDIR)/tidy-help.xml
@@ -190,11 +190,8 @@ $(CONFIGXML): $(BINDIR)/$(PROJECT)
 $(DOCDIR)/quickref.html: $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
 	$(XSLTPROC) -o $@ $(DOCDIR)/quickref-html.xsl $(CONFIGXML)
 
-$(DOCDIR)/tidy.1: $(DOCDIR)/tidy1.xsl $(HELPXML)
+$(DOCDIR)/tidy.1: $(DOCDIR)/tidy1.xsl $(HELPXML) $(CONFIGXML)
 	$(XSLTPROC) -o $@ $(DOCDIR)/tidy1.xsl $(HELPXML)
-
-$(DOCDIR)/tidy-config.7: $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
-	$(XSLTPROC) -o $@ $(DOCDIR)/quickref-man.xsl $(CONFIGXML)
 
 debug:
 	@$(MAKE) CFLAGS='$(CFLAGS) $(DEBUGFLAGS)' LIBS='$(LIBS) $(DEBUGLIBS)' all
@@ -219,10 +216,8 @@ installexes: $(EXES)
 	if [ ! -d "$(bininst)" ]; then mkdir -p "$(bininst)"; fi
 	cp -f $(EXES) "$(bininst)/"
 
-installmanpage: $(DOCDIR)/tidy.1 $(DOCDIR)/tidy-config.7
+installmanpage: $(DOCDIR)/tidy.1
 	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi;
-	if [ ! -d "$(maninst)/man7" ]; then mkdir -p "$(maninst)/man7"; fi;
 	cp -f $(DOCDIR)/tidy.1 "$(maninst)/man1/tidy.1";
-	cp -f $(DOCDIR)/tidy-config.7 "$(maninst)/man7/tidy-config.7";
 
 install: installhdrs installib installmanpage installexes
