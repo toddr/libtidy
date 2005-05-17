@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/05/02 14:59:38 $ 
-    $Revision: 1.35 $ 
+    $Date: 2005/05/17 14:30:59 $ 
+    $Revision: 1.36 $ 
 */
 
 #include "tidy.h"
@@ -456,6 +456,7 @@ ctmbstr ConfigCategoryName( TidyConfigCategory id )
     case TidyMiscellaneous:
         return "misc";
     }
+    fprintf(stderr, "Fatal error: impossible value for id='%d'.\n", id);
     assert(0);
     abort();
 }
