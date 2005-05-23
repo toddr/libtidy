@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:13 $ 
-    $Revision: 1.87 $ 
+    $Date: 2005/05/23 17:17:50 $ 
+    $Revision: 1.88 $ 
 
 */
 
@@ -456,7 +456,7 @@ ulong   _cfgGet( TidyDocImpl* doc, TidyOptionId optId )
 
 Bool    _cfgGetBool( TidyDocImpl* doc, TidyOptionId optId )
 {
-  uint val = _cfgGet( doc, optId );
+  ulong val = _cfgGet( doc, optId );
   const TidyOptionImpl* opt = &option_defs[ optId ];
   assert( opt && opt->type == TidyBoolean );
   return (Bool) val;
@@ -464,7 +464,7 @@ Bool    _cfgGetBool( TidyDocImpl* doc, TidyOptionId optId )
 
 TidyTriState    _cfgGetAutoBool( TidyDocImpl* doc, TidyOptionId optId )
 {
-  uint val = _cfgGet( doc, optId );
+  ulong val = _cfgGet( doc, optId );
   const TidyOptionImpl* opt = &option_defs[ optId ];
   assert( opt && opt->type == TidyInteger );
   return (TidyTriState) val;
@@ -472,7 +472,7 @@ TidyTriState    _cfgGetAutoBool( TidyDocImpl* doc, TidyOptionId optId )
 
 ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId )
 {
-  uint val = _cfgGet( doc, optId );
+  ulong val = _cfgGet( doc, optId );
   const TidyOptionImpl* opt = &option_defs[ optId ];
   assert( opt && opt->type == TidyString );
   return (ctmbstr) val;
@@ -1391,8 +1391,7 @@ const TidyOptionImpl*  getNextOption( TidyDocImpl* ARG_UNUSED(doc),
                                       TidyIterator* iter )
 {
   const TidyOptionImpl* option = NULL;
-/*  TidyOptionId optId; */
-  int optId;
+  TidyOptionId optId;
   assert( iter != NULL );
   optId = *(TidyOptionId *) iter;
   if ( optId > TidyUnknownOption && optId < N_TIDY_OPTIONS )
@@ -1400,7 +1399,7 @@ const TidyOptionImpl*  getNextOption( TidyDocImpl* ARG_UNUSED(doc),
     option = &option_defs[ optId ];
     optId++;
   }
-  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? (TidyIterator) optId : 0 );
+  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? (ulong) optId : 0 );
   return option;
 }
 
