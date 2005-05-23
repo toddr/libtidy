@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2005/05/17 14:30:59 $ 
-    $Revision: 1.36 $ 
+    $Author: terry_teague $ 
+    $Date: 2005/05/23 08:23:19 $ 
+    $Revision: 1.37 $ 
 */
 
 #include "tidy.h"
@@ -584,8 +584,8 @@ typedef struct {
 static
 int cmpOpt(const void* e1_, const void *e2_)
 {
-    const TidyOption* e1 = e1_;
-    const TidyOption* e2 = e2_;
+    const TidyOption* e1 = (const TidyOption*)e1_;
+    const TidyOption* e2 = (const TidyOption*)e2_;
     return strcmp(tidyOptGetName(*e1), tidyOptGetName(*e2));
 }
 
