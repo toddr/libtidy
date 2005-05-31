@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/05/23 17:17:50 $ 
-    $Revision: 1.88 $ 
+    $Date: 2005/05/31 08:15:35 $ 
+    $Revision: 1.89 $ 
 
 */
 
@@ -1391,15 +1391,15 @@ const TidyOptionImpl*  getNextOption( TidyDocImpl* ARG_UNUSED(doc),
                                       TidyIterator* iter )
 {
   const TidyOptionImpl* option = NULL;
-  TidyOptionId optId;
+  ulong optId;
   assert( iter != NULL );
-  optId = *(TidyOptionId *) iter;
+  optId = (ulong) *iter;
   if ( optId > TidyUnknownOption && optId < N_TIDY_OPTIONS )
   {
     option = &option_defs[ optId ];
     optId++;
   }
-  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? (ulong) optId : 0 );
+  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? optId : 0 );
   return option;
 }
 
