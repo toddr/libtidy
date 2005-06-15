@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/05/02 16:12:52 $
-    $Revision: 1.2 $
+    $Date: 2005/06/15 13:12:49 $
+    $Revision: 1.3 $
 
 -->
 <xsl:stylesheet version="1.0"
@@ -48,7 +48,7 @@
 
 <xsl:template name="header-section">
   <xsl:text/>.\" tidy man page for the Tidy Sourceforge project
-.TH tidy 1 "$Date: 2005/05/02 16:12:52 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
+.TH tidy 1 "$Date: 2005/06/15 13:12:49 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
 </xsl:template>
 
 
@@ -258,17 +258,17 @@ For each option in one of the 5 categories/classes, provide its
   <xsl:param name="category" />
     <xsl:for-each select='$CONFIG/config/option[@class=$category]'>
        <xsl:sort select="name" order="ascending" />
-.P
+.TP
 \fB<xsl:apply-templates select="name" />\fR
-.LP
-.in 1i
+
 Type:    \fI<xsl:apply-templates select="type" />\fR
 .br
 <xsl:call-template name="provide-default" />
 .br
 <xsl:call-template name="provide-example" />
-.LP
-.in 1i
+<xsl:text>
+
+</xsl:text>
 <xsl:apply-templates select="description" />
 <xsl:call-template name="seealso" />
     </xsl:for-each>
@@ -278,7 +278,9 @@ Type:    \fI<xsl:apply-templates select="type" />\fR
 <!-- Used only in the config options section: -->
 <xsl:template name="seealso">
   <xsl:if test="seealso">
-.P
+     <xsl:text>
+
+</xsl:text>
 .rj 1
 \fBSee also\fR: <xsl:text />
     <xsl:for-each select="seealso">
