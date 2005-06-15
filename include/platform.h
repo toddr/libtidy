@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/21 10:12:58 $ 
-    $Revision: 1.54 $ 
+    $Date: 2005/06/15 12:45:39 $ 
+    $Revision: 1.55 $ 
 
 */
 
@@ -581,9 +581,6 @@ void FatalError( ctmbstr msg );
 *  This will reduce inter-dependencies/conflicts w/ application code.
 */
 #if 1
-/*
-*  Please note - this definition assumes your compiler uses 'int' for enums.
-*/
 #define opaque_type( typenam )\
 struct _##typenam { int _opaque; };\
 typedef struct _##typenam* typenam
