@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/07/05 13:32:48 $
-    $Revision: 1.4 $
+    $Date: 2005/07/05 13:41:42 $
+    $Revision: 1.5 $
 
 -->
 <xsl:stylesheet version="1.0"
@@ -48,7 +48,7 @@
 
 <xsl:template name="header-section">
   <xsl:text/>.\" tidy man page for the Tidy Sourceforge project
-.TH tidy 1 "$Date: 2005/07/05 13:32:48 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
+.TH tidy 1 "$Date: 2005/07/05 13:41:42 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
 </xsl:template>
 
 
@@ -61,21 +61,21 @@
 \fBtidy\fR [option ...] [file ...] [option ...] [file ...]
 .SH DESCRIPTION
 Tidy reads HTML, XHTML and XML files and writes cleaned up markup.  For HTML variants, it detects and corrects many common coding errors and strives to produce visually equivalent markup that is both W3C compliant and works on most browsers. A common use of Tidy is to convert plain HTML to XHTML.  For generic XML files, Tidy is limited to correcting basic well-formedness errors and pretty printing.
-.P
+.LP
 If no input file is specified, Tidy reads the standard input.  If no output file is specified, Tidy writes the tidied markup to the standard output.  If no error file is specified, Tidy writes messages to the standard error.
 .SH OPTIONS
 <xsl:call-template name="show-cmdline-options" />
 .SH USAGE
-.P
+.LP
 Use \fB--\fR\fIoptionX valueX\fR for the any detailed configuration option "optionX" with the argument "valueX".  See also below under \fBDetailed Configuration Options\fR as to how to conveniently group all such options in a single config file.
-.P
+.LP
 Input/Output default to stdin/stdout respectively. Single letter options apart from \fB-f\fR and \fB-o\fR may be combined as in:
 .LP
 .in 1i
 \fBtidy -f errs.txt -imu foo.html\fR
 .LP
 For further info on HTML see \fIhttp://www.w3.org/MarkUp\fR.
-.P
+.LP
 For more information about HTML Tidy, visit the project home page at \fIhttp://tidy.sourceforge.net\fR.  Here, you will find links to documentation, mailing lists (with searchable archives) and links to report bugs.
 .SH ENVIRONMENT
 .TP
@@ -104,7 +104,7 @@ This section describes the Detailed (i.e., "expanded") Options, which may be spe
 The options detailed here do not include the "standard" command-line options (i.e., those preceded by a single '\fB-\fR') described above in the first section of this man page.
 .SH DESCRIPTION
 A list of options for configuring the behavior of Tidy, which can be passed either on the command line, or specified in a configuration file.
-.P
+.LP
 A Tidy configuration file is simply a text file, where each option
 is listed on a separate line in the form
 .LP
@@ -114,15 +114,15 @@ is listed on a separate line in the form
 \fBoption2\fR: \fIvalue2\fR
 .br
 etc.
-.P
+.LP
 The permissible values for a given option depend on the option's \fBType\fR.  There are five types: \fIBoolean\fR, \fIAutoBool\fR, \fIDocType\fR, \fIEnum\fR, and \fIString\fR. Boolean types allow any of \fIyes/no, y/n, true/false, t/f, 1/0\fR.  AutoBools allow \fIauto\fR in addition to the values allowed by Booleans.  Integer types take non-negative integers.  String types generally have no defaults, and you should provide them in non-quoted form (unless you wish the output to contain the literal quotes).
-.P
+.LP
 Enum, Encoding, and DocType "types" have a fixed repertoire of items; consult the \fIExample\fR[s] provided below for the option[s] in question.
-.P
+.LP
 You only need to provide options and values for those whose defaults you wish to override, although you may wish to include some already-defaulted options and values for the sake of documentation and explicitness.
-.P
+.LP
 Here is a sample config file, with at least one example of each of the five Types:
-.P
+.LP
 \fI
     // sample Tidy configuration options
     output-xhtml: yes
@@ -134,9 +134,9 @@ Here is a sample config file, with at least one example of each of the five Type
     repeated-attributes: keep-last
     error-file: errs.txt
 \fR
-.P
+.LP
 Below is a summary and brief description of each of the options. They are listed alphabetically within each category.  There are five categories: \fIHTML, XHTML, XML\fR options, \fIDiagnostics\fR options, \fIPretty Print\fR options, \fICharacter Encoding\fR options, and \fIMiscellaneous\fR options.
-.P
+.LP
 .SH OPTIONS
 <xsl:call-template name="show-config-options" />
 </xsl:template>
@@ -356,7 +356,7 @@ appearing in content with another backslash.
 HTML Tidy Project Page at \fIhttp://tidy.sourceforge.net\fR
 .SH AUTHOR
 \fBTidy\fR was written by Dave Raggett &lt;\fIdsr@w3.org\fR&gt;, and is now maintained and developed by the Tidy team at \fIhttp://tidy.sourceforge.net/\fR.  It is released under the \fIMIT Licence\fR.
-.P
+.LP
 Generated automatically with HTML Tidy released on <xsl:value-of select="cmdline/@version" />.
 </xsl:template>
 
