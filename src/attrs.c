@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/15 13:52:06 $ 
-    $Revision: 1.110 $ 
+    $Date: 2005/07/05 13:19:41 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -720,12 +720,16 @@ Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
 {
     TidyAttribImpl* attribs = &doc->attribs;
     Anchor *found;
+    tmbstr lname = tmbstrdup(name);
+    lname = tmbstrtolower(lname);
+
     for ( found = attribs->anchor_list; found != NULL; found = found->next )
     {
-        if ( tmbstrcmp(found->name, name) == 0 )
+        if ( tmbstrcmp(found->name, lname) == 0 )
             break;
     }
     
+    MemFree(lname);
     if ( found )
         return found->node;
     return NULL;
@@ -739,8 +743,7 @@ void FreeAnchors( TidyDocImpl* doc )
     while (NULL != (a = attribs->anchor_list) )
     {
         attribs->anchor_list = a->next;
-        MemFree( a->name );
-        MemFree( a );
+        FreeAnchor(a);
     }
 }
 
