@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/06/15 13:12:49 $
-    $Revision: 1.3 $
+    $Date: 2005/07/05 13:32:48 $
+    $Revision: 1.4 $
 
 -->
 <xsl:stylesheet version="1.0"
@@ -24,7 +24,7 @@
 
 <!--
     The default template match is to the document passed on the
-    command line to the XSLT processor, currently "xml-help.xml".
+    command line to the XSLT processor, currently "tidy-help.xml".
     For the detailed config options section however, the template
     match is to the file "tidy-config.xml".  This is captured in
     the $CONFIG variable, declared here:
@@ -48,7 +48,7 @@
 
 <xsl:template name="header-section">
   <xsl:text/>.\" tidy man page for the Tidy Sourceforge project
-.TH tidy 1 "$Date: 2005/06/15 13:12:49 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
+.TH tidy 1 "$Date: 2005/07/05 13:32:48 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
 </xsl:template>
 
 
@@ -60,9 +60,9 @@
 .SH SYNOPSIS
 \fBtidy\fR [option ...] [file ...] [option ...] [file ...]
 .SH DESCRIPTION
-Tidy reads HTML, XHTML and XML files and writes cleaned up markup.  For HTML variants, it detects and corrects many common coding errors and strives to produce visually equivalent markup that is both W3C complaint and works on most browsers. A common use of Tidy is to convert plain HTML to XHTML.  For generic XML files, Tidy is limited to correcting basic well-formedness errors and pretty printing.
+Tidy reads HTML, XHTML and XML files and writes cleaned up markup.  For HTML variants, it detects and corrects many common coding errors and strives to produce visually equivalent markup that is both W3C compliant and works on most browsers. A common use of Tidy is to convert plain HTML to XHTML.  For generic XML files, Tidy is limited to correcting basic well-formedness errors and pretty printing.
 .P
-If no markup file is specified, Tidy reads the standard input.  If no output file is specified, Tidy writes markup to the standard output.  If no error file is specified, Tidy writes messages to the standard error.
+If no input file is specified, Tidy reads the standard input.  If no output file is specified, Tidy writes the tidied markup to the standard output.  If no error file is specified, Tidy writes messages to the standard error.
 .SH OPTIONS
 <xsl:call-template name="show-cmdline-options" />
 .SH USAGE
