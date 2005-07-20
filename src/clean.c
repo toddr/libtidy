@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/23 12:52:09 $ 
-    $Revision: 1.95 $ 
+    $Date: 2005/07/20 17:13:10 $ 
+    $Revision: 1.96 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -792,12 +792,26 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     }
 }
 
-static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
+static ctmbstr FontSize2Name(ctmbstr size)
 {
     static const ctmbstr sizes[7] =
     {
         "60%", "70%", "80%", NULL,
         "120%", "150%", "200%"
+    };
+
+    /* increment of 0.8 */
+    static const ctmbstr minussizes[] =
+    {
+        "100%", "80%", "64%", "51%",
+        "40%", "32%", "26%"
+    };
+
+    /* increment of 1.2 */
+    static const ctmbstr plussizes[] =
+    {
+        "100%", "120%", "144%", "172%",
+        "207%", "248%", "298%"
     };
 
     if (size[0] == '\0')
@@ -814,14 +828,7 @@ static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
         if ('0' <= size[1] && size[1] <= '6')
         {
             int n = size[1] - '0';
-            double x;
-
-            for (x = 1; n > 0; --n)
-                x *= 0.8;
-
-            x *= 100;
-            tmbsnprintf(buf, count, "%d%%", (int)(x));
-            return buf;
+            return minussizes[n];
         }
         return "smaller"; /*"70%"; */
     }
@@ -829,15 +836,7 @@ static ctmbstr FontSize2Name(ctmbstr size, tmbstr buf, size_t count)
     if ('0' <= size[1] && size[1] <= '6')
     {
         int n = size[1] - '0';
-        double x;
-
-        for (x = 1; n > 0; --n)
-            x *= 1.2;
-
-        x *= 100;
-        /* Add 0.001 to avoid roundoff error - see #1004512 */
-        tmbsnprintf(buf, count, "%d%%", (int)(x+0.001));
-        return buf;
+        return plussizes[n];
     }
 
     return "larger"; /* "140%" */
@@ -852,7 +851,6 @@ static void AddFontFace( TidyDocImpl* doc, Node *node, ctmbstr face )
 
 static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 {
-    tmbchar work[ 32 ] = {0};
     ctmbstr value = NULL;
 
     if (nodeIsP(node))
@@ -873,7 +871,7 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
         }
     }
 
-    value = FontSize2Name(size, work, sizeof(work) - 1);
+    value = FontSize2Name(size);
 
     if (value)
     {
