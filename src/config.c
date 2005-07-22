@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/05/31 08:15:35 $ 
-    $Revision: 1.89 $ 
+    $Date: 2005/07/22 15:54:55 $ 
+    $Revision: 1.90 $ 
 
 */
 
@@ -606,7 +606,7 @@ ctmbstr ExpandTilde( ctmbstr filename )
     if ( home_dir )
     {
         uint len = tmbstrlen(filename) + tmbstrlen(home_dir) + 1;
-        tmbstr p = MemAlloc( len );
+        tmbstr p = (tmbstr)MemAlloc( len );
         tmbstrcpy( p, home_dir );
         tmbstrcat( p, filename );
         return (ctmbstr) p;

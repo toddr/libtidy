@@ -8,9 +8,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2005/05/23 08:23:19 $ 
-    $Revision: 1.37 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/07/22 15:57:10 $ 
+    $Revision: 1.38 $ 
 */
 
 #include "tidy.h"
@@ -64,8 +64,8 @@ static void print2Columns( const char* fmt, uint l1, uint l2,
                            const char *c1, const char *c2 )
 {
     const char *pc1=c1, *pc2=c2;
-    char *c1buf = malloc(l1+1);
-    char *c2buf = malloc(l2+1);
+    char *c1buf = (char *)malloc(l1+1);
+    char *c2buf = (char *)malloc(l2+1);
 
     do
     {
@@ -83,9 +83,9 @@ static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
                            const char *c1, const char *c2, const char *c3 )
 {
     const char *pc1=c1, *pc2=c2, *pc3=c3;
-    char *c1buf = malloc(l1+1);
-    char *c2buf = malloc(l2+1);
-    char *c3buf = malloc(l3+1);
+    char *c1buf = (char *)malloc(l1+1);
+    char *c2buf = (char *)malloc(l2+1);
+    char *c3buf = (char *)malloc(l3+1);
 
     do
     {
@@ -274,7 +274,7 @@ static tmbstr get_option_names( const CmdOptDesc* pos )
     if (pos->name3)
         len += 2+strlen(pos->name3);
 
-    name = malloc(len+1);
+    name = (tmbstr)malloc(len+1);
     strcpy(name, pos->name1);
     if (pos->name2)
     {
@@ -310,7 +310,7 @@ static tmbstr get_escaped_name( ctmbstr name )
             break;
         }
 
-    escpName = malloc(len+1);
+    escpName = (tmbstr)malloc(len+1);
     escpName[0] = '\0';
 
     aux[1] = '\0';
@@ -748,7 +748,7 @@ tmbstr GetAllowedValuesFromPick( TidyOption topt )
         def = tidyOptGetNextPick( topt, &pos );
         len += strlen(def);
     }
-    val = malloc(len+1);
+    val = (tmbstr)malloc(len+1);
     val[0] = '\0';
     pos = tidyOptGetPickList( topt );
     first = yes;
@@ -769,7 +769,7 @@ tmbstr GetAllowedValues( TidyOption topt, const OptionDesc *d )
 {
     if (d->vals)
     {
-        tmbstr val = malloc(1+strlen(d->vals));
+        tmbstr val = (tmbstr)malloc(1+strlen(d->vals));
         strcpy(val, d->vals);
         return val;
     }

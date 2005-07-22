@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/20 17:13:10 $ 
-    $Revision: 1.96 $ 
+    $Date: 2005/07/22 15:54:45 $ 
+    $Revision: 1.97 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -891,7 +891,7 @@ static void AddFontColor( TidyDocImpl* doc, Node *node, ctmbstr color)
 /* force alignment value to lower case */
 static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
 {
-    int i;
+    uint i;
     tmbchar buf[128];
 
     tmbstrcpy( buf, "text-align: " );
@@ -2216,7 +2216,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
                 continue;
 
             MemFree( prop->name );
-            prop->name = MemAlloc( 8 + tmbstrlen(enc) + 1 );
+            prop->name = (tmbstr)MemAlloc( 8 + tmbstrlen(enc) + 1 );
             tmbstrcpy(prop->name, "charset=");
             tmbstrcpy(prop->name+8, enc);
             s = CreatePropString( pFirstProp );

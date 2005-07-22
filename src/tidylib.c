@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:13 $ 
-    $Revision: 1.56 $ 
+    $Date: 2005/07/22 15:54:58 $ 
+    $Revision: 1.57 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -869,7 +869,7 @@ int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
 
     if ( content )
     {
-        tidyBufAttach( &inbuf, (void*)content, tmbstrlen(content)+1 );
+        tidyBufAttach( &inbuf, (byte*)content, tmbstrlen(content)+1 );
         in = BufferInput( doc, &inbuf, cfg( doc, TidyInCharEncoding ));
         status = tidyDocParseStream( doc, in );
         tidyBufDetach( &inbuf );

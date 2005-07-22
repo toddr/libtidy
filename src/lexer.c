@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:36:03 $ 
-    $Revision: 1.169 $ 
+    $Date: 2005/07/22 15:54:57 $ 
+    $Revision: 1.170 $ 
 
 */
 
@@ -1475,7 +1475,7 @@ Bool SetXHTMLDocType( TidyDocImpl* doc )
 {
     Lexer *lexer = doc->lexer;
     Node *doctype = FindDocType( doc );
-    TidyDoctypeModes dtmode = cfg(doc, TidyDoctypeMode);
+    TidyDoctypeModes dtmode = (TidyDoctypeModes)cfg(doc, TidyDoctypeMode);
     ctmbstr pub = "PUBLIC";
     ctmbstr sys = "SYSTEM";
 
