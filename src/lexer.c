@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/22 15:54:57 $ 
-    $Revision: 1.170 $ 
+    $Date: 2005/08/02 10:07:28 $ 
+    $Revision: 1.171 $ 
 
 */
 
@@ -191,13 +191,13 @@ Bool IsWhite(uint c)
 {
     uint map = MAP(c);
 
-    return (Bool)(map & white);
+    return (map & white)!=0;
 }
 
 Bool IsNewline(uint c)
 {
     uint map = MAP(c);
-    return (Bool)(map & newline);
+    return (map & newline)!=0;
 }
 
 Bool IsDigit(uint c)
@@ -206,7 +206,7 @@ Bool IsDigit(uint c)
 
     map = MAP(c);
 
-    return (Bool)(map & digit);
+    return (map & digit)!=0;
 }
 
 Bool IsLetter(uint c)
@@ -215,13 +215,13 @@ Bool IsLetter(uint c)
 
     map = MAP(c);
 
-    return (Bool)(map & letter);
+    return (map & letter)!=0;
 }
 
 Bool IsNamechar(uint c)
 {
     uint map = MAP(c);
-    return (Bool)(map & namechar);
+    return (map & namechar)!=0;
 }
 
 Bool IsXMLLetter(uint c)
@@ -568,14 +568,14 @@ Bool IsLower(uint c)
 {
     uint map = MAP(c);
 
-    return (Bool)(map & lowercase);
+    return (map & lowercase)!=0;
 }
 
 Bool IsUpper(uint c)
 {
     uint map = MAP(c);
 
-    return (Bool)(map & uppercase);
+    return (map & uppercase)!=0;
 }
 
 uint ToLower(uint c)

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/22 15:54:55 $ 
-    $Revision: 1.90 $ 
+    $Date: 2005/08/02 10:07:27 $ 
+    $Revision: 1.91 $ 
 
 */
 
@@ -1007,7 +1007,7 @@ Bool ParseBool( TidyDocImpl* doc, const TidyOptionImpl* entry )
     ulong flag = 0;
     Bool status = ParseTriState( TidyNoState, doc, entry, &flag );
     if ( status )
-        SetOptionBool( doc, entry->id, (Bool) flag );
+        SetOptionBool( doc, entry->id, flag != 0 );
     return status;
 }
 

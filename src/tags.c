@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:11:47 $ 
-    $Revision: 1.55 $ 
+    $Date: 2005/08/02 10:07:29 $ 
+    $Revision: 1.56 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -440,23 +440,23 @@ ctmbstr        GetNextDeclaredTag( TidyDocImpl* ARG_UNUSED(doc),
         switch ( tagType )
         {
         case tagtype_empty:
-            if ( curr->model & CM_EMPTY )
+            if ( (curr->model & CM_EMPTY) != 0 )
                 name = curr->name;
             break;
 
         case tagtype_inline:
-            if ( curr->model & CM_INLINE )
+            if ( (curr->model & CM_INLINE) != 0 )
                 name = curr->name;
             break;
 
         case tagtype_block:
-            if ( (curr->model & CM_BLOCK) &&
+            if ( (curr->model & CM_BLOCK) != 0 &&
                  curr->parser == ParseBlock )
                 name = curr->name;
             break;
     
         case tagtype_pre:
-            if ( (curr->model & CM_BLOCK) &&
+            if ( (curr->model & CM_BLOCK) != 0 &&
                  curr->parser == ParsePre )
                 name = curr->name;
             break;
@@ -503,20 +503,20 @@ void FreeDeclaredTags( TidyDocImpl* doc, UserTagType tagType )
         switch ( tagType )
         {
         case tagtype_empty:
-            deleteIt = ( curr->model & CM_EMPTY );
+            deleteIt = ( curr->model & CM_EMPTY ) != 0;
             break;
 
         case tagtype_inline:
-            deleteIt = ( curr->model & CM_INLINE );
+            deleteIt = ( curr->model & CM_INLINE ) != 0;
             break;
 
         case tagtype_block:
-            deleteIt = ( (curr->model & CM_BLOCK) &&
+            deleteIt = ( (curr->model & CM_BLOCK) != 0 &&
                          curr->parser == ParseBlock );
             break;
 
         case tagtype_pre:
-            deleteIt = ( (curr->model & CM_BLOCK) &&
+            deleteIt = ( (curr->model & CM_BLOCK) != 0 &&
                          curr->parser == ParsePre );
             break;
 

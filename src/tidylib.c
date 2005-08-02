@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/22 15:54:58 $ 
-    $Revision: 1.57 $ 
+    $Date: 2005/08/02 10:07:30 $ 
+    $Revision: 1.58 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -180,7 +180,7 @@ Bool TIDY_CALL        tidySetOptionCallback( TidyDoc tdoc, TidyOptCallback pOptC
     impl->pOptCallback = pOptCallback;
     return yes;
   }
-  return -EINVAL;
+  return no;
 }
 
 
@@ -612,7 +612,7 @@ Bool TIDY_CALL        tidySetReportFilter( TidyDoc tdoc, TidyReportFilter filt )
     impl->mssgFilt = filt;
     return yes;
   }
-  return -EINVAL;
+  return no;
 }
 
 #if 0   /* Not yet */

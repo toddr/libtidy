@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:13 $ 
-    $Revision: 1.7 $ 
+    $Date: 2005/08/02 10:07:28 $ 
+    $Revision: 1.8 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -42,7 +42,7 @@ static Bool TIDY_CALL filesrc_eof( ulong sourceData )
   FileSource* fin = (FileSource*) sourceData;
   Bool isEOF = ( fin->unget.size == 0 );
   if ( isEOF )
-    isEOF = feof( fin->fp );
+    isEOF = feof( fin->fp ) != 0;
   return isEOF;
 }
 
