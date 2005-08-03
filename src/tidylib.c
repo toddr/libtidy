@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/02 10:07:30 $ 
-    $Revision: 1.58 $ 
+    $Date: 2005/08/03 18:07:01 $ 
+    $Revision: 1.59 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1222,6 +1222,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
 
         /* drop style & class attributes and empty p, span elements */
         CleanWord2000( doc, &doc->root );
+        DropEmptyElements(doc, &doc->root);
     }
 
     /* replaces presentational markup by style rules */

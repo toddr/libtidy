@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/22 15:54:45 $ 
-    $Revision: 1.97 $ 
+    $Date: 2005/08/03 18:06:59 $ 
+    $Revision: 1.98 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1938,6 +1938,15 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 node = DiscardElement( doc, node );
                 continue;
             }
+        }
+
+        /* discards <o:p> which encodes the paragraph mark */
+        if ( node->tag && tmbstrcmp(node->tag->name,"o:p")==0)
+        {
+            Node* next;
+            DiscardContainer( doc, node, &next );
+            node = next;
+            continue;
         }
 
         /* discard empty paragraphs */

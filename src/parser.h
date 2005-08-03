@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/04 12:07:32 $ 
-    $Revision: 1.9 $ 
+    $Date: 2005/08/03 18:07:01 $ 
+    $Revision: 1.10 $ 
 
 */
 
@@ -49,7 +49,7 @@ void InsertNodeBeforeElement(Node *element, Node *node);
 void InsertNodeAfterElement(Node *element, Node *node);
 
 Node *TrimEmptyElement( TidyDocImpl* doc, Node *element );
-
+Node* DropEmptyElements(TidyDocImpl* doc, Node* node);
 
 
 /* assumes node is a text node */
