@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2005/07/05 01:34:44 $ 
-    $Revision: 1.138 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/08/15 08:50:32 $ 
+    $Revision: 1.139 $ 
 
 */
 
@@ -334,8 +334,14 @@ static const TidyOptionId TidyErrFileLinks[] =
   { TidyOutFile, TidyUnknownOption };
 static const TidyOptionId TidyOutFileLinks[] =
   { TidyErrFile, TidyUnknownOption };
+static const TidyOptionId TidyBlockTagsLinks[] =
+  { TidyEmptyTags, TidyInlineTags, TidyPreTags, TidyUnknownOption };
 static const TidyOptionId TidyEmptyTagsLinks[] =
-  { TidyBlockTags, TidyInlineTags, TidyUnknownOption };
+  { TidyBlockTags, TidyInlineTags, TidyPreTags, TidyUnknownOption };
+static const TidyOptionId TidyInlineTagsLinks[] =
+  { TidyBlockTags, TidyEmptyTags, TidyPreTags, TidyUnknownOption };
+static const TidyOptionId TidyPreTagsLinks[] =
+  { TidyBlockTags, TidyEmptyTags, TidyInlineTags, TidyUnknownOption };
 static const TidyOptionId TidyMergeDivsLinks[] =
   { TidyMakeClean, TidyUnknownOption };
 static const TidyOptionId TidyAsciiCharsLinks[] =
@@ -495,6 +501,7 @@ static const TidyOptionDoc option_docs[] =
    "refuse to generate a tidied file if the input includes previously unknown "
    "tags. Note you can't change the content model for elements such as "
    "&lt;TABLE&gt;, &lt;UL&gt;, &lt;OL&gt; and &lt;DL&gt;. "
+   ,TidyBlockTagsLinks
   },
   {TidyEmptyTags,
    "This option specifies new empty inline tags. This option takes a space "
@@ -509,6 +516,7 @@ static const TidyOptionDoc option_docs[] =
    "space or comma separated list of tag names. Unless you declare new tags, "
    "Tidy will refuse to generate a tidied file if the input includes "
    "previously unknown tags. "
+   ,TidyInlineTagsLinks
   },
   { TidyPreTags,
     "This option specifies "
@@ -517,6 +525,7 @@ static const TidyOptionDoc option_docs[] =
     "of tag names. Unless you declare new tags, Tidy will refuse to generate "
     "a tidied file if the input includes previously unknown tags. Note you "
     "can not as yet add new CDATA elements (similar to &lt;SCRIPT&gt;). "
+    ,TidyPreTagsLinks
   },
   {TidyNumEntities,
    "This option specifies if Tidy should output entities other than the "
@@ -588,6 +597,7 @@ static const TidyOptionDoc option_docs[] =
    "This option specifies if Tidy should go to great pains to strip out all "
    "the surplus stuff Microsoft Word 2000 inserts when you save Word "
    "documents as \"Web pages\". Doesn't handle embedded images or VML. "
+   "You should consider using Word's \"Save As: Web Page, Filtered\". "
   },
   {TidyAccessibilityCheckLevel,
    "This option specifies what level of accessibility checking, if any, "
