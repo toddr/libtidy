@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/02 10:07:27 $ 
-    $Revision: 1.91 $ 
+    $Date: 2005/08/16 17:02:18 $ 
+    $Revision: 1.92 $ 
 
 */
 
@@ -909,6 +909,7 @@ void AdjustConfig( TidyDocImpl* doc )
          cfg(doc, TidyOutCharEncoding) != UTF16BE &&
          cfg(doc, TidyOutCharEncoding) != UTF16LE &&
 #endif
+         cfg(doc, TidyOutCharEncoding) != RAW &&
          cfgBool(doc, TidyXmlOut) )
     {
         SetOptionBool( doc, TidyXmlDecl, yes );
