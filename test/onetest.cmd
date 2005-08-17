@@ -2,7 +2,7 @@
 
 REM onetest.cmd - execute a single test case
 REM
-REM (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+REM (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
 REM See tidy.c for the copyright notice.
 REM
 REM <URL:http://tidy.sourceforge.net/>
@@ -37,8 +37,8 @@ for %%F in ( %INFILES% ) do set INFILE=%%F
 REM $T set TIDYFILE=.\tmp\out_%1%%~xF
 
 REM Remove any pre-exising test outputs
-if exist %MSGFILE%  rm %MSGFILE%
-if exist %TIDYFILE% rm %TIDYFILE%
+if exist %MSGFILE%  del %MSGFILE%
+if exist %TIDYFILE% del %TIDYFILE%
 
 REM Make sure output directory exists
 if NOT exist .\tmp  md .\tmp
@@ -47,6 +47,7 @@ if NOT exist .\tmp  md .\tmp
 set STATUS=%ERRORLEVEL%
 
 if %STATUS% EQU %EXPECTED% goto done
-cat %MSGFILE%
+echo ^^^Failed
+type %MSGFILE%
 
 :done
