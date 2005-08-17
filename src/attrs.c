@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/17 15:27:20 $ 
-    $Revision: 1.112 $ 
+    $Date: 2005/08/17 16:59:58 $ 
+    $Revision: 1.113 $ 
 
 */
 
@@ -21,7 +21,7 @@ static const Attribute attribute_defs [] =
 {
   { TidyAttr_UNKNOWN,           "unknown!",          VERS_PROPRIETARY,  NULL      }, 
   { TidyAttr_ABBR,              "abbr",              VERS_HTML40,       PCDATA    }, 
-  { TidyAttr_ACCEPT,            "accept",            VERS_ALL,          TYPE      }, 
+  { TidyAttr_ACCEPT,            "accept",            VERS_ALL,          XTYPE     }, 
   { TidyAttr_ACCEPT_CHARSET,    "accept-charset",    VERS_HTML40,       CHARSET   }, 
   { TidyAttr_ACCESSKEY,         "accesskey",         VERS_HTML40,       CHARACTER }, 
   { TidyAttr_ACTION,            "action",            VERS_ALL,          URL       }, 
@@ -49,7 +49,7 @@ static const Attribute attribute_defs [] =
   { TidyAttr_CLEAR,             "clear",             VERS_LOOSE,        CLEAR     }, /* BR: left, right, all */
   { TidyAttr_CODE,              "code",              VERS_LOOSE,        PCDATA    }, /* APPLET */
   { TidyAttr_CODEBASE,          "codebase",          VERS_HTML40,       URL       }, /* OBJECT */
-  { TidyAttr_CODETYPE,          "codetype",          VERS_HTML40,       TYPE      }, /* OBJECT */
+  { TidyAttr_CODETYPE,          "codetype",          VERS_HTML40,       XTYPE     }, /* OBJECT */
   { TidyAttr_COLOR,             "color",             VERS_LOOSE,        COLOR     }, /* BASEFONT, FONT */
   { TidyAttr_COLS,              "cols",              VERS_IFRAME,       COLS      }, /* TABLE & FRAMESET */
   { TidyAttr_COLSPAN,           "colspan",           VERS_FROM32,       NUMBER    }, 
@@ -67,7 +67,7 @@ static const Attribute attribute_defs [] =
   { TidyAttr_DIR,               "dir",               VERS_HTML40,       TEXTDIR   }, /* ltr or rtl */
   { TidyAttr_DISABLED,          "disabled",          VERS_HTML40,       BOOL      }, /* form fields */
   { TidyAttr_ENCODING,          "encoding",          VERS_XML,          PCDATA    }, /* <?xml?> */
-  { TidyAttr_ENCTYPE,           "enctype",           VERS_ALL,          TYPE      }, /* FORM */
+  { TidyAttr_ENCTYPE,           "enctype",           VERS_ALL,          XTYPE     }, /* FORM */
   { TidyAttr_FACE,              "face",              VERS_LOOSE,        PCDATA    }, /* BASEFONT, FONT */
   { TidyAttr_FOR,               "for",               VERS_HTML40,       IDREF     }, /* LABEL */
   { TidyAttr_FRAME,             "frame",             VERS_HTML40,       TFRAME    }, /* TABLE */
@@ -1554,3 +1554,53 @@ void CheckLang( TidyDocImpl* doc, Node *node, AttVal *attval)
         return;
     }
 }
+
+/* checks type attribute */
+void CheckType( TidyDocImpl* doc, Node *node, AttVal *attval)
+{
+    ctmbstr const valuesINPUT[] = {"text", "password", "checkbox", "radio",
+                                   "submit", "reset", "file", "hidden",
+                                   "image", "button", NULL};
+    ctmbstr const valuesBUTTON[] = {"button", "submit", "reset", NULL};
+    ctmbstr const valuesUL[] = {"disc", "square", "circle", NULL};
+    ctmbstr const valuesOL[] = {"1", "a", "i", NULL};
+
+    if (nodeIsINPUT(node))
+        CheckAttrValidity( doc, node, attval, valuesINPUT );
+    else if (nodeIsBUTTON(node))
+        CheckAttrValidity( doc, node, attval, valuesBUTTON );
+    else if (nodeIsUL(node))
+        CheckAttrValidity( doc, node, attval, valuesUL );
+    else if (nodeIsOL(node))
+    {
+        if (!AttrHasValue(attval))
+        {
+            ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
+            return;
+        }
+        if (!AttrValueIsAmong(attval, valuesOL))
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    }
+    else if (nodeIsLI(node))
+    {
+        if (!AttrHasValue(attval))
+        {
+            ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
+            return;
+        }
+        if (AttrValueIsAmong(attval, valuesUL))
+            CheckLowerCaseAttrValue( doc, node, attval );
+        else if (!AttrValueIsAmong(attval, valuesOL))
+            ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    }
+    return;
+}
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/13 17:10:07 $ 
-    $Revision: 1.13 $ 
+    $Date: 2005/08/17 16:59:58 $ 
+    $Revision: 1.14 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -228,6 +228,7 @@ uint nodeHeaderLevel( Node* node );  /* 1, 2, ..., 6 */
 #define nodeIsSUP( node )        TagIsId( node, TidyTag_SUP )
 #define nodeIsU( node )          TagIsId( node, TidyTag_U )
 #define nodeIsMENU( node )       TagIsId( node, TidyTag_MENU )
+#define nodeIsBUTTON( node )     TagIsId( node, TidyTag_BUTTON )
 
 
 #endif /* __TAGS_H__ */

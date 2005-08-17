@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/02/22 12:46:49 $ 
-    $Revision: 1.18 $ 
+    $Date: 2005/08/17 16:59:58 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -100,10 +100,12 @@ AttrCheck CheckVType;
 AttrCheck CheckScroll;
 AttrCheck CheckTextDir;
 AttrCheck CheckLang;
+AttrCheck CheckType;
 
 #define PCDATA      NULL
 #define CHARSET     NULL
-#define TYPE        NULL
+#define TYPE        CheckType
+#define XTYPE       NULL
 #define CHARACTER   NULL
 #define URLS        NULL
 #define URL         CheckUrl
