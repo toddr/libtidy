@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/05 13:19:41 $ 
-    $Revision: 1.111 $ 
+    $Date: 2005/08/17 15:27:20 $ 
+    $Revision: 1.112 $ 
 
 */
 
@@ -1177,6 +1177,30 @@ static Bool IsValidNMTOKEN(ctmbstr name)
     return yes;
 }
 
+static Bool AttrValueIsAmong(AttVal *attval, ctmbstr const list[])
+{
+    const ctmbstr *v;   
+    for (v = list; *v; ++v)
+        if (AttrValueIs(attval, *v))
+            return yes;
+    return no;
+}
+
+static void CheckAttrValidity( TidyDocImpl* doc, Node *node, AttVal *attval,
+                               ctmbstr const list[])
+{
+    if (!AttrHasValue(attval))
+    {
+        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
+        return;
+    }
+
+    CheckLowerCaseAttrValue( doc, node, attval );
+
+    if (!AttrValueIsAmong(attval, list))
+        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+}
+
 void CheckName( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     Node *old;
@@ -1238,6 +1262,8 @@ void CheckBool( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
+    ctmbstr const values[] = {"left", "right", "center", "justify", NULL};
+
     /* IMG, OBJECT, APPLET and EMBED use align for vertical position */
     if (node->tag && (node->tag->model & CM_IMG))
     {
@@ -1257,10 +1283,7 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
     if (nodeIsCAPTION(node))
         return;
 
-    if (!(AttrValueIs(attval, "left")   ||
-          AttrValueIs(attval, "right")  ||
-          AttrValueIs(attval, "center") ||
-          AttrValueIs(attval, "justify")))
+    if (!AttrValueIsAmong(attval, values))
     {
         /* align="char" is allowed for elements with CM_TABLE|CM_ROW
            except CAPTION which is excluded above, */
@@ -1272,6 +1295,11 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
+    ctmbstr const values[] = {"top", "middle", "bottom", "baseline", NULL};
+    ctmbstr const values2[] = {"left", "right", NULL};
+    ctmbstr const valuesp[] = {"texttop", "absmiddle", "absbottom",
+                               "textbottom", NULL};
+
     if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
@@ -1280,23 +1308,16 @@ void CheckValign( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
 
-    if (AttrValueIs(attval, "top")    ||
-        AttrValueIs(attval, "middle") ||
-        AttrValueIs(attval, "bottom") ||
-        AttrValueIs(attval, "baseline"))
+    if (AttrValueIsAmong(attval, values))
     {
             /* all is fine */
     }
-    else if (AttrValueIs(attval, "left") ||
-             AttrValueIs(attval, "right"))
+    else if (AttrValueIsAmong(attval, values2))
     {
         if (!(node->tag && (node->tag->model & CM_IMG)))
             ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
-    else if (AttrValueIs(attval, "texttop")   ||
-             AttrValueIs(attval, "absmiddle") ||
-             AttrValueIs(attval, "absbottom") ||
-             AttrValueIs(attval, "textbottom"))
+    else if (AttrValueIsAmong(attval, valuesp))
     {
         ConstrainVersion( doc, VERS_PROPRIETARY );
         ReportAttrError( doc, node, attval, PROPRIETARY_ATTR_VALUE);
@@ -1341,6 +1362,8 @@ void CheckLength( TidyDocImpl* doc, Node *node, AttVal *attval)
 
 void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
+    ctmbstr const values[] = {"_blank", "_self", "_parent", "_top", NULL};
+
     if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
@@ -1351,31 +1374,21 @@ void CheckTarget( TidyDocImpl* doc, Node *node, AttVal *attval)
     if (IsLetter(attval->value[0]))
         return;
 
-    /* or be one of _blank, _self, _parent and _top */
-    if (!(AttrValueIs(attval, "_blank")  ||
-          AttrValueIs(attval, "_self")   ||
-          AttrValueIs(attval, "_parent") ||
-          AttrValueIs(attval, "_top")))
+    /* or be one of the allowed list */
+    if (!AttrValueIsAmong(attval, values))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckFsubmit( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval);
-
-    if (!(AttrValueIs(attval, "get") ||
-          AttrValueIs(attval, "post")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"get", "post", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
+    ctmbstr const values[] = {"none", "left", "right", "all", NULL};
+
     if (!AttrHasValue(attval))
     {
         ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
@@ -1386,45 +1399,20 @@ void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     CheckLowerCaseAttrValue( doc, node, attval );
         
-    if (!(AttrValueIs(attval, "none")  ||
-          AttrValueIs(attval, "left")  ||
-          AttrValueIs(attval, "right") ||
-          AttrValueIs(attval, "all")))
+    if (!AttrValueIsAmong(attval, values))
         ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
 }
 
 void CheckShape( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval );
-
-    if (!(AttrValueIs(attval, "rect")    ||
-          AttrValueIs(attval, "default") ||
-          AttrValueIs(attval, "circle")  ||
-          AttrValueIs(attval, "poly")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"rect", "default", "circle", "poly", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 void CheckScope( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval);
-
-    if (!(AttrValueIs(attval, "row")      ||
-          AttrValueIs(attval, "rowgroup") ||
-          AttrValueIs(attval, "col")      ||
-          AttrValueIs(attval, "colgroup")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"row", "rowgroup", "col", "colgroup", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 void CheckNumber( TidyDocImpl* doc, Node *node, AttVal *attval)
@@ -1535,51 +1523,22 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 /* check valuetype attribute for element param */
 void CheckVType( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval );
-
-    if (!(AttrValueIs(attval, "data")   ||
-          AttrValueIs(attval, "object") ||
-          AttrValueIs(attval, "ref")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"data", "object", "ref", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 /* checks scrolling attribute */
 void CheckScroll( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval );
-
-    if (!(AttrValueIs(attval, "no")   ||
-          AttrValueIs(attval, "auto") ||
-          AttrValueIs(attval, "yes")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"no", "auto", "yes", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 /* checks dir attribute */
 void CheckTextDir( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
-    if (!AttrHasValue(attval))
-    {
-        ReportAttrError( doc, node, attval, MISSING_ATTR_VALUE);
-        return;
-    }
-
-    CheckLowerCaseAttrValue( doc, node, attval);
-
-    if (!(AttrValueIs(attval, "rtl") ||
-          AttrValueIs(attval, "ltr")))
-        ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
+    ctmbstr const values[] = {"rtl", "ltr", NULL};
+    CheckAttrValidity( doc, node, attval, values );
 }
 
 /* checks lang and xml:lang attributes */
