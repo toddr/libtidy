@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2005/08/02 10:07:28 $ 
-    $Revision: 1.171 $ 
+    $Author: hoehrmann $ 
+    $Date: 2005/08/22 23:38:57 $ 
+    $Revision: 1.172 $ 
 
 */
 
@@ -2446,14 +2446,19 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
                 if ( cfgBool(doc, TidyFixComments) )
                     lexer->lexbuf[lexer->lexsize - 2] = '=';
 
-                AddCharToLexer(lexer, c);
-
                 /* if '-' then look for '>' to end the comment */
                 if (c == '-')
+                {
+                    AddCharToLexer(lexer, c);
                     goto end_comment;
+                }
 
                 /* otherwise continue to look for --> */
-                lexer->lexbuf[lexer->lexsize - 2] = '=';
+                lexer->lexbuf[lexer->lexsize - 1] = '=';
+
+                /* http://tidy.sf.net/bug/1266647 */
+                AddCharToLexer(lexer, c);
+
                 continue; 
 
             case LEX_DOCTYPE:  /* seen <!d so look for '>' munging whitespace */
