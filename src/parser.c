@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/03 18:07:00 $ 
-    $Revision: 1.147 $ 
+    $Date: 2005/08/23 14:03:38 $ 
+    $Revision: 1.148 $ 
 
 */
 
@@ -1459,6 +1459,17 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
             node->element = tmbstrdup("br");
             TrimSpaces(doc, element);
             InsertNodeAtEnd(element, node);
+            continue;
+        }
+
+        /* <p> allowed within <address> in HTML 4.01 Transitional */
+        if ( nodeIsP(node) &&
+             node->type == StartTag &&
+             nodeIsADDRESS(element) )
+        {
+            ConstrainVersion( doc, ~VERS_HTML40_STRICT );
+            InsertNodeAtEnd(element, node);
+            (*node->tag->parser)( doc, node, mode );
             continue;
         }
 
