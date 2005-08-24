@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/17 16:59:58 $ 
-    $Revision: 1.19 $ 
+    $Date: 2005/08/24 10:27:43 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -101,44 +101,6 @@ AttrCheck CheckScroll;
 AttrCheck CheckTextDir;
 AttrCheck CheckLang;
 AttrCheck CheckType;
-
-#define PCDATA      NULL
-#define CHARSET     NULL
-#define TYPE        CheckType
-#define XTYPE       NULL
-#define CHARACTER   NULL
-#define URLS        NULL
-#define URL         CheckUrl
-#define SCRIPT      CheckScript
-#define ALIGN       CheckAlign
-#define VALIGN      CheckValign
-#define COLOR       CheckColor
-#define CLEAR       CheckClear
-#define BORDER      CheckBool     /* kludge */
-#define LANG        CheckLang
-#define BOOL        CheckBool
-#define COLS        NULL
-#define NUMBER      CheckNumber
-#define LENGTH      CheckLength
-#define COORDS      NULL
-#define DATE        NULL
-#define TEXTDIR     CheckTextDir
-#define IDREFS      NULL
-#define IDREF       NULL
-#define IDDEF       CheckId
-#define NAME        CheckName
-#define TFRAME      NULL
-#define FBORDER     NULL
-#define MEDIA       NULL
-#define FSUBMIT     CheckFsubmit
-#define LINKTYPES   NULL
-#define TRULES      NULL
-#define SCOPE       CheckScope
-#define SHAPE       CheckShape
-#define SCROLL      CheckScroll
-#define TARGET      CheckTarget
-#define VTYPE       CheckVType
-
 
 /* public method for finding attribute definition by name */
 const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval );
