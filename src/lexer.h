@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/03/22 17:36:04 $ 
-    $Revision: 1.29 $ 
+    $Date: 2005/08/26 16:08:45 $ 
+    $Revision: 1.30 $ 
 
 */
 
@@ -107,29 +107,57 @@ typedef enum
 } ParseDocTypeDeclState;
 
 /* content model shortcut encoding
+
+   Descriptions are tentative.
 */
 #define CM_UNKNOWN      0
+/* Elements with no content. Map to HTML specification. */
 #define CM_EMPTY        (1 << 0)
+/* Elements that appear outside of "BODY". */
 #define CM_HTML         (1 << 1)
+/* Elements that can appear within HEAD. */
 #define CM_HEAD         (1 << 2)
+/* HTML "block" elements. */
 #define CM_BLOCK        (1 << 3)
+/* HTML "inline" elements. */
 #define CM_INLINE       (1 << 4)
+/* Elements that mark list item ("LI"). */
 #define CM_LIST         (1 << 5)
+/* Elements that mark definition list item ("DL", "DT"). */
 #define CM_DEFLIST      (1 << 6)
+/* Elements that can appear inside TABLE. */
 #define CM_TABLE        (1 << 7)
+/* Used for "THEAD", "TFOOT" or "TBODY". */
 #define CM_ROWGRP       (1 << 8)
+/* Used for "TD", "TH" */
 #define CM_ROW          (1 << 9)
+/* Elements whose content must be protected against white space movement.
+   Includes some elements that can found in forms. */
 #define CM_FIELD        (1 << 10)
+/* Used to avoid propagating inline emphasis inside some elements
+   such as OBJECT or APPLET. */
 #define CM_OBJECT       (1 << 11)
+/* Elements that allows "PARAM". */
 #define CM_PARAM        (1 << 12)
+/* "FRAME", "FRAMESET", "NOFRAMES". Used in ParseFrameSet. */
 #define CM_FRAMES       (1 << 13)
+/* Heading elements (h1, h2, ...). */
 #define CM_HEADING      (1 << 14)
+/* Elements with an optional end tag. */
 #define CM_OPT          (1 << 15)
+/* Elements that use "align" attribute for vertical position. */
 #define CM_IMG          (1 << 16)
+/* Elements with inline and block model. Used to avoid calling InlineDup. */
 #define CM_MIXED        (1 << 17)
+/* Elements whose content needs to be indented only if containing one 
+   CM_BLOCK element. */
 #define CM_NO_INDENT    (1 << 18)
+/* Elements that are obsolete (such as "dir", "menu"). */
 #define CM_OBSOLETE     (1 << 19)
+/* User defined elements. Used to determine how attributes wihout value
+   should be printed. */
 #define CM_NEW          (1 << 20)
+/* Elements that cannot be omitted. */
 #define CM_OMITST       (1 << 21)
 
 /* If the document uses just HTML 2.0 tags and attributes described
