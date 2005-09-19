@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/23 14:03:38 $ 
-    $Revision: 1.57 $ 
+    $Date: 2005/09/19 16:23:39 $ 
+    $Revision: 1.58 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -645,6 +645,7 @@ void CheckAREA( TidyDocImpl* doc, Node *node )
 {
     Bool HasAlt = AttrGetById(node, TidyAttr_ALT) != NULL;
     Bool HasHref = AttrGetById(node, TidyAttr_HREF) != NULL;
+    Bool HasNohref = AttrGetById(node, TidyAttr_NOHREF) != NULL;
 
     CheckAttributes(doc, node);
 
@@ -657,7 +658,7 @@ void CheckAREA( TidyDocImpl* doc, Node *node )
         }
     }
 
-    if ( !HasHref )
+    if ( !HasHref && !HasNohref )
         ReportMissingAttr( doc, node, "href" );
 }
 
