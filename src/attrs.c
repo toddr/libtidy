@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/24 10:27:43 $ 
-    $Revision: 1.114 $ 
+    $Date: 2005/09/20 09:03:17 $ 
+    $Revision: 1.115 $ 
 
 */
 
@@ -16,6 +16,8 @@
 #include "message.h"
 #include "tmbstr.h"
 #include "utf8.h"
+
+static AttrCheck CheckAction;
 
 #define CH_PCDATA      NULL
 #define CH_CHARSET     NULL
@@ -53,6 +55,7 @@
 #define CH_SCROLL      CheckScroll
 #define CH_TARGET      CheckTarget
 #define CH_VTYPE       CheckVType
+#define CH_ACTION      CheckAction
 
 static const Attribute attribute_defs [] =
 {
@@ -61,7 +64,7 @@ static const Attribute attribute_defs [] =
   { TidyAttr_ACCEPT,            "accept",            VERS_ALL,          CH_XTYPE     }, 
   { TidyAttr_ACCEPT_CHARSET,    "accept-charset",    VERS_HTML40,       CH_CHARSET   }, 
   { TidyAttr_ACCESSKEY,         "accesskey",         VERS_HTML40,       CH_CHARACTER }, 
-  { TidyAttr_ACTION,            "action",            VERS_ALL,          CH_URL       }, 
+  { TidyAttr_ACTION,            "action",            VERS_ALL,          CH_ACTION    }, 
   { TidyAttr_ADD_DATE,          "add_date",          VERS_NETSCAPE,     CH_PCDATA    }, /* A */
   { TidyAttr_ALIGN,             "align",             VERS_ALL,          CH_ALIGN     }, /* varies by element */
   { TidyAttr_ALINK,             "alink",             VERS_LOOSE,        CH_COLOR     }, 
@@ -1134,6 +1137,18 @@ void CheckUrl( TidyDocImpl* doc, Node *node, AttVal *attval)
 
         doc->badChars |= BC_INVALID_URI;
     }
+}
+
+/* RFC 2396, section 4.2 states:
+     "[...] in the case of HTML's FORM element, [...] an
+     empty URI reference represents the base URI of the
+     current document and should be replaced by that URI
+     when transformed into a request."
+*/
+void CheckAction( TidyDocImpl* doc, Node *node, AttVal *attval)
+{
+    if (AttrHasValue(attval))
+        CheckUrl( doc, node, attval );
 }
 
 void CheckScript( TidyDocImpl* ARG_UNUSED(doc), Node* ARG_UNUSED(node),
