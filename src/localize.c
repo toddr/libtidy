@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2005/09/12 07:49:22 $ 
-    $Revision: 1.141 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/10/06 16:37:37 $ 
+    $Revision: 1.142 $ 
 
 */
 
@@ -408,8 +408,8 @@ static const TidyOptionDoc option_docs[] =
   },
   {TidyDropEmptyParas,
    "This option specifies if Tidy should discard empty paragraphs. If set "
-   "to no, empty paragraphs are replaced by a pair of &lt;BR&gt; elements as "
-   "HTML4 precludes empty paragraphs. "
+   "to no, empty paragraphs are replaced by paragraphs containing a non "
+   "breaking space as HTML4 precludes empty paragraphs. "
   },
   {TidyDropFontTags,
    "This option specifies if Tidy should discard &lt;FONT&gt; and "
