@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2005/08/22 23:38:57 $ 
-    $Revision: 1.172 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/10/13 12:11:01 $ 
+    $Revision: 1.173 $ 
 
 */
 
@@ -1445,29 +1445,13 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
 {
     Node* doctype = NULL;
     Node* html = FindHTML( doc );
-    Node* root = &doc->root;
+
     if ( !html )
         return NULL;
 
     doctype = NewNode( NULL );
     doctype->type = DocTypeTag;
-    doctype->next = html;
-    doctype->parent = root;
-
-    if ( html == root->content )
-    {
-        /* No <?xml ... ?> declaration. */
-        root->content->prev = doctype;
-        root->content = doctype;
-        doctype->prev = NULL;
-    }
-    else
-    {
-        /* we have an <?xml ... ?> declaration. */
-        doctype->prev = html->prev;
-        doctype->prev->next = doctype;
-    }
-    html->prev = doctype;
+    InsertNodeBeforeElement(html, doctype);
     return doctype;
 }
 
@@ -1662,15 +1646,10 @@ Bool FixXmlDecl( TidyDocImpl* doc )
     {
         xml = NewNode(lexer);
         xml->type = XmlDecl;
-        xml->next = root->content;
-        
         if ( root->content )
-        {
-            root->content->prev = xml;
-            xml->next = root->content;
-        }
-        
-        root->content = xml;
+            InsertNodeBeforeElement(root->content, xml);
+        else
+            root->content = xml;
     }
 
     version = GetAttrByName(xml, "version");
