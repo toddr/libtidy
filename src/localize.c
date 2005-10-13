@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/06 16:37:37 $ 
-    $Revision: 1.142 $ 
+    $Date: 2005/10/13 12:56:19 $ 
+    $Revision: 1.143 $ 
 
 */
 
@@ -407,9 +407,7 @@ static const TidyOptionDoc option_docs[] =
    "<code>--numeric-entities yes</code>. "
   },
   {TidyDropEmptyParas,
-   "This option specifies if Tidy should discard empty paragraphs. If set "
-   "to no, empty paragraphs are replaced by paragraphs containing a non "
-   "breaking space as HTML4 precludes empty paragraphs. "
+   "This option specifies if Tidy should discard empty paragraphs. "
   },
   {TidyDropFontTags,
    "This option specifies if Tidy should discard &lt;FONT&gt; and "

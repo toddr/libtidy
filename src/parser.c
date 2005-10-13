@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/23 14:03:38 $ 
-    $Revision: 1.148 $ 
+    $Date: 2005/10/13 12:56:19 $ 
+    $Revision: 1.149 $ 
 
 */
 
@@ -320,15 +320,6 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
             ReportNotice(doc, element, NULL, TRIM_EMPTY_ELEMENT);
 
         return DiscardElement(doc, element);
-    }
-    else if ( nodeIsP(element) && element->content == NULL )
-    {
-        /* Put a non-breaking space into empty paragraphs.
-        ** Contrary to intent, replacing empty paragraphs
-        ** with two <br><br> does not preserve formatting.
-        */
-        const char onesixty[2] = { '\240', '\0' };
-        InsertNodeAtStart( element, NewLiteralTextNode(doc->lexer, onesixty) );
     }
     return element;
 }
