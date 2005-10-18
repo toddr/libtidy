@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/13 12:56:19 $ 
-    $Revision: 1.143 $ 
+    $Date: 2005/10/18 11:30:30 $ 
+    $Revision: 1.144 $ 
 
 */
 
@@ -310,6 +310,8 @@ static ctmbstr GetFormatFromCode(uint code)
 */
 
 /* Cross references */
+static const TidyOptionId TidyXmlDeclLinks[] =
+  { TidyCharEncoding, TidyOutCharEncoding, TidyUnknownOption };
 static const TidyOptionId TidyJoinClassesLinks[] =
   { TidyJoinStyles, TidyDuplicateAttrs, TidyUnknownOption };
 static const TidyOptionId TidyJoinStylesLinks[] =
@@ -356,6 +358,10 @@ static const TidyOptionDoc option_docs[] =
    "This option specifies if Tidy should add the XML declaration when "
    "outputting XML or XHTML. Note that if the input already includes an "
    "&lt;?xml ... ?&gt; declaration then this option will be ignored. "
+   "If the encoding for the output is different from \"ascii\", one of the "
+   "utf encodings or \"raw\", the declaration is always added as required by "
+   "the XML standard. "
+   , TidyXmlDeclLinks
   },
   {TidyXmlSpace,
    "This option specifies if Tidy should add xml:space=\"preserve\" to "
