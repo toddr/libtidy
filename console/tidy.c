@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/07/22 15:57:10 $ 
-    $Revision: 1.38 $ 
+    $Date: 2005/10/20 17:42:46 $ 
+    $Revision: 1.39 $ 
 */
 
 #include "tidy.h"
@@ -1103,10 +1103,13 @@ int main( int argc, char** argv )
                 if ( argc >= 3 )
                 {
                     uint wraplen = 0;
-                    sscanf( argv[2], "%u", &wraplen );
+                    int nfields = sscanf( argv[2], "%u", &wraplen );
                     tidyOptSetInt( tdoc, TidyWrapLen, wraplen );
-                    --argc;
-                    ++argv;
+                    if (nfields > 0)
+                    {
+                        --argc;
+                        ++argv;
+                    }
                 }
             }
             else if ( strcasecmp(arg,  "version") == 0 ||
@@ -1141,10 +1144,13 @@ int main( int argc, char** argv )
                 if ( argc >= 3 )
                 {
                     uint acclvl = 0;
-                    sscanf( argv[2], "%u", &acclvl );
+                    int nfields = sscanf( argv[2], "%u", &acclvl );
                     tidyOptSetInt( tdoc, TidyAccessibilityCheckLevel, acclvl );
-                    --argc;
-                    ++argv;
+                    if (nfields > 0)
+                    {
+                        --argc;
+                        ++argv;
+                    }
                 }
             }
 #endif
