@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/07/05 13:41:42 $
-    $Revision: 1.5 $
+    $Date: 2005/10/20 17:57:11 $
+    $Revision: 1.6 $
 
 -->
 <xsl:stylesheet version="1.0"
@@ -48,7 +48,7 @@
 
 <xsl:template name="header-section">
   <xsl:text/>.\" tidy man page for the Tidy Sourceforge project
-.TH tidy 1 "$Date: 2005/07/05 13:41:42 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
+.TH tidy 1 "$Date: 2005/10/20 17:57:11 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
 </xsl:template>
 
 
@@ -63,6 +63,7 @@
 Tidy reads HTML, XHTML and XML files and writes cleaned up markup.  For HTML variants, it detects and corrects many common coding errors and strives to produce visually equivalent markup that is both W3C compliant and works on most browsers. A common use of Tidy is to convert plain HTML to XHTML.  For generic XML files, Tidy is limited to correcting basic well-formedness errors and pretty printing.
 .LP
 If no input file is specified, Tidy reads the standard input.  If no output file is specified, Tidy writes the tidied markup to the standard output.  If no error file is specified, Tidy writes messages to the standard error.
+For command line options that expect a numerical argument, a default is assumed if no meaningful value can be found. 
 .SH OPTIONS
 <xsl:call-template name="show-cmdline-options" />
 .SH USAGE
