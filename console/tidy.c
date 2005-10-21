@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/20 17:57:11 $ 
-    $Revision: 1.40 $ 
+    $Date: 2005/10/21 09:53:23 $ 
+    $Revision: 1.41 $ 
 */
 
 #include "tidy.h"
@@ -156,11 +156,13 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "indent element content",
       "indent: auto", CmdOptProcDir, "-i" },
     { "-wrap <column>",
-      "wrap text at the specified <column> (default is 68)"
-      ". 0 is assumed if <column> is missing.",
+      "wrap text at the specified <column>"
+      ". 0 is assumed if <column> is missing. "
+      "When this option is omitted, the default of the configuration option "
+      "\"wrap\" applies.",
       "wrap: <column>", CmdOptProcDir, "-w <column>" },
     { "-upper",
-      "force tags to upper case (default is lower case)",
+      "force tags to upper case",
       "uppercase-tags: yes", CmdOptProcDir, "-u" },
     { "-clean",
       "replace FONT, NOBR and CENTER tags by CSS",
