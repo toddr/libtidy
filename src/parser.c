@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/13 12:56:19 $ 
-    $Revision: 1.149 $ 
+    $Date: 2005/10/21 12:54:15 $ 
+    $Revision: 1.150 $ 
 
 */
 
@@ -1845,6 +1845,7 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
         */
         if (node->type == EndTag)
         {
+            Bool discardIt = no;
             if ( nodeIsFORM(node) )
             {
                 BadForm( doc );
@@ -1860,7 +1861,10 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
                   between ParseBody and this parser,
                   See http://tidy.sf.net/bug/1098012. */
                 if (nodeIsBODY(parent))
+                {
+                    discardIt = yes;
                     break;
+                }
                 if (node->tag == parent->tag)
                 {
                     ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
@@ -1868,6 +1872,12 @@ void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
                     UngetToken( doc );
                     return;
                 }
+            }
+            if (discardIt)
+            {
+                ReportError(doc, list, node, DISCARDING_UNEXPECTED);
+                FreeNode( doc, node);
+                continue;
             }
         }
 
@@ -4257,3 +4267,11 @@ void ParseXMLDocument(TidyDocImpl* doc)
         FixXmlDecl( doc );
 }
 
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
