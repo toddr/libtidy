@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/18 11:30:30 $ 
-    $Revision: 1.144 $ 
+    $Date: 2005/10/25 15:57:27 $ 
+    $Revision: 1.145 $ 
 
 */
 
@@ -408,7 +408,9 @@ static const TidyOptionDoc option_docs[] =
    "doctype: \"-//ACME//DTD HTML 3.14159//EN\"<br />"
    "<br />"
    "If you specify the FPI for an XHTML document, Tidy will set the "
-   "system identifier to the empty string.  Tidy leaves the DOCTYPE for "
+   "system identifier to the empty string. For an HTML document, Tidy adds a "
+   "system identifier only if one was already present in order to preserve "
+   "the processing mode of some browsers. Tidy leaves the DOCTYPE for "
    "generic XML documents unchanged. <code>--doctype omit</code> implies "
    "<code>--numeric-entities yes</code>. "
   },
