@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/09/19 16:23:39 $ 
-    $Revision: 1.58 $ 
+    $Date: 2005/10/26 13:00:35 $ 
+    $Revision: 1.59 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -139,7 +139,7 @@ static const Dict tag_defs[] =
   { TidyTag_BLOCKQUOTE, "blockquote", VERS_ELEM_BLOCKQUOTE, &W3CAttrsFor_BLOCKQUOTE[0], (CM_BLOCK),                                    ParseBlock,    NULL           },
   { TidyTag_BODY,       "body",       VERS_ELEM_BODY,       &W3CAttrsFor_BODY[0],       (CM_HTML|CM_OPT|CM_OMITST),                    ParseBody,     NULL           },
   { TidyTag_BR,         "br",         VERS_ELEM_BR,         &W3CAttrsFor_BR[0],         (CM_INLINE|CM_EMPTY),                          ParseEmpty,    NULL           },
-  { TidyTag_BUTTON,     "button",     VERS_ELEM_BUTTON,     &W3CAttrsFor_BUTTON[0],     (CM_INLINE),                                   ParseInline,   NULL           },
+  { TidyTag_BUTTON,     "button",     VERS_ELEM_BUTTON,     &W3CAttrsFor_BUTTON[0],     (CM_INLINE),                                   ParseBlock,    NULL           },
   { TidyTag_CAPTION,    "caption",    VERS_ELEM_CAPTION,    &W3CAttrsFor_CAPTION[0],    (CM_TABLE),                                    ParseInline,   CheckCaption   },
   { TidyTag_CENTER,     "center",     VERS_ELEM_CENTER,     &W3CAttrsFor_CENTER[0],     (CM_BLOCK),                                    ParseBlock,    NULL           },
   { TidyTag_CITE,       "cite",       VERS_ELEM_CITE,       &W3CAttrsFor_CITE[0],       (CM_INLINE),                                   ParseInline,   NULL           },
