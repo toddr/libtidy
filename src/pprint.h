@@ -3,13 +3,13 @@
 
 /* pprint.h -- pretty print parse tree  
   
-   (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+   (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
   
    CVS Info:
-     $Author: hoehrmann $ 
-     $Date: 2003/05/24 15:55:02 $ 
-     $Revision: 1.4 $ 
+     $Author: arnaud02 $ 
+     $Date: 2005/10/31 16:31:35 $ 
+     $Revision: 1.5 $ 
 
 */
 
@@ -26,12 +26,12 @@
   start tags and before end tags
 */
 
-#define NORMAL        0
-#define PREFORMATTED  1
-#define COMMENT       2
-#define ATTRIBVALUE   4
-#define NOWRAP        8
-#define CDATA         16
+#define NORMAL        0u
+#define PREFORMATTED  1u
+#define COMMENT       2u
+#define ATTRIBVALUE   4u
+#define NOWRAP        8u
+#define CDATA         16u
 
 
 /* The pretty printer keeps at most two lines of text in the
@@ -62,8 +62,6 @@ typedef struct _TidyPrintImpl
     TidyIndent indent[2];  /* Two lines worth of indent state */
 
 } TidyPrintImpl;
-
-void PPrintDocument( TidyDocImpl* doc );
 
 
 #if SUPPORT_ASIAN_ENCODINGS
