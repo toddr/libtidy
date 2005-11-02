@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/21 12:54:15 $ 
-    $Revision: 1.150 $ 
+    $Date: 2005/11/02 09:11:43 $ 
+    $Revision: 1.151 $ 
 
 */
 
@@ -26,6 +26,8 @@
 Bool CheckNodeIntegrity(Node *node)
 {
 #ifndef NO_NODE_INTEGRITY_CHECK
+    Node *child;
+
     if (node->prev)
     {
         if (node->prev->next != node)
@@ -40,24 +42,15 @@ Bool CheckNodeIntegrity(Node *node)
 
     if (node->parent)
     {
-        Node *child = NULL;
         if (node->prev == NULL && node->parent->content != node)
             return no;
 
         if (node->next == NULL && node->parent->last != node)
             return no;
-
-        for (child = node->parent->content; child; child = child->next)
-        {
-            if (child == node)
-                break;
-        }
-        if ( node != child )
-            return no;
     }
 
-    for (node = node->content; node; node = node->next)
-        if ( !CheckNodeIntegrity(node) )
+    for (child = node->content; child; child = child->next)
+        if ( child->parent != node || !CheckNodeIntegrity(child) )
             return no;
 
 #endif
