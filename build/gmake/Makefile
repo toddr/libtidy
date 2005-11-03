@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/07/14 07:56:23 $ 
-#     $Revision: 1.21 $ 
+#     $Date: 2005/11/03 14:17:45 $ 
+#     $Revision: 1.22 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -75,6 +75,11 @@ OBJDIR = ./obj
 LIBDIR = ${TOPDIR}/lib
 BINDIR = ${TOPDIR}/bin
 DOCDIR = ${TOPDIR}/htmldoc
+
+# Note about shared library and exported symbols:
+# With gcc, one can control the exported symbols by either using 
+# "-fvisibility=hidden -DTIDY_EXPORT=__attribute_((visibility("default")))" or
+# using a linker map (see GNU ld "--version-script").
 
 # CFLAGS etc..
 # For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1
