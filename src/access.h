@@ -9,9 +9,9 @@
   
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/03/19 03:03:46 $ 
-    $Revision: 1.5 $ 
+    $Author: arnaud02 $ 
+    $Date: 2005/11/09 13:28:10 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -57,7 +57,9 @@ typedef struct AreaLinks
 } AreaLinks;
 */
 
-#define TEXTBUF_SIZE    128
+enum {
+  TEXTBUF_SIZE=128u
+};
 
 struct _TidyAccessImpl;
 typedef struct _TidyAccessImpl TidyAccessImpl;
