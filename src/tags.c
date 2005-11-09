@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/10/26 13:00:35 $ 
-    $Revision: 1.59 $ 
+    $Date: 2005/11/09 17:51:18 $ 
+    $Revision: 1.60 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -262,32 +262,49 @@ static uint hash(ctmbstr s)
     return hashval % ELEMENT_HASH_SIZE;
 }
 
-static Dict *install(TidyTagImpl* tags, const Dict* old)
+static const Dict *install(TidyTagImpl* tags, const Dict* old)
 {
-    Dict *np;
+    DictHash *np;
     uint hashval;
 
-    np = (Dict *)MemAlloc(sizeof(*np));
-    np->name = tmbstrdup(old->name);
+    if (old)
+    {
+        np = (DictHash *)MemAlloc(sizeof(*np));
+        np->tag = old;
 
-    hashval = hash(np->name);
-    np->next = tags->hashtab[hashval];
-    tags->hashtab[hashval] = np;
+        hashval = hash(old->name);
+        np->next = tags->hashtab[hashval];
+        tags->hashtab[hashval] = np;
+    }
 
-    np->id       = old->id;
-    np->versions = old->versions;
-    np->model    = old->model;
-    np->parser   = old->parser;
-    np->chkattrs = old->chkattrs;
-    np->attrvers = old->attrvers;
+    return old;
+}
 
-    return np;
+static void removeFromHash( TidyTagImpl* tags, ctmbstr s )
+{
+    uint h = hash(s);
+    DictHash *p, *prev = NULL;
+    for (p = tags->hashtab[h]; p && p->tag; p = p->next)
+    {
+        if (tmbstrcmp(s, p->tag->name) == 0)
+        {
+            DictHash* next = p->next;
+            if ( prev )
+                prev->next = next; 
+            else
+                tags->hashtab[h] = next;
+            MemFree(p);
+            return;
+        }
+        prev = p;
+    }
 }
 #endif /* ELEMENT_HASH_LOOKUP */
 
 static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
 {
     const Dict *np;
+    const DictHash* p;
 
     if (!s)
         return NULL;
@@ -295,10 +312,12 @@ static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
 #ifdef ELEMENT_HASH_LOOKUP
     /* this breaks if declared elements get changed between two   */
     /* parser runs since Tidy would use the cached version rather */
-    /* than the new one                                           */
-    for (np = tags->hashtab[hash(s)]; np != NULL; np = np->next)
-        if (tmbstrcmp(s, np->name) == 0)
-            return np;
+    /* than the new one.                                          */
+    /* However, as FreeDeclaredTags() correctly cleans the hash   */
+    /* this should not be true anymore.                           */
+    for (p = tags->hashtab[hash(s)]; p && p->tag; p = p->next)
+        if (tmbstrcmp(s, p->tag->name) == 0)
+            return p->tag;
 
     for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
         if (tmbstrcmp(s, np->name) == 0)
@@ -526,6 +545,9 @@ void FreeDeclaredTags( TidyDocImpl* doc, UserTagType tagType )
 
         if ( deleteIt )
         {
+#ifdef ELEMENT_HASH_LOOKUP
+          removeFromHash( &doc->tags, curr->name );
+#endif
           MemFree( curr->name );
           MemFree( curr );
           if ( prev )
@@ -544,7 +566,7 @@ void FreeTags( TidyDocImpl* doc )
 
 #ifdef ELEMENT_HASH_LOOKUP
     uint i;
-    Dict *prev, *next;
+    DictHash *prev, *next;
 
     for (i = 0; i < ELEMENT_HASH_SIZE; ++i)
     {
@@ -554,7 +576,6 @@ void FreeTags( TidyDocImpl* doc )
         while(next)
         {
             prev = next->next;
-            MemFree(next->name);
             MemFree(next);
             next = prev;
         }
@@ -890,3 +911,12 @@ uint nodeHeaderLevel( Node* node )
     }
     return 0;
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

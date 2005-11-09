@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/09/20 09:03:17 $ 
-    $Revision: 1.115 $ 
+    $Date: 2005/11/09 17:51:18 $ 
+    $Revision: 1.116 $ 
 
 */
 
@@ -491,24 +491,42 @@ static uint hash(ctmbstr s)
     return hashval % ATTRIBUTE_HASH_SIZE;
 }
 
-static Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
+static const Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
 {
-    Attribute *np;
+    AttrHash *np;
     uint hashval;
 
-    np = (Attribute *)MemAlloc(sizeof(*np));
+    if (old)
+    {
+        np = (AttrHash *)MemAlloc(sizeof(*np));
+        np->attr = old;
 
-    np->name = tmbstrdup(old->name);
+        hashval = hash(old->name);
+        np->next = attribs->hashtab[hashval];
+        attribs->hashtab[hashval] = np;
+    }
 
-    hashval = hash(np->name);
-    np->next = attribs->hashtab[hashval];
-    attribs->hashtab[hashval] = np;
+    return old;
+}
 
-    np->id       = old->id;
-    np->versions = old->versions;
-    np->attrchk  = old->attrchk;
-
-    return np;
+static void removeFromHash( TidyAttribImpl * attribs, ctmbstr s )
+{
+    uint h = hash(s);
+    AttrHash *p, *prev = NULL;
+    for (p = attribs->hashtab[h]; p && p->attr; p = p->next)
+    {
+        if (tmbstrcmp(s, p->attr->name) == 0)
+        {
+            AttrHash* next = p->next;
+            if ( prev )
+                prev->next = next; 
+            else
+                attribs->hashtab[h] = next;
+            MemFree(p);
+            return;
+        }
+        prev = p;
+    }
 }
 #endif
 
@@ -516,14 +534,15 @@ static const Attribute* lookup(TidyAttribImpl* ARG_UNUSED(attribs),
                                ctmbstr atnam)
 {
     const Attribute *np;
+    const AttrHash *p;
 
     if (!atnam)
         return NULL;
 
 #ifdef ATTRIBUTE_HASH_LOOKUP
-    for (np = attribs->hashtab[hash(atnam)]; np != NULL; np = np->next)
-        if (tmbstrcmp(atnam, np->name) == 0)
-            return np;
+    for (p = attribs->hashtab[hash(atnam)]; p && p->attr; p = p->next)
+        if (tmbstrcmp(atnam, p->attr->name) == 0)
+            return p->attr;
 
     for (np = attribute_defs; np && np->name; ++np)
         if (tmbstrcmp(atnam, np->name) == 0)
@@ -812,6 +831,9 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
     while ( NULL != (dict = attribs->declared_attr_list) )
     {
         attribs->declared_attr_list = dict->next;
+#ifdef ATTRIBUTE_HASH_LOOKUP
+        removeFromHash( &doc->attribs, dict->name );
+#endif
         MemFree( dict->name );
         MemFree( dict );
     }
@@ -820,7 +842,7 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
 void FreeAttrTable( TidyDocImpl* doc )
 {
 #ifdef ATTRIBUTE_HASH_LOOKUP
-    Attribute *dict, *next;
+    AttrHash *dict, *next;
     uint i;
 
     for (i = 0; i < ATTRIBUTE_HASH_SIZE; ++i)
@@ -830,7 +852,6 @@ void FreeAttrTable( TidyDocImpl* doc )
         while(dict)
         {
             next = dict->next;
-            MemFree(dict->name);
             MemFree(dict);
             dict = next;
         }

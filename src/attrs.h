@@ -3,14 +3,14 @@
 
 /* attrs.h -- recognize HTML attributes
 
-  (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/24 10:27:43 $ 
-    $Revision: 1.20 $ 
+    $Date: 2005/11/09 17:51:18 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -44,7 +44,17 @@ struct _Anchor
 typedef struct _Anchor Anchor;
 
 #ifdef ATTRIBUTE_HASH_LOOKUP
-#define ATTRIBUTE_HASH_SIZE 178
+enum {
+    ATTRIBUTE_HASH_SIZE=178u
+};
+
+struct _AttrHash
+{
+    Attribute const*  attr;
+    struct _AttrHash* next;
+};
+
+typedef struct _AttrHash AttrHash;
 #endif
 
 struct _TidyAttribImpl
@@ -56,7 +66,7 @@ struct _TidyAttribImpl
     Attribute* declared_attr_list;
 
 #ifdef ATTRIBUTE_HASH_LOOKUP
-    Attribute* hashtab[ATTRIBUTE_HASH_SIZE];
+    AttrHash*  hashtab[ATTRIBUTE_HASH_SIZE];
 #endif
 };
 
