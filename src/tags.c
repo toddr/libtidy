@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/09 17:51:18 $ 
-    $Revision: 1.60 $ 
+    $Date: 2005/11/10 16:51:59 $ 
+    $Revision: 1.61 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -251,7 +251,7 @@ static const Dict tag_defs[] =
   { (TidyTagId)0,        NULL,         0,                    NULL,                       (0),                                           NULL,          NULL           }
 };
 
-#ifdef ELEMENT_HASH_LOOKUP
+#if ELEMENT_HASH_LOOKUP
 static uint hash(ctmbstr s)
 {
     uint hashval;
@@ -309,7 +309,7 @@ static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
     if (!s)
         return NULL;
 
-#ifdef ELEMENT_HASH_LOOKUP
+#if ELEMENT_HASH_LOOKUP
     /* this breaks if declared elements get changed between two   */
     /* parser runs since Tidy would use the cached version rather */
     /* than the new one.                                          */
@@ -545,7 +545,7 @@ void FreeDeclaredTags( TidyDocImpl* doc, UserTagType tagType )
 
         if ( deleteIt )
         {
-#ifdef ELEMENT_HASH_LOOKUP
+#if ELEMENT_HASH_LOOKUP
           removeFromHash( &doc->tags, curr->name );
 #endif
           MemFree( curr->name );
@@ -564,7 +564,7 @@ void FreeTags( TidyDocImpl* doc )
 {
     TidyTagImpl* tags = &doc->tags;
 
-#ifdef ELEMENT_HASH_LOOKUP
+#if ELEMENT_HASH_LOOKUP
     uint i;
     DictHash *prev, *next;
 

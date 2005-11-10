@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/11/03 14:17:45 $ 
-#     $Revision: 1.22 $ 
+#     $Date: 2005/11/10 16:51:59 $ 
+#     $Revision: 1.23 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -80,6 +80,9 @@ DOCDIR = ${TOPDIR}/htmldoc
 # With gcc, one can control the exported symbols by either using 
 # "-fvisibility=hidden -DTIDY_EXPORT=__attribute_((visibility("default")))" or
 # using a linker map (see GNU ld "--version-script").
+
+# Lookup based on hash table can be disabled with 
+# "-DELEMENT_HASH_LOOKUP=0 -DATTRIBUTE_HASH_LOOKUP=0"
 
 # CFLAGS etc..
 # For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1

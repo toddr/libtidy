@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/09 17:51:18 $ 
-    $Revision: 1.116 $ 
+    $Date: 2005/11/10 16:51:59 $ 
+    $Revision: 1.117 $ 
 
 */
 
@@ -480,7 +480,7 @@ static const struct _colors fancy_colors[] =
 };
 #endif
 
-#ifdef ATTRIBUTE_HASH_LOOKUP
+#if ATTRIBUTE_HASH_LOOKUP
 static uint hash(ctmbstr s)
 {
     uint hashval;
@@ -539,7 +539,7 @@ static const Attribute* lookup(TidyAttribImpl* ARG_UNUSED(attribs),
     if (!atnam)
         return NULL;
 
-#ifdef ATTRIBUTE_HASH_LOOKUP
+#if ATTRIBUTE_HASH_LOOKUP
     for (p = attribs->hashtab[hash(atnam)]; p && p->attr; p = p->next)
         if (tmbstrcmp(atnam, p->attr->name) == 0)
             return p->attr;
@@ -831,7 +831,7 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
     while ( NULL != (dict = attribs->declared_attr_list) )
     {
         attribs->declared_attr_list = dict->next;
-#ifdef ATTRIBUTE_HASH_LOOKUP
+#if ATTRIBUTE_HASH_LOOKUP
         removeFromHash( &doc->attribs, dict->name );
 #endif
         MemFree( dict->name );
@@ -841,7 +841,7 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
 
 void FreeAttrTable( TidyDocImpl* doc )
 {
-#ifdef ATTRIBUTE_HASH_LOOKUP
+#if ATTRIBUTE_HASH_LOOKUP
     AttrHash *dict, *next;
     uint i;
 

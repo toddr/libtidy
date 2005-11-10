@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/01 08:56:29 $ 
-    $Revision: 1.146 $ 
+    $Date: 2005/11/10 16:51:59 $ 
+    $Revision: 1.147 $ 
 
 */
 
@@ -30,7 +30,7 @@
 */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-static const char release_date[] = "1 November 2005";
+static const char release_date[] = "11 November 2005";
 
 ctmbstr ReleaseDate(void)
 {

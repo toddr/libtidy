@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/09 17:51:18 $ 
-    $Revision: 1.21 $ 
+    $Date: 2005/11/10 16:51:59 $ 
+    $Revision: 1.22 $ 
 
 */
 
@@ -43,8 +43,13 @@ struct _Anchor
 
 typedef struct _Anchor Anchor;
 
-#ifdef ATTRIBUTE_HASH_LOOKUP
-enum {
+#if !defined(ATTRIBUTE_HASH_LOOKUP)
+#define ATTRIBUTE_HASH_LOOKUP 1
+#endif
+
+#if ATTRIBUTE_HASH_LOOKUP
+enum
+{
     ATTRIBUTE_HASH_SIZE=178u
 };
 
@@ -65,7 +70,7 @@ struct _TidyAttribImpl
     /* Declared literal attributes */
     Attribute* declared_attr_list;
 
-#ifdef ATTRIBUTE_HASH_LOOKUP
+#if ATTRIBUTE_HASH_LOOKUP
     AttrHash*  hashtab[ATTRIBUTE_HASH_SIZE];
 #endif
 };
