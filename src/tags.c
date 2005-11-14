@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/10 16:51:59 $ 
-    $Revision: 1.61 $ 
+    $Date: 2005/11/14 09:07:10 $ 
+    $Revision: 1.62 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -299,12 +299,35 @@ static void removeFromHash( TidyTagImpl* tags, ctmbstr s )
         prev = p;
     }
 }
+
+static void emptyHash( TidyTagImpl* tags )
+{
+    uint i;
+    DictHash *prev, *next;
+
+    for (i = 0; i < ELEMENT_HASH_SIZE; ++i)
+    {
+        prev = NULL;
+        next = tags->hashtab[i];
+
+        while(next)
+        {
+            prev = next->next;
+            MemFree(next);
+            next = prev;
+        }
+
+        tags->hashtab[i] = NULL;
+    }
+}
 #endif /* ELEMENT_HASH_LOOKUP */
 
 static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
 {
     const Dict *np;
+#if ELEMENT_HASH_LOOKUP
     const DictHash* p;
+#endif
 
     if (!s)
         return NULL;
@@ -565,25 +588,8 @@ void FreeTags( TidyDocImpl* doc )
     TidyTagImpl* tags = &doc->tags;
 
 #if ELEMENT_HASH_LOOKUP
-    uint i;
-    DictHash *prev, *next;
-
-    for (i = 0; i < ELEMENT_HASH_SIZE; ++i)
-    {
-        prev = NULL;
-        next = tags->hashtab[i];
-
-        while(next)
-        {
-            prev = next->next;
-            MemFree(next);
-            next = prev;
-        }
-
-        tags->hashtab[i] = NULL;
-    }
+    emptyHash( tags );
 #endif
-
     FreeDeclaredTags( doc, tagtype_null );
     MemFree( tags->xml_tags );
 
