@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/03 18:06:59 $ 
-    $Revision: 1.98 $ 
+    $Date: 2005/11/18 15:13:16 $ 
+    $Revision: 1.99 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1954,7 +1954,8 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         if ( node->content == NULL && nodeIsP(node) )
         {
             /*  Use the existing function to ensure consistency */
-            node = TrimEmptyElement( doc, node );
+            Node *next = TrimEmptyElement( doc, node );
+            node = node == next ? node->next : next;
             continue;
         }
 
