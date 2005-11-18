@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/08 14:37:09 $ 
-    $Revision: 1.152 $ 
+    $Date: 2005/11/18 18:58:52 $ 
+    $Revision: 1.153 $ 
 
 */
 
@@ -2121,7 +2121,8 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint ARG_UNUSED(mode))
         */
         if ( node->type == EndTag )
         {
-            if ( DescendantOf(row, TagId(node)) )
+            if ( (nodeHasCM(node, CM_HTML|CM_TABLE) || nodeIsTABLE(node))
+                 && DescendantOf(row, TagId(node)) )
             {
                 UngetToken( doc );
                 return;
