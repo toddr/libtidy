@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/12/19 15:32:32 $ 
-    $Revision: 1.154 $ 
+    $Date: 2005/12/22 18:29:33 $ 
+    $Revision: 1.155 $ 
 
 */
 
@@ -2199,11 +2199,14 @@ void ParseRow(TidyDocImpl* doc, Node *row, uint ARG_UNUSED(mode))
                 MoveBeforeTable( doc, row, node );
                 ReportError(doc, row, node, TAG_NOT_ALLOWED_IN);
                 lexer->exiled = yes;
+                exclude_state = lexer->excludeBlocks;
+                lexer->excludeBlocks = no;
 
                 if (node->type != TextNode)
                     ParseTag( doc, node, IgnoreWhitespace);
 
                 lexer->exiled = no;
+                lexer->excludeBlocks = exclude_state;
                 continue;
             }
             else if (node->tag->model & CM_HEAD)
