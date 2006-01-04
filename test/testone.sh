@@ -3,16 +3,16 @@
 #
 # testone.sh - execute a single testcase
 #
-# (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+# (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
 # See tidy.c for the copyright notice.
 #
 # <URL:http://tidy.sourceforge.net/>
 #
 # CVS Info:
 #
-#    $Author: creitzel $
-#    $Date: 2003/04/03 17:04:46 $
-#    $Revision: 1.8 $
+#    $Author: arnaud02 $
+#    $Date: 2006/01/04 10:27:12 $
+#    $Revision: 1.9 $
 #
 # set -x
 
@@ -25,11 +25,11 @@ set +f
 TESTNO=$1
 EXPECTED=$2
 TIDY=../bin/tidy
-INFILES=./input/in_$1.*ml
-CFGFILE=./input/cfg_$1.txt
+INFILES=./input/in_${TESTNO}.*ml
+CFGFILE=./input/cfg_${TESTNO}.txt
 
-TIDYFILE=./tmp/out_$1.html
-MSGFILE=./tmp/msg_$1.txt
+TIDYFILE=./tmp/out_${TESTNO}.html
+MSGFILE=./tmp/msg_${TESTNO}.txt
 
 unset HTML_TIDY
 
@@ -70,6 +70,7 @@ STATUS=$?
 
 if [ $STATUS -ne $EXPECTED ]
 then
+  echo "== $TESTNO failed (Status received: $STATUS vs expected: $EXPECTED)" 
   cat $MSGFILE
   exit 1
 fi
