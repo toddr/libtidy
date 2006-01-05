@@ -1,13 +1,13 @@
 /* parser.c -- HTML Parser
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/12/22 18:29:33 $ 
-    $Revision: 1.155 $ 
+    $Date: 2006/01/05 13:09:37 $ 
+    $Revision: 1.156 $ 
 
 */
 
@@ -305,6 +305,7 @@ static Bool CanPrune( TidyDocImpl* doc, Node *element )
     return yes;
 }
 
+/* return next element */
 Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
 {
     if ( CanPrune(doc, element) )
@@ -314,7 +315,7 @@ Node *TrimEmptyElement( TidyDocImpl* doc, Node *element )
 
         return DiscardElement(doc, element);
     }
-    return element;
+    return element->next;
 }
 
 Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
@@ -336,7 +337,7 @@ Node* DropEmptyElements(TidyDocImpl* doc, Node* node)
         }
 
         next = TrimEmptyElement(doc, node);
-        node = node == next ? node->next : next;
+        node = next;
     }
 
     return node;

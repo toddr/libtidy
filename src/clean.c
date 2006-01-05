@@ -1,14 +1,14 @@
 /*
   clean.c -- clean up misuse of presentation markup
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/18 15:13:16 $ 
-    $Revision: 1.99 $ 
+    $Date: 2006/01/05 13:09:37 $ 
+    $Revision: 1.100 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1955,7 +1955,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         {
             /*  Use the existing function to ensure consistency */
             Node *next = TrimEmptyElement( doc, node );
-            node = node == next ? node->next : next;
+            node = next;
             continue;
         }
 
@@ -2591,3 +2591,12 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
         node = next;
     }
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
