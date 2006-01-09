@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2005/11/10 16:51:59 $ 
-#     $Revision: 1.23 $ 
+#     $Date: 2006/01/09 12:38:05 $ 
+#     $Revision: 1.24 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -228,4 +228,4 @@ installmanpage: $(DOCDIR)/tidy.1
 	if [ ! -d "$(maninst)/man1" ]; then mkdir -p "$(maninst)/man1"; fi;
 	cp -f $(DOCDIR)/tidy.1 "$(maninst)/man1/tidy.1";
 
-install: installhdrs installib installmanpage installexes
+install: installhdrs installib installexes installmanpage
