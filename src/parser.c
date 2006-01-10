@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/05 13:09:37 $ 
-    $Revision: 1.156 $ 
+    $Date: 2006/01/10 15:54:59 $ 
+    $Revision: 1.157 $ 
 
 */
 
@@ -1189,10 +1189,13 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
                 }
                 else if ( nodeHasCM(node, CM_TABLE) || nodeHasCM(node, CM_ROW) )
                 {
+#if 0
+                    /* Diabled due to http://tidy.sf.net/issue/1398397 */
                     /* In exiled mode, return so table processing can
                        continue. */
                     if (lexer->exiled)
                         return;
+#endif
                     node = InferredTag(doc, TidyTag_TABLE);
                 }
                 else if ( nodeHasCM(element, CM_OBJECT) )
