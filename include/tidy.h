@@ -11,7 +11,7 @@
   this-equivalent as 1st arg.
 
 
-  Copyright (c) 1998-2005 World Wide Web Consortium
+  Copyright (c) 1998-2006 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:12 $ 
-    $Revision: 1.13 $ 
+    $Date: 2006/01/12 14:26:15 $ 
+    $Revision: 1.14 $ 
 
   Contributing Author(s):
 
@@ -889,7 +889,7 @@ TIDY_EXPORT Bool TIDY_CALL tidyAttrIsROWSPAN( TidyAttr tattr );
 ** @{
 */
 
-
+TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetById( TidyNode tnod, TidyAttrId attId );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetHREF( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetSRC( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetID( TidyNode tnod );
