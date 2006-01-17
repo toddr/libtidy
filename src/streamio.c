@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/17 14:02:39 $ 
-    $Revision: 1.31 $ 
+    $Date: 2006/01/17 18:15:34 $ 
+    $Revision: 1.32 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -306,7 +306,9 @@ uint ReadChar( StreamIn *in )
             added = yes;
             AddCharToOriginalText(in, (tchar)c);
 #endif
-            in->tabs = tabsize - ((in->curcol - 1) % tabsize) - 1;
+            in->tabs = tabsize > 0 ?
+                tabsize - ((in->curcol - 1) % tabsize) - 1
+                : 0;
             in->curcol++;
             c = ' ';
             break;
