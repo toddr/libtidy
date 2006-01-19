@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/10 16:51:59 $ 
-    $Revision: 1.147 $ 
+    $Date: 2006/01/19 17:56:13 $ 
+    $Revision: 1.148 $ 
 
 */
 
@@ -538,7 +538,8 @@ static const TidyOptionDoc option_docs[] =
   {TidyNumEntities,
    "This option specifies if Tidy should output entities other than the "
    "built-in HTML entities (&amp;amp;, &amp;lt;, &amp;gt; and &amp;quot;) in "
-   "the numeric rather than the named entity form. "
+   "the numeric rather than the named entity form. Only entities compatible "
+   "with the DOCTYPE declaration generated are used. "
     ,TidyNumEntitiesLinks
   },
   {TidyHtmlOut,
