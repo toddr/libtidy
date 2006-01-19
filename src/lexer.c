@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2005/10/13 12:11:01 $ 
-    $Revision: 1.173 $ 
+    $Author: hoehrmann $ 
+    $Date: 2006/01/19 14:26:00 $ 
+    $Revision: 1.174 $ 
 
 */
 
@@ -1882,10 +1882,15 @@ Node *GetCDATA( TidyDocImpl* doc, Node *container )
     if (c == EndOfStream)
         ReportError(doc, container, NULL, MISSING_ENDTAG_FOR );
 
-    /* if (lexer->txtend > lexer->txtstart) */
+/* this was disabled for some reason... */
+#if 0
+    if (lexer->txtend > lexer->txtstart)
         return TextToken(lexer);
-
-    return NULL;
+    else
+        return NULL;
+#else
+    return TextToken(lexer);
+#endif
 }
 
 void UngetToken( TidyDocImpl* doc )
