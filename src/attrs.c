@@ -1,13 +1,13 @@
 /* attrs.c -- recognize HTML attributes
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/14 09:07:10 $ 
-    $Revision: 1.118 $ 
+    $Date: 2006/01/23 14:14:36 $ 
+    $Revision: 1.119 $ 
 
 */
 
@@ -870,6 +870,23 @@ void FreeAttrTable( TidyDocImpl* doc )
     FreeDeclaredAttributes( doc );
 }
 
+void AppendToClassAttr( AttVal *classattr, ctmbstr classname )
+{
+    uint len = tmbstrlen(classattr->value) +
+        tmbstrlen(classname) + 2;
+    tmbstr s = (tmbstr) MemAlloc( len );
+    s[0] = '\0';
+    if (classattr->value)
+    {
+        tmbstrcpy( s, classattr->value );
+        tmbstrcat( s, " " );
+    }
+    tmbstrcat( s, classname );
+    if (classattr->value)
+        MemFree( classattr->value );
+    classattr->value = s;
+}
+
 /*
  the same attribute name can't be used
  more than once in each element
@@ -907,10 +924,7 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             {
                 /* concatenate classes */
 
-                first->value = (tmbstr) MemRealloc(first->value, tmbstrlen(first->value) +
-                    tmbstrlen(second->value)  + 2);
-                tmbstrcat(first->value, " ");
-                tmbstrcat(first->value, second->value);
+                AppendToClassAttr(first, second->value);
 
                 temp = second->next;
 

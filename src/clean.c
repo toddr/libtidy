@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/05 13:09:37 $ 
-    $Revision: 1.100 $ 
+    $Date: 2006/01/23 14:14:37 $ 
+    $Revision: 1.101 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -328,16 +328,7 @@ void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
      then append class name after a space.
     */
     if (classattr)
-    {
-        uint len = tmbstrlen(classattr->value) +
-                  tmbstrlen(classname) + 2;
-        tmbstr s = (tmbstr) MemAlloc( len );
-        tmbstrcpy( s, classattr->value );
-        tmbstrcat( s, " " );
-        tmbstrcat( s, classname );
-        MemFree( classattr->value );
-        classattr->value = s;
-    }
+        AppendToClassAttr( classattr, classname );
     else /* create new class attribute */
         AddAttribute( doc, node, "class", classname );
 }
@@ -376,19 +367,7 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
         */
         if (classattr)
         {
-            uint len = tmbstrlen(classattr->value) +
-                      tmbstrlen(classname) + 2;
-            tmbstr s = (tmbstr) MemAlloc( len );
-            s[0] = '\0';
-            if (classattr->value)
-            {
-                tmbstrcpy(s, classattr->value);
-                tmbstrcat(s, " ");
-            }
-            tmbstrcat(s, classname);
-            if (classattr->value)
-                MemFree(classattr->value);
-            classattr->value = s;
+            AppendToClassAttr( classattr, classattr->value );
             RemoveAttribute( doc, node, styleattr );
         }
         else /* reuse style attribute for class attribute */

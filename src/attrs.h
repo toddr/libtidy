@@ -3,14 +3,14 @@
 
 /* attrs.h -- recognize HTML attributes
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/10 16:51:59 $ 
-    $Revision: 1.22 $ 
+    $Date: 2006/01/23 14:14:37 $ 
+    $Revision: 1.23 $ 
 
 */
 
@@ -174,6 +174,7 @@ void FreeAnchors( TidyDocImpl* doc );
 void InitAttrs( TidyDocImpl* doc );
 void FreeAttrTable( TidyDocImpl* doc );
 
+void AppendToClassAttr( AttVal *classattr, ctmbstr classname );
 /*
  the same attribute name can't be used
  more than once in each element
