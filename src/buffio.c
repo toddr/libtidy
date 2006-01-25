@@ -1,13 +1,13 @@
 /* buffio.c -- Treat buffer as an I/O stream.
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/09/21 10:24:15 $ 
-    $Revision: 1.9 $ 
+    $Date: 2006/01/25 14:17:35 $ 
+    $Revision: 1.10 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -22,17 +22,17 @@
    TIDY
 **************/
 
-static int TIDY_CALL insrc_getByte( ulong appData )
+static int TIDY_CALL insrc_getByte( void* appData )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   return tidyBufGetByte( buf );
 }
-static Bool TIDY_CALL insrc_eof( ulong appData )
+static Bool TIDY_CALL insrc_eof( void* appData )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   return tidyBufEndOfInput( buf );
 }
-static void TIDY_CALL insrc_ungetByte( ulong appData, byte bv )
+static void TIDY_CALL insrc_ungetByte( void* appData, byte bv )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   tidyBufUngetByte( buf, bv );
@@ -43,10 +43,10 @@ void TIDY_CALL initInputBuffer( TidyInputSource* inp, TidyBuffer* buf )
   inp->getByte    = insrc_getByte;
   inp->eof        = insrc_eof;
   inp->ungetByte  = insrc_ungetByte;
-  inp->sourceData = (ulong) buf;
+  inp->sourceData = buf;
 }
 
-static void TIDY_CALL outsink_putByte( ulong appData, byte bv )
+static void TIDY_CALL outsink_putByte( void* appData, byte bv )
 {
   TidyBuffer* buf = (TidyBuffer*) appData;
   tidyBufPutByte( buf, bv );
@@ -55,7 +55,7 @@ static void TIDY_CALL outsink_putByte( ulong appData, byte bv )
 void TIDY_CALL initOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
 {
   outp->putByte  = outsink_putByte;
-  outp->sinkData = (ulong) buf;
+  outp->sinkData = buf;
 }
 
 
@@ -192,3 +192,11 @@ void TIDY_CALL tidyBufUngetByte( TidyBuffer* buf, byte bv )
     }
 }
 
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

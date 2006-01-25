@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/12 14:26:15 $ 
-    $Revision: 1.14 $ 
+    $Date: 2006/01/25 14:17:34 $ 
+    $Revision: 1.15 $ 
 
   Contributing Author(s):
 
@@ -177,10 +177,10 @@ TIDY_EXPORT void TIDY_CALL        tidyRelease( TidyDoc tdoc );
 /** Let application store a chunk of data w/ each Tidy instance.
 **  Useful for callbacks.
 */
-TIDY_EXPORT void TIDY_CALL        tidySetAppData( TidyDoc tdoc, ulong appData );
+TIDY_EXPORT void TIDY_CALL        tidySetAppData( TidyDoc tdoc, void* appData );
 
 /** Get application data set previously */
-TIDY_EXPORT ulong TIDY_CALL       tidyGetAppData( TidyDoc tdoc );
+TIDY_EXPORT void* TIDY_CALL       tidyGetAppData( TidyDoc tdoc );
 
 /** Get release date (version) for current library */
 TIDY_EXPORT ctmbstr TIDY_CALL     tidyReleaseDate(void);
@@ -393,13 +393,13 @@ TIDY_EXPORT TidyOption TIDY_CALL    tidyOptGetNextDocLinks( TidyDoc tdoc,
    Input Source
 *****************/
 /** Input Callback: get next byte of input */
-typedef int  (TIDY_CALL *TidyGetByteFunc)( ulong sourceData );
+typedef int  (TIDY_CALL *TidyGetByteFunc)( void* sourceData );
 
 /** Input Callback: unget a byte of input */
-typedef void (TIDY_CALL *TidyUngetByteFunc)( ulong sourceData, byte bt );
+typedef void (TIDY_CALL *TidyUngetByteFunc)( void* sourceData, byte bt );
 
 /** Input Callback: is end of input? */
-typedef Bool (TIDY_CALL *TidyEOFFunc)( ulong sourceData );
+typedef Bool (TIDY_CALL *TidyEOFFunc)( void* sourceData );
 
 /** End of input "character" */
 #define EndOfStream (~0u)
@@ -410,7 +410,7 @@ TIDY_STRUCT
 typedef struct _TidyInputSource
 {
   /* Instance data */
-  ulong               sourceData;  /**< Input context.  Passed to callbacks */
+  void*               sourceData;  /**< Input context.  Passed to callbacks */
 
   /* Methods */
   TidyGetByteFunc     getByte;     /**< Pointer to "get byte" callback */
@@ -442,7 +442,7 @@ TIDY_EXPORT Bool TIDY_CALL tidyIsEOF( TidyInputSource* source );
    Output Sink
 ****************/
 /** Output callback: send a byte to output */
-typedef void (TIDY_CALL *TidyPutByteFunc)( ulong sinkData, byte bt );
+typedef void (TIDY_CALL *TidyPutByteFunc)( void* sinkData, byte bt );
 
 
 /** TidyOutputSink - accepts raw bytes of output
@@ -451,7 +451,7 @@ TIDY_STRUCT
 typedef struct _TidyOutputSink
 {
   /* Instance data */
-  ulong               sinkData;  /**< Output context.  Passed to callbacks */
+  void*               sinkData;  /**< Output context.  Passed to callbacks */
 
   /* Methods */
   TidyPutByteFunc     putByte;   /**< Pointer to "put byte" callback */

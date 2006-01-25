@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/03 18:07:01 $ 
-    $Revision: 1.59 $ 
+    $Date: 2006/01/25 14:17:35 $ 
+    $Revision: 1.60 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -150,18 +150,18 @@ void          tidyDocRelease( TidyDocImpl* doc )
 /* Let application store a chunk of data w/ each Tidy tdocance.
 ** Useful for callbacks.
 */
-void TIDY_CALL        tidySetAppData( TidyDoc tdoc, ulong appData )
+void TIDY_CALL        tidySetAppData( TidyDoc tdoc, void* appData )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
   if ( impl )
     impl->appData = appData;
 }
-ulong TIDY_CALL       tidyGetAppData( TidyDoc tdoc )
+void* TIDY_CALL       tidyGetAppData( TidyDoc tdoc )
 {
   TidyDocImpl* impl = tidyDocToImpl( tdoc );
   if ( impl )
     return impl->appData;
-  return 0;
+  return NULL;
 }
 
 ctmbstr TIDY_CALL     tidyReleaseDate(void)
@@ -1633,3 +1633,12 @@ Bool TIDY_CALL tidyAttrIsProp( TidyAttr tattr )
                       : yes );
   return isProprietary;
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
