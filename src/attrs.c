@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/23 14:14:36 $ 
-    $Revision: 1.119 $ 
+    $Date: 2006/01/25 15:17:16 $ 
+    $Revision: 1.120 $ 
 
 */
 
@@ -1381,7 +1381,7 @@ void CheckAlign( TidyDocImpl* doc, Node *node, AttVal *attval)
         /* align="char" is allowed for elements with CM_TABLE|CM_ROW
            except CAPTION which is excluded above, */
         if( !(AttrValueIs(attval, "char")
-              && node->tag && (node->tag->model & CM_TABLE|CM_ROW)))
+              && nodeHasCM(node, CM_TABLE|CM_ROW)) )
              ReportAttrError( doc, node, attval, BAD_ATTRIBUTE_VALUE);
     }
 }
