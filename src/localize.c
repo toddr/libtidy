@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/20 10:55:16 $ 
-    $Revision: 1.149 $ 
+    $Date: 2006/01/25 14:32:09 $ 
+    $Revision: 1.150 $ 
 
 */
 
@@ -30,7 +30,7 @@
 */
 #define ATRC_ACCESS_URL  "http://www.aprompt.ca/Tidy/accessibilitychecks.html"
 
-static const char release_date[] = "20 January 2006";
+#include "version.h"
 
 ctmbstr ReleaseDate(void)
 {
@@ -1771,3 +1771,12 @@ void ReportNumWarnings( TidyDocImpl* doc )
     else
         tidy_out( doc, "No warnings or errors were found.\n\n" );
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
