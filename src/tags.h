@@ -3,14 +3,14 @@
 
 /* tags.h -- recognize HTML tags
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/10 16:51:59 $ 
-    $Revision: 1.16 $ 
+    $Date: 2006/01/26 10:01:35 $ 
+    $Revision: 1.17 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -20,7 +20,7 @@
 #include "forward.h"
 #include "attrdict.h"
 
-typedef void (Parser)( TidyDocImpl* doc, Node *node, uint mode );
+typedef void (Parser)( TidyDocImpl* doc, Node *node, GetTokenMode mode );
 typedef void (CheckAttribs)( TidyDocImpl* doc, Node *node );
 
 /*

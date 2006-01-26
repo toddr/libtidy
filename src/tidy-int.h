@@ -9,16 +9,16 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/25 14:17:35 $ 
-    $Revision: 1.9 $ 
+    $Date: 2006/01/26 10:01:35 $ 
+    $Revision: 1.10 $ 
 
 */
 
 #include "tidy.h"
 #include "config.h"
+#include "lexer.h"
 #include "tags.h"
 #include "attrs.h"
-#include "lexer.h"
 #include "pprint.h"
 #include "access.h"
 

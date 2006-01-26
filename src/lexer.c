@@ -1,13 +1,13 @@
 /* lexer.c -- Lexer for html parser
   
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2006/01/19 14:26:00 $ 
-    $Revision: 1.174 $ 
+    $Author: arnaud02 $ 
+    $Date: 2006/01/26 10:01:22 $ 
+    $Revision: 1.175 $ 
 
 */
 
@@ -920,7 +920,7 @@ static void ParseEntity( TidyDocImpl* doc, int mode )
         }
 
         lexer->lexsize = start;
-        if ( ch == 160 && (mode & Preformatted) )
+        if ( ch == 160 && (mode == Preformatted) )
             ch = ' ';
         AddCharToLexer( lexer, ch );
 
@@ -1922,8 +1922,7 @@ void UngetToken( TidyDocImpl* doc )
   Preformatted   -- white space preserved as is
   IgnoreMarkup   -- for CDATA elements such as script, style
 */
-
-Node* GetToken( TidyDocImpl* doc, uint mode )
+Node* GetToken( TidyDocImpl* doc, GetTokenMode mode )
 {
     Lexer* lexer = doc->lexer;
     uint c, badcomment = 0;
@@ -1972,14 +1971,14 @@ Node* GetToken( TidyDocImpl* doc, uint mode )
 
     while ((c = ReadChar(doc->docIn)) != EndOfStream)
     {
-        if (lexer->insertspace && !(mode & IgnoreWhitespace))
+        if (lexer->insertspace)
         {
             AddCharToLexer(lexer, ' ');
             lexer->waswhite = yes;
             lexer->insertspace = no;
         }
 
-        if (c == 160 && (mode & Preformatted))
+        if (c == 160 && (mode == Preformatted))
             c = ' ';
 
         AddCharToLexer(lexer, c);
@@ -3709,3 +3708,12 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
     FreeNode(doc, node);
     return NULL;
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

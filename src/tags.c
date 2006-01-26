@@ -1,19 +1,18 @@
 /* tags.c -- recognize HTML tags
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/14 09:07:10 $ 
-    $Revision: 1.62 $ 
+    $Date: 2006/01/26 10:01:27 $ 
+    $Revision: 1.63 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
 */
 
-#include "tags.h"
 #include "tidy-int.h"
 #include "message.h"
 #include "tmbstr.h"

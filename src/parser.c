@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/10 15:54:59 $ 
-    $Revision: 1.157 $ 
+    $Date: 2006/01/26 10:01:22 $ 
+    $Revision: 1.158 $ 
 
 */
 
@@ -711,7 +711,7 @@ static Bool InsertMisc(Node *element, Node *node)
 }
 
 
-static void ParseTag( TidyDocImpl* doc, Node *node, uint mode )
+static void ParseTag( TidyDocImpl* doc, Node *node, GetTokenMode mode )
 {
     Lexer* lexer = doc->lexer;
     /*
@@ -802,7 +802,7 @@ static void MoveNodeToBody( TidyDocImpl* doc, Node* node )
    upon seeing the start tag, or by the
    parser when the start tag is inferred
 */
-void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
+void ParseBlock( TidyDocImpl* doc, Node *element, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
@@ -1276,7 +1276,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, uint mode)
     TrimSpaces( doc, element );
 }
 
-void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
+void ParseInline( TidyDocImpl* doc, Node *element, GetTokenMode mode )
 {
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
@@ -1782,7 +1782,7 @@ void ParseInline( TidyDocImpl* doc, Node *element, uint mode )
 
 }
 
-void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
+void ParseEmpty(TidyDocImpl* doc, Node *element, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     if ( lexer->isvoyager )
@@ -1803,7 +1803,7 @@ void ParseEmpty(TidyDocImpl* doc, Node *element, uint mode)
     }
 }
 
-void ParseDefList(TidyDocImpl* doc, Node *list, uint mode)
+void ParseDefList(TidyDocImpl* doc, Node *list, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
@@ -2837,7 +2837,7 @@ void ParseSelect(TidyDocImpl* doc, Node *field, uint ARG_UNUSED(mode))
     ReportError(doc, field, node, MISSING_ENDTAG_FOR);
 }
 
-void ParseText(TidyDocImpl* doc, Node *field, uint mode)
+void ParseText(TidyDocImpl* doc, Node *field, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
@@ -3179,7 +3179,7 @@ void ParseHead(TidyDocImpl* doc, Node *head, uint ARG_UNUSED(mode))
     }
 }
 
-void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
+void ParseBody(TidyDocImpl* doc, Node *body, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
@@ -3452,7 +3452,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, uint mode)
     }
 }
 
-void ParseNoFrames(TidyDocImpl* doc, Node *noframes, uint mode)
+void ParseNoFrames(TidyDocImpl* doc, Node *noframes, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
@@ -3626,7 +3626,7 @@ void ParseFrameSet(TidyDocImpl* doc, Node *frameset, uint ARG_UNUSED(mode))
     ReportError(doc, frameset, node, MISSING_ENDTAG_FOR);
 }
 
-void ParseHTML(TidyDocImpl* doc, Node *html, uint mode)
+void ParseHTML(TidyDocImpl* doc, Node *html, GetTokenMode mode)
 {
     Node *node, *head;
     Node *frameset = NULL;
@@ -4137,7 +4137,7 @@ Bool XMLPreserveWhiteSpace( TidyDocImpl* doc, Node *element)
 /*
   XML documents
 */
-static void ParseXMLElement(TidyDocImpl* doc, Node *element, uint mode)
+static void ParseXMLElement(TidyDocImpl* doc, Node *element, GetTokenMode mode)
 {
     Lexer* lexer = doc->lexer;
     Node *node;
