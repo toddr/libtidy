@@ -8,8 +8,8 @@
 
   CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2005/02/21 17:20:19 $ 
-    $Revision: 1.11 $ 
+    $Date: 2006/01/27 17:08:36 $ 
+    $Revision: 1.12 $ 
 
 */
 
@@ -24,6 +24,8 @@ void FreeStyles( TidyDocImpl* doc );
 /* Add class="foo" to node
 */
 void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname );
+void AddStyleAsClass( TidyDocImpl* doc, Node *node, ctmbstr stylevalue );
+void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property );
 
 void CleanDocument( TidyDocImpl* doc );
 

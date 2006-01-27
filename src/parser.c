@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/26 11:47:17 $ 
-    $Revision: 1.159 $ 
+    $Date: 2006/01/27 17:08:38 $ 
+    $Revision: 1.160 $ 
 
 */
 
@@ -797,6 +797,19 @@ static void MoveNodeToBody( TidyDocImpl* doc, Node* node )
     }
 }
 
+static void AddClassNoIndent( TidyDocImpl* doc, Node *node )
+{
+    ctmbstr sprop =
+        "padding-left: 2ex; margin-left: 0ex"
+        "; margin-top: 0ex; margin-bottom: 0ex";
+    if ( !cfgBool(doc, TidyDecorateOrphanUL) )
+        return;
+    if ( cfgBool(doc, TidyMakeClean) )
+        AddStyleAsClass( doc, node, sprop );
+    else
+        AddStyleProperty( doc, node, sprop );
+}
+
 /*
    element is node created by the lexer
    upon seeing the start tag, or by the
@@ -1090,7 +1103,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, GetTokenMode mode)
                 {
                     UngetToken( doc );
                     node = InferredTag(doc, TidyTag_UL);
-                    /* AddClass( doc, node, "noindent" ); */
+                    AddClassNoIndent(doc, node);
                     lexer->excludeBlocks = yes;
                 }
                 else if ( nodeHasCM(node, CM_DEFLIST) )
@@ -1175,7 +1188,7 @@ void ParseBlock( TidyDocImpl* doc, Node *element, GetTokenMode mode)
                     }
 
                     node = InferredTag(doc, TidyTag_UL);
-                    /* AddClass( doc, node, "noindent" ); */
+                    AddClassNoIndent(doc, node);
                 }
                 else if ( nodeHasCM(node, CM_DEFLIST) )
                 {
@@ -2040,7 +2053,7 @@ void ParseList(TidyDocImpl* doc, Node *list, uint ARG_UNUSED(mode))
             }
 
             node = InferredTag(doc, TidyTag_LI);
-            AddAttribute( doc, node, "style", "list-style: none" );
+            AddStyleProperty( doc, node, "list-style: none" );
             ReportError(doc, list, node, MISSING_STARTTAG );
         }
 
@@ -3357,7 +3370,7 @@ void ParseBody(TidyDocImpl* doc, Node *body, GetTokenMode mode)
             {
                 UngetToken( doc );
                 node = InferredTag(doc, TidyTag_UL);
-                /* AddClass( doc, node, "noindent" ); */
+                AddClassNoIndent(doc, node);
                 lexer->excludeBlocks = yes;
             }
             else if (node->tag->model & CM_DEFLIST)

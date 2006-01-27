@@ -13,9 +13,9 @@
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/12/09 00:52:27 $ 
-    $Revision: 1.11 $ 
+    $Author: arnaud02 $ 
+    $Date: 2006/01/27 17:08:35 $ 
+    $Revision: 1.12 $ 
 
   Contributing Author(s):
 
@@ -199,6 +199,7 @@ typedef enum
   TidyPunctWrapNotUsed,
 #endif
   TidyMergeDivs,       /**< Merge multiple DIVs */
+  TidyDecorateOrphanUL, /**< Mark orphan ULs with no indent CSS */
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 

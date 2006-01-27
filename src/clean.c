@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/23 14:14:37 $ 
-    $Revision: 1.101 $ 
+    $Date: 2006/01/27 17:08:36 $ 
+    $Revision: 1.102 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -333,6 +333,13 @@ void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
         AddAttribute( doc, node, "class", classname );
 }
 
+void AddStyleAsClass( TidyDocImpl* doc, Node *node, ctmbstr stylevalue )
+{
+    ctmbstr classname;
+
+    classname = FindStyle( doc, node->element, stylevalue );
+    AddClass( doc, node, classname);
+}
 
 /*
  Find style attribute in node, and replace it
@@ -654,7 +661,7 @@ static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
  Add style property to element, creating style
  attribute as needed and adding ; delimiter
 */
-static void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
+void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
 {
     AttVal *av = AttrGetById(node, TidyAttr_STYLE);
 
