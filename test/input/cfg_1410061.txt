@@ -1,1 +1,1 @@
-decorate-orphan-ul: yes
+decorate-inferred-ul: yes

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/30 09:01:53 $ 
-    $Revision: 1.161 $ 
+    $Date: 2006/02/03 10:19:45 $ 
+    $Revision: 1.162 $ 
 
 */
 
@@ -802,7 +802,7 @@ static void AddClassNoIndent( TidyDocImpl* doc, Node *node )
     ctmbstr sprop =
         "padding-left: 2ex; margin-left: 0ex"
         "; margin-top: 0ex; margin-bottom: 0ex";
-    if ( !cfgBool(doc, TidyDecorateOrphanUL) )
+    if ( !cfgBool(doc, TidyInferredUL) )
         return;
     if ( cfgBool(doc, TidyMakeClean) )
         AddStyleAsClass( doc, node, sprop );
