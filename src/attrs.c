@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/25 15:17:16 $ 
-    $Revision: 1.120 $ 
+    $Date: 2006/02/10 17:20:26 $ 
+    $Revision: 1.121 $ 
 
 */
 
@@ -887,6 +887,50 @@ void AppendToClassAttr( AttVal *classattr, ctmbstr classname )
     classattr->value = s;
 }
 
+/* concatenate styles */
+static void AppendToStyleAttr( AttVal *styleattr, ctmbstr styleprop )
+{
+    /*
+    this doesn't handle CSS comments and
+    leading/trailing white-space very well
+    see http://www.w3.org/TR/css-style-attr
+    */
+    uint end = tmbstrlen(styleattr->value);
+
+    if (end >0 && styleattr->value[end - 1] == ';')
+    {
+        /* attribute ends with declaration seperator */
+
+        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+            end + tmbstrlen(styleprop) + 2);
+
+        tmbstrcat(styleattr->value, " ");
+        tmbstrcat(styleattr->value, styleprop);
+    }
+    else if (end >0 && styleattr->value[end - 1] == '}')
+    {
+        /* attribute ends with rule set */
+
+        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+            end + tmbstrlen(styleprop) + 6);
+
+        tmbstrcat(styleattr->value, " { ");
+        tmbstrcat(styleattr->value, styleprop);
+        tmbstrcat(styleattr->value, " }");
+    }
+    else
+    {
+        /* attribute ends with property value */
+
+        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+            end + tmbstrlen(styleprop) + 3);
+
+        if (end > 0)
+            tmbstrcat(styleattr->value, "; ");
+        tmbstrcat(styleattr->value, styleprop);
+    }
+}
+
 /*
  the same attribute name can't be used
  more than once in each element
@@ -920,70 +964,27 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             /* first and second attribute have same local name */
             /* now determine what to do with this duplicate... */
 
-            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses) && AttrHasValue(first) && AttrHasValue(second))
+            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses)
+                && AttrHasValue(first) && AttrHasValue(second))
             {
                 /* concatenate classes */
 
                 AppendToClassAttr(first, second->value);
 
                 temp = second->next;
-
                 ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
                 RemoveAttribute( doc, node, second );
-
                 second = temp;
             }
-            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles) && AttrHasValue(first) && AttrHasValue(second))
+            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles)
+                     && AttrHasValue(first) && AttrHasValue(second))
             {
-                /* concatenate styles */
-
-                /*
-                this doesn't handle CSS comments and
-                leading/trailing white-space very well
-                see http://www.w3.org/TR/css-style-attr
-                */
-
-                uint end = tmbstrlen(first->value);
-
-                if (end >0 && first->value[end - 1] == ';')
-                {
-                    /* attribute ends with declaration seperator */
-
-                    first->value = (tmbstr) MemRealloc(first->value,
-                        end + tmbstrlen(second->value) + 2);
-
-                    tmbstrcat(first->value, " ");
-                    tmbstrcat(first->value, second->value);
-                }
-                else if (end >0 && first->value[end - 1] == '}')
-                {
-                    /* attribute ends with rule set */
-
-                    first->value = (tmbstr) MemRealloc(first->value,
-                        end + tmbstrlen(second->value) + 6);
-
-                    tmbstrcat(first->value, " { ");
-                    tmbstrcat(first->value, second->value);
-                    tmbstrcat(first->value, " }");
-                }
-                else
-                {
-                    /* attribute ends with property value */
-
-                    first->value = (tmbstr) MemRealloc(first->value,
-                        end + tmbstrlen(second->value) + 3);
-
-                    if (end > 0)
-                        tmbstrcat(first->value, "; ");
-                    tmbstrcat(first->value, second->value);
-                }
+                AppendToStyleAttr( first, second->value );
 
                 temp = second->next;
-
                 ReportAttrError( doc, node, second, JOINING_ATTRIBUTE);
                 RemoveAttribute( doc, node, second );
                 second = temp;
-
             }
             else if ( cfg(doc, TidyDuplicateAttrs) == TidyKeepLast )
             {
@@ -997,10 +998,8 @@ void RepairDuplicateAttributes( TidyDocImpl* doc, Node *node)
             else /* TidyDuplicateAttrs == TidyKeepFirst */
             {
                 temp = second->next;
-
                 ReportAttrError( doc, node, second, REPEATED_ATTRIBUTE);
                 RemoveAttribute( doc, node, second );
-
                 second = temp;
             }
         }
