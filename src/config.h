@@ -3,14 +3,14 @@
 
 /* config.h -- read config file and manage config properties
   
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/31 13:10:34 $ 
-    $Revision: 1.10 $ 
+    $Date: 2006/02/14 13:37:08 $ 
+    $Revision: 1.11 $ 
 
   config files associate a property name with a value.
 
@@ -42,16 +42,22 @@ struct _tidy_option
     TidyConfigCategory  category;   /* put 'em in groups */
     ctmbstr             name;       /* property name */
     TidyOptionType      type;       /* string, int or bool */
-    ulong               dflt;       /* factory default */
+    ulong               dflt;       /* default for TidyInteger and TidyBoolean */
     ParseProperty*      parser;     /* parsing method, read-only if NULL */
     const ctmbstr*      pickList;   /* pick list */
+    ctmbstr             pdflt;      /* default for TidyString */
 };
 
+typedef union
+{
+  ulong v;  /* Value for TidyInteger and TidyBoolean */
+  char *p;  /* Value for TidyString */
+} TidyOptionValue;
 
 typedef struct _tidy_config
 {
-    ulong value[ N_TIDY_OPTIONS + 1 ];     /* current config values */
-    ulong snapshot[ N_TIDY_OPTIONS + 1 ];  /* Snapshot of values to be restored later */
+    TidyOptionValue value[ N_TIDY_OPTIONS + 1 ];     /* current config values */
+    TidyOptionValue snapshot[ N_TIDY_OPTIONS + 1 ];  /* Snapshot of values to be restored later */
 
     /* track what tags user has defined to eliminate unnecessary searches */
     uint  defined_tags;
@@ -147,10 +153,10 @@ ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
 #else
 
 /* Release build macros for speed */
-#define cfg(doc, id)            ((doc)->config.value[ (id) ])
+#define cfg(doc, id)            ((doc)->config.value[ (id) ].v)
 #define cfgBool(doc, id)        ((Bool) cfg(doc, id))
 #define cfgAutoBool(doc, id)    ((TidyTriState) cfg(doc, id))
-#define cfgStr(doc, id)         ((ctmbstr) cfg(doc, id))
+#define cfgStr(doc, id)         ((ctmbstr) (doc)->config.value[ (id) ].p)
 
 #endif /* _DEBUG */
 
