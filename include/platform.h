@@ -3,14 +3,14 @@
 
 /* platform.h -- Platform specifics
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/06/15 12:45:39 $ 
-    $Revision: 1.55 $ 
+    $Date: 2006/02/14 13:38:30 $ 
+    $Revision: 1.56 $ 
 
 */
 
@@ -491,7 +491,11 @@ extern "C" {
 #endif
 
 #ifndef TIDY_CALL
-#define TIDY_CALL __stdcall
+#ifdef _WIN64
+#  define TIDY_CALL __fastcall
+#else
+#  define TIDY_CALL __stdcall
+#endif
 #endif
 
 #endif /* _WIN32 */
