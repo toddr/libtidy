@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/26 10:01:22 $ 
-    $Revision: 1.175 $ 
+    $Date: 2006/02/14 11:07:34 $ 
+    $Revision: 1.176 $ 
 
 */
 
@@ -785,7 +785,7 @@ static void AddStringToLexer( Lexer *lexer, ctmbstr str )
   "ParseEntity" is also a bit of a misnomer - it handles entities and
   numeric character references. Invalid NCR's are now reported.
 */
-static void ParseEntity( TidyDocImpl* doc, int mode )
+static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
 {
     uint start;
     Bool first = yes, semicolon = no, found = no;
@@ -2756,7 +2756,7 @@ Node* GetToken( TidyDocImpl* doc, GetTokenMode mode )
         return lexer->token = CommentToken(doc);
     }
 
-    return 0;
+    return NULL;
 }
 
 static void MapStr( ctmbstr str, uint code )
@@ -3287,7 +3287,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
         if (c == '&')
         {
             AddCharToLexer(lexer, c);
-            ParseEntity( doc, 0 );
+            ParseEntity( doc, IgnoreWhitespace );
             if (lexer->lexbuf[lexer->lexsize - 1] == '\n' && munge)
                 ChangeChar(lexer, ' ');
             continue;
