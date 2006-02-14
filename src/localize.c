@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/03 10:19:44 $ 
-    $Revision: 1.152 $ 
+    $Date: 2006/02/14 11:04:39 $ 
+    $Revision: 1.153 $ 
 
 */
 
@@ -1762,7 +1762,7 @@ void ReportNumWarnings( TidyDocImpl* doc )
 {
     if ( doc->warnings > 0 || doc->errors > 0 )
     {
-        tidy_out( doc, "%d %s, %d %s were found!",
+        tidy_out( doc, "%u %s, %u %s were found!",
                   doc->warnings, doc->warnings == 1 ? "warning" : "warnings",
                   doc->errors, doc->errors == 1 ? "error" : "errors" );
 
