@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 11:04:39 $ 
-    $Revision: 1.153 $ 
+    $Date: 2006/02/14 13:42:10 $ 
+    $Revision: 1.154 $ 
 
 */
 
@@ -810,7 +810,7 @@ static const TidyOptionDoc option_docs[] =
    "before tidying them, as on rare occasions the result may not be what you "
    "expect. "
   },
-  {TidyInferredUL,
+  {TidyDecorateInferredUL,
    "This option specifies if Tidy should decorate inferred UL elements with "
    "some CSS markup to avoid indentation to the right. "
   },
