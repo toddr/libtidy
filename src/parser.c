@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:42:10 $ 
-    $Revision: 1.163 $ 
+    $Date: 2006/02/17 15:08:33 $ 
+    $Revision: 1.164 $ 
 
 */
 
@@ -3533,9 +3533,9 @@ void ParseNoFrames(TidyDocImpl* doc, Node *noframes, GetTokenMode mode)
         /* implicit body element inferred */
         if (nodeIsText(node) || (node->tag && node->type != EndTag))
         {
-            if ( lexer->seenEndBody )
+            Node *body = FindBody( doc );
+            if ( body || lexer->seenEndBody )
             {
-                Node *body = FindBody( doc );
                 if ( body == NULL )
                 {
                     ReportError(doc, noframes, node, DISCARDING_UNEXPECTED);

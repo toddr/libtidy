@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 11:07:34 $ 
-    $Revision: 1.176 $ 
+    $Date: 2006/02/17 15:08:33 $ 
+    $Revision: 1.177 $ 
 
 */
 
@@ -1943,24 +1943,12 @@ Node* GetToken( TidyDocImpl* doc, GetTokenMode mode )
        elements are inserted into the token stream */
 
     if (lexer->insert || lexer->inode)
-    {
-        if (lexer->pushed)
-        {
-            lexer->pushed = no;
-            FreeNode( doc, lexer->token );
-        }
-        return lexer->token = InsertedToken( doc );
-    }
+        return InsertedToken( doc );
 
     if (mode == CdataContent)
     {
         assert( lexer->parent != NULL );
-        if (lexer->pushed)
-        {
-            lexer->pushed = no;
-            FreeNode( doc, lexer->token );
-        }
-        return lexer->token = GetCDATA(doc, lexer->parent);
+        return GetCDATA(doc, lexer->parent);
     }
 
     lexer->lines = doc->docIn->curline;
