@@ -1,13 +1,13 @@
 /* istack.c -- inline stack for compatibility with Mosaic
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 12:53:25 $ 
-    $Revision: 1.16 $ 
+    $Date: 2006/02/17 17:13:48 $ 
+    $Revision: 1.17 $ 
 
 */
 
@@ -52,7 +52,7 @@ AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
       <p><em>text</em></p>
       <p><em><em>more text</em></em>
 */
-void PushInline( TidyDocImpl* doc, Node *node)
+void PushInline( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
     IStack *istack;
@@ -91,12 +91,42 @@ void PushInline( TidyDocImpl* doc, Node *node)
     ++(lexer->istacksize);
 }
 
+static void PopIStack( TidyDocImpl* doc )
+{
+    Lexer* lexer = doc->lexer;
+    IStack *istack;
+    AttVal *av;
+
+    --(lexer->istacksize);
+    istack = &(lexer->istack[lexer->istacksize]);
+
+    while (istack->attributes)
+    {
+        av = istack->attributes;
+        istack->attributes = av->next;
+        FreeAttribute( doc, av );
+    }
+    MemFree(istack->element);
+}
+
+static void PopIStackUntil( TidyDocImpl* doc, TidyTagId tid )
+{
+    Lexer* lexer = doc->lexer;
+    IStack *istack;
+
+    while (lexer->istacksize > 0)
+    {
+        PopIStack( doc );
+        istack = &(lexer->istack[lexer->istacksize]);
+        if ( istack->tag->id == tid )
+            break;
+    }
+}
+
 /* pop inline stack */
 void PopInline( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
-    AttVal *av;
-    IStack *istack;
 
     if (node)
     {
@@ -112,44 +142,14 @@ void PopInline( TidyDocImpl* doc, Node *node )
         /* if node is </a> then pop until we find an <a> */
         if ( nodeIsA(node) )
         {
-            while (lexer->istacksize > 0)
-            {
-                --(lexer->istacksize);
-                istack = &(lexer->istack[lexer->istacksize]);
-
-                while (istack->attributes)
-                {
-                    av = istack->attributes;
-                    istack->attributes = av->next;
-                    FreeAttribute( doc, av );
-                }
-
-                if ( istack->tag->id == TidyTag_A )
-                {
-                    MemFree(istack->element);
-                    break;
-                }
-
-                MemFree(istack->element);
-            }
-
+            PopIStackUntil( doc, TidyTag_A );
             return;
         }
     }
 
     if (lexer->istacksize > 0)
     {
-        --(lexer->istacksize);
-        istack = &(lexer->istack[lexer->istacksize]);
-
-        while (istack->attributes)
-        {
-            av = istack->attributes;
-            istack->attributes = av->next;
-            FreeAttribute( doc, av );
-        }
-
-        MemFree(istack->element);
+        PopIStack( doc );
 
         /* #427822 - fix by Randy Waki 7 Aug 00 */
         if (lexer->insert >= lexer->istack + lexer->istacksize)
@@ -228,8 +228,7 @@ Node *InsertedToken( TidyDocImpl* doc )
     }
 
     /*
-    
-      is this is the "latest" node then update
+      If this is the "latest" node then update
       the position, otherwise use current values
     */
 
@@ -268,6 +267,11 @@ Node *InsertedToken( TidyDocImpl* doc )
     return node;
 }
 
-
-
-
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */
