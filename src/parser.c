@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/17 15:08:33 $ 
-    $Revision: 1.164 $ 
+    $Date: 2006/02/17 18:01:12 $ 
+    $Revision: 1.165 $ 
 
 */
 
@@ -1714,7 +1714,8 @@ void ParseInline( TidyDocImpl* doc, Node *element, GetTokenMode mode )
                     if (!(element->tag->model & CM_OPT) && !element->implicit)
                         ReportError(doc, element, node, MISSING_ENDTAG_BEFORE);
 
-                    PopInline( doc, element );
+                    if( IsPushedLast( doc, element, node ) ) 
+                        PopInline( doc, element );
                     UngetToken( doc );
 
                     if (!(mode & Preformatted))

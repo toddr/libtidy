@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/01/26 10:01:22 $ 
-    $Revision: 1.32 $ 
+    $Date: 2006/02/17 18:01:12 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -594,6 +594,7 @@ void PushInline( TidyDocImpl* doc, Node* node );
 void PopInline( TidyDocImpl* doc, Node* node );
 
 Bool IsPushed( TidyDocImpl* doc, Node* node );
+Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node );
 
 /*
   This has the effect of inserting "missing" inline

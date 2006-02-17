@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/17 17:13:48 $ 
-    $Revision: 1.17 $ 
+    $Date: 2006/02/17 18:01:12 $ 
+    $Revision: 1.18 $ 
 
 */
 
@@ -36,6 +36,20 @@ AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
     return newattrs;
 }
 
+static Bool IsNodePushable( Node *node )
+{
+    if (node->tag == NULL)
+        return no;
+
+    if (!(node->tag->model & CM_INLINE))
+        return no;
+
+    if (node->tag->model & CM_OBJECT)
+        return no;
+
+    return yes;
+}
+
 /*
   push a copy of an inline node onto stack
   but don't push if implicit or OBJECT or APPLET
@@ -60,13 +74,7 @@ void PushInline( TidyDocImpl* doc, Node *node )
     if (node->implicit)
         return;
 
-    if (node->tag == NULL)
-        return;
-
-    if (!(node->tag->model & CM_INLINE))
-        return;
-
-    if (node->tag->model & CM_OBJECT)
+    if ( !IsNodePushable(node) )
         return;
 
     if ( !nodeIsFONT(node) && IsPushed(doc, node) )
@@ -130,13 +138,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
 
     if (node)
     {
-        if (node->tag == NULL)
-            return;
-
-        if (!(node->tag->model & CM_INLINE))
-            return;
-
-        if (node->tag->model & CM_OBJECT)
+        if ( !IsNodePushable(node) )
             return;
 
         /* if node is </a> then pop until we find an <a> */
@@ -157,7 +159,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
     }
 }
 
-Bool IsPushed( TidyDocImpl* doc, Node *node)
+Bool IsPushed( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
     int i;
@@ -166,6 +168,25 @@ Bool IsPushed( TidyDocImpl* doc, Node *node)
     {
         if (lexer->istack[i].tag == node->tag)
             return yes;
+    }
+
+    return no;
+}
+
+/*
+   Test whether the last element on the stack has the same type than "node".
+*/
+Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node )
+{
+    Lexer* lexer = doc->lexer;
+
+    if ( element && !IsNodePushable(element) )
+        return no;
+
+    if (lexer->istacksize > 0) {
+        if (lexer->istack[lexer->istacksize - 1].tag == node->tag) {
+            return yes;
+        }
     }
 
     return no;
