@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/02/17 18:01:12 $ 
-    $Revision: 1.33 $ 
+    $Date: 2006/02/24 16:09:00 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -509,6 +509,8 @@ Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype);
 
 ctmbstr HTMLVersionName( TidyDocImpl* doc );
 ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml );
+
+Bool WarnMissingSIInEmittedDocType( TidyDocImpl* doc );
 
 Bool SetXHTMLDocType( TidyDocImpl* doc );
 

@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:42:10 $ 
-    $Revision: 1.154 $ 
+    $Date: 2006/02/24 16:09:00 $ 
+    $Revision: 1.155 $ 
 
 */
 
@@ -1755,6 +1755,10 @@ void ReportMarkupVersion( TidyDocImpl* doc )
             vers = "HTML Proprietary";
 
         message( doc, TidyInfo, "Document content looks like %s", vers );
+
+        /* Warn about missing sytem identifier (SI) in emitted doctype */
+        if ( WarnMissingSIInEmittedDocType( doc ) )
+            message( doc, TidyInfo, "No system identifier in emitted doctype" );
     }
 }
 
