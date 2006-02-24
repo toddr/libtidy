@@ -6,9 +6,9 @@
   
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2005/10/31 16:36:21 $ 
-    $Revision: 1.106 $ 
+    $Author: hoehrmann $ 
+    $Date: 2006/02/24 17:58:16 $ 
+    $Revision: 1.107 $ 
 
 */
 
@@ -1767,14 +1767,13 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     int     contentIndent = -1;
     Bool    xhtmlOut = cfgBool( doc, TidyXhtmlOut );
 
-    /* fix for http://tidy.sf.net/bug/729972, restores 04Aug00 behaivour */
-    indent = 0;
-
     if ( InsideHead(doc, node) )
       PFlushLine( doc, indent );
 
     PPrintTag( doc, mode, indent, node );
-    PFlushLine( doc, indent );
+
+    /* use zero indent here, see http://tidy.sf.net/bug/729972 */
+    PFlushLine(doc, 0);
 
     if ( xhtmlOut && node->content != NULL )
     {
@@ -1815,6 +1814,11 @@ void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
           content != NULL;
           content = content->next )
     {
+        /*
+          This is a bit odd, with the current code there can only
+          be one child and the only caller of this function defines
+          all these modes already...
+        */
         PPrintTree( doc, (mode | PREFORMATTED | NOWRAP | CDATA), 
                     indent, content );
 
