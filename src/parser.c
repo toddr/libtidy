@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/17 18:01:12 $ 
-    $Revision: 1.165 $ 
+    $Date: 2006/04/13 16:27:44 $ 
+    $Revision: 1.166 $ 
 
 */
 
@@ -1202,13 +1202,11 @@ void ParseBlock( TidyDocImpl* doc, Node *element, GetTokenMode mode)
                 }
                 else if ( nodeHasCM(node, CM_TABLE) || nodeHasCM(node, CM_ROW) )
                 {
-#if 0
-                    /* Diabled due to http://tidy.sf.net/issue/1398397 */
-                    /* In exiled mode, return so table processing can
+                    /* http://tidy.sf.net/issue/1316307 */
+                    /* In exiled mode, return so table processing can 
                        continue. */
                     if (lexer->exiled)
                         return;
-#endif
                     node = InferredTag(doc, TidyTag_TABLE);
                 }
                 else if ( nodeHasCM(element, CM_OBJECT) )
@@ -2052,6 +2050,11 @@ void ParseList(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                 ReportError(doc, list, node, MISSING_ENDTAG_BEFORE);
                 return;
             }
+            /* http://tidy.sf.net/issue/1316307 */
+            /* In exiled mode, return so table processing can continue. */
+            else if ( lexer->exiled && node->tag
+                      && nodeHasCM(node, CM_TABLE|CM_ROWGRP|CM_ROW) )
+                return;
 
             node = InferredTag(doc, TidyTag_LI);
             AddStyleProperty( doc, node, "list-style: none" );

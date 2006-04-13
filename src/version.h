@@ -6,9 +6,9 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:44:47 $ 
-    $Revision: 1.3 $ 
+    $Date: 2006/04/13 16:27:44 $ 
+    $Revision: 1.4 $ 
 
 */
 
-static const char release_date[] = "14 February 2006";
+static const char release_date[] = "13 April 2006";
