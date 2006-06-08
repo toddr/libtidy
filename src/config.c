@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:42:10 $ 
-    $Revision: 1.96 $ 
+    $Date: 2006/06/08 09:05:58 $ 
+    $Revision: 1.97 $ 
 
 */
 
@@ -493,7 +493,8 @@ TidyTriState    _cfgGetAutoBool( TidyDocImpl* doc, TidyOptionId optId )
 {
   ulong val = _cfgGet( doc, optId );
   const TidyOptionImpl* opt = &option_defs[ optId ];
-  assert( opt && opt->type == TidyInteger );
+  assert( opt && opt->type == TidyInteger
+          && opt->parser == ParseAutoBool );
   return (TidyTriState) val;
 }
 
