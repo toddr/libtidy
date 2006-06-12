@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/04/13 16:27:44 $ 
-    $Revision: 1.166 $ 
+    $Date: 2006/06/12 11:03:40 $ 
+    $Revision: 1.167 $ 
 
 */
 
@@ -523,7 +523,7 @@ static Bool CleanTrailingWhitespace(TidyDocImpl* doc, Node* node)
     if (IsPreDescendant(node))
         return no;
 
-    if (node->parent->tag->parser == ParseScript)
+    if (node->parent->tag && node->parent->tag->parser == ParseScript)
         return no;
 
     next = node->next;
@@ -572,7 +572,7 @@ static Bool CleanLeadingWhitespace(TidyDocImpl* ARG_UNUSED(doc), Node* node)
     if (IsPreDescendant(node))
         return no;
 
-    if (node->parent->tag->parser == ParseScript)
+    if (node->parent->tag && node->parent->tag->parser == ParseScript)
         return no;
 
     /* <p>...<br> <em>...</em>...</p> */
