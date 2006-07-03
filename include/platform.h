@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:38:30 $ 
-    $Revision: 1.56 $ 
+    $Date: 2006/07/03 14:08:57 $ 
+    $Revision: 1.57 $ 
 
 */
 
@@ -512,8 +512,18 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 #endif
 
+/*
+With GCC 4,  __attribute__ ((visibility("default"))) can be used along compiling with tidylib 
+with "-fvisibility=hidden". See http://gcc.gnu.org/wiki/Visibility and build/gmake/Makefile.
+*/
+/*
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define TIDY_EXPORT __attribute__ ((visibility("default")))
+#endif
+*/
+
 #ifndef TIDY_EXPORT /* Define it away for most builds */
-#define TIDY_EXPORT
+#define TIDY_EXPORT 
 #endif
 
 #ifndef TIDY_STRUCT
