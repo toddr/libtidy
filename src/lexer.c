@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/24 16:09:00 $ 
-    $Revision: 1.178 $ 
+    $Date: 2006/07/04 17:10:35 $ 
+    $Revision: 1.179 $ 
 
 */
 
@@ -1737,16 +1737,19 @@ Bool ExpectsContent(Node *node)
   which ends with </foo> for some foo.
 */
 
-#define CDATA_INTERMEDIATE 1
-#define CDATA_STARTTAG     2
-#define CDATA_ENDTAG       3
+typedef enum
+{
+    CDATA_INTERMEDIATE,
+    CDATA_STARTTAG,
+    CDATA_ENDTAG
+} CDATAState;
 
 Node *GetCDATA( TidyDocImpl* doc, Node *container )
 {
     Lexer* lexer = doc->lexer;
     uint start = 0;
     int nested = 0;
-    int state = CDATA_INTERMEDIATE;
+    CDATAState state = CDATA_INTERMEDIATE;
     uint i;
     Bool isEmpty = yes;
     Bool matches = no;
@@ -2725,6 +2728,7 @@ Node* GetToken( TidyDocImpl* doc, GetTokenMode mode )
                 if (c != '>')
                 {
                     UngetChar(c, doc->docIn);
+                    UngetChar(']', doc->docIn);
                     continue;
                 }
 
