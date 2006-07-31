@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/06/08 09:05:58 $ 
-    $Revision: 1.97 $ 
+    $Date: 2006/07/31 09:15:31 $ 
+    $Revision: 1.98 $ 
 
 */
 
@@ -762,8 +762,7 @@ int ParseConfigFileEnc( TidyDocImpl* doc, ctmbstr file, ctmbstr charenc )
             }
         }
 
-        fclose( fin );
-        MemFree( (void *)cfg->cfgIn->source.sourceData ); /* fix for bug #810259 */
+        freeFileSource(&cfg->cfgIn->source, yes);
         freeStreamIn( cfg->cfgIn );
         cfg->cfgIn = NULL;
     }
