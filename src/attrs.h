@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/23 14:14:37 $ 
-    $Revision: 1.23 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -79,43 +79,7 @@ typedef struct _TidyAttribImpl TidyAttribImpl;
 
 #define XHTML_NAMESPACE "http://www.w3.org/1999/xhtml"
 
-
-/*
- Bind attribute types to procedures to check values.
- You can add new procedures for better validation
- and each procedure has access to the node in which
- the attribute occurred as well as the attribute name
- and its value.
-
- By default, attributes are checked without regard
- to the element they are found on. You have the choice
- of making the procedure test which element is involved
- or in writing methods for each element which controls
- exactly how the attributes of that element are checked.
- This latter approach is best for detecting the absence
- of required attributes.
-*/
-
 AttrCheck CheckUrl;
-AttrCheck CheckScript;
-AttrCheck CheckName;
-AttrCheck CheckId;
-AttrCheck CheckAlign;
-AttrCheck CheckValign;
-AttrCheck CheckBool;
-AttrCheck CheckLength;
-AttrCheck CheckTarget;
-AttrCheck CheckFsubmit;
-AttrCheck CheckClear;
-AttrCheck CheckShape;
-AttrCheck CheckNumber;
-AttrCheck CheckScope;
-AttrCheck CheckColor;
-AttrCheck CheckVType;
-AttrCheck CheckScroll;
-AttrCheck CheckTextDir;
-AttrCheck CheckLang;
-AttrCheck CheckType;
 
 /* public method for finding attribute definition by name */
 const Attribute* CheckAttribute( TidyDocImpl* doc, Node *node, AttVal *attval );
@@ -131,7 +95,7 @@ AttVal* RepairAttrValue(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr valu
 
 Bool IsUrl( TidyDocImpl* doc, ctmbstr attrname );
 
-Bool IsBool( TidyDocImpl* doc, ctmbstr attrname );
+/* Bool IsBool( TidyDocImpl* doc, ctmbstr attrname ); */
 
 Bool IsScript( TidyDocImpl* doc, ctmbstr attrname );
 
@@ -159,12 +123,6 @@ Bool IsValidXMLID(ctmbstr id);
 
 /* removes anchor for specific node */
 void RemoveAnchorByNode( TidyDocImpl* doc, Node *node );
-
-/* add new anchor to namespace */
-Anchor* AddAnchor( TidyDocImpl* doc, ctmbstr name, Node *node );
-
-/* return node associated with anchor */
-Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name );
 
 /* free all anchors */
 void FreeAnchors( TidyDocImpl* doc );

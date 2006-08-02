@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/06/08 09:03:58 $ 
-    $Revision: 1.157 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.158 $ 
 
 */
 
@@ -970,6 +970,41 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
     }
 }
 
+/* Reports error at current Lexer line/column. */ 
+static
+void message( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... )
+#ifdef __GNUC__
+__attribute__((format(printf, 3, 4)))
+#endif
+;
+
+/* Reports error at node line/column. */ 
+static
+void messageNode( TidyDocImpl* doc, TidyReportLevel level,
+                  Node* node, ctmbstr msg, ... )
+#ifdef __GNUC__
+__attribute__((format(printf, 4, 5)))
+#endif
+;
+
+/* Reports error at given line/column. */ 
+static
+void messageLexer( TidyDocImpl* doc, TidyReportLevel level, 
+                   ctmbstr msg, ... )
+#ifdef __GNUC__
+__attribute__((format(printf, 3, 4)))
+#endif
+;
+
+/* For general reporting.  Emits nothing if --quiet yes */
+static
+void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
+#ifdef __GNUC__
+__attribute__((format(printf, 2, 3)))
+#endif
+;
+
+
 void message( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... )
 {
     va_list args;
@@ -1021,6 +1056,7 @@ void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
     }
 }
 
+#if 0
 void ShowVersion( TidyDocImpl* doc )
 {
     ctmbstr platform = "", helper = "";
@@ -1034,6 +1070,7 @@ void ShowVersion( TidyDocImpl* doc )
                    "See http://tidy.sourceforge.net/ for details.\n",
               helper, platform, release_date, __DATE__, __TIME__ );
 }
+#endif
 
 void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level )
 {
@@ -1674,6 +1711,7 @@ void ErrorSummary( TidyDocImpl* doc )
     }
 }
 
+#if 0
 void UnknownOption( TidyDocImpl* doc, char c )
 {
     message( doc, TidyConfig,
@@ -1685,6 +1723,7 @@ void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file )
     message( doc, TidyConfig, 
              "%s: can't open file \"%s\"\n", program, file );
 }
+#endif
 
 void NeedsAuthorIntervention( TidyDocImpl* doc )
 {
@@ -1711,6 +1750,7 @@ void AccessibilityHelloMessage( TidyDocImpl* doc )
 
 #endif /* SUPPORT_ACCESSIBILITY_CHECKS */
 
+#if 0
 void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
 {
     tmbchar buf[ 2048 ];
@@ -1734,6 +1774,7 @@ void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
              date, __DATE__, __TIME__, filename);
     tidy_out( doc, buf );
 }
+#endif
 
 void ReportMarkupVersion( TidyDocImpl* doc )
 {

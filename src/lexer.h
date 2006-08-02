@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/02/24 16:09:00 $ 
-    $Revision: 1.34 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -402,8 +402,6 @@ Node *CommentToken( Lexer *lexer );
 /* choose what version to use for new doctype */
 int HTMLVersion( TidyDocImpl* doc );
 
-ctmbstr GetFPIFromVers(uint vers);
-
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */
 
@@ -417,16 +415,12 @@ Bool IsNamechar(uint c);
 Bool IsXMLLetter(uint c);
 Bool IsXMLNamechar(uint c);
 
-Bool IsLower(uint c);
+/* Bool IsLower(uint c); */
 Bool IsUpper(uint c);
 uint ToLower(uint c);
 uint ToUpper(uint c);
 
-char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps );
-
-
 Lexer* NewLexer( TidyDocImpl* doc );
-Bool EndOfInput( TidyDocImpl* doc );
 void FreeLexer( TidyDocImpl* doc );
 
 /* store character c as UTF-8 encoded byte stream */
@@ -480,11 +474,9 @@ Node *NewLineNode( Lexer *lexer );
 Node *NewLiteralTextNode(Lexer *lexer, ctmbstr txt );
 
 Node* CommentToken(Lexer *lexer);
-Node* GetCDATA( TidyDocImpl* doc, Node *container );
 
-void AddByte( Lexer *lexer, tmbchar c );
 void AddStringLiteral( Lexer* lexer, ctmbstr str );
-void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len );
+/* void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len ); */
 
 /* find element */
 Node* FindDocType( TidyDocImpl* doc );
@@ -500,8 +492,6 @@ Node* FindContainer( Node* node );
 /* add meta element for Tidy */
 Bool AddGenerator( TidyDocImpl* doc );
 
-/* examine <!DOCTYPE> to identify version */
-uint FindGivenVersion( TidyDocImpl* doc, Node* doctype );
 uint ApparentVersion( TidyDocImpl* doc );
 
 
@@ -523,9 +513,6 @@ Bool FixDocType( TidyDocImpl* doc );
 Bool FixXmlDecl( TidyDocImpl* doc );
 
 Node* InferredTag(TidyDocImpl* doc, TidyTagId id);
-
-Bool ExpectsContent(Node *node);
-
 
 void UngetToken( TidyDocImpl* doc );
 
@@ -549,8 +536,6 @@ typedef enum
 Node* GetToken( TidyDocImpl* doc, GetTokenMode mode );
 
 void InitMap(void);
-
-Bool IsValidAttrName( ctmbstr attr );
 
 
 /* create a new attribute */

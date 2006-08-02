@@ -1,13 +1,13 @@
 /* tmbstr.c -- Tidy string utility functions
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: terry_teague $ 
-    $Date: 2004/08/02 02:32:09 $ 
-    $Revision: 1.10 $ 
+    $Author: arnaud02 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -175,6 +175,7 @@ int tmbstrncasecmp( ctmbstr s1, ctmbstr s2, uint n )
     return (*s1 > *s2 ? 1 : -1);
 }
 
+#if 0
 /* return offset of cc from beginning of s1,
 ** -1 if not found.
 */
@@ -191,6 +192,7 @@ int tmbstrnchr( ctmbstr s1, uint maxlen, tmbchar cc )
 
     return -1;
 }
+#endif
 
 ctmbstr tmbsubstrn( ctmbstr s1, uint len1, ctmbstr s2 )
 {
@@ -205,6 +207,7 @@ ctmbstr tmbsubstrn( ctmbstr s1, uint len1, ctmbstr s2 )
     return NULL;
 }
 
+#if 0
 ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 )
 {
     uint len2 = tmbstrlen(s2);
@@ -217,6 +220,7 @@ ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 )
     }
     return NULL;
 }
+#endif
 
 ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 )
 {
@@ -251,6 +255,7 @@ tmbstr tmbstrtoupper(tmbstr s)
     return s;
 }
 
+#if 0
 Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 )
 {
 #if FILENAMES_CASE_SENSITIVE
@@ -259,6 +264,7 @@ Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 )
     return ( tmbstrcasecmp( filename1, filename2 ) == 0 );
 #endif
 }
+#endif
 
 int tmbvsnprintf(tmbstr buffer, size_t count, ctmbstr format, va_list args)
 {
@@ -288,3 +294,12 @@ int tmbsnprintf(tmbstr buffer, size_t count, ctmbstr format, ...)
     va_end(args);
     return retval;
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

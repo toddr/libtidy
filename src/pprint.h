@@ -3,13 +3,13 @@
 
 /* pprint.h -- pretty print parse tree  
   
-   (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+   (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
   
    CVS Info:
      $Author: arnaud02 $ 
-     $Date: 2005/10/31 16:31:35 $ 
-     $Revision: 1.5 $ 
+     $Date: 2006/08/02 16:19:16 $ 
+     $Revision: 1.6 $ 
 
 */
 
@@ -64,7 +64,7 @@ typedef struct _TidyPrintImpl
 } TidyPrintImpl;
 
 
-#if SUPPORT_ASIAN_ENCODINGS
+#if 0 && SUPPORT_ASIAN_ENCODINGS
 /* #431953 - start RJ Wraplen adjusted for smooth international ride */
 uint CWrapLen( TidyDocImpl* doc, uint ind );
 #endif
@@ -73,9 +73,7 @@ void InitPrintBuf( TidyDocImpl* doc );
 void FreePrintBuf( TidyDocImpl* doc );
 
 void PFlushLine( TidyDocImpl* doc, uint indent );
-void PCondFlushLine( TidyDocImpl* doc, uint indent );
 
-void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node* node );
 
 /* print just the content of the body element.
 ** useful when you want to reuse material from

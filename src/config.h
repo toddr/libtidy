@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 13:37:08 $ 
-    $Revision: 1.11 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.12 $ 
 
   config files associate a property name with a value.
 
@@ -90,7 +90,7 @@ const TidyOptionDoc* tidyOptGetDocDesc( TidyOptionId optId );
 void InitConfig( TidyDocImpl* doc );
 void FreeConfig( TidyDocImpl* doc );
 
-Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val );
+/* Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val ); */
 Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, ulong val );
 Bool SetOptionBool( TidyDocImpl* doc, TidyOptionId optId, Bool val );
 
@@ -100,13 +100,6 @@ void TakeConfigSnapshot( TidyDocImpl* doc );
 void ResetConfigToSnapshot( TidyDocImpl* doc );
 
 void CopyConfig( TidyDocImpl* docTo, TidyDocImpl* docFrom );
-
-/*
- Todd Lewis contributed this code for expanding
- ~/foo or ~your/foo according to $HOME and your
- user name. This will only work on Unix systems.
-*/
-ctmbstr ExpandTilde(ctmbstr filename);
 
 int  ParseConfigFile( TidyDocImpl* doc, ctmbstr cfgfil );
 int  ParseConfigFileEnc( TidyDocImpl* doc,
@@ -124,9 +117,6 @@ Bool  ParseConfigValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optVal );
 /* ensure that char encodings are self consistent */
 Bool  AdjustCharEncoding( TidyDocImpl* doc, int encoding );
 
-/* ensure that config is self consistent */
-void AdjustConfig( TidyDocImpl* doc );
-
 Bool  ConfigDiffThanDefault( TidyDocImpl* doc );
 Bool  ConfigDiffThanSnapshot( TidyDocImpl* doc );
 
@@ -134,7 +124,7 @@ int CharEncodingId( ctmbstr charenc );
 ctmbstr CharEncodingName( int encoding );
 ctmbstr CharEncodingOptName( int encoding );
 
-void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename );
+/* void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename ); */
 
 
 #ifdef _DEBUG
@@ -159,41 +149,5 @@ ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
 #define cfgStr(doc, id)         ((ctmbstr) (doc)->config.value[ (id) ].p)
 
 #endif /* _DEBUG */
-
-
-
-/* parser for integer values */
-ParseProperty ParseInt;
-
-/* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
-ParseProperty ParseBool;
-
-/* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no', '1'/'0'
-   or 'auto' */
-ParseProperty ParseAutoBool;
-
-/* a string excluding whitespace */
-ParseProperty ParseName;
-
-/* a CSS1 selector - CSS class naming for -clean option */
-ParseProperty ParseCSS1Selector;
-
-/* a string including whitespace */
-ParseProperty ParseString;
-
-/* a space or comma separated list of tag names */
-ParseProperty ParseTagNames;
-
-/* RAW, ASCII, LATIN0, LATIN1, UTF8, ISO2022, MACROMAN, 
-   WIN1252, IBM858, UTF16LE, UTF16BE, UTF16, BIG5, SHIFTJIS
-*/
-ParseProperty ParseCharEnc;
-ParseProperty ParseNewline;
-
-/* omit | auto | strict | loose | <fpi> */
-ParseProperty ParseDocType;
-
-/* keep-first or keep-last? */
-ParseProperty ParseRepeatAttr;
 
 #endif /* __CONFIG_H__ */

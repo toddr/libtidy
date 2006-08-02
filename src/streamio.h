@@ -3,14 +3,14 @@
 
 /* streamio.h -- handles character stream I/O
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/03/03 12:49:24 $ 
-    $Revision: 1.14 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.15 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -101,7 +101,6 @@ StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding );
 int       ReadBOMEncoding(StreamIn *in);
 uint      ReadChar( StreamIn* in );
 void      UngetChar( uint c, StreamIn* in );
-uint      PopChar( StreamIn *in );
 Bool      IsEOF( StreamIn* in );
 
 
@@ -128,7 +127,7 @@ StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint newln );
 StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint newln );
 
 StreamOut* StdErrOutput(void);
-StreamOut* StdOutOutput(void);
+/* StreamOut* StdOutOutput(void); */
 void       ReleaseStreamOut( StreamOut* out );
 
 void WriteChar( uint c, StreamOut* out );
@@ -192,14 +191,6 @@ uint DecodeWin1252(uint c);
 /* Function to convert from MacRoman to Unicode */
 uint DecodeMacRoman(uint c);
 
-/* Function for conversion from OS/2-850 to Unicode */
-uint DecodeIbm850(uint c);
-
-/* Function for conversion from Latin0 to Unicode */
-uint DecodeLatin0(uint c);
-
-/* Function to convert from Symbol Font chars to Unicode */
-uint DecodeSymbolFont(uint c);
 #ifdef __cplusplus
 }
 #endif

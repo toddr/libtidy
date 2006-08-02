@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/07/31 09:15:31 $ 
-    $Revision: 1.98 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.99 $ 
 
 */
 
@@ -166,6 +166,43 @@ static const ctmbstr doctypePicks[] =
 #define ParseAcc NULL 
 #endif
 
+static void AdjustConfig( TidyDocImpl* doc );
+
+/* parser for integer values */
+static ParseProperty ParseInt;
+
+/* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no' or '1'/'0' */
+static ParseProperty ParseBool;
+
+/* parser for 't'/'f', 'true'/'false', 'y'/'n', 'yes'/'no', '1'/'0'
+   or 'auto' */
+static ParseProperty ParseAutoBool;
+
+/* a string excluding whitespace */
+static ParseProperty ParseName;
+
+/* a CSS1 selector - CSS class naming for -clean option */
+static ParseProperty ParseCSS1Selector;
+
+/* a string including whitespace */
+static ParseProperty ParseString;
+
+/* a space or comma separated list of tag names */
+static ParseProperty ParseTagNames;
+
+/* RAW, ASCII, LATIN0, LATIN1, UTF8, ISO2022, MACROMAN, 
+   WIN1252, IBM858, UTF16LE, UTF16BE, UTF16, BIG5, SHIFTJIS
+*/
+static ParseProperty ParseCharEnc;
+static ParseProperty ParseNewline;
+
+/* omit | auto | strict | loose | <fpi> */
+static ParseProperty ParseDocType;
+
+/* keep-first or keep-last? */
+static ParseProperty ParseRepeatAttr;
+
+
 static const TidyOptionImpl option_defs[] =
 {
   { TidyUnknownOption,           MS, "unknown!",                    IN, 0,               NULL,              NULL            },
@@ -316,7 +353,7 @@ static void CopyOptionValue( const TidyOptionImpl* option,
 }
 
 
-Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val )
+static Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val )
 {
    const TidyOptionImpl* option = &option_defs[ optId ];
    Bool status = ( optId < N_TIDY_OPTIONS );
@@ -510,12 +547,13 @@ ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId )
 #endif
 
 
+#if 0
 /* for use with Gnu Emacs */
 void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename )
 {
     SetOptionValue( doc, TidyEmacsFile, filename );
 }
-
+#endif
 
 static tchar GetC( TidyConfigImpl* config )
 {
@@ -589,7 +627,7 @@ static uint NextProperty( TidyConfigImpl* config )
  work on systems that support getpwnam(userid), 
  namely Unix/Linux.
 */
-ctmbstr ExpandTilde( ctmbstr filename )
+static ctmbstr ExpandTilde( ctmbstr filename )
 {
     char *home_dir = NULL;
 

@@ -3,14 +3,14 @@
 
 /* parser.h -- HTML Parser
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/08/03 18:07:01 $ 
-    $Revision: 1.10 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -55,16 +55,7 @@ Node* DropEmptyElements(TidyDocImpl* doc, Node* node);
 /* assumes node is a text node */
 Bool IsBlank(Lexer *lexer, Node *node);
 
-
-/*
- duplicate name attribute as an id
- and check if id and name match
-*/
-/* acceptable content for pre elements */
-Bool PreContent( TidyDocImpl* doc, Node *node );
-
 Bool IsJavaScript(Node *node);
-Bool DescendantOf(Node *element, TidyTagId tid);
 
 /*
   HTML is the top level element

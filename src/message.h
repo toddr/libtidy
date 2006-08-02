@@ -3,14 +3,14 @@
 
 /* message.h -- general message writing routines
 
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/01/18 11:10:15 $ 
-    $Revision: 1.23 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.24 $ 
 
 */
 
@@ -32,49 +32,18 @@
 
 ctmbstr ReleaseDate(void);
 
-/* Reports error at current Lexer line/column. */ 
-void message( TidyDocImpl* doc, TidyReportLevel level, ctmbstr msg, ... )
-#ifdef __GNUC__
-__attribute__((format(printf, 3, 4)))
-#endif
-;
-
-/* Reports error at node line/column. */ 
-void messageNode( TidyDocImpl* doc, TidyReportLevel level,
-                  Node* node, ctmbstr msg, ... )
-#ifdef __GNUC__
-__attribute__((format(printf, 4, 5)))
-#endif
-;
-
-/* Reports error at given line/column. */ 
-void messageLexer( TidyDocImpl* doc, TidyReportLevel level, 
-                   ctmbstr msg, ... )
-#ifdef __GNUC__
-__attribute__((format(printf, 3, 4)))
-#endif
-;
-
-/* For general reporting.  Emits nothing if --quiet yes */
-void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
-#ifdef __GNUC__
-__attribute__((format(printf, 2, 3)))
-#endif
-;
-
-
-void ShowVersion( TidyDocImpl* doc );
+/* void ShowVersion( TidyDocImpl* doc ); */
 void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option );
 void ReportBadArgument( TidyDocImpl* doc, ctmbstr option );
 void NeedsAuthorIntervention( TidyDocImpl* doc );
 
-void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename );
+/* void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename ); */
 void ReportMarkupVersion( TidyDocImpl* doc );
 void ReportNumWarnings( TidyDocImpl* doc );
 
 void GeneralInfo( TidyDocImpl* doc );
-void UnknownOption( TidyDocImpl* doc, char c );
-void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file );
+/* void UnknownOption( TidyDocImpl* doc, char c ); */
+/* void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file ); */
 void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level );
 
 void ErrorSummary( TidyDocImpl* doc );

@@ -1,14 +1,14 @@
 /*
   pprint.c -- pretty print parse tree  
   
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2006/02/24 17:58:16 $ 
-    $Revision: 1.107 $ 
+    $Author: arnaud02 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.108 $ 
 
 */
 
@@ -45,6 +45,7 @@ static Bool ShouldIndent( TidyDocImpl* doc, Node *node );
 #if SUPPORT_ASIAN_ENCODINGS
 /* #431953 - start RJ Wraplen adjusted for smooth international ride */
 
+#if 0
 uint CWrapLen( TidyDocImpl* doc, uint ind )
 {
     ctmbstr lang = cfgStr( doc, TidyLanguage );
@@ -64,6 +65,7 @@ uint CWrapLen( TidyDocImpl* doc, uint ind )
     
     return wraplen;
 }
+#endif
 
 typedef enum
 {
@@ -679,7 +681,7 @@ void PFlushLine( TidyDocImpl* doc, uint indent )
     pprint->indent[ 0 ].spaces = indent;
 }
 
-void PCondFlushLine( TidyDocImpl* doc, uint indent )
+static void PCondFlushLine( TidyDocImpl* doc, uint indent )
 {
     TidyPrintImpl* pprint = &doc->pprint;
     if ( pprint->linelen > 0 )
@@ -1757,6 +1759,7 @@ static Bool HasCDATA( Lexer* lexer, Node* node )
 }
 
 
+static
 void PPrintScriptStyle( TidyDocImpl* doc, uint mode, uint indent, Node *node )
 {
     TidyPrintImpl* pprint = &doc->pprint;
@@ -2255,3 +2258,11 @@ void PPrintXMLTree( TidyDocImpl* doc, uint mode, uint indent, Node *node )
     }
 }
 
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

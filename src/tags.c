@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/26 10:01:27 $ 
-    $Revision: 1.63 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.64 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -16,6 +16,18 @@
 #include "tidy-int.h"
 #include "message.h"
 #include "tmbstr.h"
+
+/* Attribute checking methods */
+static CheckAttribs CheckIMG;
+static CheckAttribs CheckLINK;
+static CheckAttribs CheckAREA;
+static CheckAttribs CheckTABLE;
+static CheckAttribs CheckCaption;
+static CheckAttribs CheckSCRIPT;
+static CheckAttribs CheckSTYLE;
+static CheckAttribs CheckHTML;
+static CheckAttribs CheckFORM;
+static CheckAttribs CheckMETA;
 
 #define VERS_ELEM_A          (HT20|HT32|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10)
 #define VERS_ELEM_ABBR       (xxxx|xxxx|H40T|H41T|X10T|H40F|H41F|X10F|H40S|H41S|X10S|XH11|XB10)
@@ -850,6 +862,7 @@ Bool nodeIsElement( Node* node )
            (node->type == StartTag || node->type == StartEndTag) );
 }
 
+#if 0
 /* Compare & result to operand.  If equal, then all bits
 ** requested are set.
 */
@@ -858,6 +871,7 @@ Bool nodeMatchCM( Node* node, uint contentModel )
   return ( node && node->tag && 
            (node->tag->model & contentModel) == contentModel );
 }
+#endif
 
 /* True if any of the bits requested are set.
 */

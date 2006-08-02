@@ -3,14 +3,14 @@
 
 /* tmbstr.h - Tidy string utility functions
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2004/12/06 15:05:29 $ 
-    $Revision: 1.8 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.9 $ 
 
 */
 
@@ -60,10 +60,10 @@ int tmbstrncasecmp( ctmbstr s1, ctmbstr s2, uint n );
 /* return offset of cc from beginning of s1,
 ** -1 if not found.
 */
-int tmbstrnchr( ctmbstr s1, uint len1, tmbchar cc );
+/* int tmbstrnchr( ctmbstr s1, uint len1, tmbchar cc ); */
 
 ctmbstr tmbsubstrn( ctmbstr s1, uint len1, ctmbstr s2 );
-ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 );
+/* ctmbstr tmbsubstrncase( ctmbstr s1, uint len1, ctmbstr s2 ); */
 ctmbstr tmbsubstr( ctmbstr s1, ctmbstr s2 );
 
 /* transform string to lower case */
@@ -72,7 +72,7 @@ tmbstr tmbstrtolower( tmbstr s );
 /* Transform ASCII chars in string to upper case */
 tmbstr tmbstrtoupper(tmbstr s);
 
-Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 );
+/* Bool tmbsamefile( ctmbstr filename1, ctmbstr filename2 ); */
 
 int tmbvsnprintf(tmbstr buffer, size_t count, ctmbstr format, va_list args)
 #ifdef __GNUC__

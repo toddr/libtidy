@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/07/04 17:10:35 $ 
-    $Revision: 1.179 $ 
+    $Date: 2006/08/02 16:19:15 $ 
+    $Revision: 1.180 $ 
 
 */
 
@@ -136,7 +136,7 @@ int HTMLVersion(TidyDocImpl* doc)
     return VERS_UNKNOWN;
 }
 
-ctmbstr GetFPIFromVers(uint vers)
+static ctmbstr GetFPIFromVers(uint vers)
 {
     uint i;
 
@@ -564,12 +564,14 @@ Bool IsXMLNamechar(uint c)
         (c >= 0x30fc && c <= 0x30fe));
 }
 
+#if 0
 Bool IsLower(uint c)
 {
     uint map = MAP(c);
 
     return (map & lowercase)!=0;
 }
+#endif
 
 Bool IsUpper(uint c)
 {
@@ -598,6 +600,7 @@ uint ToUpper(uint c)
     return c;
 }
 
+#if 0
 char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps )
 {
     if ( !cfgBool(doc, TidyXmlTags) )
@@ -613,7 +616,7 @@ char FoldCase( TidyDocImpl* doc, tmbchar c, Bool tocaps )
     }
     return c;
 }
-
+#endif
 
 /*
  return last character in string
@@ -658,7 +661,7 @@ Lexer* NewLexer( TidyDocImpl* doc )
     return lexer;
 }
 
-Bool EndOfInput( TidyDocImpl* doc )
+static Bool EndOfInput( TidyDocImpl* doc )
 {
     assert( doc->docIn != NULL );
     return ( !doc->docIn->pushed && IsEOF(doc->docIn) );
@@ -688,7 +691,7 @@ void FreeLexer( TidyDocImpl* doc )
 ** it must hold the entire input document. not just
 ** the last line or three.
 */
-void AddByte( Lexer *lexer, tmbchar ch )
+static void AddByte( Lexer *lexer, tmbchar ch )
 {
     if ( lexer->lexsize + 2 >= lexer->lexlength )
     {
@@ -1217,6 +1220,7 @@ void AddStringLiteral( Lexer* lexer, ctmbstr str )
         AddCharToLexer( lexer, c );
 }
 
+/*
 void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len )
 {
     byte c;
@@ -1225,6 +1229,7 @@ void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len )
     for ( ix=0; ix < len && (c = *str++); ++ix )
         AddCharToLexer(lexer, c);
 }
+*/
 
 /* find doctype element */
 Node *FindDocType( TidyDocImpl* doc )
@@ -1387,7 +1392,7 @@ Bool AddGenerator( TidyDocImpl* doc )
 }
 
 /* examine <!DOCTYPE> to identify version */
-uint FindGivenVersion( TidyDocImpl* doc, Node* doctype )
+static uint FindGivenVersion( TidyDocImpl* doc, Node* doctype )
 {
     AttVal * fpi = GetAttrByName(doctype, "PUBLIC");
     uint vers;
@@ -1716,7 +1721,7 @@ Node* InferredTag(TidyDocImpl* doc, TidyTagId id)
     return node;
 }
 
-Bool ExpectsContent(Node *node)
+static Bool ExpectsContent(Node *node)
 {
     if (node->type != StartTag)
         return no;
@@ -1744,7 +1749,7 @@ typedef enum
     CDATA_ENDTAG
 } CDATAState;
 
-Node *GetCDATA( TidyDocImpl* doc, Node *container )
+static Node *GetCDATA( TidyDocImpl* doc, Node *container )
 {
     Lexer* lexer = doc->lexer;
     uint start = 0;
@@ -3409,7 +3414,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
 }
 
 /* attr must be non-NULL */
-Bool IsValidAttrName( ctmbstr attr )
+static Bool IsValidAttrName( ctmbstr attr )
 {
     uint i, c = attr[0];
 

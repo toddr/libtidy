@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/25 14:17:35 $ 
-    $Revision: 1.33 $ 
+    $Date: 2006/08/02 16:19:16 $ 
+    $Revision: 1.34 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -46,6 +46,11 @@ static void EncodeMacRoman( uint c, StreamOut* out );
 static void EncodeIbm858( uint c, StreamOut* out );
 static void EncodeLatin0( uint c, StreamOut* out );
 
+static uint DecodeIbm850(uint c);
+static uint DecodeLatin0(uint c);
+
+static uint PopChar( StreamIn *in );
+
 /******************************
 ** Static (duration) Globals
 ******************************/
@@ -81,12 +86,14 @@ StreamOut* StdErrOutput(void)
   return &stderrStreamOut;
 }
 
+#if 0
 StreamOut* StdOutOutput(void)
 {
   if ( stdoutStreamOut.sink.sinkData == 0 )
       stdoutStreamOut.sink.sinkData = stdout;
   return &stdoutStreamOut;
 }
+#endif
 
 void  ReleaseStreamOut( StreamOut* out )
 {
@@ -467,7 +474,7 @@ uint ReadChar( StreamIn *in )
     return c;
 }
 
-uint PopChar( StreamIn *in )
+static uint PopChar( StreamIn *in )
 {
     uint c = EndOfStream;
     if ( in->pushed )
@@ -837,7 +844,7 @@ static const uint IBM2Unicode[128] =
 };
 
 /* Function for conversion from OS/2-850 to Unicode */
-uint DecodeIbm850(uint c)
+static uint DecodeIbm850(uint c)
 {
     if (127 < c && c < 256)
         c = IBM2Unicode[c - 128];
@@ -866,7 +873,7 @@ static void EncodeIbm858( uint c, StreamOut* out )
 
 
 /* Convert from Latin0 (aka Latin9, ISO-8859-15) to Unicode */
-uint DecodeLatin0(uint c)
+static uint DecodeLatin0(uint c)
 {
     if (159 < c && c < 191)
     {
@@ -959,6 +966,7 @@ static const uint Symbol2Unicode[] =
     0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F, 0x003F
 };
 
+#if 0
 /* Function to convert from Symbol Font chars to Unicode */
 uint DecodeSymbolFont(uint c)
 {
@@ -969,6 +977,7 @@ uint DecodeSymbolFont(uint c)
 
     return Symbol2Unicode[c];
 }
+#endif
 
 
 /* Facilitates user defined source by providing
