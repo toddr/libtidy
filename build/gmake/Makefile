@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2006/01/09 12:38:05 $ 
-#     $Revision: 1.24 $ 
+#     $Date: 2006/08/07 09:58:31 $ 
+#     $Revision: 1.25 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -110,7 +110,7 @@ ifdef DMALLOC
 DEBUGFLAGS += -DDMALLOC
 endif
 
-LIBS=-lc
+LIBS=
 DEBUGLIBS=-ldmalloc
 
 # Tidy lib related variables
