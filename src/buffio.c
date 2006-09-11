@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/25 14:17:35 $ 
-    $Revision: 1.10 $ 
+    $Date: 2006/09/11 15:33:50 $ 
+    $Revision: 1.11 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -38,7 +38,7 @@ static void TIDY_CALL insrc_ungetByte( void* appData, byte bv )
   tidyBufUngetByte( buf, bv );
 }
 
-void TIDY_CALL initInputBuffer( TidyInputSource* inp, TidyBuffer* buf )
+void TIDY_CALL tidyInitInputBuffer( TidyInputSource* inp, TidyBuffer* buf )
 {
   inp->getByte    = insrc_getByte;
   inp->eof        = insrc_eof;
@@ -52,7 +52,7 @@ static void TIDY_CALL outsink_putByte( void* appData, byte bv )
   tidyBufPutByte( buf, bv );
 }
 
-void TIDY_CALL initOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
+void TIDY_CALL tidyInitOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
 {
   outp->putByte  = outsink_putByte;
   outp->sinkData = buf;

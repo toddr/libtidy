@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/04/08 09:11:12 $ 
-    $Revision: 1.5 $ 
+    $Date: 2006/09/11 15:33:50 $ 
+    $Revision: 1.6 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -87,10 +87,10 @@ TIDY_EXPORT void TIDY_CALL tidyBufUngetByte( TidyBuffer* buf, byte bv );
 */
 
 /** Initialize a buffer input source */
-TIDY_EXPORT void TIDY_CALL initInputBuffer( TidyInputSource* inp, TidyBuffer* buf );
+TIDY_EXPORT void TIDY_CALL tidyInitInputBuffer( TidyInputSource* inp, TidyBuffer* buf );
 
 /** Initialize a buffer output sink */
-TIDY_EXPORT void TIDY_CALL initOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf );
+TIDY_EXPORT void TIDY_CALL tidyInitOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf );
 
 #ifdef __cplusplus
 }

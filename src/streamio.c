@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:16 $ 
-    $Revision: 1.34 $ 
+    $Date: 2006/09/11 15:33:50 $ 
+    $Revision: 1.35 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -151,7 +151,7 @@ StreamIn* FileInput( TidyDocImpl* doc, FILE *fp, int encoding )
 StreamIn* BufferInput( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
 {
     StreamIn *in = initStreamIn( doc, encoding );
-    initInputBuffer( &in->source, buf );
+    tidyInitInputBuffer( &in->source, buf );
     in->iotype = BufferIO;
     return in;
 }
@@ -542,7 +542,7 @@ StreamOut* FileOutput( FILE* fp, int encoding, uint nl )
 StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint nl )
 {
     StreamOut* out = initStreamOut( encoding, nl );
-    initOutputBuffer( &out->sink, buf );
+    tidyInitOutputBuffer( &out->sink, buf );
     out->iotype = BufferIO;
     return out;
 }
