@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2006/08/07 09:58:31 $ 
-#     $Revision: 1.25 $ 
+#     $Date: 2006/09/11 12:40:46 $ 
+#     $Revision: 1.26 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -155,7 +155,7 @@ CFILES= \
         $(SRCDIR)/tidylib.c
 
 HFILES= $(INCDIR)/platform.h     $(INCDIR)/tidy.h         $(INCDIR)/tidyenum.h \
-        $(INCDIR)/fileio.h       $(INCDIR)/buffio.h
+        $(INCDIR)/buffio.h
 
 LIBHFILES= \
         $(SRCDIR)/access.h       $(SRCDIR)/attrs.h        $(SRCDIR)/attrdict.h \
