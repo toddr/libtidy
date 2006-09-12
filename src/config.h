@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.12 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.13 $ 
 
   config files associate a property name with a value.
 
@@ -76,53 +76,53 @@ typedef struct {
 } TidyOptionDoc;
 
 
-const TidyOptionImpl* lookupOption( ctmbstr optnam );
-const TidyOptionImpl* getOption( TidyOptionId optId );
+const TidyOptionImpl* TY_(lookupOption)( ctmbstr optnam );
+const TidyOptionImpl* TY_(getOption)( TidyOptionId optId );
 
-TidyIterator getOptionList( TidyDocImpl* doc );
-const TidyOptionImpl*  getNextOption( TidyDocImpl* doc, TidyIterator* iter );
+TidyIterator TY_(getOptionList)( TidyDocImpl* doc );
+const TidyOptionImpl* TY_(getNextOption)( TidyDocImpl* doc, TidyIterator* iter );
 
-TidyIterator getOptionPickList( const TidyOptionImpl* option );
-ctmbstr getNextOptionPick( const TidyOptionImpl* option, TidyIterator* iter );
+TidyIterator TY_(getOptionPickList)( const TidyOptionImpl* option );
+ctmbstr TY_(getNextOptionPick)( const TidyOptionImpl* option, TidyIterator* iter );
 
-const TidyOptionDoc* tidyOptGetDocDesc( TidyOptionId optId );
+const TidyOptionDoc* TY_(OptGetDocDesc)( TidyOptionId optId );
 
-void InitConfig( TidyDocImpl* doc );
-void FreeConfig( TidyDocImpl* doc );
+void TY_(InitConfig)( TidyDocImpl* doc );
+void TY_(FreeConfig)( TidyDocImpl* doc );
 
 /* Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val ); */
-Bool SetOptionInt( TidyDocImpl* doc, TidyOptionId optId, ulong val );
-Bool SetOptionBool( TidyDocImpl* doc, TidyOptionId optId, Bool val );
+Bool TY_(SetOptionInt)( TidyDocImpl* doc, TidyOptionId optId, ulong val );
+Bool TY_(SetOptionBool)( TidyDocImpl* doc, TidyOptionId optId, Bool val );
 
-Bool ResetOptionToDefault( TidyDocImpl* doc, TidyOptionId optId );
-void ResetConfigToDefault( TidyDocImpl* doc );
-void TakeConfigSnapshot( TidyDocImpl* doc );
-void ResetConfigToSnapshot( TidyDocImpl* doc );
+Bool TY_(ResetOptionToDefault)( TidyDocImpl* doc, TidyOptionId optId );
+void TY_(ResetConfigToDefault)( TidyDocImpl* doc );
+void TY_(TakeConfigSnapshot)( TidyDocImpl* doc );
+void TY_(ResetConfigToSnapshot)( TidyDocImpl* doc );
 
-void CopyConfig( TidyDocImpl* docTo, TidyDocImpl* docFrom );
+void TY_(CopyConfig)( TidyDocImpl* docTo, TidyDocImpl* docFrom );
 
-int  ParseConfigFile( TidyDocImpl* doc, ctmbstr cfgfil );
-int  ParseConfigFileEnc( TidyDocImpl* doc,
-                         ctmbstr cfgfil, ctmbstr charenc );
+int  TY_(ParseConfigFile)( TidyDocImpl* doc, ctmbstr cfgfil );
+int  TY_(ParseConfigFileEnc)( TidyDocImpl* doc,
+                              ctmbstr cfgfil, ctmbstr charenc );
 
-int  SaveConfigFile( TidyDocImpl* doc, ctmbstr cfgfil );
-int  SaveConfigSink( TidyDocImpl* doc, TidyOutputSink* sink );
+int  TY_(SaveConfigFile)( TidyDocImpl* doc, ctmbstr cfgfil );
+int  TY_(SaveConfigSink)( TidyDocImpl* doc, TidyOutputSink* sink );
 
 /* returns false if unknown option, missing parameter, or
    option doesn't use parameter
 */
-Bool  ParseConfigOption( TidyDocImpl* doc, ctmbstr optnam, ctmbstr optVal );
-Bool  ParseConfigValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optVal );
+Bool  TY_(ParseConfigOption)( TidyDocImpl* doc, ctmbstr optnam, ctmbstr optVal );
+Bool  TY_(ParseConfigValue)( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optVal );
 
 /* ensure that char encodings are self consistent */
-Bool  AdjustCharEncoding( TidyDocImpl* doc, int encoding );
+Bool  TY_(AdjustCharEncoding)( TidyDocImpl* doc, int encoding );
 
-Bool  ConfigDiffThanDefault( TidyDocImpl* doc );
-Bool  ConfigDiffThanSnapshot( TidyDocImpl* doc );
+Bool  TY_(ConfigDiffThanDefault)( TidyDocImpl* doc );
+Bool  TY_(ConfigDiffThanSnapshot)( TidyDocImpl* doc );
 
-int CharEncodingId( ctmbstr charenc );
-ctmbstr CharEncodingName( int encoding );
-ctmbstr CharEncodingOptName( int encoding );
+int TY_(CharEncodingId)( ctmbstr charenc );
+ctmbstr TY_(CharEncodingName)( int encoding );
+ctmbstr TY_(CharEncodingOptName)( int encoding );
 
 /* void SetEmacsFilename( TidyDocImpl* doc, ctmbstr filename ); */
 
@@ -130,15 +130,15 @@ ctmbstr CharEncodingOptName( int encoding );
 #ifdef _DEBUG
 
 /* Debug lookup functions will be type-safe and assert option type match */
-ulong   _cfgGet( TidyDocImpl* doc, TidyOptionId optId );
-Bool    _cfgGetBool( TidyDocImpl* doc, TidyOptionId optId );
-TidyTriState _cfgGetAutoBool( TidyDocImpl* doc, TidyOptionId optId );
-ctmbstr _cfgGetString( TidyDocImpl* doc, TidyOptionId optId );
+ulong   TY_(_cfgGet)( TidyDocImpl* doc, TidyOptionId optId );
+Bool    TY_(_cfgGetBool)( TidyDocImpl* doc, TidyOptionId optId );
+TidyTriState TY_(_cfgGetAutoBool)( TidyDocImpl* doc, TidyOptionId optId );
+ctmbstr TY_(_cfgGetString)( TidyDocImpl* doc, TidyOptionId optId );
 
-#define cfg(doc, id)            _cfgGet( (doc), (id) )
-#define cfgBool(doc, id)        _cfgGetBool( (doc), (id) )
-#define cfgAutoBool(doc, id)    _cfgGetAutoBool( (doc), (id) )
-#define cfgStr(doc, id)         _cfgGetString( (doc), (id) )
+#define cfg(doc, id)            TY_(_cfgGet)( (doc), (id) )
+#define cfgBool(doc, id)        TY_(_cfgGetBool)( (doc), (id) )
+#define cfgAutoBool(doc, id)    TY_(_cfgGetAutoBool)( (doc), (id) )
+#define cfgStr(doc, id)         TY_(_cfgGetString)( (doc), (id) )
 
 #else
 

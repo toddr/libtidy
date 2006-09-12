@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/17 18:01:12 $ 
-    $Revision: 1.18 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.19 $ 
 
 */
 
@@ -18,21 +18,21 @@
 #include "tmbstr.h"
 
 /* duplicate attributes */
-AttVal *DupAttrs( TidyDocImpl* doc, AttVal *attrs)
+AttVal *TY_(DupAttrs)( TidyDocImpl* doc, AttVal *attrs)
 {
     AttVal *newattrs;
 
     if (attrs == NULL)
         return attrs;
 
-    newattrs = NewAttribute();
+    newattrs = TY_(NewAttribute)();
     *newattrs = *attrs;
-    newattrs->next = DupAttrs( doc, attrs->next );
-    newattrs->attribute = tmbstrdup(attrs->attribute);
-    newattrs->value = tmbstrdup(attrs->value);
-    newattrs->dict = FindAttribute(doc, newattrs);
-    newattrs->asp = attrs->asp ? CloneNode(doc, attrs->asp) : NULL;
-    newattrs->php = attrs->php ? CloneNode(doc, attrs->php) : NULL;
+    newattrs->next = TY_(DupAttrs)( doc, attrs->next );
+    newattrs->attribute = TY_(tmbstrdup)(attrs->attribute);
+    newattrs->value = TY_(tmbstrdup)(attrs->value);
+    newattrs->dict = TY_(FindAttribute)(doc, newattrs);
+    newattrs->asp = attrs->asp ? TY_(CloneNode)(doc, attrs->asp) : NULL;
+    newattrs->php = attrs->php ? TY_(CloneNode)(doc, attrs->php) : NULL;
     return newattrs;
 }
 
@@ -66,7 +66,7 @@ static Bool IsNodePushable( Node *node )
       <p><em>text</em></p>
       <p><em><em>more text</em></em>
 */
-void PushInline( TidyDocImpl* doc, Node *node )
+void TY_(PushInline)( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
     IStack *istack;
@@ -77,7 +77,7 @@ void PushInline( TidyDocImpl* doc, Node *node )
     if ( !IsNodePushable(node) )
         return;
 
-    if ( !nodeIsFONT(node) && IsPushed(doc, node) )
+    if ( !nodeIsFONT(node) && TY_(IsPushed)(doc, node) )
         return;
 
     /* make sure there is enough space for the stack */
@@ -94,8 +94,8 @@ void PushInline( TidyDocImpl* doc, Node *node )
     istack = &(lexer->istack[lexer->istacksize]);
     istack->tag = node->tag;
 
-    istack->element = tmbstrdup(node->element);
-    istack->attributes = DupAttrs( doc, node->attributes );
+    istack->element = TY_(tmbstrdup)(node->element);
+    istack->attributes = TY_(DupAttrs)( doc, node->attributes );
     ++(lexer->istacksize);
 }
 
@@ -112,7 +112,7 @@ static void PopIStack( TidyDocImpl* doc )
     {
         av = istack->attributes;
         istack->attributes = av->next;
-        FreeAttribute( doc, av );
+        TY_(FreeAttribute)( doc, av );
     }
     MemFree(istack->element);
 }
@@ -132,7 +132,7 @@ static void PopIStackUntil( TidyDocImpl* doc, TidyTagId tid )
 }
 
 /* pop inline stack */
-void PopInline( TidyDocImpl* doc, Node *node )
+void TY_(PopInline)( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
 
@@ -159,7 +159,7 @@ void PopInline( TidyDocImpl* doc, Node *node )
     }
 }
 
-Bool IsPushed( TidyDocImpl* doc, Node *node )
+Bool TY_(IsPushed)( TidyDocImpl* doc, Node *node )
 {
     Lexer* lexer = doc->lexer;
     int i;
@@ -176,7 +176,7 @@ Bool IsPushed( TidyDocImpl* doc, Node *node )
 /*
    Test whether the last element on the stack has the same type than "node".
 */
-Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node )
+Bool TY_(IsPushedLast)( TidyDocImpl* doc, Node *element, Node *node )
 {
     Lexer* lexer = doc->lexer;
 
@@ -209,7 +209,7 @@ Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node )
   where it gets tokens from the inline stack rather than
   from the input stream.
 */
-int InlineDup( TidyDocImpl* doc, Node* node )
+int TY_(InlineDup)( TidyDocImpl* doc, Node* node )
 {
     Lexer* lexer = doc->lexer;
     int n;
@@ -227,13 +227,13 @@ int InlineDup( TidyDocImpl* doc, Node* node )
  defer duplicates when entering a table or other
  element where the inlines shouldn't be duplicated
 */
-void DeferDup( TidyDocImpl* doc )
+void TY_(DeferDup)( TidyDocImpl* doc )
 {
     doc->lexer->insert = NULL;
     doc->lexer->inode = NULL;
 }
 
-Node *InsertedToken( TidyDocImpl* doc )
+Node *TY_(InsertedToken)( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     Node *node;
@@ -259,7 +259,7 @@ Node *InsertedToken( TidyDocImpl* doc )
         lexer->columns = doc->docIn->curcol;
     }
 
-    node = NewNode(lexer);
+    node = TY_(NewNode)(lexer);
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;
@@ -272,9 +272,9 @@ Node *InsertedToken( TidyDocImpl* doc )
         fprintf( stderr, "0-size istack!\n" );
 #endif
 
-    node->element = tmbstrdup(istack->element);
+    node->element = TY_(tmbstrdup)(istack->element);
     node->tag = istack->tag;
-    node->attributes = DupAttrs( doc, istack->attributes );
+    node->attributes = TY_(DupAttrs)( doc, istack->attributes );
 
     /* advance lexer to next item on the stack */
     n = (uint)(lexer->insert - &(lexer->istack[0]));

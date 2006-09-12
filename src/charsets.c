@@ -1,9 +1,9 @@
 /* charsets.c -- character set information and mappings
 
-  (c) 1998-2004 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: charsets.c,v 1.4 2004/08/02 02:22:48 terry_teague Exp $
+  $Id: charsets.c,v 1.5 2006/09/12 15:14:44 arnaud02 Exp $
 */
 
 #include "tidy.h"
@@ -955,18 +955,18 @@ static struct _charsetInfo
   {   0, NULL,                                                0,  no }
 };
 
-uint GetEncodingIdFromName(ctmbstr name)
+uint TY_(GetEncodingIdFromName)(ctmbstr name)
 {
     uint i;
 
     for (i = 0; charsetInfo[i].id; ++i)
-        if (tmbstrcasecmp(name, charsetInfo[i].charset) == 0)
+        if (TY_(tmbstrcasecmp)(name, charsetInfo[i].charset) == 0)
             return charsetInfo[i].id;
 
     return 0;
 }
 
-uint GetEncodingIdFromCodePage(uint cp)
+uint TY_(GetEncodingIdFromCodePage)(uint cp)
 {
     uint i;
 
@@ -977,18 +977,18 @@ uint GetEncodingIdFromCodePage(uint cp)
     return 0;
 }
 
-uint GetEncodingCodePageFromName(ctmbstr name)
+uint TY_(GetEncodingCodePageFromName)(ctmbstr name)
 {
     uint i;
 
     for (i = 0; charsetInfo[i].id; ++i)
-        if (tmbstrcasecmp(name, charsetInfo[i].charset) == 0)
+        if (TY_(tmbstrcasecmp)(name, charsetInfo[i].charset) == 0)
             return charsetInfo[i].codepage;
 
     return 0;
 }
 
-uint GetEncodingCodePageFromId(uint id)
+uint TY_(GetEncodingCodePageFromId)(uint id)
 {
     uint i;
 
@@ -999,7 +999,7 @@ uint GetEncodingCodePageFromId(uint id)
     return 0;
 }
 
-ctmbstr GetEncodingNameFromId(uint id)
+ctmbstr TY_(GetEncodingNameFromId)(uint id)
 {
     uint i;
 
@@ -1010,7 +1010,7 @@ ctmbstr GetEncodingNameFromId(uint id)
     return NULL;
 }
 
-ctmbstr GetEncodingNameFromCodePage(uint cp)
+ctmbstr TY_(GetEncodingNameFromCodePage)(uint cp)
 {
     uint i;
 
@@ -1020,3 +1020,12 @@ ctmbstr GetEncodingNameFromCodePage(uint cp)
 
     return NULL;
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

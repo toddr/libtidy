@@ -5,8 +5,8 @@
   
   CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/01/12 14:26:16 $ 
-    $Revision: 1.5 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.6 $ 
 
 */
 
@@ -18,7 +18,7 @@
 TidyAttr TIDY_CALL tidyAttrGetById( TidyNode tnod, TidyAttrId attId )
 {
     Node* nimp = tidyNodeToImpl(tnod);
-    return tidyImplToAttr( AttrGetById( nimp, attId ) );
+    return tidyImplToAttr( TY_(AttrGetById)( nimp, attId ) );
 }
 TidyAttr TIDY_CALL tidyAttrGetHREF( TidyNode tnod )
 {
@@ -202,3 +202,12 @@ TidyAttr TIDY_CALL tidyAttrGetROWSPAN( TidyNode tnod )
 {
     return tidyImplToAttr( attrGetROWSPAN( tidyNodeToImpl(tnod) ) );
 }
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

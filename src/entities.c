@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.16 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.17 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -316,7 +316,7 @@ static const entity* lookup( ctmbstr s )
     tmbchar ch = (tmbchar)( s ? *s : 0 );
     const entity *np;
     for ( np = entities; ch && np && np->name; ++np )
-        if ( ch == *np->name && tmbstrcmp(s, np->name) == 0 )
+        if ( ch == *np->name && TY_(tmbstrcmp)(s, np->name) == 0 )
             return np;
     return NULL;
 }
@@ -355,7 +355,7 @@ uint EntityCode( ctmbstr name, uint versions )
 }
 #endif
 
-Bool EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions )
+Bool TY_(EntityInfo)( ctmbstr name, Bool isXml, uint* code, uint* versions )
 {
     const entity* np;
     assert( name && name[0] == '&' );
@@ -392,7 +392,7 @@ Bool EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions )
 }
 
 
-ctmbstr EntityName( uint ch, uint versions )
+ctmbstr TY_(EntityName)( uint ch, uint versions )
 {
     ctmbstr entnam = NULL;
     const entity *ep;

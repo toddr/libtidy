@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/11 15:33:50 $ 
-    $Revision: 1.35 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.36 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -64,7 +64,7 @@ static StreamOut stderrStreamOut =
     (ulong)NULL,
 #endif
     FileIO,
-    { 0, filesink_putByte }
+    { 0, TY_(filesink_putByte) }
 };
 
 static StreamOut stdoutStreamOut = 
@@ -76,10 +76,10 @@ static StreamOut stdoutStreamOut =
     (ulong)NULL,
 #endif
     FileIO,
-    { 0, filesink_putByte }
+    { 0, TY_(filesink_putByte) }
 };
 
-StreamOut* StdErrOutput(void)
+StreamOut* TY_(StdErrOutput)(void)
 {
   if ( stderrStreamOut.sink.sinkData == 0 )
       stderrStreamOut.sink.sinkData = stderr;
@@ -87,7 +87,7 @@ StreamOut* StdErrOutput(void)
 }
 
 #if 0
-StreamOut* StdOutOutput(void)
+StreamOut* TY_(StdOutOutput)(void)
 {
   if ( stdoutStreamOut.sink.sinkData == 0 )
       stdoutStreamOut.sink.sinkData = stdout;
@@ -95,7 +95,7 @@ StreamOut* StdOutOutput(void)
 }
 #endif
 
-void  ReleaseStreamOut( StreamOut* out )
+void  TY_(ReleaseStreamOut)( StreamOut* out )
 {
     if ( out && out != &stderrStreamOut && out != &stdoutStreamOut )
     {
@@ -130,7 +130,7 @@ static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
     return in;
 }
 
-void freeStreamIn(StreamIn* in)
+void TY_(freeStreamIn)(StreamIn* in)
 {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
     if (in->otextbuf)
@@ -140,15 +140,15 @@ void freeStreamIn(StreamIn* in)
     MemFree(in);
 }
 
-StreamIn* FileInput( TidyDocImpl* doc, FILE *fp, int encoding )
+StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE *fp, int encoding )
 {
     StreamIn *in = initStreamIn( doc, encoding );
-    initFileSource( &in->source, fp );
+    TY_(initFileSource)( &in->source, fp );
     in->iotype = FileIO;
     return in;
 }
 
-StreamIn* BufferInput( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
+StreamIn* TY_(BufferInput)( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
 {
     StreamIn *in = initStreamIn( doc, encoding );
     tidyInitInputBuffer( &in->source, buf );
@@ -156,7 +156,7 @@ StreamIn* BufferInput( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
     return in;
 }
 
-StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding )
+StreamIn* TY_(UserInput)( TidyDocImpl* doc, TidyInputSource* source, int encoding )
 {
     StreamIn *in = initStreamIn( doc, encoding );
     memcpy( &in->source, source, sizeof(TidyInputSource) );
@@ -164,7 +164,7 @@ StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding )
     return in;
 }
 
-int ReadBOMEncoding(StreamIn *in)
+int TY_(ReadBOMEncoding)(StreamIn *in)
 {
     uint c, c1;
 #if SUPPORT_UTF16_ENCODINGS
@@ -192,7 +192,7 @@ int ReadBOMEncoding(StreamIn *in)
     {
         /* big-endian UTF-16 */
         if ( in->encoding != UTF16 && in->encoding != UTF16BE )
-            ReportEncodingWarning(in->doc, ENCODING_MISMATCH, UTF16BE);
+            TY_(ReportEncodingWarning)(in->doc, ENCODING_MISMATCH, UTF16BE);
 
         return UTF16BE; /* return decoded BOM */
     }
@@ -200,7 +200,7 @@ int ReadBOMEncoding(StreamIn *in)
     {
         /* little-endian UTF-16 */
         if (in->encoding != UTF16 && in->encoding != UTF16LE)
-            ReportEncodingWarning(in->doc, ENCODING_MISMATCH, UTF16LE);
+            TY_(ReportEncodingWarning)(in->doc, ENCODING_MISMATCH, UTF16LE);
 
         return UTF16LE; /* return decoded BOM */
     }
@@ -220,7 +220,7 @@ int ReadBOMEncoding(StreamIn *in)
         {
             /* UTF-8 */
             if (in->encoding != UTF8)
-                ReportEncodingWarning(in->doc, ENCODING_MISMATCH, UTF8);
+                TY_(ReportEncodingWarning)(in->doc, ENCODING_MISMATCH, UTF8);
 
             return UTF8;
         }
@@ -235,7 +235,7 @@ int ReadBOMEncoding(StreamIn *in)
 }
 
 #ifdef TIDY_STORE_ORIGINAL_TEXT
-void AddByteToOriginalText(StreamIn *in, tmbchar c)
+void TY_(AddByteToOriginalText)(StreamIn *in, tmbchar c)
 {
     if (in->otextlen + 1 >= in->otextsize)
     {
@@ -247,12 +247,12 @@ void AddByteToOriginalText(StreamIn *in, tmbchar c)
     in->otextbuf[in->otextlen  ] = 0;
 }
 
-void AddCharToOriginalText(StreamIn *in, tchar c)
+void TY_(AddCharToOriginalText)(StreamIn *in, tchar c)
 {
     int i, err, count = 0;
     tmbchar buf[10] = {0};
     
-    err = EncodeCharToUTF8Bytes(c, buf, NULL, &count);
+    err = TY_(EncodeCharToUTF8Bytes)(c, buf, NULL, &count);
 
     if (err)
     {
@@ -269,7 +269,7 @@ void AddCharToOriginalText(StreamIn *in, tchar c)
 #endif
 
 
-uint ReadChar( StreamIn *in )
+uint TY_(ReadChar)( StreamIn *in )
 {
     uint c = EndOfStream;
     uint tabsize = cfg( in->doc, TidyTabSize );
@@ -331,7 +331,7 @@ uint ReadChar( StreamIn *in )
             c = ReadCharFromStream(in);
             if (c != '\n')
             {
-                UngetChar( c, in );
+                TY_(UngetChar)( c, in );
                 c = '\n';
             }
             else
@@ -384,13 +384,13 @@ uint ReadChar( StreamIn *in )
              in->encoding == UTF16   ||
              in->encoding == UTF16BE )
         {
-            if ( !IsValidUTF16FromUCS4(c) )
+            if ( !TY_(IsValidUTF16FromUCS4)(c) )
             {
                 /* invalid UTF-16 value */
-                ReportEncodingError(in->doc, INVALID_UTF16, c, yes);
+                TY_(ReportEncodingError)(in->doc, INVALID_UTF16, c, yes);
                 c = 0;
             }
-            else if ( IsLowSurrogate(c) )
+            else if ( TY_(IsLowSurrogate)(c) )
             {
                 uint n = c;
                 uint m = ReadCharFromStream( in );
@@ -398,15 +398,15 @@ uint ReadChar( StreamIn *in )
                    return EndOfStream;
 
                 c = 0;
-                if ( IsHighSurrogate(m) )
+                if ( TY_(IsHighSurrogate)(m) )
                 {
-                    n = CombineSurrogatePair( m, n );
-                    if ( IsValidCombinedChar(n) )
+                    n = TY_(CombineSurrogatePair)( m, n );
+                    if ( TY_(IsValidCombinedChar)(n) )
                         c = n;
                 }
                 /* not a valid pair */
                 if ( 0 == c )
-                    ReportEncodingError( in->doc, INVALID_UTF16, c, yes );
+                    TY_(ReportEncodingError)( in->doc, INVALID_UTF16, c, yes );
             }
         }
 #endif
@@ -415,7 +415,7 @@ uint ReadChar( StreamIn *in )
         switch ( in->encoding )
         {
         case MACROMAN:
-            c = DecodeMacRoman( c );
+            c = TY_(DecodeMacRoman)( c );
             break;
         case IBM858:
             c = DecodeIbm850( c );
@@ -433,9 +433,9 @@ uint ReadChar( StreamIn *in )
             Bool isVendorChar = ( in->encoding == WIN1252 ||
                                   in->encoding == MACROMAN );
             Bool isWinChar    = ( in->encoding == WIN1252 ||
-                                  ReplacementCharEncoding == WIN1252 );
+                                  TY_(ReplacementCharEncoding) == WIN1252 );
             Bool isMacChar    = ( in->encoding == MACROMAN ||
-                                  ReplacementCharEncoding == MACROMAN );
+                                  TY_(ReplacementCharEncoding) == MACROMAN );
             
             /* set error position just before offending character */
             if (in->doc->lexer)
@@ -445,16 +445,16 @@ uint ReadChar( StreamIn *in )
             }
                 
             if ( isWinChar )
-                c1 = DecodeWin1252( c );
+                c1 = TY_(DecodeWin1252)( c );
             else if ( isMacChar )
-                c1 = DecodeMacRoman( c );
+                c1 = TY_(DecodeMacRoman)( c );
             if ( c1 )
                 replMode = REPLACED_CHAR;
                 
             if ( c1 == 0 && isVendorChar )
-                ReportEncodingError(in->doc, VENDOR_SPECIFIC_CHARS, c, replMode == DISCARDED_CHAR);
+                TY_(ReportEncodingError)(in->doc, VENDOR_SPECIFIC_CHARS, c, replMode == DISCARDED_CHAR);
             else if ( ! isVendorChar )
-                ReportEncodingError(in->doc, INVALID_SGML_CHARS, c, replMode == DISCARDED_CHAR);
+                TY_(ReportEncodingError)(in->doc, INVALID_SGML_CHARS, c, replMode == DISCARDED_CHAR);
                 
             c = c1;
         }
@@ -495,7 +495,7 @@ static uint PopChar( StreamIn *in )
     return c;
 }
 
-void UngetChar( uint c, StreamIn *in )
+void TY_(UngetChar)( uint c, StreamIn *in )
 {
     if (c == EndOfStream)
     {
@@ -532,21 +532,21 @@ static StreamOut* initStreamOut( int encoding, uint nl )
     return out;
 }
 
-StreamOut* FileOutput( FILE* fp, int encoding, uint nl )
+StreamOut* TY_(FileOutput)( FILE* fp, int encoding, uint nl )
 {
     StreamOut* out = initStreamOut( encoding, nl );
-    initFileSink( &out->sink, fp );
+    TY_(initFileSink)( &out->sink, fp );
     out->iotype = FileIO;
     return out;
 }
-StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint nl )
+StreamOut* TY_(BufferOutput)( TidyBuffer* buf, int encoding, uint nl )
 {
     StreamOut* out = initStreamOut( encoding, nl );
     tidyInitOutputBuffer( &out->sink, buf );
     out->iotype = BufferIO;
     return out;
 }
-StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint nl )
+StreamOut* TY_(UserOutput)( TidyOutputSink* sink, int encoding, uint nl )
 {
     StreamOut* out = initStreamOut( encoding, nl );
     memcpy( &out->sink, sink, sizeof(TidyOutputSink) );
@@ -554,13 +554,13 @@ StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint nl )
     return out;
 }
 
-void WriteChar( uint c, StreamOut* out )
+void TY_(WriteChar)( uint c, StreamOut* out )
 {
     /* Translate outgoing newlines */
     if ( LF == c )
     {
       if ( out->nl == TidyCRLF )
-          WriteChar( CR, out );
+          TY_(WriteChar)( CR, out );
       else if ( out->nl == TidyCR )
           c = CR;
     }
@@ -586,10 +586,10 @@ void WriteChar( uint c, StreamOut* out )
     {
         int count = 0;
         
-        EncodeCharToUTF8Bytes( c, NULL, &out->sink, &count );
+        TY_(EncodeCharToUTF8Bytes)( c, NULL, &out->sink, &count );
         if (count <= 0)
         {
-          /* ReportEncodingError(in->lexer, INVALID_UTF8 | REPLACED_CHAR, c); */
+          /* TY_(ReportEncodingError)(in->lexer, INVALID_UTF8 | REPLACED_CHAR, c); */
             /* replacement char 0xFFFD encoded as UTF-8 */
             PutByte(0xEF, out); PutByte(0xBF, out); PutByte(0xBF, out);
         }
@@ -645,20 +645,20 @@ void WriteChar( uint c, StreamOut* out )
         int i, numChars = 1;
         uint theChars[2];
         
-        if ( !IsValidUTF16FromUCS4(c) )
+        if ( !TY_(IsValidUTF16FromUCS4)(c) )
         {
             /* invalid UTF-16 value */
-            /* ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
+            /* TY_(ReportEncodingError)(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
             c = 0;
             numChars = 0;
         }
-        else if ( IsCombinedChar(c) )
+        else if ( TY_(IsCombinedChar)(c) )
         {
             /* output both, unless something goes wrong */
             numChars = 2;
-            if ( !SplitSurrogatePair(c, &theChars[0], &theChars[1]) )
+            if ( !TY_(SplitSurrogatePair)(c, &theChars[0], &theChars[1]) )
             {
-                /* ReportEncodingError(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
+                /* TY_(ReportEncodingError)(in->lexer, INVALID_UTF16 | DISCARDED_CHAR, c); */
                 c = 0;
                 numChars = 0;
             }
@@ -715,7 +715,7 @@ void WriteChar( uint c, StreamOut* out )
 ** regardless of specified encoding.  Set at compile time
 ** to either Windows or Mac.
 */
-const int ReplacementCharEncoding = DFLT_REPL_CHARENC;
+const int TY_(ReplacementCharEncoding) = DFLT_REPL_CHARENC;
 
 
 /* Mapping for Windows Western character set CP 1252 
@@ -730,7 +730,7 @@ static const uint Win2Unicode[32] =
 };
 
 /* Function for conversion from Windows-1252 to Unicode */
-uint DecodeWin1252(uint c)
+uint TY_(DecodeWin1252)(uint c)
 {
     if (127 < c && c < 160)
         c = Win2Unicode[c - 128];
@@ -794,7 +794,7 @@ static const uint Mac2Unicode[128] =
 };
 
 /* Function to convert from MacRoman to Unicode */
-uint DecodeMacRoman(uint c)
+uint TY_(DecodeMacRoman)(uint c)
 {
     if (127 < c)
         c = Mac2Unicode[c - 128];
@@ -1042,7 +1042,7 @@ static uint ReadByte( StreamIn* in )
 {
     return tidyGetByte( &in->source );
 }
-Bool IsEOF( StreamIn* in )
+Bool TY_(IsEOF)( StreamIn* in )
 {
     return tidyIsEOF( &in->source );
 }
@@ -1063,7 +1063,7 @@ static void UngetRawBytesToStream( StreamIn *in, byte* buf, int *count )
     for (i = 0; i < *count; i++)
     {
         /* should never get here; testing for 0xFF, a valid char, is not a good idea */
-        if ( in && IsEOF(in) )
+        if ( in && TY_(IsEOF)(in) )
         {
             /* fprintf(stderr,"Attempt to unget EOF in UngetRawBytesToStream\n"); */
             *count = -i;
@@ -1111,7 +1111,7 @@ static uint ReadCharFromStream( StreamIn* in )
     uint bytesRead = 0;
 #endif
 
-    if ( IsEOF(in) )
+    if ( TY_(IsEOF)(in) )
         return EndOfStream;
     
     c = ReadByte( in );
@@ -1209,7 +1209,7 @@ static uint ReadCharFromStream( StreamIn* in )
         int err, count = 0;
         
         /* first byte "c" is passed in separately */
-        err = DecodeUTF8BytesToChar( &n, c, NULL, &in->source, &count );
+        err = TY_(DecodeUTF8BytesToChar)( &n, c, NULL, &in->source, &count );
         if (!err && (n == (uint)EndOfStream) && (count == 1)) /* EOF */
             return EndOfStream;
         else if (err)
@@ -1218,7 +1218,7 @@ static uint ReadCharFromStream( StreamIn* in )
             in->doc->lexer->lines = in->curline;
             in->doc->lexer->columns = in->curcol;
 
-            ReportEncodingError(in->doc, INVALID_UTF8, n, no);
+            TY_(ReportEncodingError)(in->doc, INVALID_UTF8, n, no);
             n = 0xFFFD; /* replacement char */
         }
         
@@ -1261,7 +1261,7 @@ static uint ReadCharFromStream( StreamIn* in )
     else if (in->encoding > WIN32MLANG)
     {
         assert( in->mlang != 0 );
-        return Win32MLangGetChar((byte)c, in, &bytesRead);
+        return TY_(Win32MLangGetChar)((byte)c, in, &bytesRead);
     }
 #endif
 
@@ -1272,7 +1272,7 @@ static uint ReadCharFromStream( StreamIn* in )
 }
 
 /* Output a Byte Order Mark if required */
-void outBOM( StreamOut *out )
+void TY_(outBOM)( StreamOut *out )
 {
     if ( out->encoding == UTF8
 #if SUPPORT_UTF16_ENCODINGS
@@ -1283,7 +1283,7 @@ void outBOM( StreamOut *out )
        )
     {
         /* this will take care of encoding the BOM correctly */
-        WriteChar( UNICODE_BOM, out );
+        TY_(WriteChar)( UNICODE_BOM, out );
     }
 }
 
@@ -1318,7 +1318,7 @@ static struct _enc2iana
   { RAW,      NULL,           "raw"     }
 };
 
-ctmbstr GetEncodingNameFromTidyId(uint id)
+ctmbstr TY_(GetEncodingNameFromTidyId)(uint id)
 {
     uint i;
 
@@ -1329,7 +1329,7 @@ ctmbstr GetEncodingNameFromTidyId(uint id)
     return NULL;
 }
 
-ctmbstr GetEncodingOptNameFromTidyId(uint id)
+ctmbstr TY_(GetEncodingOptNameFromTidyId)(uint id)
 {
     uint i;
 
@@ -1340,12 +1340,12 @@ ctmbstr GetEncodingOptNameFromTidyId(uint id)
     return NULL;
 }
 
-int GetCharEncodingFromOptName( ctmbstr charenc )
+int TY_(GetCharEncodingFromOptName)( ctmbstr charenc )
 {
     uint i;
 
     for (i = 0; i < sizeof(enc2iana)/sizeof(enc2iana[0]); ++i)
-        if (tmbstrcasecmp(charenc, enc2iana[i].tidyOptName) == 0 )
+        if (TY_(tmbstrcasecmp)(charenc, enc2iana[i].tidyOptName) == 0 )
             return enc2iana[i].id;
 
     return -1;

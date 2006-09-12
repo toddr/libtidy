@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:16 $ 
-    $Revision: 1.18 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.19 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -80,57 +80,56 @@ struct _TidyTagImpl
 typedef struct _TidyTagImpl TidyTagImpl;
 
 /* interface for finding tag by name */
-const Dict* LookupTagDef( TidyTagId tid );
-Bool    FindTag( TidyDocImpl* doc, Node *node );
-Parser* FindParser( TidyDocImpl* doc, Node *node );
-void    DefineTag( TidyDocImpl* doc, UserTagType tagType, ctmbstr name );
-void    FreeDeclaredTags( TidyDocImpl* doc, UserTagType tagType ); /* tagtype_null to free all */
+const Dict* TY_(LookupTagDef)( TidyTagId tid );
+Bool    TY_(FindTag)( TidyDocImpl* doc, Node *node );
+Parser* TY_(FindParser)( TidyDocImpl* doc, Node *node );
+void    TY_(DefineTag)( TidyDocImpl* doc, UserTagType tagType, ctmbstr name );
+void    TY_(FreeDeclaredTags)( TidyDocImpl* doc, UserTagType tagType ); /* tagtype_null to free all */
 
-TidyIterator   GetDeclaredTagList( TidyDocImpl* doc );
-Dict*          GetNextDeclaredDict( TidyDocImpl* doc, TidyIterator* iter );
-ctmbstr        GetNextDeclaredTag( TidyDocImpl* doc, UserTagType tagType,
-                                   TidyIterator* iter );
+TidyIterator   TY_(GetDeclaredTagList)( TidyDocImpl* doc );
+ctmbstr        TY_(GetNextDeclaredTag)( TidyDocImpl* doc, UserTagType tagType,
+                                        TidyIterator* iter );
 
-void InitTags( TidyDocImpl* doc );
-void FreeTags( TidyDocImpl* doc );
+void TY_(InitTags)( TidyDocImpl* doc );
+void TY_(FreeTags)( TidyDocImpl* doc );
 
 
 /* Parser methods for tags */
 
-Parser ParseHTML;
-Parser ParseHead;
-Parser ParseTitle;
-Parser ParseScript;
-Parser ParseFrameSet;
-Parser ParseNoFrames;
-Parser ParseBody;
-Parser ParsePre;
-Parser ParseList;
-Parser ParseLI;
-Parser ParseDefList;
-Parser ParseBlock;
-Parser ParseInline;
-Parser ParseEmpty;
-Parser ParseTableTag;
-Parser ParseColGroup;
-Parser ParseRowGroup;
-Parser ParseRow;
-Parser ParseSelect;
-Parser ParseOptGroup;
-Parser ParseText;
-Parser ParseObject;
-Parser ParseMap;
+Parser TY_(ParseHTML);
+Parser TY_(ParseHead);
+Parser TY_(ParseTitle);
+Parser TY_(ParseScript);
+Parser TY_(ParseFrameSet);
+Parser TY_(ParseNoFrames);
+Parser TY_(ParseBody);
+Parser TY_(ParsePre);
+Parser TY_(ParseList);
+Parser TY_(ParseLI);
+Parser TY_(ParseDefList);
+Parser TY_(ParseBlock);
+Parser TY_(ParseInline);
+Parser TY_(ParseEmpty);
+Parser TY_(ParseTableTag);
+Parser TY_(ParseColGroup);
+Parser TY_(ParseRowGroup);
+Parser TY_(ParseRow);
+Parser TY_(ParseSelect);
+Parser TY_(ParseOptGroup);
+Parser TY_(ParseText);
+Parser TY_(ParseObject);
+Parser TY_(ParseMap);
 
-CheckAttribs CheckAttributes;
+CheckAttribs TY_(CheckAttributes);
 
 /* 0 == TidyTag_UNKNOWN */
 #define TagId(node)        ((node) && (node)->tag ? (node)->tag->id : TidyTag_UNKNOWN)
 #define TagIsId(node, tid) ((node) && (node)->tag && (node)->tag->id == tid)
 
-Bool nodeIsText( Node* node );
-Bool nodeIsElement( Node* node );
+Bool TY_(nodeIsText)( Node* node );
+Bool TY_(nodeIsElement)( Node* node );
 
-Bool nodeHasText( TidyDocImpl* doc, Node* node );
+Bool TY_(nodeHasText)( TidyDocImpl* doc, Node* node );
 
 #if 0
 /* Compare & result to operand.  If equal, then all bits
@@ -141,15 +140,15 @@ Bool nodeMatchCM( Node* node, uint contentModel );
 
 /* True if any of the bits requested are set.
 */
-Bool nodeHasCM( Node* node, uint contentModel );
+Bool TY_(nodeHasCM)( Node* node, uint contentModel );
 
-Bool nodeCMIsBlock( Node* node );
-Bool nodeCMIsInline( Node* node );
-Bool nodeCMIsEmpty( Node* node );
+Bool TY_(nodeCMIsBlock)( Node* node );
+Bool TY_(nodeCMIsInline)( Node* node );
+Bool TY_(nodeCMIsEmpty)( Node* node );
 
 
-Bool nodeIsHeader( Node* node );     /* H1, H2, ..., H6 */
-uint nodeHeaderLevel( Node* node );  /* 1, 2, ..., 6 */
+Bool TY_(nodeIsHeader)( Node* node );     /* H1, H2, ..., H6 */
+uint TY_(nodeHeaderLevel)( Node* node );  /* 1, 2, ..., 6 */
 
 #define nodeIsHTML( node )       TagIsId( node, TidyTag_HTML )
 #define nodeIsHEAD( node )       TagIsId( node, TidyTag_HEAD )

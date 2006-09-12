@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.24 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.25 $ 
 
 */
 
@@ -30,41 +30,41 @@
 ** Keeps track of ShowWarnings, ShowErrors, etc.
 */
 
-ctmbstr ReleaseDate(void);
+ctmbstr TY_(ReleaseDate)(void);
 
-/* void ShowVersion( TidyDocImpl* doc ); */
-void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option );
-void ReportBadArgument( TidyDocImpl* doc, ctmbstr option );
-void NeedsAuthorIntervention( TidyDocImpl* doc );
+/* void TY_(ShowVersion)( TidyDocImpl* doc ); */
+void TY_(ReportUnknownOption)( TidyDocImpl* doc, ctmbstr option );
+void TY_(ReportBadArgument)( TidyDocImpl* doc, ctmbstr option );
+void TY_(NeedsAuthorIntervention)( TidyDocImpl* doc );
 
-/* void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename ); */
-void ReportMarkupVersion( TidyDocImpl* doc );
-void ReportNumWarnings( TidyDocImpl* doc );
+/* void TY_(HelloMessage)( TidyDocImpl* doc, ctmbstr date, ctmbstr filename ); */
+void TY_(ReportMarkupVersion)( TidyDocImpl* doc );
+void TY_(ReportNumWarnings)( TidyDocImpl* doc );
 
-void GeneralInfo( TidyDocImpl* doc );
-/* void UnknownOption( TidyDocImpl* doc, char c ); */
-/* void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file ); */
-void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level );
+void TY_(GeneralInfo)( TidyDocImpl* doc );
+/* void TY_(UnknownOption)( TidyDocImpl* doc, char c ); */
+/* void TY_(UnknownFile)( TidyDocImpl* doc, ctmbstr program, ctmbstr file ); */
+void TY_(FileError)( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level );
 
-void ErrorSummary( TidyDocImpl* doc );
+void TY_(ErrorSummary)( TidyDocImpl* doc );
 
-void ReportEncodingWarning(TidyDocImpl* doc, uint code, uint encoding);
-void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded);
-void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity, int c );
-void ReportAttrError( TidyDocImpl* doc, Node* node, AttVal* av, uint code );
-void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name );
+void TY_(ReportEncodingWarning)(TidyDocImpl* doc, uint code, uint encoding);
+void TY_(ReportEncodingError)(TidyDocImpl* doc, uint code, uint c, Bool discarded);
+void TY_(ReportEntityError)( TidyDocImpl* doc, uint code, ctmbstr entity, int c );
+void TY_(ReportAttrError)( TidyDocImpl* doc, Node* node, AttVal* av, uint code );
+void TY_(ReportMissingAttr)( TidyDocImpl* doc, Node* node, ctmbstr name );
 
 #if SUPPORT_ACCESSIBILITY_CHECKS
 
-void ReportAccessWarning( TidyDocImpl* doc, Node* node, uint code );
-void ReportAccessError( TidyDocImpl* doc, Node* node, uint code );
+void TY_(ReportAccessWarning)( TidyDocImpl* doc, Node* node, uint code );
+void TY_(ReportAccessError)( TidyDocImpl* doc, Node* node, uint code );
 
 #endif
 
-void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code);
-void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code);
-void ReportError(TidyDocImpl* doc, Node* element, Node* node, uint code);
-void ReportFatal(TidyDocImpl* doc, Node* element, Node* node, uint code);
+void TY_(ReportNotice)(TidyDocImpl* doc, Node *element, Node *node, uint code);
+void TY_(ReportWarning)(TidyDocImpl* doc, Node *element, Node *node, uint code);
+void TY_(ReportError)(TidyDocImpl* doc, Node* element, Node* node, uint code);
+void TY_(ReportFatal)(TidyDocImpl* doc, Node* element, Node* node, uint code);
 
 /* error codes for entities/numeric character references */
 

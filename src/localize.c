@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.158 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.159 $ 
 
 */
 
@@ -32,9 +32,9 @@
 
 #include "version.h"
 
-ctmbstr ReleaseDate(void)
+ctmbstr TY_(ReleaseDate)(void)
 {
-  return release_date;
+  return TY_(release_date);
 }
 
 static struct _msgfmt
@@ -821,7 +821,7 @@ static const TidyOptionDoc option_docs[] =
   }
 };
 
-const TidyOptionDoc* tidyOptGetDocDesc( TidyOptionId optId )
+const TidyOptionDoc* TY_(OptGetDocDesc)( TidyOptionId optId )
 {
     uint i = 0;
 
@@ -841,28 +841,28 @@ static char* LevelPrefix( TidyReportLevel level, char* buf, size_t count )
   switch ( level )
   {
   case TidyInfo:
-    tmbstrncpy( buf, "Info: ", count );
+    TY_(tmbstrncpy)( buf, "Info: ", count );
     break;
   case TidyWarning:
-    tmbstrncpy( buf, "Warning: ", count );
+    TY_(tmbstrncpy)( buf, "Warning: ", count );
     break;
   case TidyConfig:
-    tmbstrncpy( buf, "Config: ", count );
+    TY_(tmbstrncpy)( buf, "Config: ", count );
     break;
   case TidyAccess:
-    tmbstrncpy( buf, "Access: ", count );
+    TY_(tmbstrncpy)( buf, "Access: ", count );
     break;
   case TidyError:
-    tmbstrncpy( buf, "Error: ", count );
+    TY_(tmbstrncpy)( buf, "Error: ", count );
     break;
   case TidyBadDocument:
-    tmbstrncpy( buf, "Document: ", count );
+    TY_(tmbstrncpy)( buf, "Document: ", count );
     break;
   case TidyFatal:
-    tmbstrncpy( buf, "panic: ", count );
+    TY_(tmbstrncpy)( buf, "panic: ", count );
     break;
   }
-  return buf + tmbstrlen( buf );
+  return buf + TY_(tmbstrlen)( buf );
 }
 
 /* Updates document message counts and
@@ -909,11 +909,11 @@ static char* ReportPosition(TidyDocImpl* doc, int line, int col, char* buf, size
 
     /* Change formatting to be parsable by GNU Emacs */
     if ( cfgBool(doc, TidyEmacs) && cfgStr(doc, TidyEmacsFile) )
-        tmbsnprintf(buf, count, "%s:%d:%d: ", 
-                 cfgStr(doc, TidyEmacsFile), line, col);
+        TY_(tmbsnprintf)(buf, count, "%s:%d:%d: ", 
+                         cfgStr(doc, TidyEmacsFile), line, col);
     else /* traditional format */
-        tmbsnprintf(buf, count, "line %d column %d - ", line, col);
-    return buf + tmbstrlen( buf );
+        TY_(tmbsnprintf)(buf, count, "line %d column %d - ", line, col);
+    return buf + TY_(tmbstrlen)( buf );
 }
 
 /* General message writing routine.
@@ -941,7 +941,7 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
 
     if ( go )
     {
-        tmbvsnprintf(messageBuf, sizeof(messageBuf), msg, args);
+        TY_(tmbvsnprintf)(messageBuf, sizeof(messageBuf), msg, args);
         if ( doc->mssgFilt )
         {
             TidyDoc tdoc = tidyImplToDoc( doc );
@@ -957,16 +957,16 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
         {
             ReportPosition(doc, line, col, buf, sizeof(buf));
             for ( cp = buf; *cp; ++cp )
-                WriteChar( *cp, doc->errout );
+                TY_(WriteChar)( *cp, doc->errout );
         }
 
         LevelPrefix( level, buf, sizeof(buf) );
         for ( cp = buf; *cp; ++cp )
-            WriteChar( *cp, doc->errout );
+            TY_(WriteChar)( *cp, doc->errout );
 
         for ( cp = messageBuf; *cp; ++cp )
-            WriteChar( *cp, doc->errout );
-        WriteChar( '\n', doc->errout );
+            TY_(WriteChar)( *cp, doc->errout );
+        TY_(WriteChar)( '\n', doc->errout );
     }
 }
 
@@ -1048,11 +1048,11 @@ void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
 
         va_list args;
         va_start( args, msg );
-        tmbvsnprintf(buf, sizeof(buf), msg, args);
+        TY_(tmbvsnprintf)(buf, sizeof(buf), msg, args);
         va_end( args );
 
         for ( cp=buf; *cp; ++cp )
-          WriteChar( *cp, doc->errout );
+          TY_(WriteChar)( *cp, doc->errout );
     }
 }
 
@@ -1068,11 +1068,11 @@ void ShowVersion( TidyDocImpl* doc )
 
     tidy_out( doc, "\nHTML Tidy%s%s (release date: %s; built on %s, at %s)\n"
                    "See http://tidy.sourceforge.net/ for details.\n",
-              helper, platform, release_date, __DATE__, __TIME__ );
+              helper, platform, TY_(release_date), __DATE__, __TIME__ );
 }
 #endif
 
-void FileError( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level )
+void TY_(FileError)( TidyDocImpl* doc, ctmbstr file, TidyReportLevel level )
 {
     message( doc, level, "Can't open \"%s\"\n", file );
 }
@@ -1082,31 +1082,31 @@ static char* TagToString(Node* tag, char* buf, size_t count)
     *buf = 0;
     if (tag)
     {
-        if (nodeIsElement(tag))
-            tmbsnprintf(buf, count, "<%s>", tag->element);
+        if (TY_(nodeIsElement)(tag))
+            TY_(tmbsnprintf)(buf, count, "<%s>", tag->element);
         else if (tag->type == EndTag)
-            tmbsnprintf(buf, count, "</%s>", tag->element);
+            TY_(tmbsnprintf)(buf, count, "</%s>", tag->element);
         else if (tag->type == DocTypeTag)
-            tmbsnprintf(buf, count, "<!DOCTYPE>");
+            TY_(tmbsnprintf)(buf, count, "<!DOCTYPE>");
         else if (tag->type == TextNode)
-            tmbsnprintf(buf, count, "plain text");
+            TY_(tmbsnprintf)(buf, count, "plain text");
         else if (tag->type == XmlDecl)
-            tmbsnprintf(buf, count, "XML declaration");
+            TY_(tmbsnprintf)(buf, count, "XML declaration");
         else if (tag->element)
-            tmbsnprintf(buf, count, "%s", tag->element);
+            TY_(tmbsnprintf)(buf, count, "%s", tag->element);
     }
-    return buf + tmbstrlen(buf);
+    return buf + TY_(tmbstrlen)(buf);
 }
 
 /* lexer is not defined when this is called */
-void ReportUnknownOption( TidyDocImpl* doc, ctmbstr option )
+void TY_(ReportUnknownOption)( TidyDocImpl* doc, ctmbstr option )
 {
     assert( option != NULL );
     message( doc, TidyConfig, "unknown option: %s", option );
 }
 
 /* lexer is not defined when this is called */
-void ReportBadArgument( TidyDocImpl* doc, ctmbstr option )
+void TY_(ReportBadArgument)( TidyDocImpl* doc, ctmbstr option )
 {
     assert( option != NULL );
     message( doc, TidyConfig,
@@ -1139,20 +1139,20 @@ static void NtoS(int n, tmbstr str)
     str[n+1] = '\0';
 }
 
-void ReportEncodingWarning(TidyDocImpl* doc, uint code, uint encoding)
+void TY_(ReportEncodingWarning)(TidyDocImpl* doc, uint code, uint encoding)
 {
     switch(code)
     {
     case ENCODING_MISMATCH:
         messageLexer(doc, TidyWarning, GetFormatFromCode(code), 
-                     CharEncodingName(doc->docIn->encoding),
-                     CharEncodingName(encoding));
+                     TY_(CharEncodingName)(doc->docIn->encoding),
+                     TY_(CharEncodingName)(encoding));
         doc->badChars |= BC_ENCODING_MISMATCH;
         break;
     }
 }
 
-void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
+void TY_(ReportEncodingError)(TidyDocImpl* doc, uint code, uint c, Bool discarded)
 {
     char buf[ 32 ] = {'\0'};
 
@@ -1173,13 +1173,13 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
         break;
 
     case INVALID_UTF8:
-        tmbsnprintf(buf, sizeof(buf), "U+%04X", c);
+        TY_(tmbsnprintf)(buf, sizeof(buf), "U+%04X", c);
         doc->badChars |= BC_INVALID_UTF8;
         break;
 
 #if SUPPORT_UTF16_ENCODINGS
     case INVALID_UTF16:
-        tmbsnprintf(buf, sizeof(buf), "U+%04X", c);
+        TY_(tmbsnprintf)(buf, sizeof(buf), "U+%04X", c);
         doc->badChars |= BC_INVALID_UTF16;
         break;
 #endif
@@ -1194,8 +1194,8 @@ void ReportEncodingError(TidyDocImpl* doc, uint code, uint c, Bool discarded)
         messageLexer( doc, TidyWarning, fmt, action, buf );
 }
 
-void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity,
-                        int ARG_UNUSED(c) )
+void TY_(ReportEntityError)( TidyDocImpl* doc, uint code, ctmbstr entity,
+                             int ARG_UNUSED(c) )
 {
     ctmbstr entityname = ( entity ? entity : "NULL" );
     ctmbstr fmt = GetFormatFromCode(code);
@@ -1204,7 +1204,7 @@ void ReportEntityError( TidyDocImpl* doc, uint code, ctmbstr entity,
         messageLexer( doc, TidyWarning, fmt, entityname );
 }
 
-void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
+void TY_(ReportAttrError)(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 {
     char const *name = "NULL", *value = "NULL";
     char tagdesc[64];
@@ -1279,7 +1279,7 @@ void ReportAttrError(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     }
 }
 
-void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
+void TY_(ReportMissingAttr)( TidyDocImpl* doc, Node* node, ctmbstr name )
 {
     char tagdesc[ 64 ];
     ctmbstr fmt = GetFormatFromCode(MISSING_ATTRIBUTE);
@@ -1302,7 +1302,7 @@ void ReportMissingAttr( TidyDocImpl* doc, Node* node, ctmbstr name )
 * with the cells.
 *********************************************************/
  
-void DisplayHTMLTableAlgorithm( TidyDocImpl* doc )
+void TY_(DisplayHTMLTableAlgorithm)( TidyDocImpl* doc )
 {
     tidy_out(doc, " \n");
     tidy_out(doc, "      - First, search left from the cell's position to find row header cells.\n");
@@ -1321,14 +1321,14 @@ void DisplayHTMLTableAlgorithm( TidyDocImpl* doc )
     tidy_out(doc, " \n");
 }
 
-void ReportAccessWarning( TidyDocImpl* doc, Node* node, uint code )
+void TY_(ReportAccessWarning)( TidyDocImpl* doc, Node* node, uint code )
 {
     ctmbstr fmt = GetFormatFromCode(code);
     doc->badAccess = yes;
     messageNode( doc, TidyAccess, node, fmt );
 }
 
-void ReportAccessError( TidyDocImpl* doc, Node* node, uint code )
+void TY_(ReportAccessError)( TidyDocImpl* doc, Node* node, uint code )
 {
     ctmbstr fmt = GetFormatFromCode(code);
     doc->badAccess = yes;
@@ -1337,7 +1337,7 @@ void ReportAccessError( TidyDocImpl* doc, Node* node, uint code )
 
 #endif /* SUPPORT_ACCESSIBILITY_CHECKS */
 
-void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
+void TY_(ReportWarning)(TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     Node* rpt = (element ? element : node);
     ctmbstr fmt = GetFormatFromCode(code);
@@ -1368,7 +1368,7 @@ void ReportWarning(TidyDocImpl* doc, Node *element, Node *node, uint code)
     }
 }
 
-void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code)
+void TY_(ReportNotice)(TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     Node* rpt = ( element ? element : node );
     ctmbstr fmt = GetFormatFromCode(code);
@@ -1393,7 +1393,7 @@ void ReportNotice(TidyDocImpl* doc, Node *element, Node *node, uint code)
     }
 }
 
-void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
+void TY_(ReportError)(TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     char nodedesc[ 256 ] = {0};
     char elemdesc[ 256 ] = {0};
@@ -1484,7 +1484,7 @@ void ReportError(TidyDocImpl* doc, Node *element, Node *node, uint code)
     }
 }
 
-void ReportFatal( TidyDocImpl* doc, Node *element, Node *node, uint code)
+void TY_(ReportFatal)( TidyDocImpl* doc, Node *element, Node *node, uint code)
 {
     char nodedesc[ 256 ] = {0};
     Node* rpt = ( element ? element : node );
@@ -1512,7 +1512,7 @@ void ReportFatal( TidyDocImpl* doc, Node *element, Node *node, uint code)
     }
 }
 
-void ErrorSummary( TidyDocImpl* doc )
+void TY_(ErrorSummary)( TidyDocImpl* doc )
 {
     /* adjust badAccess to that its NULL if frames are ok */
     ctmbstr encnam = "specified";
@@ -1712,26 +1712,26 @@ void ErrorSummary( TidyDocImpl* doc )
 }
 
 #if 0
-void UnknownOption( TidyDocImpl* doc, char c )
+void TY_(UnknownOption)( TidyDocImpl* doc, char c )
 {
     message( doc, TidyConfig,
              "unrecognized option -%c use -help to list options\n", c );
 }
 
-void UnknownFile( TidyDocImpl* doc, ctmbstr program, ctmbstr file )
+void TY_(UnknownFile)( TidyDocImpl* doc, ctmbstr program, ctmbstr file )
 {
     message( doc, TidyConfig, 
              "%s: can't open file \"%s\"\n", program, file );
 }
 #endif
 
-void NeedsAuthorIntervention( TidyDocImpl* doc )
+void TY_(NeedsAuthorIntervention)( TidyDocImpl* doc )
 {
     tidy_out(doc, "This document has errors that must be fixed before\n");
     tidy_out(doc, "using HTML Tidy to generate a tidied up version.\n\n");
 }
 
-void GeneralInfo( TidyDocImpl* doc )
+void TY_(GeneralInfo)( TidyDocImpl* doc )
 {
     tidy_out(doc, "To learn more about HTML Tidy see http://tidy.sourceforge.net\n");
     tidy_out(doc, "Please send bug reports to html-tidy@w3.org\n");
@@ -1741,7 +1741,7 @@ void GeneralInfo( TidyDocImpl* doc )
 
 #if SUPPORT_ACCESSIBILITY_CHECKS
 
-void AccessibilityHelloMessage( TidyDocImpl* doc )
+void TY_(AccessibilityHelloMessage)( TidyDocImpl* doc )
 {
     tidy_out( doc, "\n" );
     tidy_out( doc, "Accessibility Checks: Version 0.1\n" );
@@ -1751,7 +1751,7 @@ void AccessibilityHelloMessage( TidyDocImpl* doc )
 #endif /* SUPPORT_ACCESSIBILITY_CHECKS */
 
 #if 0
-void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
+void TY_(HelloMessage)( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
 {
     tmbchar buf[ 2048 ];
     ctmbstr platform = "", helper = "";
@@ -1763,20 +1763,20 @@ void HelloMessage( TidyDocImpl* doc, ctmbstr date, ctmbstr filename )
     helper = " for ";
 #endif
     
-    if ( tmbstrcmp(filename, "stdin") == 0 )
+    if ( TY_(tmbstrcmp)(filename, "stdin") == 0 )
     {
         /* Filename will be ignored at end of varargs */
         msgfmt = "\nHTML Tidy for %s (vers %s; built on %s, at %s)\n"
                  "Parsing console input (stdin)\n";
     }
     
-    tmbsnprintf(buf, sizeof(buf), msgfmt, helper, platform, 
-             date, __DATE__, __TIME__, filename);
+    TY_(tmbsnprintf)(buf, sizeof(buf), msgfmt, helper, platform, 
+                     date, __DATE__, __TIME__, filename);
     tidy_out( doc, buf );
 }
 #endif
 
-void ReportMarkupVersion( TidyDocImpl* doc )
+void TY_(ReportMarkupVersion)( TidyDocImpl* doc )
 {
     if (doc->givenDoctype)
     {
@@ -1790,9 +1790,9 @@ void ReportMarkupVersion( TidyDocImpl* doc )
         uint apparentVers;
         ctmbstr vers;
 
-        apparentVers = ApparentVersion( doc );
+        apparentVers = TY_(ApparentVersion)( doc );
 
-        vers = HTMLVersionNameFromCode( apparentVers, isXhtml );
+        vers = TY_(HTMLVersionNameFromCode)( apparentVers, isXhtml );
 
         if (!vers)
             vers = "HTML Proprietary";
@@ -1800,12 +1800,12 @@ void ReportMarkupVersion( TidyDocImpl* doc )
         message( doc, TidyInfo, "Document content looks like %s", vers );
 
         /* Warn about missing sytem identifier (SI) in emitted doctype */
-        if ( WarnMissingSIInEmittedDocType( doc ) )
+        if ( TY_(WarnMissingSIInEmittedDocType)( doc ) )
             message( doc, TidyInfo, "No system identifier in emitted doctype" );
     }
 }
 
-void ReportNumWarnings( TidyDocImpl* doc )
+void TY_(ReportNumWarnings)( TidyDocImpl* doc )
 {
     if ( doc->warnings > 0 || doc->errors > 0 )
     {

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.104 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.105 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -63,9 +63,9 @@ static Node* CleanNode( TidyDocImpl* doc, Node *node );
 
 static void RenameElem( Node* node, TidyTagId tid )
 {
-    const Dict* dict = LookupTagDef( tid );
+    const Dict* dict = TY_(LookupTagDef)( tid );
     MemFree( node->element );
-    node->element = tmbstrdup( dict->name );
+    node->element = TY_(tmbstrdup)( dict->name );
     node->tag = dict;
 }
 
@@ -93,7 +93,7 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
 
     while (props)
     {
-        cmp = tmbstrcmp(props->name, name);
+        cmp = TY_(tmbstrcmp)(props->name, name);
 
         if (cmp == 0)
         {
@@ -106,8 +106,8 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
             /* insert before this */
 
             prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-            prop->name = tmbstrdup(name);
-            prop->value = tmbstrdup(value);
+            prop->name = TY_(tmbstrdup)(name);
+            prop->value = TY_(tmbstrdup)(value);
             prop->next = props;
 
             if (prev)
@@ -123,8 +123,8 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
     }
 
     prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-    prop->name = tmbstrdup(name);
-    prop->value = tmbstrdup(value);
+    prop->name = TY_(tmbstrdup)(name);
+    prop->value = TY_(tmbstrdup)(value);
     prop->next = NULL;
 
     if (prev)
@@ -147,7 +147,7 @@ static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
     tmbstr name, value = NULL, name_end, value_end, line;
     Bool more;
 
-    line = tmbstrdup(style);
+    line = TY_(tmbstrdup)(style);
     name = line;
 
     while (*name)
@@ -218,9 +218,9 @@ static tmbstr CreatePropString(StyleProp *props)
 
     for (len = 0, prop = props; prop; prop = prop->next)
     {
-        len += tmbstrlen(prop->name) + 2;
+        len += TY_(tmbstrlen)(prop->name) + 2;
         if (prop->value)
-            len += tmbstrlen(prop->value) + 2;
+            len += TY_(tmbstrlen)(prop->value) + 2;
     }
 
     style = (tmbstr) MemAlloc(len+1);
@@ -269,7 +269,7 @@ static tmbstr AddProperty( ctmbstr style, ctmbstr property )
 }
 */
 
-void FreeStyles( TidyDocImpl* doc )
+void TY_(FreeStyles)( TidyDocImpl* doc )
 {
     Lexer* lexer = doc->lexer;
     if ( lexer )
@@ -293,8 +293,8 @@ static tmbstr GensymClass( TidyDocImpl* doc )
     if ( pfx == NULL || *pfx == 0 )
       pfx = "c";
 
-    tmbsnprintf(buf, sizeof(buf), "%s%u", pfx, ++doc->nClassId );
-    return tmbstrdup(buf);
+    TY_(tmbsnprintf)(buf, sizeof(buf), "%s%u", pfx, ++doc->nClassId );
+    return TY_(tmbstrdup)(buf);
 }
 
 static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
@@ -304,15 +304,15 @@ static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
 
     for (style = lexer->styles; style; style=style->next)
     {
-        if (tmbstrcmp(style->tag, tag) == 0 &&
-            tmbstrcmp(style->properties, properties) == 0)
+        if (TY_(tmbstrcmp)(style->tag, tag) == 0 &&
+            TY_(tmbstrcmp)(style->properties, properties) == 0)
             return style->tag_class;
     }
 
     style = (TagStyle *)MemAlloc( sizeof(TagStyle) );
-    style->tag = tmbstrdup(tag);
+    style->tag = TY_(tmbstrdup)(tag);
     style->tag_class = GensymClass( doc );
-    style->properties = tmbstrdup( properties );
+    style->properties = TY_(tmbstrdup)( properties );
     style->next = lexer->styles;
     lexer->styles = style;
     return style->tag_class;
@@ -323,19 +323,19 @@ static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
 */
 static void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
 {
-    AttVal *classattr = AttrGetById(node, TidyAttr_CLASS);;
+    AttVal *classattr = TY_(AttrGetById)(node, TidyAttr_CLASS);;
 
     /*
      if there already is a class attribute
      then append class name after a space.
     */
     if (classattr)
-        AppendToClassAttr( classattr, classname );
+        TY_(AppendToClassAttr)( classattr, classname );
     else /* create new class attribute */
-        AddAttribute( doc, node, "class", classname );
+        TY_(AddAttribute)( doc, node, "class", classname );
 }
 
-void AddStyleAsClass( TidyDocImpl* doc, Node *node, ctmbstr stylevalue )
+void TY_(AddStyleAsClass)( TidyDocImpl* doc, Node *node, ctmbstr stylevalue )
 {
     ctmbstr classname;
 
@@ -356,19 +356,19 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
     AttVal *styleattr, *classattr;
     ctmbstr classname;
 
-    styleattr = AttrGetById(node, TidyAttr_STYLE);
+    styleattr = TY_(AttrGetById)(node, TidyAttr_STYLE);
 
     if (styleattr)
     {
         /* fix for http://tidy.sf.net/bug/850215 */
         if (!styleattr->value)
         {
-            RemoveAttribute(doc, node, styleattr);
+            TY_(RemoveAttribute)(doc, node, styleattr);
             return;
         }
 
         classname = FindStyle( doc, node->element, styleattr->value );
-        classattr = AttrGetById(node, TidyAttr_CLASS);
+        classattr = TY_(AttrGetById)(node, TidyAttr_CLASS);
 
         /*
          if there already is a class attribute
@@ -376,15 +376,15 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
         */
         if (classattr)
         {
-            AppendToClassAttr( classattr, classname );
-            RemoveAttribute( doc, node, styleattr );
+            TY_(AppendToClassAttr)( classattr, classname );
+            TY_(RemoveAttribute)( doc, node, styleattr );
         }
         else /* reuse style attribute for class attribute */
         {
             MemFree(styleattr->attribute);
             MemFree(styleattr->value);
-            styleattr->attribute = tmbstrdup("class");
-            styleattr->value = tmbstrdup(classname);
+            styleattr->attribute = TY_(tmbstrdup)("class");
+            styleattr->value = TY_(tmbstrdup)(classname);
         }
     }
 }
@@ -393,10 +393,10 @@ static void AddColorRule( Lexer* lexer, ctmbstr selector, ctmbstr color )
 {
     if ( selector && color )
     {
-        AddStringLiteral(lexer, selector);
-        AddStringLiteral(lexer, " { color: ");
-        AddStringLiteral(lexer, color);
-        AddStringLiteral(lexer, " }\n");
+        TY_(AddStringLiteral)(lexer, selector);
+        TY_(AddStringLiteral)(lexer, " { color: ");
+        TY_(AddStringLiteral)(lexer, color);
+        TY_(AddStringLiteral)(lexer, " }\n");
     }
 }
 
@@ -418,85 +418,85 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
     tmbstr color   = NULL;
     AttVal* attr;
     
-    if (NULL != (attr = AttrGetById(body, TidyAttr_BACKGROUND)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_BACKGROUND)))
     {
         bgurl = attr->value;
         attr->value = NULL;
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 
-    if (NULL != (attr = AttrGetById(body, TidyAttr_BGCOLOR)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_BGCOLOR)))
     {
         bgcolor = attr->value;
         attr->value = NULL;
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 
-    if (NULL != (attr = AttrGetById(body, TidyAttr_TEXT)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_TEXT)))
     {
         color = attr->value;
         attr->value = NULL;
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 
     if ( bgurl || bgcolor || color )
     {
-        AddStringLiteral(lexer, " body {\n");
+        TY_(AddStringLiteral)(lexer, " body {\n");
         if (bgurl)
         {
-            AddStringLiteral(lexer, "  background-image: url(");
-            AddStringLiteral(lexer, bgurl);
-            AddStringLiteral(lexer, ");\n");
+            TY_(AddStringLiteral)(lexer, "  background-image: url(");
+            TY_(AddStringLiteral)(lexer, bgurl);
+            TY_(AddStringLiteral)(lexer, ");\n");
             MemFree(bgurl);
         }
         if (bgcolor)
         {
-            AddStringLiteral(lexer, "  background-color: ");
-            AddStringLiteral(lexer, bgcolor);
-            AddStringLiteral(lexer, ";\n");
+            TY_(AddStringLiteral)(lexer, "  background-color: ");
+            TY_(AddStringLiteral)(lexer, bgcolor);
+            TY_(AddStringLiteral)(lexer, ";\n");
             MemFree(bgcolor);
         }
         if (color)
         {
-            AddStringLiteral(lexer, "  color: ");
-            AddStringLiteral(lexer, color);
-            AddStringLiteral(lexer, ";\n");
+            TY_(AddStringLiteral)(lexer, "  color: ");
+            TY_(AddStringLiteral)(lexer, color);
+            TY_(AddStringLiteral)(lexer, ";\n");
             MemFree(color);
         }
 
-        AddStringLiteral(lexer, " }\n");
+        TY_(AddStringLiteral)(lexer, " }\n");
     }
 
-    if (NULL != (attr = AttrGetById(body, TidyAttr_LINK)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_LINK)))
     {
         AddColorRule(lexer, " :link", attr->value);
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 
-    if (NULL != (attr = AttrGetById(body, TidyAttr_VLINK)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_VLINK)))
     {
         AddColorRule(lexer, " :visited", attr->value);
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 
-    if (NULL != (attr = AttrGetById(body, TidyAttr_ALINK)))
+    if (NULL != (attr = TY_(AttrGetById)(body, TidyAttr_ALINK)))
     {
         AddColorRule(lexer, " :active", attr->value);
-        RemoveAttribute( doc, body, attr );
+        TY_(RemoveAttribute)( doc, body, attr );
     }
 }
 
 static Bool NiceBody( TidyDocImpl* doc )
 {
-    Node* node = FindBody(doc);
+    Node* node = TY_(FindBody)(doc);
     if (node)
     {
-        if (AttrGetById(node, TidyAttr_BACKGROUND) ||
-            AttrGetById(node, TidyAttr_BGCOLOR)    ||
-            AttrGetById(node, TidyAttr_TEXT)       ||
-            AttrGetById(node, TidyAttr_LINK)       ||
-            AttrGetById(node, TidyAttr_VLINK)      ||
-            AttrGetById(node, TidyAttr_ALINK))
+        if (TY_(AttrGetById)(node, TidyAttr_BACKGROUND) ||
+            TY_(AttrGetById)(node, TidyAttr_BGCOLOR)    ||
+            TY_(AttrGetById)(node, TidyAttr_TEXT)       ||
+            TY_(AttrGetById)(node, TidyAttr_LINK)       ||
+            TY_(AttrGetById)(node, TidyAttr_VLINK)      ||
+            TY_(AttrGetById)(node, TidyAttr_ALINK))
         {
             doc->badLayout |= USING_BODY;
             return no;
@@ -517,37 +517,37 @@ static void CreateStyleElement( TidyDocImpl* doc )
     if ( lexer->styles == NULL && NiceBody(doc) )
         return;
 
-    node = NewNode( lexer );
+    node = TY_(NewNode)( lexer );
     node->type = StartTag;
     node->implicit = yes;
-    node->element = tmbstrdup("style");
-    FindTag( doc, node );
+    node->element = TY_(tmbstrdup)("style");
+    TY_(FindTag)( doc, node );
 
     /* insert type attribute */
-    av = NewAttributeEx( doc, "type", "text/css", '"' );
-    InsertAttributeAtStart( node, av );
+    av = TY_(NewAttributeEx)( doc, "type", "text/css", '"' );
+    TY_(InsertAttributeAtStart)( node, av );
 
-    body = FindBody( doc );
+    body = TY_(FindBody)( doc );
     lexer->txtstart = lexer->lexsize;
     if ( body )
         CleanBodyAttrs( doc, body );
 
     for (style = lexer->styles; style; style = style->next)
     {
-        AddCharToLexer(lexer, ' ');
-        AddStringLiteral(lexer, style->tag);
-        AddCharToLexer(lexer, '.');
-        AddStringLiteral(lexer, style->tag_class);
-        AddCharToLexer(lexer, ' ');
-        AddCharToLexer(lexer, '{');
-        AddStringLiteral(lexer, style->properties);
-        AddCharToLexer(lexer, '}');
-        AddCharToLexer(lexer, '\n');
+        TY_(AddCharToLexer)(lexer, ' ');
+        TY_(AddStringLiteral)(lexer, style->tag);
+        TY_(AddCharToLexer)(lexer, '.');
+        TY_(AddStringLiteral)(lexer, style->tag_class);
+        TY_(AddCharToLexer)(lexer, ' ');
+        TY_(AddCharToLexer)(lexer, '{');
+        TY_(AddStringLiteral)(lexer, style->properties);
+        TY_(AddCharToLexer)(lexer, '}');
+        TY_(AddCharToLexer)(lexer, '\n');
     }
 
     lexer->txtend = lexer->lexsize;
 
-    InsertNodeAtEnd( node, TextToken(lexer) );
+    TY_(InsertNodeAtEnd)( node, TY_(TextToken)(lexer) );
 
     /*
      now insert style element into document head
@@ -555,13 +555,13 @@ static void CreateStyleElement( TidyDocImpl* doc )
      doc is root node. search its children for html node
      the head node should be first child of html node
     */
-    if ( NULL != (head = FindHEAD( doc )) )
-        InsertNodeAtEnd( head, node );
+    if ( NULL != (head = TY_(FindHEAD)( doc )) )
+        TY_(InsertNodeAtEnd)( head, node );
 }
 
 
 /* ensure bidirectional links are consistent */
-void FixNodeLinks(Node *node)
+void TY_(FixNodeLinks)(Node *node)
 {
     Node *child;
 
@@ -591,7 +591,7 @@ static void StripOnlyChild(TidyDocImpl* doc, Node *node)
     node->content = child->content;
     node->last = child->last;
     child->content = NULL;
-    FreeNode(doc, child);
+    TY_(FreeNode)(doc, child);
 
     for (child = node->content; child; child = child->next)
         child->parent = node;
@@ -630,11 +630,11 @@ static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
         *pnode = element->content;
 
         element->next = element->content = NULL;
-        FreeNode(doc, element);
+        TY_(FreeNode)(doc, element);
     }
     else
     {
-        *pnode = DiscardElement(doc, element);
+        *pnode = TY_(DiscardElement)(doc, element);
     }
 }
 
@@ -663,9 +663,9 @@ static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
  Add style property to element, creating style
  attribute as needed and adding ; delimiter
 */
-void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
+void TY_(AddStyleProperty)(TidyDocImpl* doc, Node *node, ctmbstr property )
 {
-    AttVal *av = AttrGetById(node, TidyAttr_STYLE);
+    AttVal *av = TY_(AttrGetById)(node, TidyAttr_STYLE);
 
     /* if style attribute already exists then insert property */
 
@@ -679,13 +679,13 @@ void AddStyleProperty(TidyDocImpl* doc, Node *node, ctmbstr property )
         }
         else
         {
-            av->value = tmbstrdup( property );
+            av->value = TY_(tmbstrdup)( property );
         }
     }
     else /* else create new style attribute */
     {
-        av = NewAttributeEx( doc, "style", property, '"' );
-        InsertAttributeAtStart( node, av );
+        av = TY_(NewAttributeEx)( doc, "style", property, '"' );
+        TY_(InsertAttributeAtStart)( node, av );
     }
 }
 
@@ -717,20 +717,20 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
         if (s2)  /* merge class names from both */
         {
             uint l1, l2;
-            l1 = tmbstrlen(s1);
-            l2 = tmbstrlen(s2);
+            l1 = TY_(tmbstrlen)(s1);
+            l2 = TY_(tmbstrlen)(s2);
             names = (tmbstr) MemAlloc(l1 + l2 + 2);
-            tmbstrcpy(names, s1);
+            TY_(tmbstrcpy)(names, s1);
             names[l1] = ' ';
-            tmbstrcpy(names+l1+1, s2);
+            TY_(tmbstrcpy)(names+l1+1, s2);
             MemFree(av->value);
             av->value = names;
         }
     }
     else if (s2)  /* copy class names from child */
     {
-        av = NewAttributeEx( doc, "class", s2, '"' );
-        InsertAttributeAtStart( node, av );
+        av = TY_(NewAttributeEx)( doc, "class", s2, '"' );
+        TY_(InsertAttributeAtStart)( node, av );
     }
 }
 
@@ -775,8 +775,8 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     }
     else if (s2)  /* copy style of child */
     {
-        av = NewAttributeEx( doc, "style", s2, '"' );
-        InsertAttributeAtStart( node, av );
+        av = TY_(NewAttributeEx)( doc, "style", s2, '"' );
+        TY_(InsertAttributeAtStart)( node, av );
     }
 }
 
@@ -833,8 +833,8 @@ static ctmbstr FontSize2Name(ctmbstr size)
 static void AddFontFace( TidyDocImpl* doc, Node *node, ctmbstr face )
 {
     tmbchar buf[256];
-    tmbsnprintf(buf, sizeof(buf), "font-family: %s", face );
-    AddStyleProperty( doc, node, buf );
+    TY_(tmbsnprintf)(buf, sizeof(buf), "font-family: %s", face );
+    TY_(AddStyleProperty)( doc, node, buf );
 }
 
 static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
@@ -843,18 +843,18 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 
     if (nodeIsP(node))
     {
-        if (tmbstrcmp(size, "6") == 0)
+        if (TY_(tmbstrcmp)(size, "6") == 0)
             value = "h1";
-        else if (tmbstrcmp(size, "5") == 0)
+        else if (TY_(tmbstrcmp)(size, "5") == 0)
             value = "h2";
-        else if (tmbstrcmp(size, "4") == 0)
+        else if (TY_(tmbstrcmp)(size, "4") == 0)
             value = "h3";
 
         if (value)
         {
             MemFree(node->element);
-            node->element = tmbstrdup(value);
-            FindTag(doc, node);
+            node->element = TY_(tmbstrdup)(value);
+            TY_(FindTag)(doc, node);
             return;
         }
     }
@@ -864,16 +864,16 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
     if (value)
     {
         tmbchar buf[64];
-        tmbsnprintf(buf, sizeof(buf), "font-size: %s", value);
-        AddStyleProperty( doc, node, buf );
+        TY_(tmbsnprintf)(buf, sizeof(buf), "font-size: %s", value);
+        TY_(AddStyleProperty)( doc, node, buf );
     }
 }
 
 static void AddFontColor( TidyDocImpl* doc, Node *node, ctmbstr color)
 {
     tmbchar buf[128];
-    tmbsnprintf(buf, sizeof(buf), "color: %s", color);
-    AddStyleProperty( doc, node, buf );
+    TY_(tmbsnprintf)(buf, sizeof(buf), "color: %s", color);
+    TY_(AddStyleProperty)( doc, node, buf );
 }
 
 /* force alignment value to lower case */
@@ -882,14 +882,14 @@ static void AddAlign( TidyDocImpl* doc, Node *node, ctmbstr align )
     uint i;
     tmbchar buf[128];
 
-    tmbstrcpy( buf, "text-align: " );
+    TY_(tmbstrcpy)( buf, "text-align: " );
     for ( i = 12; i < sizeof(buf)/sizeof(buf[0])-1; ++i )
     {
-        if ( (buf[i] = (tmbchar)ToLower(*align++)) == '\0' )
+        if ( (buf[i] = (tmbchar)TY_(ToLower)(*align++)) == '\0' )
             break;
     }
     buf[i] = '\0';
-    AddStyleProperty( doc, node, buf );
+    TY_(AddStyleProperty)( doc, node, buf );
 }
 
 /*
@@ -935,7 +935,7 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
             if (av->value)
                 AddAlign( doc, node, av->value );
 
-            FreeAttribute(doc, av);
+            TY_(FreeAttribute)(doc, av);
             break;
         }
 
@@ -976,10 +976,10 @@ static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode))
             return no;
 
         /* coerce dir to div */
-        node->tag = LookupTagDef( TidyTag_DIV );
+        node->tag = TY_(LookupTagDef)( TidyTag_DIV );
         MemFree( node->element );
-        node->element = tmbstrdup("div");
-        AddStyleProperty( doc, node, "margin-left: 2em" );
+        node->element = TY_(tmbstrdup)("div");
+        TY_(AddStyleProperty)( doc, node, "margin-left: 2em" );
         StripOnlyChild( doc, node );
         return yes;
     }
@@ -1003,8 +1003,8 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
                 Node *last = node->last;
                 DiscardContainer( doc, node, pnode );
 
-                node = InferredTag(doc, TidyTag_BR);
-                InsertNodeAfterElement(last, node);
+                node = TY_(InferredTag)(doc, TidyTag_BR);
+                TY_(InsertNodeAfterElement)(last, node);
             }
             else
             {
@@ -1012,20 +1012,20 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
                      *parent = node->parent;
                 DiscardContainer( doc, node, pnode );
 
-                node = InferredTag(doc, TidyTag_BR);
+                node = TY_(InferredTag)(doc, TidyTag_BR);
                 if (next)
-                    InsertNodeBeforeElement(next, node);
+                    TY_(InsertNodeBeforeElement)(next, node);
                 else if (prev)
-                    InsertNodeAfterElement(prev, node);
+                    TY_(InsertNodeAfterElement)(prev, node);
                 else
-                    InsertNodeAtStart(parent, node);
+                    TY_(InsertNodeAtStart)(parent, node);
             }
 
             return yes;
         }
 
         RenameElem( node, TidyTag_DIV );
-        AddStyleProperty( doc, node, "text-align: center" );
+        TY_(AddStyleProperty)( doc, node, "text-align: center" );
         return yes;
     }
 
@@ -1043,8 +1043,8 @@ static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
     TidyAttrId id;
 
     /* Detect attributes that cannot be merged or overwritten. */
-    if (AttrGetById(child, TidyAttr_ID) != NULL
-        && AttrGetById(node, TidyAttr_ID) != NULL)
+    if (TY_(AttrGetById)(child, TidyAttr_ID) != NULL
+        && TY_(AttrGetById)(node, TidyAttr_ID) != NULL)
         return no;
 
     /* Move child attributes to node. Attributes in node
@@ -1059,15 +1059,15 @@ static Bool CopyAttrs( TidyDocImpl* doc, Node *node, Node *child)
         }
         /* Avoid duplicates in node */
         if ((id=AttrId(av2)) != TidyAttr_UNKNOWN
-            && (av1=AttrGetById(node, id))!= NULL)
-            RemoveAttribute( doc, node, av1 );
+            && (av1=TY_(AttrGetById)(node, id))!= NULL)
+            TY_(RemoveAttribute)( doc, node, av1 );
 
         /* Move attribute from child to node */
-        DetachAttribute( child, av2 );
+        TY_(DetachAttribute)( child, av2 );
         av1 = av2;
         av2 = av2->next;
         av1->next = NULL;
-        InsertAttributeAtEnd( node, av1 );
+        TY_(InsertAttributeAtEnd)( node, av1 );
     }
 
     return yes;
@@ -1151,15 +1151,15 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
         list->prev = node->prev;
         list->next = node->next;
         list->parent = node->parent;
-        FixNodeLinks(list);
+        TY_(FixNodeLinks)(list);
 
         /* get rid of outer ul and its li */
         child->content = NULL;
-        FreeNode( doc, child ); /* See test #427841. */
+        TY_(FreeNode)( doc, child ); /* See test #427841. */
         child = NULL;
         node->content = NULL;
         node->next = NULL;
-        FreeNode( doc, node );
+        TY_(FreeNode)( doc, node );
         node = NULL;
 
         /*
@@ -1179,12 +1179,12 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
                 child = list->last;  /* <li> */
 
                 list->next = node->next;
-                FixNodeLinks(list);
+                TY_(FixNodeLinks)(list);
 
                 node->parent = child;
                 node->next = NULL;
                 node->prev = child->last;
-                FixNodeLinks(node);
+                TY_(FixNodeLinks)(node);
                 CleanNode( doc, node );
             }
         }
@@ -1253,7 +1253,7 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
         if ( nodeIsB(child) )
         {
             MergeStyles( doc, node, child );
-            AddStyleProperty( doc, node, "font-weight: bold" );
+            TY_(AddStyleProperty)( doc, node, "font-weight: bold" );
             StripOnlyChild( doc, node );
             return yes;
         }
@@ -1261,7 +1261,7 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
         if ( nodeIsI(child) )
         {
             MergeStyles( doc, node, child );
-            AddStyleProperty( doc, node, "font-style: italic" );
+            TY_(AddStyleProperty)( doc, node, "font-style: italic" );
             StripOnlyChild( doc, node );
             return yes;
         }
@@ -1283,7 +1283,7 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) 
 {
     Node *child;
 
-    if ( !nodeIsFONT(node) && nodeHasCM(node, CM_INLINE|CM_ROW) )
+    if ( !nodeIsFONT(node) && TY_(nodeHasCM)(node, CM_INLINE|CM_ROW) )
     {
         child = node->content;
 
@@ -1298,7 +1298,7 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) 
         if ( nodeIsB(child) && cfgBool(doc, TidyLogicalEmphasis) )
         {
             MergeStyles( doc, node, child );
-            AddStyleProperty( doc, node, "font-weight: bold" );
+            TY_(AddStyleProperty)( doc, node, "font-weight: bold" );
             StripOnlyChild( doc, node );
             return yes;
         }
@@ -1306,7 +1306,7 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) 
         if ( nodeIsI(child) && cfgBool(doc, TidyLogicalEmphasis) )
         {
             MergeStyles( doc, node, child );
-            AddStyleProperty( doc, node, "font-style: italic" );
+            TY_(AddStyleProperty)( doc, node, "font-style: italic" );
             StripOnlyChild( doc, node );
             return yes;
         }
@@ -1363,7 +1363,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
             }
             else
             {
-                FreeAttribute( doc, av );
+                TY_(FreeAttribute)( doc, av );
             }
             av = next;
         }
@@ -1384,7 +1384,7 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
     Node *next = NULL;
     TidyTriState mergeDivs = cfgAutoBool(doc, TidyMergeDivs);
 
-    for (next = node; nodeIsElement(node); node = next)
+    for (next = node; TY_(nodeIsElement)(node); node = next)
     {
         if ( Dir2Div(doc, node, &next) )
             continue;
@@ -1456,7 +1456,7 @@ static void DefineStyleRules( TidyDocImpl* doc, Node *node )
     Style2Rule( doc, node );
 }
 
-void CleanDocument( TidyDocImpl* doc )
+void TY_(CleanDocument)( TidyDocImpl* doc )
 {
     /* placeholder.  CleanTree()/CleanNode() will not
     ** zap root element 
@@ -1471,7 +1471,7 @@ void CleanDocument( TidyDocImpl* doc )
 }
 
 /* simplifies <b><b> ... </b> ...</b> etc. */
-void NestedEmphasis( TidyDocImpl* doc, Node* node )
+void TY_(NestedEmphasis)( TidyDocImpl* doc, Node* node )
 {
     Node *next;
 
@@ -1489,7 +1489,7 @@ void NestedEmphasis( TidyDocImpl* doc, Node* node )
         }
 
         if ( node->content )
-            NestedEmphasis( doc, node->content );
+            TY_(NestedEmphasis)( doc, node->content );
 
         node = next;
     }
@@ -1498,7 +1498,7 @@ void NestedEmphasis( TidyDocImpl* doc, Node* node )
 
 
 /* replace i by em and b by strong */
-void EmFromI( TidyDocImpl* doc, Node* node )
+void TY_(EmFromI)( TidyDocImpl* doc, Node* node )
 {
     while (node)
     {
@@ -1508,7 +1508,7 @@ void EmFromI( TidyDocImpl* doc, Node* node )
             RenameElem( node, TidyTag_STRONG );
 
         if ( node->content )
-            EmFromI( doc, node->content );
+            TY_(EmFromI)( doc, node->content );
 
         node = node->next;
     }
@@ -1526,14 +1526,14 @@ static Bool HasOneChild(Node *node)
  li. This is recursively replaced by an
  implicit blockquote.
 */
-void List2BQ( TidyDocImpl* doc, Node* node )
+void TY_(List2BQ)( TidyDocImpl* doc, Node* node )
 {
     while (node)
     {
         if (node->content)
-            List2BQ( doc, node->content );
+            TY_(List2BQ)( doc, node->content );
 
-        if ( node->tag && node->tag->parser == ParseList &&
+        if ( node->tag && node->tag->parser == TY_(ParseList) &&
              HasOneChild(node) && node->content->implicit )
         {
             StripOnlyChild( doc, node );
@@ -1551,7 +1551,7 @@ void List2BQ( TidyDocImpl* doc, Node* node )
  taking care to reduce nested blockquotes to a single
  div with the indent set to match the nesting depth
 */
-void BQ2Div( TidyDocImpl* doc, Node *node )
+void TY_(BQ2Div)( TidyDocImpl* doc, Node *node )
 {
     tmbchar indent_buf[ 32 ];
     uint indent;
@@ -1571,16 +1571,16 @@ void BQ2Div( TidyDocImpl* doc, Node *node )
             }
 
             if (node->content)
-                BQ2Div( doc, node->content );
+                TY_(BQ2Div)( doc, node->content );
 
-            tmbsnprintf(indent_buf, sizeof(indent_buf), "margin-left: %dem",
-                        2*indent);
+            TY_(tmbsnprintf)(indent_buf, sizeof(indent_buf), "margin-left: %dem",
+                             2*indent);
 
             RenameElem( node, TidyTag_DIV );
-            AddStyleProperty(doc, node, indent_buf );
+            TY_(AddStyleProperty)(doc, node, indent_buf );
         }
         else if (node->content)
-            BQ2Div( doc, node->content );
+            TY_(BQ2Div)( doc, node->content );
 
         node = node->next;
     }
@@ -1607,36 +1607,36 @@ static Node* PruneSection( TidyDocImpl* doc, Node *node )
     for (;;)
     {
         ctmbstr lexbuf = lexer->lexbuf + node->start;
-        if ( tmbstrncmp(lexbuf, "if !supportEmptyParas", 21) == 0 )
+        if ( TY_(tmbstrncmp)(lexbuf, "if !supportEmptyParas", 21) == 0 )
         {
           Node* cell = FindEnclosingCell( doc, node );
           if ( cell )
           {
             /* Need to put &nbsp; into cell so it doesn't look weird
             */
-            Node* nbsp = NewLiteralTextNode( lexer, "\240" );
+            Node* nbsp = TY_(NewLiteralTextNode)( lexer, "\240" );
             assert( (byte)'\240' == (byte)160 );
-            InsertNodeBeforeElement( node, nbsp );
+            TY_(InsertNodeBeforeElement)( node, nbsp );
           }
         }
 
         /* discard node and returns next */
-        node = DiscardElement( doc, node );
+        node = TY_(DiscardElement)( doc, node );
 
         if (node == NULL)
             return NULL;
         
         if (node->type == SectionTag)
         {
-            if (tmbstrncmp(lexer->lexbuf + node->start, "if", 2) == 0)
+            if (TY_(tmbstrncmp)(lexer->lexbuf + node->start, "if", 2) == 0)
             {
                 node = PruneSection( doc, node );
                 continue;
             }
 
-            if (tmbstrncmp(lexer->lexbuf + node->start, "endif", 5) == 0)
+            if (TY_(tmbstrncmp)(lexer->lexbuf + node->start, "endif", 5) == 0)
             {
-                node = DiscardElement( doc, node );
+                node = TY_(DiscardElement)( doc, node );
                 break;
             }
         }
@@ -1645,7 +1645,7 @@ static Node* PruneSection( TidyDocImpl* doc, Node *node )
     return node;
 }
 
-void DropSections( TidyDocImpl* doc, Node* node )
+void TY_(DropSections)( TidyDocImpl* doc, Node* node )
 {
     Lexer* lexer = doc->lexer;
     while (node)
@@ -1653,20 +1653,20 @@ void DropSections( TidyDocImpl* doc, Node* node )
         if (node->type == SectionTag)
         {
             /* prune up to matching endif */
-            if ((tmbstrncmp(lexer->lexbuf + node->start, "if", 2) == 0) &&
-                (tmbstrncmp(lexer->lexbuf + node->start, "if !vml", 7) != 0)) /* #444394 - fix 13 Sep 01 */
+            if ((TY_(tmbstrncmp)(lexer->lexbuf + node->start, "if", 2) == 0) &&
+                (TY_(tmbstrncmp)(lexer->lexbuf + node->start, "if !vml", 7) != 0)) /* #444394 - fix 13 Sep 01 */
             {
                 node = PruneSection( doc, node );
                 continue;
             }
 
             /* discard others as well */
-            node = DiscardElement( doc, node );
+            node = TY_(DiscardElement)( doc, node );
             continue;
         }
 
         if (node->content)
-            DropSections( doc, node->content );
+            TY_(DropSections)( doc, node->content );
 
         node = node->next;
     }
@@ -1685,7 +1685,7 @@ static void PurgeWord2000Attributes( TidyDocImpl* ARG_UNUSED(doc), Node* node )
         if (attrIsCLASS(attr))
         {
             if (AttrValueIs(attr, "Code") ||
-                 tmbstrncmp(attr->value, "Mso", 3) != 0 )
+                 TY_(tmbstrncmp)(attr->value, "Mso", 3) != 0 )
             {
                 prev = attr;
                 continue;
@@ -1697,14 +1697,14 @@ static void PurgeWord2000Attributes( TidyDocImpl* ARG_UNUSED(doc), Node* node )
             attrIsLANG(attr)  ||
              ( (attrIsHEIGHT(attr) || attrIsWIDTH(attr)) &&
                (nodeIsTD(node) || nodeIsTR(node) || nodeIsTH(node)) ) ||
-             (attr->attribute && tmbstrncmp(attr->attribute, "x:", 2) == 0) )
+             (attr->attribute && TY_(tmbstrncmp)(attr->attribute, "x:", 2) == 0) )
         {
             if (prev)
                 prev->next = next;
             else
                 node->attributes = next;
 
-            FreeAttribute( doc, attr );
+            TY_(FreeAttribute)( doc, attr );
         }
         else
             prev = attr;
@@ -1722,7 +1722,7 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
      after having processed it
     */
 
-    CleanWord2000( doc, span->content );
+    TY_(CleanWord2000)( doc, span->content );
     content = span->content;
 
     if (span->prev)
@@ -1731,8 +1731,8 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
     {
         node = content;
         content = content->next;
-        RemoveNode(node);
-        InsertNodeBeforeElement(span, node);
+        TY_(RemoveNode)(node);
+        TY_(InsertNodeBeforeElement)(span, node);
         prev = node;
     }
 
@@ -1740,8 +1740,8 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
     {
         node = content;
         content = content->next;
-        RemoveNode(node);
-        InsertNodeAfterElement(prev, node);
+        TY_(RemoveNode)(node);
+        TY_(InsertNodeAfterElement)(prev, node);
         prev = node;
     }
 
@@ -1750,19 +1750,19 @@ static Node* StripSpan( TidyDocImpl* doc, Node* span )
 
     node = span->next;
     span->content = NULL;
-    DiscardElement( doc, span );
+    TY_(DiscardElement)( doc, span );
     return node;
 }
 
 /* map non-breaking spaces to regular spaces */
-void NormalizeSpaces(Lexer *lexer, Node *node)
+void TY_(NormalizeSpaces)(Lexer *lexer, Node *node)
 {
     while ( node )
     {
         if ( node->content )
-            NormalizeSpaces( lexer, node->content );
+            TY_(NormalizeSpaces)( lexer, node->content );
 
-        if (nodeIsText(node))
+        if (TY_(nodeIsText)(node))
         {
             uint i, c;
             tmbstr p = lexer->lexbuf + node->start;
@@ -1773,12 +1773,12 @@ void NormalizeSpaces(Lexer *lexer, Node *node)
 
                 /* look for UTF-8 multibyte character */
                 if ( c > 0x7F )
-                    i += GetUTF8( lexer->lexbuf + i, &c );
+                    i += TY_(GetUTF8)( lexer->lexbuf + i, &c );
 
                 if ( c == 160 )
                     c = ' ';
 
-                p = PutUTF8(p, c);
+                p = TY_(PutUTF8)(p, c);
             }
             node->end = p - lexer->lexbuf;
         }
@@ -1790,17 +1790,17 @@ void NormalizeSpaces(Lexer *lexer, Node *node)
 /* used to hunt for hidden preformatted sections */
 static Bool NoMargins(Node *node)
 {
-    AttVal *attval = AttrGetById(node, TidyAttr_STYLE);
+    AttVal *attval = TY_(AttrGetById)(node, TidyAttr_STYLE);
 
     if ( !AttrHasValue(attval) )
         return no;
 
     /* search for substring "margin-top: 0" */
-    if (!tmbsubstr(attval->value, "margin-top: 0"))
+    if (!TY_(tmbsubstr)(attval->value, "margin-top: 0"))
         return no;
 
     /* search for substring "margin-bottom: 0" */
-    if (!tmbsubstr(attval->value, "margin-bottom: 0"))
+    if (!TY_(tmbsubstr)(attval->value, "margin-bottom: 0"))
         return no;
 
     return yes;
@@ -1826,7 +1826,7 @@ static Bool SingleSpace( Lexer* lexer, Node* node )
         if ( (node->end - node->start) == 2 )
         {
             uint c = 0;
-            GetUTF8( lexer->lexbuf + node->start, &c );
+            TY_(GetUTF8)( lexer->lexbuf + node->start, &c );
             if ( c == 160 )
                 return yes;
         }
@@ -1842,7 +1842,7 @@ static Bool SingleSpace( Lexer* lexer, Node* node )
  declare them as new tags, such as o:p which needs to be declared
  as inline.
 */
-void CleanWord2000( TidyDocImpl* doc, Node *node)
+void TY_(CleanWord2000)( TidyDocImpl* doc, Node *node)
 {
     /* used to a list from a sequence of bulletted p's */
     Lexer* lexer = doc->lexer;
@@ -1854,11 +1854,11 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         if ( nodeIsHTML(node) )
         {
             /* check that it's a Word 2000 document */
-            if ( !GetAttrByName(node, "xmlns:o") &&
+            if ( !TY_(GetAttrByName)(node, "xmlns:o") &&
                  !cfgBool(doc, TidyMakeBare) )
                 return;
 
-            FreeAttrs( doc, node );
+            TY_(FreeAttrs)( doc, node );
         }
 
         /* fix up preformatted sections by looking for a
@@ -1869,12 +1869,12 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             if (NoMargins(node))
             {
                 Node *pre, *next;
-                CoerceNode(doc, node, TidyTag_PRE, no, yes);
+                TY_(CoerceNode)(doc, node, TidyTag_PRE, no, yes);
 
                 PurgeWord2000Attributes( doc, node );
 
                 if (node->content)
-                    CleanWord2000( doc, node->content );
+                    TY_(CleanWord2000)( doc, node->content );
 
                 pre = node;
                 node = node->next;
@@ -1884,9 +1884,9 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 while ( nodeIsP(node) && NoMargins(node) )
                 {
                     next = node->next;
-                    RemoveNode(node);
-                    InsertNodeAtEnd(pre, NewLineNode(lexer));
-                    InsertNodeAtEnd(pre, node);
+                    TY_(RemoveNode)(node);
+                    TY_(InsertNodeAtEnd)(pre, TY_(NewLineNode)(lexer));
+                    TY_(InsertNodeAtEnd)(pre, node);
                     StripSpan( doc, node );
                     node = next;
                 }
@@ -1906,7 +1906,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         if ( nodeIsSTYLE(node) || nodeIsMETA(node) ||
              node->type == CommentTag )
         {
-            node = DiscardElement( doc, node );
+            node = TY_(DiscardElement)( doc, node );
             continue;
         }
 
@@ -1919,17 +1919,17 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
 
         if ( nodeIsLINK(node) )
         {
-            AttVal *attr = AttrGetById(node, TidyAttr_REL);
+            AttVal *attr = TY_(AttrGetById)(node, TidyAttr_REL);
 
             if (AttrValueIs(attr, "File-List"))
             {
-                node = DiscardElement( doc, node );
+                node = TY_(DiscardElement)( doc, node );
                 continue;
             }
         }
 
         /* discards <o:p> which encodes the paragraph mark */
-        if ( node->tag && tmbstrcmp(node->tag->name,"o:p")==0)
+        if ( node->tag && TY_(tmbstrcmp)(node->tag->name,"o:p")==0)
         {
             Node* next;
             DiscardContainer( doc, node, &next );
@@ -1942,7 +1942,7 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         if ( node->content == NULL && nodeIsP(node) )
         {
             /*  Use the existing function to ensure consistency */
-            Node *next = TrimEmptyElement( doc, node );
+            Node *next = TY_(TrimEmptyElement)( doc, node );
             node = next;
             continue;
         }
@@ -1951,8 +1951,8 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
         {
             AttVal *attr, *atrStyle;
             
-            attr = AttrGetById(node, TidyAttr_CLASS);
-            atrStyle = AttrGetById(node, TidyAttr_STYLE);
+            attr = TY_(AttrGetById)(node, TidyAttr_CLASS);
+            atrStyle = TY_(AttrGetById)(node, TidyAttr_STYLE);
             /*
                (JES) Sometimes Word marks a list item with the following hokie syntax
                <p class="MsoNormal" style="...;mso-list:l1 level1 lfo1;
@@ -1968,42 +1968,42 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
                 if (AttrValueIs(attr, "MsoListNumber"))
                     listType = TidyTag_OL;
 
-                CoerceNode(doc, node, TidyTag_LI, no, yes);
+                TY_(CoerceNode)(doc, node, TidyTag_LI, no, yes);
 
                 if ( !list || TagId(list) != listType )
                 {
-                    const Dict* tag = LookupTagDef( listType );
-                    list = InferredTag(doc, tag->id);
-                    InsertNodeBeforeElement(node, list);
+                    const Dict* tag = TY_(LookupTagDef)( listType );
+                    list = TY_(InferredTag)(doc, tag->id);
+                    TY_(InsertNodeBeforeElement)(node, list);
                 }
 
                 PurgeWord2000Attributes( doc, node );
 
                 if ( node->content )
-                    CleanWord2000( doc, node->content );
+                    TY_(CleanWord2000)( doc, node->content );
 
                 /* remove node and append to contents of list */
-                RemoveNode(node);
-                InsertNodeAtEnd(list, node);
+                TY_(RemoveNode)(node);
+                TY_(InsertNodeAtEnd)(list, node);
                 node = list;
             }
             /* map sequence of <p class="Code"> to <pre>...</pre> */
             else if (AttrValueIs(attr, "Code"))
             {
-                Node *br = NewLineNode(lexer);
-                NormalizeSpaces(lexer, node->content);
+                Node *br = TY_(NewLineNode)(lexer);
+                TY_(NormalizeSpaces)(lexer, node->content);
 
                 if ( !list || TagId(list) != TidyTag_PRE )
                 {
-                    list = InferredTag(doc, TidyTag_PRE);
-                    InsertNodeBeforeElement(node, list);
+                    list = TY_(InferredTag)(doc, TidyTag_PRE);
+                    TY_(InsertNodeBeforeElement)(node, list);
                 }
 
                 /* remove node and append to contents of list */
-                RemoveNode(node);
-                InsertNodeAtEnd(list, node);
+                TY_(RemoveNode)(node);
+                TY_(InsertNodeAtEnd)(list, node);
                 StripSpan( doc, node );
-                InsertNodeAtEnd(list, br);
+                TY_(InsertNodeAtEnd)(list, br);
                 node = list->next;
             }
             else
@@ -2016,27 +2016,27 @@ void CleanWord2000( TidyDocImpl* doc, Node *node)
             return;
 
         /* strip out style and class attributes */
-        if (nodeIsElement(node))
+        if (TY_(nodeIsElement)(node))
             PurgeWord2000Attributes( doc, node );
 
         if (node->content)
-            CleanWord2000( doc, node->content );
+            TY_(CleanWord2000)( doc, node->content );
 
         node = node->next;
     }
 }
 
-Bool IsWord2000( TidyDocImpl* doc )
+Bool TY_(IsWord2000)( TidyDocImpl* doc )
 {
     AttVal *attval;
     Node *node, *head;
-    Node *html = FindHTML( doc );
+    Node *html = TY_(FindHTML)( doc );
 
-    if (html && GetAttrByName(html, "xmlns:o"))
+    if (html && TY_(GetAttrByName)(html, "xmlns:o"))
         return yes;
     
     /* search for <meta name="GENERATOR" content="Microsoft ..."> */
-    head = FindHEAD( doc );
+    head = TY_(FindHEAD)( doc );
 
     if (head)
     {
@@ -2045,12 +2045,12 @@ Bool IsWord2000( TidyDocImpl* doc )
             if ( !nodeIsMETA(node) )
                 continue;
 
-            attval = AttrGetById( node, TidyAttr_NAME );
+            attval = TY_(AttrGetById)( node, TidyAttr_NAME );
 
             if ( !AttrValueIs(attval, "generator") )
                 continue;
 
-            attval =  AttrGetById( node, TidyAttr_CONTENT );
+            attval =  TY_(AttrGetById)( node, TidyAttr_CONTENT );
 
             if ( AttrContains(attval, "Microsoft") )
                 return yes;
@@ -2061,7 +2061,7 @@ Bool IsWord2000( TidyDocImpl* doc )
 }
 
 /* where appropriate move object elements from head to body */
-void BumpObject( TidyDocImpl* doc, Node *html )
+void TY_(BumpObject)( TidyDocImpl* doc, Node *html )
 {
     Node *node, *next, *head = NULL, *body = NULL;
 
@@ -2091,7 +2091,7 @@ void BumpObject( TidyDocImpl* doc, Node *html )
                 for (child = node->content; child != NULL; child = child->next)
                 {
                     /* bump to body unless content is param */
-                    if ( (nodeIsText(child) && !IsBlank(doc->lexer, node))
+                    if ( (TY_(nodeIsText)(child) && !TY_(IsBlank)(doc->lexer, node))
                          || !nodeIsPARAM(child) )
                     {
                             bump = yes;
@@ -2101,8 +2101,8 @@ void BumpObject( TidyDocImpl* doc, Node *html )
 
                 if ( bump )
                 {
-                    RemoveNode( node );
-                    InsertNodeAtStart( body, node );
+                    TY_(RemoveNode)( node );
+                    TY_(InsertNodeAtStart)( body, node );
                 }
             }
         }
@@ -2139,32 +2139,32 @@ void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
         {
             if ( NULL == pNode->attributes && no == bBRDeleted )
             {
-                DiscardElement( pDoc, pNode );
+                TY_(DiscardElement)( pDoc, pNode );
                 bBRDeleted = yes;
             }
             else
             {
-                RemoveNode( pNode );
-                InsertNodeAfterElement( pParent, pNode );
+                TY_(RemoveNode)( pNode );
+                TY_(InsertNodeAfterElement)( pParent, pNode );
             }
         }
-        TrimEmptyElement( pDoc, pParent );
+        TY_(TrimEmptyElement)( pDoc, pParent );
     }
 }
 #endif
 
-void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
+void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
 {
     Node *pNode;
     StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
     tmbstr s, pszBegin, pszEnd;
-    ctmbstr enc = GetEncodingNameFromTidyId(cfg(pDoc, TidyOutCharEncoding));
+    ctmbstr enc = TY_(GetEncodingNameFromTidyId)(cfg(pDoc, TidyOutCharEncoding));
 
     if (!enc)
         return;
 
     if (!nodeIsHEAD(head))
-        head = FindHEAD(pDoc);
+        head = TY_(FindHEAD)(pDoc);
 
     if (!head)
         return;
@@ -2172,14 +2172,14 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
     /* Find any <meta http-equiv='Content-Type' content='...' /> */
     for (pNode = head->content; NULL != pNode; pNode = pNode->next)
     {
-        AttVal* httpEquiv = AttrGetById(pNode, TidyAttr_HTTP_EQUIV);
-        AttVal* metaContent = AttrGetById(pNode, TidyAttr_CONTENT);
+        AttVal* httpEquiv = TY_(AttrGetById)(pNode, TidyAttr_HTTP_EQUIV);
+        AttVal* metaContent = TY_(AttrGetById)(pNode, TidyAttr_CONTENT);
 
         if ( !nodeIsMETA(pNode) || !metaContent ||
              !AttrValueIs(httpEquiv, "Content-Type") )
             continue;
 
-        pszBegin = s = tmbstrdup( metaContent->value );
+        pszBegin = s = TY_(tmbstrdup)( metaContent->value );
         while (pszBegin && *pszBegin)
         {
             while (isspace( *pszBegin ))
@@ -2192,7 +2192,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
             if (pszEnd > pszBegin)
             {
                 prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-                prop->name = tmbstrdup( pszBegin );
+                prop->name = TY_(tmbstrdup)( pszBegin );
                 prop->value = NULL;
                 prop->next = NULL;
 
@@ -2210,13 +2210,13 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
         /*  find the charset property */
         for (prop = pFirstProp; NULL != prop; prop = prop->next)
         {
-            if (0 != tmbstrncasecmp( prop->name, "charset", 7 ))
+            if (0 != TY_(tmbstrncasecmp)( prop->name, "charset", 7 ))
                 continue;
 
             MemFree( prop->name );
-            prop->name = (tmbstr)MemAlloc( 8 + tmbstrlen(enc) + 1 );
-            tmbstrcpy(prop->name, "charset=");
-            tmbstrcpy(prop->name+8, enc);
+            prop->name = (tmbstr)MemAlloc( 8 + TY_(tmbstrlen)(enc) + 1 );
+            TY_(tmbstrcpy)(prop->name, "charset=");
+            TY_(tmbstrcpy)(prop->name+8, enc);
             s = CreatePropString( pFirstProp );
             MemFree( metaContent->value );
             metaContent->value = s;
@@ -2229,7 +2229,7 @@ void VerifyHTTPEquiv(TidyDocImpl* pDoc, Node *head)
     }
 }
 
-void DropComments(TidyDocImpl* doc, Node* node)
+void TY_(DropComments)(TidyDocImpl* doc, Node* node)
 {
     Node* next;
 
@@ -2239,20 +2239,20 @@ void DropComments(TidyDocImpl* doc, Node* node)
 
         if (node->type == CommentTag)
         {
-            RemoveNode(node);
-            FreeNode(doc, node);
+            TY_(RemoveNode)(node);
+            TY_(FreeNode)(doc, node);
             node = next;
             continue;
         }
 
         if (node->content)
-            DropComments(doc, node->content);
+            TY_(DropComments)(doc, node->content);
 
         node = next;
     }
 }
 
-void DropFontElements(TidyDocImpl* doc, Node* node, Node **ARG_UNUSED(pnode))
+void TY_(DropFontElements)(TidyDocImpl* doc, Node* node, Node **ARG_UNUSED(pnode))
 {
     Node* next;
 
@@ -2268,13 +2268,13 @@ void DropFontElements(TidyDocImpl* doc, Node* node, Node **ARG_UNUSED(pnode))
         }
 
         if (node->content)
-            DropFontElements(doc, node->content, &next);
+            TY_(DropFontElements)(doc, node->content, &next);
 
         node = next;
     }
 }
 
-void WbrToSpace(TidyDocImpl* doc, Node* node)
+void TY_(WbrToSpace)(TidyDocImpl* doc, Node* node)
 {
     Node* next;
 
@@ -2285,16 +2285,16 @@ void WbrToSpace(TidyDocImpl* doc, Node* node)
         if (nodeIsWBR(node))
         {
             Node* text;
-            text = NewLiteralTextNode(doc->lexer, " ");
-            InsertNodeAfterElement(node, text);
-            RemoveNode(node);
-            FreeNode(doc, node);
+            text = TY_(NewLiteralTextNode)(doc->lexer, " ");
+            TY_(InsertNodeAfterElement)(node, text);
+            TY_(RemoveNode)(node);
+            TY_(FreeNode)(doc, node);
             node = next;
             continue;
         }
 
         if (node->content)
-            WbrToSpace(doc, node->content);
+            TY_(WbrToSpace)(doc, node->content);
 
         node = next;
    }
@@ -2335,7 +2335,7 @@ void WbrToSpace(TidyDocImpl* doc, Node* node)
   high-quality typography is better than ASCII it'd
   be probably a good idea to drop the feature...
 */
-void DowngradeTypography(TidyDocImpl* doc, Node* node)
+void TY_(DowngradeTypography)(TidyDocImpl* doc, Node* node)
 {
     Node* next;
     Lexer* lexer = doc->lexer;
@@ -2344,7 +2344,7 @@ void DowngradeTypography(TidyDocImpl* doc, Node* node)
     {
         next = node->next;
 
-        if (nodeIsText(node))
+        if (TY_(nodeIsText)(node))
         {
             uint i, c;
             tmbstr p = lexer->lexbuf + node->start;
@@ -2354,7 +2354,7 @@ void DowngradeTypography(TidyDocImpl* doc, Node* node)
                 c = (unsigned char) lexer->lexbuf[i];
 
                 if (c > 0x7F)
-                    i += GetUTF8(lexer->lexbuf + i, &c);
+                    i += TY_(GetUTF8)(lexer->lexbuf + i, &c);
 
                 if (c >= 0x2013 && c <= 0x201E)
                 {
@@ -2377,20 +2377,20 @@ void DowngradeTypography(TidyDocImpl* doc, Node* node)
                     }
                 }
 
-                p = PutUTF8(p, c);
+                p = TY_(PutUTF8)(p, c);
             }
 
             node->end = p - lexer->lexbuf;
         }
 
         if (node->content)
-            DowngradeTypography(doc, node->content);
+            TY_(DowngradeTypography)(doc, node->content);
 
         node = next;
     }
 }
 
-void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node)
+void TY_(ReplacePreformattedSpaces)(TidyDocImpl* doc, Node* node)
 {
     Node* next;
 
@@ -2398,21 +2398,21 @@ void ReplacePreformattedSpaces(TidyDocImpl* doc, Node* node)
     {
         next = node->next;
 
-        if (node->tag && node->tag->parser == ParsePre)
+        if (node->tag && node->tag->parser == TY_(ParsePre))
         {
-            NormalizeSpaces(doc->lexer, node->content);
+            TY_(NormalizeSpaces)(doc->lexer, node->content);
             node = next;
             continue;
         }
 
         if (node->content)
-            ReplacePreformattedSpaces(doc, node->content);
+            TY_(ReplacePreformattedSpaces)(doc, node->content);
 
         node = next;
     }
 }
 
-void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
+void TY_(ConvertCDATANodes)(TidyDocImpl* doc, Node* node)
 {
     Node* next;
 
@@ -2424,7 +2424,7 @@ void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
             node->type = TextNode;
 
         if (node->content)
-            ConvertCDATANodes(doc, node->content);
+            TY_(ConvertCDATANodes)(doc, node->content);
 
         node = next;
     }
@@ -2437,7 +2437,7 @@ void ConvertCDATANodes(TidyDocImpl* doc, Node* node)
   'xml:lang' and 'lang' are desired, for XHTML 1.1 only 'xml:lang'
   is desired and for HTML 4.01 only 'lang' is desired.
 */
-void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool wantLang)
+void TY_(FixLanguageInformation)(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool wantLang)
 {
     Node* next;
 
@@ -2447,10 +2447,10 @@ void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool
 
         /* todo: report modifications made here to the report system */
 
-        if (nodeIsElement(node))
+        if (TY_(nodeIsElement)(node))
         {
-            AttVal* lang = AttrGetById(node, TidyAttr_LANG);
-            AttVal* xmlLang = AttrGetById(node, TidyAttr_XML_LANG);
+            AttVal* lang = TY_(AttrGetById)(node, TidyAttr_LANG);
+            AttVal* xmlLang = TY_(AttrGetById)(node, TidyAttr_XML_LANG);
 
             if (lang && xmlLang)
             {
@@ -2463,26 +2463,26 @@ void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool
             }
             else if (lang && wantXmlLang)
             {
-                if (NodeAttributeVersions( node, TidyAttr_XML_LANG )
+                if (TY_(NodeAttributeVersions)( node, TidyAttr_XML_LANG )
                     & doc->lexer->versionEmitted)
-                    RepairAttrValue(doc, node, "xml:lang", lang->value);
+                    TY_(RepairAttrValue)(doc, node, "xml:lang", lang->value);
             }
             else if (xmlLang && wantLang)
             {
-                if (NodeAttributeVersions( node, TidyAttr_LANG )
+                if (TY_(NodeAttributeVersions)( node, TidyAttr_LANG )
                     & doc->lexer->versionEmitted)
-                    RepairAttrValue(doc, node, "lang", xmlLang->value);
+                    TY_(RepairAttrValue)(doc, node, "lang", xmlLang->value);
             }
 
             if (lang && !wantLang)
-                RemoveAttribute(doc, node, lang);
+                TY_(RemoveAttribute)(doc, node, lang);
             
             if (xmlLang && !wantXmlLang)
-                RemoveAttribute(doc, node, xmlLang);
+                TY_(RemoveAttribute)(doc, node, xmlLang);
         }
 
         if (node->content)
-            FixLanguageInformation(doc, node->content, wantXmlLang, wantLang);
+            TY_(FixLanguageInformation)(doc, node->content, wantXmlLang, wantLang);
 
         node = next;
     }
@@ -2491,31 +2491,31 @@ void FixLanguageInformation(TidyDocImpl* doc, Node* node, Bool wantXmlLang, Bool
 /*
   Set/fix/remove <html xmlns='...'>
 */
-void FixXhtmlNamespace(TidyDocImpl* doc, Bool wantXmlns)
+void TY_(FixXhtmlNamespace)(TidyDocImpl* doc, Bool wantXmlns)
 {
-    Node* html = FindHTML(doc);
+    Node* html = TY_(FindHTML)(doc);
     AttVal* xmlns;
 
     if (!html)
         return;
 
-    xmlns = AttrGetById(html, TidyAttr_XMLNS);
+    xmlns = TY_(AttrGetById)(html, TidyAttr_XMLNS);
 
     if (wantXmlns)
     {
         if (!AttrValueIs(xmlns, XHTML_NAMESPACE))
-            RepairAttrValue(doc, html, "xmlns", XHTML_NAMESPACE);
+            TY_(RepairAttrValue)(doc, html, "xmlns", XHTML_NAMESPACE);
     }
     else if (xmlns)
     {
-        RemoveAttribute(doc, html, xmlns);
+        TY_(RemoveAttribute)(doc, html, xmlns);
     }
 }
 
 /*
   ...
 */
-void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
+void TY_(FixAnchors)(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
 {
     Node* next;
 
@@ -2523,10 +2523,10 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
     {
         next = node->next;
 
-        if (IsAnchorElement(doc, node))
+        if (TY_(IsAnchorElement)(doc, node))
         {
-            AttVal *name = AttrGetById(node, TidyAttr_NAME);
-            AttVal *id = AttrGetById(node, TidyAttr_ID);
+            AttVal *name = TY_(AttrGetById)(node, TidyAttr_NAME);
+            AttVal *id = TY_(AttrGetById)(node, TidyAttr_ID);
 
             /* todo: how are empty name/id attributes handled? */
 
@@ -2536,45 +2536,45 @@ void FixAnchors(TidyDocImpl* doc, Node *node, Bool wantName, Bool wantId)
                 Bool IdHasValue = AttrHasValue(id);
                 if ( (NameHasValue != IdHasValue) ||
                      (NameHasValue && IdHasValue &&
-                     tmbstrcmp(name->value, id->value) != 0 ) )
-                    ReportAttrError( doc, node, name, ID_NAME_MISMATCH);
+                     TY_(tmbstrcmp)(name->value, id->value) != 0 ) )
+                    TY_(ReportAttrError)( doc, node, name, ID_NAME_MISMATCH);
             }
             else if (name && wantId)
             {
-                if (NodeAttributeVersions( node, TidyAttr_ID )
+                if (TY_(NodeAttributeVersions)( node, TidyAttr_ID )
                     & doc->lexer->versionEmitted)
                 {
-                    if (IsValidHTMLID(name->value))
+                    if (TY_(IsValidHTMLID)(name->value))
                     {
-                        RepairAttrValue(doc, node, "id", name->value);
+                        TY_(RepairAttrValue)(doc, node, "id", name->value);
                     }
                     else
                     {
-                        ReportAttrError(doc, node, name, INVALID_XML_ID);
+                        TY_(ReportAttrError)(doc, node, name, INVALID_XML_ID);
                     }
                  }
             }
             else if (id && wantName)
             {
-                if (NodeAttributeVersions( node, TidyAttr_NAME )
+                if (TY_(NodeAttributeVersions)( node, TidyAttr_NAME )
                     & doc->lexer->versionEmitted)
                     /* todo: do not assume id is valid */
-                    RepairAttrValue(doc, node, "name", id->value);
+                    TY_(RepairAttrValue)(doc, node, "name", id->value);
             }
 
             if (id && !wantId)
-                RemoveAttribute(doc, node, id);
+                TY_(RemoveAttribute)(doc, node, id);
             
             if (name && !wantName)
-                RemoveAttribute(doc, node, name);
+                TY_(RemoveAttribute)(doc, node, name);
 
-            if (AttrGetById(node, TidyAttr_NAME) == NULL &&
-                AttrGetById(node, TidyAttr_ID) == NULL)
-                RemoveAnchorByNode(doc, node);
+            if (TY_(AttrGetById)(node, TidyAttr_NAME) == NULL &&
+                TY_(AttrGetById)(node, TidyAttr_ID) == NULL)
+                TY_(RemoveAnchorByNode)(doc, node);
         }
 
         if (node->content)
-            FixAnchors(doc, node->content, wantName, wantId);
+            TY_(FixAnchors)(doc, node->content, wantName, wantId);
 
         node = next;
     }

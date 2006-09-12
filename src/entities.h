@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.7 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.8 $ 
 
 */
 
@@ -18,7 +18,7 @@
 
 /* entity starting with "&" returns zero on error */
 /* uint    EntityCode( ctmbstr name, uint versions ); */
-ctmbstr EntityName( uint charCode, uint versions );
-Bool    EntityInfo( ctmbstr name, Bool isXml, uint* code, uint* versions );
+ctmbstr TY_(EntityName)( uint charCode, uint versions );
+Bool    TY_(EntityInfo)( ctmbstr name, Bool isXml, uint* code, uint* versions );
 
 #endif /* __ENTITIES_H__ */

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:16 $ 
-    $Revision: 1.15 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.16 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -92,16 +92,16 @@ struct _StreamIn
     TidyDocImpl* doc;
 };
 
-void freeStreamIn(StreamIn* in);
+void TY_(freeStreamIn)(StreamIn* in);
 
-StreamIn* FileInput( TidyDocImpl* doc, FILE* fp, int encoding );
-StreamIn* BufferInput( TidyDocImpl* doc, TidyBuffer* content, int encoding );
-StreamIn* UserInput( TidyDocImpl* doc, TidyInputSource* source, int encoding );
+StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE* fp, int encoding );
+StreamIn* TY_(BufferInput)( TidyDocImpl* doc, TidyBuffer* content, int encoding );
+StreamIn* TY_(UserInput)( TidyDocImpl* doc, TidyInputSource* source, int encoding );
 
-int       ReadBOMEncoding(StreamIn *in);
-uint      ReadChar( StreamIn* in );
-void      UngetChar( uint c, StreamIn* in );
-Bool      IsEOF( StreamIn* in );
+int       TY_(ReadBOMEncoding)(StreamIn *in);
+uint      TY_(ReadChar)( StreamIn* in );
+void      TY_(UngetChar)( uint c, StreamIn* in );
+Bool      TY_(IsEOF)( StreamIn* in );
 
 
 /************************
@@ -122,20 +122,20 @@ struct _StreamOut
     TidyOutputSink sink;
 };
 
-StreamOut* FileOutput( FILE* fp, int encoding, uint newln );
-StreamOut* BufferOutput( TidyBuffer* buf, int encoding, uint newln );
-StreamOut* UserOutput( TidyOutputSink* sink, int encoding, uint newln );
+StreamOut* TY_(FileOutput)( FILE* fp, int encoding, uint newln );
+StreamOut* TY_(BufferOutput)( TidyBuffer* buf, int encoding, uint newln );
+StreamOut* TY_(UserOutput)( TidyOutputSink* sink, int encoding, uint newln );
 
-StreamOut* StdErrOutput(void);
+StreamOut* TY_(StdErrOutput)(void);
 /* StreamOut* StdOutOutput(void); */
-void       ReleaseStreamOut( StreamOut* out );
+void       TY_(ReleaseStreamOut)( StreamOut* out );
 
-void WriteChar( uint c, StreamOut* out );
-void outBOM( StreamOut *out );
+void TY_(WriteChar)( uint c, StreamOut* out );
+void TY_(outBOM)( StreamOut *out );
 
-ctmbstr GetEncodingNameFromTidyId(uint id);
-ctmbstr GetEncodingOptNameFromTidyId(uint id);
-int GetCharEncodingFromOptName(ctmbstr charenc);
+ctmbstr TY_(GetEncodingNameFromTidyId)(uint id);
+ctmbstr TY_(GetEncodingOptNameFromTidyId)(uint id);
+int TY_(GetCharEncodingFromOptName)(ctmbstr charenc);
 
 /************************
 ** Misc
@@ -183,13 +183,13 @@ int GetCharEncodingFromOptName(ctmbstr charenc);
 ** regardless of specified encoding.  Set at compile time
 ** to either Windows or Mac.
 */
-extern const int ReplacementCharEncoding;
+extern const int TY_(ReplacementCharEncoding);
 
 /* Function for conversion from Windows-1252 to Unicode */
-uint DecodeWin1252(uint c);
+uint TY_(DecodeWin1252)(uint c);
 
 /* Function to convert from MacRoman to Unicode */
-uint DecodeMacRoman(uint c);
+uint TY_(DecodeMacRoman)(uint c);
 
 #ifdef __cplusplus
 }

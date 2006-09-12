@@ -4,14 +4,14 @@
 /* access.h -- carry out accessibility checks
 
   Copyright University of Toronto
-  Portions (c) 1998-2003 (W3C) MIT, ERCIM, Keio University
+  Portions (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2005/11/09 13:28:10 $ 
-    $Revision: 1.6 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.7 $ 
 
 */
 
@@ -261,8 +261,8 @@ enum accessErrorCodes
 };
 
 
-void AccessibilityHelloMessage( TidyDocImpl* doc );
-void DisplayHTMLTableAlgorithm( TidyDocImpl* doc );
+void TY_(AccessibilityHelloMessage)( TidyDocImpl* doc );
+void TY_(DisplayHTMLTableAlgorithm)( TidyDocImpl* doc );
 
 /************************************************************
 * AccessibilityChecks
@@ -272,7 +272,7 @@ void DisplayHTMLTableAlgorithm( TidyDocImpl* doc );
 * after the tree structure has been formed.
 ************************************************************/
 
-void AccessibilityChecks( TidyDocImpl* doc );
+void TY_(AccessibilityChecks)( TidyDocImpl* doc );
 
 
 #endif /* SUPPORT_ACCESSIBILITY_CHECKS */

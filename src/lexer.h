@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/08/02 16:19:15 $ 
-    $Revision: 1.35 $ 
+    $Date: 2006/09/12 15:14:44 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -397,34 +397,33 @@ struct _Lexer
 
 /* Lexer Functions
 */
-Node *CommentToken( Lexer *lexer );
 
 /* choose what version to use for new doctype */
-int HTMLVersion( TidyDocImpl* doc );
+int TY_(HTMLVersion)( TidyDocImpl* doc );
 
 /* everything is allowed in proprietary version of HTML */
 /* this is handled here rather than in the tag/attr dicts */
 
-void ConstrainVersion( TidyDocImpl* doc, uint vers );
+void TY_(ConstrainVersion)( TidyDocImpl* doc, uint vers );
 
-Bool IsWhite(uint c);
-Bool IsDigit(uint c);
-Bool IsLetter(uint c);
-Bool IsNewline(uint c);
-Bool IsNamechar(uint c);
-Bool IsXMLLetter(uint c);
-Bool IsXMLNamechar(uint c);
+Bool TY_(IsWhite)(uint c);
+Bool TY_(IsDigit)(uint c);
+Bool TY_(IsLetter)(uint c);
+Bool TY_(IsNewline)(uint c);
+Bool TY_(IsNamechar)(uint c);
+Bool TY_(IsXMLLetter)(uint c);
+Bool TY_(IsXMLNamechar)(uint c);
 
 /* Bool IsLower(uint c); */
-Bool IsUpper(uint c);
-uint ToLower(uint c);
-uint ToUpper(uint c);
+Bool TY_(IsUpper)(uint c);
+uint TY_(ToLower)(uint c);
+uint TY_(ToUpper)(uint c);
 
-Lexer* NewLexer( TidyDocImpl* doc );
-void FreeLexer( TidyDocImpl* doc );
+Lexer* TY_(NewLexer)( TidyDocImpl* doc );
+void TY_(FreeLexer)( TidyDocImpl* doc );
 
 /* store character c as UTF-8 encoded byte stream */
-void AddCharToLexer( Lexer *lexer, uint c );
+void TY_(AddCharToLexer)( Lexer *lexer, uint c );
 
 /*
   Used for elements and text nodes
@@ -439,82 +438,76 @@ void AddCharToLexer( Lexer *lexer, uint c );
   list of AttVal nodes which hold the
   strings for attribute/value pairs.
 */
-Node* NewNode( Lexer* lexer );
+Node* TY_(NewNode)( Lexer* lexer );
 
 
 /* used to clone heading nodes when split by an <HR> */
-Node *CloneNode( TidyDocImpl* doc, Node *element );
+Node* TY_(CloneNode)( TidyDocImpl* doc, Node *element );
 
 /* free node's attributes */
-void FreeAttrs( TidyDocImpl* doc, Node *node );
+void TY_(FreeAttrs)( TidyDocImpl* doc, Node *node );
 
 /* doesn't repair attribute list linkage */
-void FreeAttribute( TidyDocImpl* doc, AttVal *av );
+void TY_(FreeAttribute)( TidyDocImpl* doc, AttVal *av );
 
 /* detach attribute from node */
-void DetachAttribute( Node *node, AttVal *attr );
+void TY_(DetachAttribute)( Node *node, AttVal *attr );
 
 /* detach attribute from node then free it
 */
-void RemoveAttribute( TidyDocImpl* doc, Node *node, AttVal *attr );
+void TY_(RemoveAttribute)( TidyDocImpl* doc, Node *node, AttVal *attr );
 
 /*
   Free document nodes by iterating through peers and recursing
   through children. Set next to NULL before calling FreeNode()
   to avoid freeing peer nodes. Doesn't patch up prev/next links.
  */
-void FreeNode( TidyDocImpl* doc, Node *node );
+void TY_(FreeNode)( TidyDocImpl* doc, Node *node );
 
-Node* TextToken( Lexer *lexer );
+Node* TY_(TextToken)( Lexer *lexer );
 
 /* used for creating preformatted text from Word2000 */
-Node *NewLineNode( Lexer *lexer );
+Node* TY_(NewLineNode)( Lexer *lexer );
 
 /* used for adding a &nbsp; for Word2000 */
-Node *NewLiteralTextNode(Lexer *lexer, ctmbstr txt );
+Node* TY_(NewLiteralTextNode)(Lexer *lexer, ctmbstr txt );
 
-Node* CommentToken(Lexer *lexer);
-
-void AddStringLiteral( Lexer* lexer, ctmbstr str );
+void TY_(AddStringLiteral)( Lexer* lexer, ctmbstr str );
 /* void AddStringLiteralLen( Lexer* lexer, ctmbstr str, int len ); */
 
 /* find element */
-Node* FindDocType( TidyDocImpl* doc );
-Node* FindHTML( TidyDocImpl* doc );
-Node* FindHEAD( TidyDocImpl* doc );
-Node* FindTITLE(TidyDocImpl* doc);
-Node* FindBody( TidyDocImpl* doc );
-Node* FindXmlDecl(TidyDocImpl* doc);
+Node* TY_(FindDocType)( TidyDocImpl* doc );
+Node* TY_(FindHTML)( TidyDocImpl* doc );
+Node* TY_(FindHEAD)( TidyDocImpl* doc );
+Node* TY_(FindTITLE)(TidyDocImpl* doc);
+Node* TY_(FindBody)( TidyDocImpl* doc );
+Node* TY_(FindXmlDecl)(TidyDocImpl* doc);
 
 /* Returns containing block element, if any */
-Node* FindContainer( Node* node );
+Node* TY_(FindContainer)( Node* node );
 
 /* add meta element for Tidy */
-Bool AddGenerator( TidyDocImpl* doc );
+Bool TY_(AddGenerator)( TidyDocImpl* doc );
 
-uint ApparentVersion( TidyDocImpl* doc );
+uint TY_(ApparentVersion)( TidyDocImpl* doc );
 
+ctmbstr TY_(HTMLVersionNameFromCode)( uint vers, Bool isXhtml );
 
-Bool CheckDocTypeKeyWords(Lexer *lexer, Node *doctype);
+Bool TY_(WarnMissingSIInEmittedDocType)( TidyDocImpl* doc );
 
-ctmbstr HTMLVersionName( TidyDocImpl* doc );
-ctmbstr HTMLVersionNameFromCode( uint vers, Bool isXhtml );
-
-Bool WarnMissingSIInEmittedDocType( TidyDocImpl* doc );
-
-Bool SetXHTMLDocType( TidyDocImpl* doc );
+Bool TY_(SetXHTMLDocType)( TidyDocImpl* doc );
 
 
 /* fixup doctype if missing */
-Bool FixDocType( TidyDocImpl* doc );
+Bool TY_(FixDocType)( TidyDocImpl* doc );
 
 /* ensure XML document starts with <?xml version="1.0"?> */
 /* add encoding attribute if not using ASCII or UTF-8 output */
-Bool FixXmlDecl( TidyDocImpl* doc );
+Bool TY_(FixXmlDecl)( TidyDocImpl* doc );
 
-Node* InferredTag(TidyDocImpl* doc, TidyTagId id);
+Node* TY_(InferredTag)(TidyDocImpl* doc, TidyTagId id);
 
-void UngetToken( TidyDocImpl* doc );
+void TY_(UngetToken)( TidyDocImpl* doc );
 
 
 /*
@@ -533,23 +526,23 @@ typedef enum
   CdataContent
 } GetTokenMode;
 
-Node* GetToken( TidyDocImpl* doc, GetTokenMode mode );
+Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode );
 
-void InitMap(void);
+void TY_(InitMap)(void);
 
 
 /* create a new attribute */
-AttVal *NewAttribute(void);
+AttVal* TY_(NewAttribute)(void);
 
 /* create a new attribute with given name and value */
-AttVal *NewAttributeEx( TidyDocImpl* doc, ctmbstr name, ctmbstr value,
-                        int delim );
+AttVal* TY_(NewAttributeEx)( TidyDocImpl* doc, ctmbstr name, ctmbstr value,
+                             int delim );
 
 /* insert attribute at the end of attribute list of a node */
-void InsertAttributeAtEnd( Node *node, AttVal *av );
+void TY_(InsertAttributeAtEnd)( Node *node, AttVal *av );
 
 /* insert attribute at the start of attribute list of a node */
-void InsertAttributeAtStart( Node *node, AttVal *av );
+void TY_(InsertAttributeAtStart)( Node *node, AttVal *av );
 
 /*************************************
   In-line Stack functions
@@ -557,7 +550,7 @@ void InsertAttributeAtStart( Node *node, AttVal *av );
 
 
 /* duplicate attributes */
-AttVal* DupAttrs( TidyDocImpl* doc, AttVal* attrs );
+AttVal* TY_(DupAttrs)( TidyDocImpl* doc, AttVal* attrs );
 
 /*
   push a copy of an inline node onto stack
@@ -575,13 +568,13 @@ AttVal* DupAttrs( TidyDocImpl* doc, AttVal* attrs );
       <p><em>text</em></p>
       <p><em><em>more text</em></em>
 */
-void PushInline( TidyDocImpl* doc, Node* node );
+void TY_(PushInline)( TidyDocImpl* doc, Node* node );
 
 /* pop inline stack */
-void PopInline( TidyDocImpl* doc, Node* node );
+void TY_(PopInline)( TidyDocImpl* doc, Node* node );
 
-Bool IsPushed( TidyDocImpl* doc, Node* node );
-Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node );
+Bool TY_(IsPushed)( TidyDocImpl* doc, Node* node );
+Bool TY_(IsPushedLast)( TidyDocImpl* doc, Node *element, Node *node );
 
 /*
   This has the effect of inserting "missing" inline
@@ -600,14 +593,14 @@ Bool IsPushedLast( TidyDocImpl* doc, Node *element, Node *node );
   where it gets tokens from the inline stack rather than
   from the input stream.
 */
-int InlineDup( TidyDocImpl* doc, Node *node );
+int TY_(InlineDup)( TidyDocImpl* doc, Node *node );
 
 /*
  defer duplicates when entering a table or other
  element where the inlines shouldn't be duplicated
 */
-void DeferDup( TidyDocImpl* doc );
-Node *InsertedToken( TidyDocImpl* doc );
+void TY_(DeferDup)( TidyDocImpl* doc );
+Node* TY_(InsertedToken)( TidyDocImpl* doc );
 
 #ifdef __cplusplus
 }
