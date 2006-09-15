@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.109 $ 
+    $Date: 2006/09/15 13:53:23 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -273,7 +273,7 @@ static WrapPoint Big5WrapPoint(tchar c)
     if ((c & 0xFF00) == 0xA100)
     { 
         /* opening brackets have odd codes: break before them */ 
-        if ( c > 0x5C && c < 0xAD && (c & 1) == 1 ) 
+        if ( c > 0xA15C && c < 0xA1AD && (c & 1) == 1 ) 
             return WrapBefore;
         return WrapAfter;
     }
