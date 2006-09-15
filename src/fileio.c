@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.11 $ 
+    $Date: 2006/09/15 15:45:19 $ 
+    $Revision: 1.12 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -20,7 +20,7 @@
 #include "fileio.h"
 #include "tidy.h"
 
-
+#ifndef _POSIX_MAPPED_FILES
 typedef struct _fp_input_source
 {
     FILE*        fp;
@@ -53,7 +53,7 @@ static void TIDY_CALL filesrc_ungetByte( void* sourceData, byte bv )
   tidyBufPutByte( &fin->unget, bv );
 }
 
-void TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
+int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
 {
   FileSource* fin = NULL;
 
@@ -65,6 +65,7 @@ void TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
   ClearMemory( fin, sizeof(FileSource) );
   fin->fp = fp;
   inp->sourceData = fin;
+  return 0;
 }
 
 void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
@@ -75,6 +76,7 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
     tidyBufFree( &fin->unget );
     MemFree( fin );
 }
+#endif
 
 void TIDY_CALL TY_(filesink_putByte)( void* sinkData, byte bv )
 {

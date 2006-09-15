@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.36 $ 
+    $Date: 2006/09/15 15:45:21 $ 
+    $Revision: 1.37 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -143,7 +143,11 @@ void TY_(freeStreamIn)(StreamIn* in)
 StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE *fp, int encoding )
 {
     StreamIn *in = initStreamIn( doc, encoding );
-    TY_(initFileSource)( &in->source, fp );
+    if ( TY_(initFileSource)( &in->source, fp ) != 0 )
+    {
+        TY_(freeStreamIn)( in );
+        return NULL;
+    }
     in->iotype = FileIO;
     return in;
 }

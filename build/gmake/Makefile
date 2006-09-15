@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2006/09/11 12:40:46 $ 
-#     $Revision: 1.26 $ 
+#     $Date: 2006/09/15 15:45:18 $ 
+#     $Revision: 1.27 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -94,6 +94,7 @@ CFLAGS= -g -Wall -Wno-switch -Wno-parentheses -I $(INCDIR)
 
 OTHERCFLAGS=
 OTHERCFLAGS+= -D_DEBUG=1
+# OTHERCFLAGS+= -D_POSIX_MAPPED_FILES
 # OTHERCFLAGS+= -DSUPPORT_ACCESSIBILITY_CHECKS=1 -DSUPPORT_UTF16_ENCODINGS=1 -DSUPPORT_ASIAN_ENCODINGS=1
 ifdef SUPPORT_UTF16_ENCODINGS
 CFLAGS += -DSUPPORT_UTF16_ENCODINGS=$(SUPPORT_UTF16_ENCODINGS)
@@ -142,7 +143,7 @@ OBJFILES=\
         $(OBJDIR)/attrask$(OBJSUF)    $(OBJDIR)/attrdict$(OBJSUF)   $(OBJDIR)/attrget$(OBJSUF) \
         $(OBJDIR)/buffio$(OBJSUF)     $(OBJDIR)/fileio$(OBJSUF)     $(OBJDIR)/streamio$(OBJSUF) \
         $(OBJDIR)/tagask$(OBJSUF)     $(OBJDIR)/tmbstr$(OBJSUF)     $(OBJDIR)/utf8$(OBJSUF) \
-        $(OBJDIR)/tidylib$(OBJSUF)
+        $(OBJDIR)/tidylib$(OBJSUF)    $(OBJDIR)/mappedio$(OBJSUF)
 
 CFILES= \
         $(SRCDIR)/access.c       $(SRCDIR)/attrs.c        $(SRCDIR)/istack.c \
@@ -152,7 +153,7 @@ CFILES= \
         $(SRCDIR)/attrask.c      $(SRCDIR)/attrdict.c     $(SRCDIR)/attrget.c \
         $(SRCDIR)/buffio.c       $(SRCDIR)/fileio.c       $(SRCDIR)/streamio.c \
         $(SRCDIR)/tagask.c       $(SRCDIR)/tmbstr.c       $(SRCDIR)/utf8.c \
-        $(SRCDIR)/tidylib.c
+        $(SRCDIR)/tidylib.c      $(SRCDIR)/mappedio.c
 
 HFILES= $(INCDIR)/platform.h     $(INCDIR)/tidy.h         $(INCDIR)/tidyenum.h \
         $(INCDIR)/buffio.h
@@ -160,10 +161,12 @@ HFILES= $(INCDIR)/platform.h     $(INCDIR)/tidy.h         $(INCDIR)/tidyenum.h \
 LIBHFILES= \
         $(SRCDIR)/access.h       $(SRCDIR)/attrs.h        $(SRCDIR)/attrdict.h \
         $(SRCDIR)/clean.h        $(SRCDIR)/config.h       $(SRCDIR)/entities.h \
-        $(SRCDIR)/forward.h      $(SRCDIR)/lexer.h        $(SRCDIR)/message.h \
-        $(SRCDIR)/parser.h       $(SRCDIR)/pprint.h       $(SRCDIR)/streamio.h \
-        $(SRCDIR)/tags.h         $(SRCDIR)/tmbstr.h       $(SRCDIR)/utf8.h \
-        $(SRCDIR)/tidy-int.h
+        $(SRCDIR)/fileio.h       $(SRCDIR)/forward.h      $(SRCDIR)/lexer.h \
+        $(SRCDIR)/mappedio.h     $(SRCDIR)/message.h      $(SRCDIR)/parser.h \
+        $(SRCDIR)/pprint.h       $(SRCDIR)/streamio.h     $(SRCDIR)/tags.h \
+        $(SRCDIR)/tmbstr.h       $(SRCDIR)/utf8.h         $(SRCDIR)/tidy-int.h \
+        $(SRCDIR)/version.h
+
 
 
 all:    $(LIBRARY) $(EXES)

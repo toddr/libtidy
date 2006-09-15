@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.61 $ 
+    $Date: 2006/09/15 15:45:21 $ 
+    $Revision: 1.62 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -814,6 +814,9 @@ int TIDY_CALL  tidyParseSource( TidyDoc tdoc, TidyInputSource* source )
 
 int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
 {
+#ifdef _WIN32
+    return TY_(DocParseFileWithMappedFile)( doc, filnam );
+#else
     int status = -ENOENT;
     FILE* fin = fopen( filnam, "rb" );
 
@@ -832,6 +835,11 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
     if ( fin )
     {
         StreamIn* in = TY_(FileInput)( doc, fin, cfg( doc, TidyInCharEncoding ));
+        if ( !in )
+        {
+            fclose( fin );
+            return status;
+        }
         status = tidyDocParseStream( doc, in );
         TY_(freeFileSource)(&in->source, yes);
         TY_(freeStreamIn)(in);
@@ -839,6 +847,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
     else /* Error message! */
         TY_(FileError)( doc, filnam, TidyError );
     return status;
+#endif
 }
 
 int   tidyDocParseStdin( TidyDocImpl* doc )
