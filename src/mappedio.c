@@ -3,16 +3,16 @@
    (c) 2006 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   Originally contributed by Cory Nelson and Numo Lopes
+   Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.1 2006/09/15 15:45:19 arnaud02 Exp $
+   $Id: mappedio.c,v 1.2 2006/09/18 09:04:50 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
 #include "forward.h"
 #include "mappedio.h"
 
-#ifdef _POSIX_MAPPED_FILES
+#ifdef SUPPORT_POSIX_MAPPED_FILES
 
 #include "fileio.h"
 
@@ -26,9 +26,8 @@
 
 typedef struct
 {
-    FILE*        fp;
-    off_t pos, size;
     const char *base;
+    size_t pos, size;
 } MappedFileSource;
 
 static int TIDY_CALL mapped_getByte( void* sourceData )
@@ -61,14 +60,15 @@ int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
 
     fd = fileno(fp);
     if ( fstat(fd, &sbuf) == -1 ||
-         (fin->base = mmap(0, fin->size = sbuf.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
+         (fin->base = mmap(0, fin->size = sbuf.st_size, PROT_READ, MAP_SHARED,
+                           fd, 0)) == MAP_FAILED)
     {
         MemFree( fin );
         return -1;
     }
 
     fin->pos = 0;
-    fin->fp = fp;
+    fclose(fp);
 
     inp->getByte    = mapped_getByte;
     inp->eof        = mapped_eof;
@@ -82,8 +82,6 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
 {
     MappedFileSource* fin = (MappedFileSource*) inp->sourceData;
     munmap( (void*)fin->base, fin->size );
-    if ( closeIt && fin && fin->fp )
-        fclose( fin->fp );
     MemFree( fin );
 }
 

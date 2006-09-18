@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/15 15:45:19 $ 
-    $Revision: 1.12 $ 
+    $Date: 2006/09/18 09:04:50 $ 
+    $Revision: 1.13 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -20,7 +20,7 @@
 #include "fileio.h"
 #include "tidy.h"
 
-#ifndef _POSIX_MAPPED_FILES
+#ifndef SUPPORT_POSIX_MAPPED_FILES
 typedef struct _fp_input_source
 {
     FILE*        fp;
