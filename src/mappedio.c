@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.2 2006/09/18 09:04:50 arnaud02 Exp $
+   $Id: mappedio.c,v 1.3 2006/09/18 09:52:33 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -89,6 +89,11 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
 
 
 #if defined(_WIN32)
+#include "streamio.h"
+#include "tidy-int.h"
+#include "message.h"
+
+#include <errno.h>
 #include <windows.h>
 
 typedef struct _fp_input_mapped_source
@@ -175,7 +180,13 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
     if ( !fin )
         return -1;
     
-    if ( !GetFileSizeEx( fp, (LARGE_INTEGER*)&fin->size ) || fin->size <= 0 )
+    if (
+#if _MSC_VER < 1300  /* less than msvc++ 7.0 */
+        !GetFileSize( fp, (DWORD*)&fin->size )
+#else
+        !GetFileSizeEx( fp, (LARGE_INTEGER*)&fin->size )
+#endif
+        || fin->size <= 0 )
     {
         MemFree(fin);
         return -1;
@@ -252,11 +263,19 @@ int TY_(DocParseFileWithMappedFile)( TidyDocImpl* doc, ctmbstr filnam ) {
     if ( fin != INVALID_HANDLE_VALUE && cfgBool(doc,TidyKeepFileTimes) &&
          GetFileTime(fin, NULL, (FILETIME*)&actime, (FILETIME*)&modtime) )
     {
+#if _MSC_VER < 1300  /* less than msvc++ 7.0 */
+        doc->filetimes.actime =
+            (time_t)( ( actime - 116444736000000000i64) / 10000000 );
+
+        doc->filetimes.modtime =
+            (time_t)( ( modtime - 116444736000000000i64) / 10000000 );
+#else
         doc->filetimes.actime =
             (time_t)( ( actime - 116444736000000000LL) / 10000000LL );
 
         doc->filetimes.modtime =
             (time_t)( ( modtime - 116444736000000000LL) / 10000000LL );
+#endif
     }
 #endif
 

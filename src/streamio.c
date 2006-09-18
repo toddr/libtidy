@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/15 15:45:21 $ 
-    $Revision: 1.37 $ 
+    $Date: 2006/09/18 09:52:33 $ 
+    $Revision: 1.38 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -110,7 +110,7 @@ void  TY_(ReleaseStreamOut)( StreamOut* out )
 ** Source
 ************************/
 
-static StreamIn* initStreamIn( TidyDocImpl* doc, int encoding )
+StreamIn* TY_(initStreamIn)( TidyDocImpl* doc, int encoding )
 {
     StreamIn *in = (StreamIn*) MemAlloc( sizeof(StreamIn) );
 
@@ -142,7 +142,7 @@ void TY_(freeStreamIn)(StreamIn* in)
 
 StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE *fp, int encoding )
 {
-    StreamIn *in = initStreamIn( doc, encoding );
+    StreamIn *in = TY_(initStreamIn)( doc, encoding );
     if ( TY_(initFileSource)( &in->source, fp ) != 0 )
     {
         TY_(freeStreamIn)( in );
@@ -154,7 +154,7 @@ StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE *fp, int encoding )
 
 StreamIn* TY_(BufferInput)( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
 {
-    StreamIn *in = initStreamIn( doc, encoding );
+    StreamIn *in = TY_(initStreamIn)( doc, encoding );
     tidyInitInputBuffer( &in->source, buf );
     in->iotype = BufferIO;
     return in;
@@ -162,7 +162,7 @@ StreamIn* TY_(BufferInput)( TidyDocImpl* doc, TidyBuffer* buf, int encoding )
 
 StreamIn* TY_(UserInput)( TidyDocImpl* doc, TidyInputSource* source, int encoding )
 {
-    StreamIn *in = initStreamIn( doc, encoding );
+    StreamIn *in = TY_(initStreamIn)( doc, encoding );
     memcpy( &in->source, source, sizeof(TidyInputSource) );
     in->iotype = UserIO;
     return in;

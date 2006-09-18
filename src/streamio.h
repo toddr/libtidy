@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.16 $ 
+    $Date: 2006/09/18 09:52:33 $ 
+    $Revision: 1.17 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -92,6 +92,7 @@ struct _StreamIn
     TidyDocImpl* doc;
 };
 
+StreamIn* TY_(initStreamIn)( TidyDocImpl* doc, int encoding );
 void TY_(freeStreamIn)(StreamIn* in);
 
 StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE* fp, int encoding );
