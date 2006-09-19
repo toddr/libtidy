@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/15 15:45:21 $ 
-    $Revision: 1.62 $ 
+    $Date: 2006/09/19 08:37:14 $ 
+    $Revision: 1.63 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -35,6 +35,7 @@
 #include "entities.h"
 #include "tmbstr.h"
 #include "utf8.h"
+#include "mappedio.h"
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
 #include "win32tc.h"
