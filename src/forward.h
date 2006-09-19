@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.4 $ 
+    $Date: 2006/09/19 08:36:40 $ 
+    $Revision: 1.5 $ 
 
   Avoids many include file circular dependencies.
 
@@ -24,6 +24,7 @@
 #include "platform.h"
 #include "tidy.h"
 
+/* Internal symbols are prefixed to avoid clashes with other libraries */
 #define TYDYAPPEND(str1,str2) str1##str2
 #define TY_(str) TYDYAPPEND(prvTidy,str)
 
