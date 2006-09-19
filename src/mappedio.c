@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.3 2006/09/18 09:52:33 arnaud02 Exp $
+   $Id: mappedio.c,v 1.4 2006/09/19 12:36:11 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -180,17 +180,24 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
     if ( !fin )
         return -1;
     
-    if (
 #if _MSC_VER < 1300  /* less than msvc++ 7.0 */
-        !GetFileSize( fp, (DWORD*)&fin->size )
+    {
+        LARGE_INTEGER* pli = (LARGE_INTEGER *)&fin->size;
+        (DWORD)pli->LowPart = GetFileSize( fp, (DWORD *)&pli->HighPart );
+        if ( GetLastError() != NO_ERROR || fin->size <= 0 )
+        {
+            MemFree(fin);
+            return -1;
+        }
+    }
 #else
-        !GetFileSizeEx( fp, (LARGE_INTEGER*)&fin->size )
-#endif
-        || fin->size <= 0 )
+    if ( !GetFileSizeEx( fp, (LARGE_INTEGER*)&fin->size )
+         || fin->size <= 0 )
     {
         MemFree(fin);
         return -1;
     }
+#endif
 
     fin->map = CreateFileMapping( fp, NULL, PAGE_READONLY, 0, 0, NULL );
 
