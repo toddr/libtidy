@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/19 08:37:14 $ 
-    $Revision: 1.63 $ 
+    $Date: 2006/10/04 15:30:40 $ 
+    $Revision: 1.64 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1264,7 +1264,11 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     {
         AttVal* fpi = TY_(GetAttrByName)(node, "PUBLIC");
         if (AttrHasValue(fpi))
+        {
+            if (doc->givenDoctype)
+                MemFree(doc->givenDoctype);
             doc->givenDoctype = TY_(tmbstrdup)(fpi->value);
+        }
     }
 
     if ( doc->root.content )
