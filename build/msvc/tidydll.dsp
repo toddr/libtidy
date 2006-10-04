@@ -183,7 +183,7 @@ SOURCE=..\..\src\tmbstr.c
 
 SOURCE=..\..\src\utf8.c
 # End Source File
-# End Group
+# Begin Source File
 
 SOURCE=..\..\src\win32tc.c
 # End Source File
