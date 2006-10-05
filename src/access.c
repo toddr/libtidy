@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.30 $ 
+    $Date: 2006/10/05 10:06:26 $ 
+    $Revision: 1.31 $ 
 
 */
 
@@ -811,7 +811,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                 for dLINK to exist 
             */
 
-            if(node->content != NULL && (node->content)->tag == NULL)
+            if (node->content != NULL && (node->content)->tag == NULL)
             {
                 /* Number of characters found within the text node */
                 ctmbstr word = textFromOneNode( doc, node->content);
@@ -842,7 +842,7 @@ static void CheckImage( TidyDocImpl* doc, Node* node )
                     Node following the ANCHOR must be a text node
                     for dLINK to exist 
                 */
-                if(node->content != NULL && node->content->tag == NULL)
+                if (node->content != NULL && node->content->tag == NULL)
                 {
                     /* Number of characters found within the text node */
                     ctmbstr word = textFromOneNode( doc, node->content );
@@ -1971,15 +1971,10 @@ static void CheckASCII( TidyDocImpl* doc, Node* node )
         if (IsAscii == yes)
         {
             TY_(ReportAccessError)( doc, node, ASCII_REQUIRES_DESCRIPTION);
+            if (Level3_Enabled( doc ) && (HasSkipOverLink < 2))
+                TY_(ReportAccessError)( doc, node, SKIPOVER_ASCII_ART);
         }
 
-        if (HasSkipOverLink < 2)
-        {
-            if (IsAscii == yes)
-            {
-                TY_(ReportAccessError)( doc, node, SKIPOVER_ASCII_ART);
-            }
-        }
     }
 }
 
@@ -2914,6 +2909,9 @@ static void CheckMapLinks( TidyDocImpl* doc, Node* node )
 {
     Node* child;
 
+    if (!Level3_Enabled( doc ))
+        return;
+
     /* Stores the 'HREF' link of an AREA element within a MAP element */
     for ( child = node->content; child != NULL; child = child->next )
     {
@@ -2993,6 +2991,10 @@ static void CheckForListElements( TidyDocImpl* doc, Node* node )
 static void CheckListUsage( TidyDocImpl* doc, Node* node )
 {
     int msgcode = 0;
+
+    if (!Level2_Enabled( doc ))
+        return;
+
     if ( nodeIsOL(node) )
         msgcode = LIST_USAGE_INVALID_OL;
     else if ( nodeIsUL(node) )
@@ -3292,7 +3294,8 @@ void TY_(AccessibilityChecks)( TidyDocImpl* doc )
 
     
     /* Checks to see if stylesheets are used to control the layout */
-    if ( ! CheckMissingStyleSheets( doc, &doc->root ) )
+    if ( Level2_Enabled( doc )
+         && ! CheckMissingStyleSheets( doc, &doc->root ) )
     {
         TY_(ReportAccessWarning)( doc, &doc->root, STYLE_SHEET_CONTROL_PRESENTATION );
     }
