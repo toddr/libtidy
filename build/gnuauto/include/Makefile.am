@@ -2,11 +2,11 @@
 #
 #  CVS Info :
 #
-#     $Author: creitzel $ 
-#     $Date: 2003/03/19 18:37:38 $ 
-#     $Revision: 1.2 $ 
+#     $Author: arnaud02 $ 
+#     $Date: 2006/10/06 09:25:13 $ 
+#     $Revision: 1.3 $ 
 #
-#  Copyright (c) 1998-2003 World Wide Web Consortium
+#  Copyright (c) 1998-2006 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
 #  Consortium for Informatics and Mathematics, Keio University).
 #  All Rights Reserved.
@@ -58,4 +58,4 @@ tidyincdir = $(includedir)
 
 tidyinc_HEADERS = \
 	platform.h \
-	tidy.h		tidyenum.h	fileio.h	buffio.h
+	tidy.h		tidyenum.h	buffio.h
