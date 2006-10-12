@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2006/09/18 09:04:49 $ 
-#     $Revision: 1.28 $ 
+#     $Date: 2006/10/12 12:31:51 $ 
+#     $Revision: 1.29 $ 
 #
 #  Copyright (c) 1998-2005 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -94,7 +94,7 @@ CFLAGS= -g -Wall -Wno-switch -Wno-parentheses -I $(INCDIR)
 
 OTHERCFLAGS=
 OTHERCFLAGS+= -D_DEBUG=1
-# OTHERCFLAGS+= -DSUPPORT_POSIX_MAPPED_FILES
+OTHERCFLAGS+= -DSUPPORT_POSIX_MAPPED_FILES
 # OTHERCFLAGS+= -fvisibility=hidden -DTIDY_EXPORT='__attribute__((visibility("default")))'
 # OTHERCFLAGS+= -DSUPPORT_ACCESSIBILITY_CHECKS=1 -DSUPPORT_UTF16_ENCODINGS=1 -DSUPPORT_ASIAN_ENCODINGS=1
 ifdef SUPPORT_UTF16_ENCODINGS
