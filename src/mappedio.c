@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.6 2006/10/09 09:16:35 arnaud02 Exp $
+   $Id: mappedio.c,v 1.7 2006/10/12 10:57:48 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -26,7 +26,7 @@
 
 typedef struct
 {
-    const char *base;
+    const byte *base;
     size_t pos, size;
 } MappedFileSource;
 
