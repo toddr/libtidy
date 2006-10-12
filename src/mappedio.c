@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.7 2006/10/12 10:57:48 arnaud02 Exp $
+   $Id: mappedio.c,v 1.8 2006/10/12 11:32:04 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -39,7 +39,7 @@ static int TIDY_CALL mapped_getByte( void* sourceData )
 static Bool TIDY_CALL mapped_eof( void* sourceData )
 {
     MappedFileSource* fin = (MappedFileSource*) sourceData;
-    return (fin->pos+1 >= fin->size);
+    return (fin->pos >= fin->size);
 }
 
 static void TIDY_CALL mapped_ungetByte( void* sourceData, byte bv )
