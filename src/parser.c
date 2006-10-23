@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.169 $ 
+    $Date: 2006/10/23 15:17:18 $ 
+    $Revision: 1.170 $ 
 
 */
 
@@ -4100,6 +4100,12 @@ void TY_(ParseDocument)(TidyDocImpl* doc)
         TY_(ParseHTML)( doc, html, IgnoreWhitespace );
         break;
     }
+
+#if SUPPORT_ACCESSIBILITY_CHECKS
+    /* do this before any more document fixes */
+    if ( cfg( doc, TidyAccessibilityCheckLevel ) > 0 )
+        TY_(AccessibilityChecks)( doc );
+#endif /* #if SUPPORT_ACCESSIBILITY_CHECKS */
 
     if (!TY_(FindHTML)(doc))
     {
