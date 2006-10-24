@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/15 13:53:23 $ 
-    $Revision: 1.110 $ 
+    $Date: 2006/10/24 09:41:43 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -581,6 +581,7 @@ static void WrapLine( TidyDocImpl* doc )
     if ( pprint->wraphere == 0 )
         return;
 
+    // xxx
     if ( WantIndent(doc) )
     {
         uint spaces = GetSpaces( pprint );
@@ -1090,7 +1091,9 @@ static void PPrintAttrValue( TidyDocImpl* doc, uint indent,
             if ( c == '\n' )
             {
                 /* No indent inside Javascript literals */
-                TY_(PFlushLine)( doc, (strStart < 0 ? indent : 0) );
+                TY_(PFlushLine)( doc, (strStart < 0
+                                       && !cfgBool(doc, TidyLiteralAttribs) ?
+                                       indent : 0) );
                 continue;
             }
             PPrintChar( doc, c, mode );
