@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.123 $ 
+    $Date: 2006/10/25 11:33:13 $ 
+    $Revision: 1.124 $ 
 
 */
 
@@ -1169,7 +1169,7 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     p = attval->value;
     
-    for (i = 0; 0 != (c = p[i]); ++i)
+    for (i = 0; '\0' != (c = p[i]); ++i)
     {
         if (c == '\\')
         {
