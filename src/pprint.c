@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/24 09:41:43 $ 
-    $Revision: 1.111 $ 
+    $Date: 2006/10/25 12:31:08 $ 
+    $Revision: 1.112 $ 
 
 */
 
@@ -581,7 +581,6 @@ static void WrapLine( TidyDocImpl* doc )
     if ( pprint->wraphere == 0 )
         return;
 
-    // xxx
     if ( WantIndent(doc) )
     {
         uint spaces = GetSpaces( pprint );
