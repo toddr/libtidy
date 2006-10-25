@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/05 10:06:26 $ 
-    $Revision: 1.31 $ 
+    $Date: 2006/10/25 16:01:02 $ 
+    $Revision: 1.32 $ 
 
 */
 
@@ -3002,19 +3002,38 @@ static void CheckListUsage( TidyDocImpl* doc, Node* node )
 
     if ( msgcode )
     {
-        if ( !nodeIsLI(node->content) )
+       /*
+       ** Check that OL/UL
+       ** a) has LI child,
+       ** b) was not added by Tidy parser
+       ** IFF OL/UL node is implicit
+       */
+       if ( !nodeIsLI(node->content) ) {
             TY_(ReportAccessWarning)( doc, node, msgcode );
+       } else if ( node->implicit ) {  /* if a tidy added node */
+            TY_(ReportAccessWarning)( doc, node, LIST_USAGE_INVALID_LI );
+       }
     }
     else if ( nodeIsLI(node) )
     {
         /* Check that LI parent 
         ** a) exists,
         ** b) is either OL or UL
+        ** IFF the LI parent was added by Tidy
+        ** ie, if it is marked 'implicit', then
+        ** emit warnings LIST_USAGE_INVALID_UL or 
+        ** warning LIST_USAGE_INVALID_OL tests 
         */
         if ( node->parent == NULL ||
              ( !nodeIsOL(node->parent) && !nodeIsUL(node->parent) ) )
         {
             TY_(ReportAccessWarning)( doc, node, LIST_USAGE_INVALID_LI );
+        } else if ( node->implicit && node->parent &&
+                    ( nodeIsOL(node->parent) || nodeIsUL(node->parent) ) ) {
+            /* if tidy added LI node, then */
+            msgcode = nodeIsUL(node->parent) ?
+                LIST_USAGE_INVALID_UL : LIST_USAGE_INVALID_OL;
+            TY_(ReportAccessWarning)( doc, node, msgcode );
         }
     }
 }
