@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/20 12:51:31 $ 
-    $Revision: 1.160 $ 
+    $Date: 2006/10/25 11:32:12 $ 
+    $Revision: 1.161 $ 
 
 */
 
@@ -96,6 +96,7 @@ static struct _msgfmt
   { ILLEGAL_URI_REFERENCE,        "%s improperly escaped URI reference"                                     }, /* Error */
   { ESCAPED_ILLEGAL_URI,          "%s escaping malformed URI reference"                                     }, /* Error */
   { NEWLINE_IN_URI,               "%s discarding newline in URI reference"                                  }, /* Error */
+  { WHITE_IN_URI,                 "%s discarding whitespace in URI reference"                               }, /* Error */
   { UNEXPECTED_EQUALSIGN,         "%s unexpected '=', expected attribute name"                              }, /* Error */
   { MISSING_IMAGEMAP,             "%s should use client-side image map"                                     }, /* Warning (but deprecated) */
 
@@ -1247,6 +1248,7 @@ void TY_(ReportAttrError)(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
     case ILLEGAL_URI_REFERENCE:
     case ESCAPED_ILLEGAL_URI:
     case NEWLINE_IN_URI:
+    case WHITE_IN_URI:
     case UNEXPECTED_GT:
     case INVALID_XML_ID:
     case UNEXPECTED_EQUALSIGN:

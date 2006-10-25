@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.181 $ 
+    $Date: 2006/10/25 11:32:12 $ 
+    $Revision: 1.182 $ 
 
 */
 
@@ -3349,7 +3349,11 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
                 c = ' ';
 
                 if (lastc == ' ')
+                {
+                    if (TY_(IsUrl)(doc, name) )
+                        TY_(ReportAttrError)( doc, lexer->token, NULL, WHITE_IN_URI);
                     continue;
+                }
             }
         }
         else if (foldCase && TY_(IsUpper)(c))
