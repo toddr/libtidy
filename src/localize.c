@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/25 11:32:12 $ 
-    $Revision: 1.161 $ 
+    $Date: 2006/10/30 16:10:10 $ 
+    $Revision: 1.162 $ 
 
 */
 
@@ -1263,7 +1263,7 @@ void TY_(ReportAttrError)(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
         break;
 
 
-    case MISSING_IMAGEMAP:  /* this is not used anywhere */
+    case MISSING_IMAGEMAP:
         messageNode(doc, TidyWarning, node, fmt, tagdesc);
         doc->badAccess |= MISSING_IMAGE_MAP;
         break;

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.65 $ 
+    $Date: 2006/10/30 16:10:10 $ 
+    $Revision: 1.66 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -651,7 +651,7 @@ void CheckIMG( TidyDocImpl* doc, Node *node )
     if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
     {
         if ( HasIsMap && !HasUseMap )
-            TY_(ReportMissingAttr)( doc, node, "ismap" );
+            TY_(ReportAttrError)( doc, node, NULL, MISSING_IMAGEMAP);
     }
 }
 
