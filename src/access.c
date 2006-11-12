@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/25 16:01:02 $ 
-    $Revision: 1.32 $ 
+    $Date: 2006/11/12 21:10:04 $ 
+    $Revision: 1.33 $ 
 
 */
 
@@ -1411,42 +1411,29 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
     for(;;)
     {
         if (node == NULL)
-        {
             break;
-        }
-
-        else 
+        numTR++;
+        if ( nodeIsTH(node->content) )
         {
-            numTR++;
-
-            if ( nodeIsTH(node) )
+            doc->access.HasTH = yes;            
+            if ( TY_(nodeIsText)(node->content->content) )
             {
-                doc->access.HasTH = yes;
-            
-                if ( node->content && TY_(nodeIsText)(node->content->content) )
-                {
-                    ctmbstr word = textFromOneNode( doc, node->content->content);
-                    if ( !IsWhitespace(word) )
-                        numValidTH++;
-                }
+                ctmbstr word = textFromOneNode( doc, node->content->content);
+                if ( !IsWhitespace(word) )
+                    numValidTH++;
             }
         }
-        
         node = node->next;
     }
 
     if (numTR == numValidTH)
-    {
         doc->access.HasValidRowHeaders = yes;
-    }
 
     if ( numTR >= 2 &&
          numTR > numValidTH &&
          numValidTH >= 2 &&
          doc->access.HasTH == yes )
-    {
         doc->access.HasInvalidRowHeader = yes;
-    }
 }
 
 
