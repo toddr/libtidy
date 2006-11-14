@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/12 21:10:04 $ 
-    $Revision: 1.33 $ 
+    $Date: 2006/11/14 13:29:16 $ 
+    $Revision: 1.34 $ 
 
 */
 
@@ -295,7 +295,7 @@ static Bool IsWhitespace( ctmbstr pString )
 
 static Bool hasValue( AttVal* av )
 {
-  return ( av && ! IsWhitespace(av->value) );
+    return ( av && ! IsWhitespace(av->value) );
 }
 
 /***********************************************************************
@@ -1408,10 +1408,8 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
     
     doc->access.CheckedHeaders++;
 
-    for(;;)
+    for (; node != NULL; node = node->next )
     {
-        if (node == NULL)
-            break;
         numTR++;
         if ( nodeIsTH(node->content) )
         {
@@ -1423,7 +1421,6 @@ static void CheckRows( TidyDocImpl* doc, Node* node )
                     numValidTH++;
             }
         }
-        node = node->next;
     }
 
     if (numTR == numValidTH)
@@ -2187,7 +2184,7 @@ static void CheckHeaderNesting( TidyDocImpl* doc, Node* node )
         {
             ctmbstr word = textFromOneNode( doc, node->content);
 
-            for(i = 0; i < TY_(tmbstrlen)(word); i++)
+            for (i = 0; i < TY_(tmbstrlen)(word); i++)
             {
                 if (word[i] == ' ')
                 {

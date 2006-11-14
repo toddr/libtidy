@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.8 2006/10/12 11:32:04 arnaud02 Exp $
+   $Id: mappedio.c,v 1.9 2006/11/14 13:29:44 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -89,14 +89,14 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
 
 
 #if defined(_WIN32)
-#if _MSC_VER < 1300  /* less than msvc++ 7.0 */
-#pragma warning(disable:4115) /* named type definition in parentheses in windows headers */
-#endif
 #include "streamio.h"
 #include "tidy-int.h"
 #include "message.h"
 
 #include <errno.h>
+#if _MSC_VER < 1300  /* less than msvc++ 7.0 */
+#pragma warning(disable:4115) /* named type definition in parentheses in windows headers */
+#endif
 #include <windows.h>
 
 typedef struct _fp_input_mapped_source
