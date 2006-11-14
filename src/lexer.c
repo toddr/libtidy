@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/25 11:32:12 $ 
-    $Revision: 1.182 $ 
+    $Date: 2006/11/14 16:03:28 $ 
+    $Revision: 1.183 $ 
 
 */
 
@@ -761,6 +761,13 @@ static void AddStringToLexer( Lexer *lexer, ctmbstr str )
         TY_(AddCharToLexer)( lexer, c );
 }
 
+
+static void SetLexerLocus( TidyDocImpl* doc, Lexer *lexer )
+{
+    lexer->lines = doc->docIn->curline;
+    lexer->columns = doc->docIn->curcol;
+}
+
 /*
   No longer attempts to insert missing ';' for unknown
   enitities unless one was present already, since this
@@ -860,7 +867,7 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
     if ( !found || (ch >= 128 && ch <= 159) || (ch >= 256 && c != ';') )
     {
         /* set error position just before offending character */
-        lexer->lines = doc->docIn->curline;
+        SetLexerLocus( doc, lexer );
         lexer->columns = startcol;
 
         if (lexer->lexsize > start + 1)
@@ -917,7 +924,7 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
         if ( c != ';' )    /* issue warning if not terminated by ';' */
         {
             /* set error position just before offending chararcter */
-            lexer->lines = doc->docIn->curline;
+            SetLexerLocus( doc, lexer );
             lexer->columns = startcol;
             TY_(ReportEntityError)( doc, MISSING_SEMICOLON, lexer->lexbuf+start, c );
         }
@@ -1761,8 +1768,7 @@ static Node *GetCDATA( TidyDocImpl* doc, Node *container )
     uint c;
     Bool hasSrc = TY_(AttrGetById)(container, TidyAttr_SRC) != NULL;
 
-    lexer->lines = doc->docIn->curline;
-    lexer->columns = doc->docIn->curcol;
+    SetLexerLocus( doc, lexer );
     lexer->waswhite = no;
     lexer->txtstart = lexer->txtend = lexer->lexsize;
 
@@ -1890,8 +1896,8 @@ static Node *GetCDATA( TidyDocImpl* doc, Node *container )
             else if (lexer->lexbuf[start - 2] != '\\')
             {
                 /* if the end tag is not already escaped using backslash */
-                lexer->lines = doc->docIn->curline;
-                lexer->columns = doc->docIn->curcol - 3;
+                SetLexerLocus( doc, lexer );
+                lexer->columns -= 3;
                 TY_(ReportError)(doc, NULL, NULL, BAD_CDATA_CONTENT);
 
                 /* if javascript insert backslash before / */
@@ -1984,8 +1990,7 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
         return GetCDATA(doc, lexer->parent);
     }
 
-    lexer->lines = doc->docIn->curline;
-    lexer->columns = doc->docIn->curcol;
+    SetLexerLocus( doc, lexer );
     lexer->waswhite = no;
 
     lexer->txtstart = lexer->txtend = lexer->lexsize;
@@ -2018,8 +2023,7 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
                 {
                     --(lexer->lexsize);
                     lexer->waswhite = no;
-                    lexer->lines = doc->docIn->curline;
-                    lexer->columns = doc->docIn->curcol;
+                    SetLexerLocus( doc, lexer );
                     continue;
                 }
 
@@ -2037,8 +2041,7 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
                         if (mode != Preformatted && mode != IgnoreMarkup)
                         {
                             --(lexer->lexsize);
-                            lexer->lines = doc->docIn->curline;
-                            lexer->columns = doc->docIn->curcol;
+                            SetLexerLocus( doc, lexer );
                         }
                     }
                     else /* prev character wasn't white */
@@ -2441,8 +2444,8 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
                 /* note position of first such error in the comment */
                 if (!badcomment)
                 {
-                    lexer->lines = doc->docIn->curline;
-                    lexer->columns = doc->docIn->curcol - 3;
+                    SetLexerLocus( doc, lexer );
+                    lexer->columns -= 3;
                 }
 
                 badcomment++;
