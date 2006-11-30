@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/30 16:10:10 $ 
-    $Revision: 1.66 $ 
+    $Date: 2006/11/30 17:10:24 $ 
+    $Revision: 1.67 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -375,6 +375,26 @@ static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
     return NULL;
 }
 
+static Dict* NewDict( ctmbstr name )
+{
+    Dict *np = (Dict*) MemAlloc( sizeof(Dict) );
+    np->id = TidyTag_UNKNOWN;
+    np->name = name ? TY_(tmbstrdup)( name ) : NULL;
+    np->versions = VERS_UNKNOWN;
+    np->attrvers = NULL;
+    np->model = CM_UNKNOWN;
+    np->parser = 0;
+    np->chkattrs = 0;
+    np->next = NULL;
+    return np;
+}
+
+static void FreeDict( Dict *d )
+{
+    if ( d )
+        MemFree( d->name );
+    MemFree( d );
+}
 
 static void declare( TidyTagImpl* tags,
                      ctmbstr name, uint versions, uint model, 
@@ -385,10 +405,7 @@ static void declare( TidyTagImpl* tags,
         Dict* np = (Dict*) lookup( tags, name );
         if ( np == NULL )
         {
-            np = (Dict*) MemAlloc( sizeof(Dict) );
-            ClearMemory( np, sizeof(Dict) );
-
-            np->name = TY_(tmbstrdup)( name );
+            np = NewDict(  name );
             np->next = tags->declared_tag_list;
             tags->declared_tag_list = np;
         }
@@ -445,8 +462,8 @@ Parser* TY_(FindParser)( TidyDocImpl* doc, Node *node )
 
 void TY_(DefineTag)( TidyDocImpl* doc, UserTagType tagType, ctmbstr name )
 {
-    Parser* parser = NULL;
-    uint cm = 0;
+    Parser* parser = 0;
+    uint cm = CM_UNKNOWN;
     uint vers = VERS_PROPRIETARY;
 
     switch (tagType)
@@ -475,7 +492,7 @@ void TY_(DefineTag)( TidyDocImpl* doc, UserTagType tagType, ctmbstr name )
         break;
     }
     if ( cm && parser )
-        declare( &doc->tags, name, vers, cm, parser, NULL );
+        declare( &doc->tags, name, vers, cm, parser, 0 );
 }
 
 TidyIterator   TY_(GetDeclaredTagList)( TidyDocImpl* doc )
@@ -530,13 +547,11 @@ void TY_(InitTags)( TidyDocImpl* doc )
     ClearMemory( tags, sizeof(TidyTagImpl) );
 
     /* create dummy entry for all xml tags */
-    xml = (Dict*) MemAlloc( sizeof(Dict) );
-    ClearMemory( xml, sizeof(Dict) );
-    xml->name = NULL;
+    xml =  NewDict( NULL );
     xml->versions = VERS_XML;
     xml->model = CM_BLOCK;
-    xml->parser = NULL;
-    xml->chkattrs = NULL;
+    xml->parser = 0;
+    xml->chkattrs = 0;
     xml->attrvers = NULL;
     tags->xml_tags = xml;
 }
@@ -582,8 +597,7 @@ void TY_(FreeDeclaredTags)( TidyDocImpl* doc, UserTagType tagType )
 #if ELEMENT_HASH_LOOKUP
           removeFromHash( &doc->tags, curr->name );
 #endif
-          MemFree( curr->name );
-          MemFree( curr );
+          FreeDict( curr );
           if ( prev )
             prev->next = next;
           else
@@ -602,7 +616,7 @@ void TY_(FreeTags)( TidyDocImpl* doc )
     emptyHash( tags );
 #endif
     TY_(FreeDeclaredTags)( doc, tagtype_null );
-    MemFree( tags->xml_tags );
+    FreeDict( tags->xml_tags );
 
     /* get rid of dangling tag references */
     ClearMemory( tags, sizeof(TidyTagImpl) );
