@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/30 16:10:10 $ 
-    $Revision: 1.162 $ 
+    $Date: 2006/11/30 10:27:29 $ 
+    $Revision: 1.163 $ 
 
 */
 
@@ -510,7 +510,8 @@ static const TidyOptionDoc option_docs[] =
    "comma separated list of tag names. Unless you declare new tags, Tidy will "
    "refuse to generate a tidied file if the input includes previously unknown "
    "tags. Note you can't change the content model for elements such as "
-   "&lt;TABLE&gt;, &lt;UL&gt;, &lt;OL&gt; and &lt;DL&gt;. "
+   "&lt;TABLE&gt;, &lt;UL&gt;, &lt;OL&gt; and &lt;DL&gt;. This option is "
+   "ignored in XML mode. "
    ,TidyBlockTagsLinks
   },
   {TidyEmptyTags,
@@ -518,14 +519,14 @@ static const TidyOptionDoc option_docs[] =
    "or comma separated list of tag names. Unless you declare new tags, Tidy "
    "will refuse to generate a tidied file if the input includes previously "
    "unknown tags. Remember to also declare empty tags as either inline or "
-   "blocklevel. "
+   "blocklevel. This option is ignored in XML mode. "
    ,TidyEmptyTagsLinks
   },
   {TidyInlineTags,
    "This option specifies new non-empty inline tags. This option takes a "
    "space or comma separated list of tag names. Unless you declare new tags, "
    "Tidy will refuse to generate a tidied file if the input includes "
-   "previously unknown tags. "
+   "previously unknown tags. This option is ignored in XML mode. "
    ,TidyInlineTagsLinks
   },
   { TidyPreTags,
@@ -535,6 +536,7 @@ static const TidyOptionDoc option_docs[] =
     "of tag names. Unless you declare new tags, Tidy will refuse to generate "
     "a tidied file if the input includes previously unknown tags. Note you "
     "can not as yet add new CDATA elements (similar to &lt;SCRIPT&gt;). "
+    "This option is ignored in XML mode. "
     ,TidyPreTagsLinks
   },
   {TidyNumEntities,
