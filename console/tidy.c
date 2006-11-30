@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/02/14 11:09:21 $ 
-    $Revision: 1.42 $ 
+    $Date: 2006/11/30 10:25:21 $ 
+    $Revision: 1.43 $ 
 */
 
 #include "tidy.h"
@@ -147,7 +147,7 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "set configuration options from the specified <file>",
       NULL, CmdOptFileManip },
     { "-file <file>",
-      "write errors to the specified <file>",
+      "write errors and warnings to the specified <file>",
       "error-file: <file>", CmdOptFileManip, "-f <file>" },
     { "-modify",
       "modify the original input files",
@@ -174,7 +174,7 @@ static const CmdOptDesc cmdopt_defs[] =  {
       "output numeric rather than named entities",
       "numeric-entities: yes", CmdOptProcDir, "-n" },
     { "-errors",
-      "only show errors",
+      "show only errors and warnings",
       "markup: no", CmdOptProcDir, "-e" },
     { "-quiet",
       "suppress nonessential output",
