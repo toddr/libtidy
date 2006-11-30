@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.17 $ 
+    $Date: 2006/11/30 17:09:20 $ 
+    $Revision: 1.18 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -301,7 +301,7 @@ static const entity entities[] =
     { "lsaquo",   VERS_FROM40,  8249 },
     { "rsaquo",   VERS_FROM40,  8250 },
     { "euro",     VERS_FROM40,  8364 },
-    { NULL,       0,               0 }
+    { NULL,       VERS_UNKNOWN, 0 }
 };
 
 
