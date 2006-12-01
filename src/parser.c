@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/30 17:16:27 $ 
-    $Revision: 1.171 $ 
+    $Date: 2006/12/01 08:45:54 $ 
+    $Revision: 1.172 $ 
 
 */
 
@@ -3992,6 +3992,7 @@ static void AttributeChecks(TidyDocImpl* doc, Node* node)
         if (node->content)
             AttributeChecks(doc, node->content);
 
+        assert( next != node ); /* http://tidy.sf.net/issue/1603538 */
         node = next;
     }
 }
