@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/14 16:03:28 $ 
-    $Revision: 1.183 $ 
+    $Date: 2006/12/03 21:03:30 $ 
+    $Revision: 1.184 $ 
 
 */
 
@@ -1971,7 +1971,8 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
     if (lexer->pushed)
     {
         /* duplicate inlines in preference to pushed text nodes when appropriate */
-        if (lexer->token->type != TextNode || (!lexer->insert && !lexer->inode))
+        if ((lexer->token && lexer->token->type != TextNode)
+            || (!lexer->insert && !lexer->inode))
         {
             lexer->pushed = no;
             return lexer->token;
@@ -1982,13 +1983,20 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
        elements are inserted into the token stream */
 
     if (lexer->insert || lexer->inode)
+    {
+        lexer->pushed = no;
+        lexer->token = NULL;
         return TY_(InsertedToken)( doc );
+    }
 
     if (mode == CdataContent)
     {
         assert( lexer->parent != NULL );
         return GetCDATA(doc, lexer->parent);
     }
+
+    lexer->pushed = no;
+    lexer->token = NULL;
 
     SetLexerLocus( doc, lexer );
     lexer->waswhite = no;

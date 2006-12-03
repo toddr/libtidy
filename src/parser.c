@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/01 08:45:54 $ 
-    $Revision: 1.172 $ 
+    $Date: 2006/12/03 21:03:31 $ 
+    $Revision: 1.173 $ 
 
 */
 
@@ -36,7 +36,7 @@ Bool TY_(CheckNodeIntegrity)(Node *node)
 
     if (node->next)
     {
-        if (node->next->prev != node)
+        if (node->next == node || node->next->prev != node)
             return no;
     }
 
