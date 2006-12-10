@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.36 $ 
+    $Date: 2006/12/10 20:17:39 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -359,7 +359,8 @@ struct _Lexer
     uint txtend;            /* end of current node */
     LexerState state;       /* state of lexer's finite state machine */
 
-    Node* token;            /* current parse point */
+    Node* token;            /* last token returned by GetToken() */
+    Node* itoken;           /* last duplicate inline returned by GetToken() */
     Node* root;             /* remember root node of the document */
     Node* parent;           /* remember parent node for CDATA elements */
     

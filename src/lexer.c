@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/04 07:36:20 $ 
-    $Revision: 1.185 $ 
+    $Date: 2006/12/10 20:17:39 $ 
+    $Revision: 1.186 $ 
 
 */
 
@@ -675,7 +675,10 @@ void TY_(FreeLexer)( TidyDocImpl* doc )
         TY_(FreeStyles)( doc );
 
         if ( lexer->pushed )
+        {
             TY_(FreeNode)( doc, lexer->token );
+            TY_(FreeNode)( doc, lexer->itoken );
+        }
 
         while ( lexer->istacksize > 0 )
             TY_(PopInline)( doc, NULL );
@@ -1961,33 +1964,41 @@ void TY_(UngetToken)( TidyDocImpl* doc )
   Preformatted   -- white space preserved as is
   IgnoreMarkup   -- for CDATA elements such as script, style
 */
+static Node* GetTokenFromStream( TidyDocImpl* doc, GetTokenMode mode );
+
 Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
 {
     Lexer* lexer = doc->lexer;
-    uint c, badcomment = 0;
-    Bool isempty = no;
-    AttVal *attributes = NULL;
 
-    if (lexer->pushed)
+    if (lexer->pushed || lexer->itoken)
     {
-        /* duplicate inlines in preference to pushed text nodes when appropriate */
-        if ((lexer->token && lexer->token->type != TextNode)
-            || !(lexer->insert || lexer->inode))
+        /* Deal with previously returned duplicate inline token */
+        if (lexer->itoken)
         {
-            lexer->pushed = no;
-            return lexer->token;
+            /* itoken rejected */
+            if (lexer->pushed)
+            {
+                lexer->pushed = no;
+                return lexer->itoken;
+            }
+            /* itoken has been accepted */
+            lexer->itoken = NULL;
         }
+            
+        /* duplicate inlines in preference to pushed text nodes when appropriate */
+        lexer->pushed = no;
+        if (lexer->token->type != TextNode
+            || !(lexer->insert || lexer->inode))
+            return lexer->token;
+        return lexer->itoken = TY_(InsertedToken)( doc );
     }
+
+    assert( !lexer->pushed );
 
     /* at start of block elements, unclosed inline
        elements are inserted into the token stream */
-
     if (lexer->insert || lexer->inode)
-    {
-        if (!lexer->pushed)
-            lexer->token = NULL;
-        return TY_(InsertedToken)( doc );
-    }
+        return lexer->token = TY_(InsertedToken)( doc );
 
     if (mode == CdataContent)
     {
@@ -1995,7 +2006,16 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
         return GetCDATA(doc, lexer->parent);
     }
 
-    assert( !lexer->pushed );
+    return GetTokenFromStream( doc, mode );
+}
+
+static Node* GetTokenFromStream( TidyDocImpl* doc, GetTokenMode mode )
+{
+    Lexer* lexer = doc->lexer;
+    uint c, badcomment = 0;
+    Bool isempty = no;
+    AttVal *attributes = NULL;
+
     /* Lexer->token must be set on return. Nullify it for safety. */
     lexer->token = NULL;
 
