@@ -11,8 +11,8 @@
 
   CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/09/15 15:45:19 $ 
-    $Revision: 1.4 $ 
+    $Date: 2006/12/13 14:04:26 $ 
+    $Revision: 1.5 $ 
 */
 
 #include "buffio.h"
@@ -25,6 +25,14 @@ int TY_(initFileSource)( TidyInputSource* source, FILE* fp );
 
 /** Free file input source */
 void TY_(freeFileSource)( TidyInputSource* source, Bool closeIt );
+
+#ifdef SUPPORT_POSIX_MAPPED_FILES
+/** Allocate and initialize file input source using Standard C I/O */
+int TY_(initStdIOFileSource)( TidyInputSource* source, FILE* fp );
+
+/** Free file input source using Standard C I/O */
+void TY_(freeStdIOFileSource)( TidyInputSource* source, Bool closeIt );
+#endif
 
 /** Initialize file output sink */
 void TY_(initFileSink)( TidyOutputSink* sink, FILE* fp );

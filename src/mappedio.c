@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.9 2006/11/14 13:29:44 arnaud02 Exp $
+   $Id: mappedio.c,v 1.10 2006/12/13 14:04:26 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -64,7 +64,8 @@ int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
                            fd, 0)) == MAP_FAILED)
     {
         MemFree( fin );
-        return -1;
+        /* Fallback on standard I/O */
+        return TY_(initStdIOFileSource)( inp, fp );
     }
 
     fin->pos = 0;
@@ -80,9 +81,14 @@ int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
 
 void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
 {
-    MappedFileSource* fin = (MappedFileSource*) inp->sourceData;
-    munmap( (void*)fin->base, fin->size );
-    MemFree( fin );
+    if ( inp->getByte == mapped_getByte )
+    {
+        MappedFileSource* fin = (MappedFileSource*) inp->sourceData;
+        munmap( (void*)fin->base, fin->size );
+        MemFree( fin );
+    }
+    else
+        TY_(freeStdIOFileSource)( inp, closeIt );
 }
 
 #endif
