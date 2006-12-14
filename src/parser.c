@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/10 21:36:45 $ 
-    $Revision: 1.174 $ 
+    $Date: 2006/12/14 16:05:13 $ 
+    $Revision: 1.175 $ 
 
 */
 
@@ -1970,6 +1970,7 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
 {
     Lexer* lexer = doc->lexer;
     Node *node, *parent;
+    Bool wasblock;
 
     if (list->tag->model & CM_EMPTY)
         return;
@@ -2010,7 +2011,7 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                 continue;
             }
 
-            if (node->tag && node->tag->model & CM_INLINE)
+            if (TY_(nodeHasCM)(node,CM_INLINE))
             {
                 TY_(ReportError)(doc, list, node, DISCARDING_UNEXPECTED);
                 TY_(PopInline)( doc, node );
@@ -2043,7 +2044,7 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
         {
             TY_(UngetToken)( doc );
 
-            if (node->tag && (node->tag->model & CM_BLOCK) && lexer->excludeBlocks)
+            if (TY_(nodeHasCM)(node,CM_BLOCK) && lexer->excludeBlocks)
             {
                 TY_(ReportError)(doc, list, node, MISSING_ENDTAG_BEFORE);
                 return;
@@ -2055,8 +2056,15 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                           || nodeIsTABLE(node)) )
                 return;
 
+            wasblock = TY_(nodeHasCM)(node,CM_BLOCK);
             node = TY_(InferredTag)(doc, TidyTag_LI);
-            TY_(AddStyleProperty)( doc, node, "list-style: none" );
+            /* Add "display: inline" to avoid a blank line after <li> with 
+               Internet Explorer. See http://tidy.sf.net/issue/836462 */
+            TY_(AddStyleProperty)( doc, node,
+                                   wasblock
+                                   ? "list-style: none; display: inline"
+                                   : "list-style: none" 
+                                   );
             TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
         }
 
