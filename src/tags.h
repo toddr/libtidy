@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.19 $ 
+    $Date: 2006/12/15 10:17:55 $ 
+    $Revision: 1.20 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
   Use lookupw() to find a tag given a wide char string.
@@ -105,7 +105,6 @@ Parser TY_(ParseNoFrames);
 Parser TY_(ParseBody);
 Parser TY_(ParsePre);
 Parser TY_(ParseList);
-Parser TY_(ParseLI);
 Parser TY_(ParseDefList);
 Parser TY_(ParseBlock);
 Parser TY_(ParseInline);
@@ -117,8 +116,6 @@ Parser TY_(ParseRow);
 Parser TY_(ParseSelect);
 Parser TY_(ParseOptGroup);
 Parser TY_(ParseText);
-Parser TY_(ParseObject);
-Parser TY_(ParseMap);
 
 CheckAttribs TY_(CheckAttributes);
 
