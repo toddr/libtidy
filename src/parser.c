@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/14 16:05:13 $ 
-    $Revision: 1.175 $ 
+    $Date: 2006/12/15 10:58:07 $ 
+    $Revision: 1.176 $ 
 
 */
 
@@ -2056,20 +2056,36 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                           || nodeIsTABLE(node)) )
                 return;
 
-            wasblock = TY_(nodeHasCM)(node,CM_BLOCK);
-            node = TY_(InferredTag)(doc, TidyTag_LI);
-            /* Add "display: inline" to avoid a blank line after <li> with 
-               Internet Explorer. See http://tidy.sf.net/issue/836462 */
-            TY_(AddStyleProperty)( doc, node,
-                                   wasblock
-                                   ? "list-style: none; display: inline"
-                                   : "list-style: none" 
-                                   );
-            TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
+            /* http://tidy.sf.net/issue/836462
+               If "list" is an unordered list, insert the next tag within 
+               the last <li> to preserve the numbering to match the visual 
+               rendering of most browsers. */    
+            if ( nodeIsOL(list) && list->content )
+            {
+                TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
+                for ( node = list->content; node && node->next;
+                      node = node->next ) {}
+            }
+            else
+            {
+                /* Add an inferred <li> */
+                wasblock = TY_(nodeHasCM)(node,CM_BLOCK);
+                node = TY_(InferredTag)(doc, TidyTag_LI);
+                /* Add "display: inline" to avoid a blank line after <li> with 
+                   Internet Explorer. See http://tidy.sf.net/issue/836462 */
+                TY_(AddStyleProperty)( doc, node,
+                                       wasblock
+                                       ? "list-style: none; display: inline"
+                                       : "list-style: none" 
+                                       );
+                TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
+                TY_(InsertNodeAtEnd)(list,node);
+            }
         }
+        else
+            /* node is <LI> */
+            TY_(InsertNodeAtEnd)(list,node);
 
-        /* node should be <LI> */
-        TY_(InsertNodeAtEnd)(list,node);
         ParseTag( doc, node, IgnoreWhitespace);
     }
 
