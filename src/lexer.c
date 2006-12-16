@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/10 20:17:39 $ 
-    $Revision: 1.186 $ 
+    $Date: 2006/12/16 07:57:06 $ 
+    $Revision: 1.187 $ 
 
 */
 
@@ -674,10 +674,12 @@ void TY_(FreeLexer)( TidyDocImpl* doc )
     {
         TY_(FreeStyles)( doc );
 
-        if ( lexer->pushed )
+        /* See GetToken() */
+        if ( lexer->pushed || lexer->itoken )
         {
+            if (lexer->pushed)
+                TY_(FreeNode)( doc, lexer->itoken );
             TY_(FreeNode)( doc, lexer->token );
-            TY_(FreeNode)( doc, lexer->itoken );
         }
 
         while ( lexer->istacksize > 0 )
@@ -1993,7 +1995,7 @@ Node* TY_(GetToken)( TidyDocImpl* doc, GetTokenMode mode )
         return lexer->itoken = TY_(InsertedToken)( doc );
     }
 
-    assert( !lexer->pushed );
+    assert( !(lexer->pushed || lexer->itoken) );
 
     /* at start of block elements, unclosed inline
        elements are inserted into the token stream */
