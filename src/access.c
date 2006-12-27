@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/14 13:29:16 $ 
-    $Revision: 1.34 $ 
+    $Date: 2006/12/27 19:06:17 $ 
+    $Revision: 1.35 $ 
 
 */
 
@@ -2102,56 +2102,41 @@ static void CheckInputAttributes( TidyDocImpl* doc, Node* node )
 static void CheckFrameSet( TidyDocImpl* doc, Node* node )
 {
     Node* temp;
-    
     Bool HasNoFrames = no;
 
     if (Level1_Enabled( doc ))
     {
-        if (node->content != NULL)
+        if ( doc->badAccess & BA_INVALID_LINK_NOFRAMES )
         {
-            temp = node->content;
-
-            while (temp != NULL)
+           TY_(ReportAccessError)( doc, node, NOFRAMES_INVALID_LINK);
+           doc->badAccess &= ~BA_INVALID_LINK_NOFRAMES; /* emit only once */
+        }
+        for ( temp = node->content; temp != NULL ; temp = temp->next )
+        {
+            if ( nodeIsNOFRAMES(temp) )
             {
-                if ( nodeIsA(temp) )
-                {
-                    TY_(ReportAccessError)( doc, temp, NOFRAMES_INVALID_LINK);
-                }
-                else if ( nodeIsNOFRAMES(temp) )
-                {
-                    HasNoFrames = yes;
+                HasNoFrames = yes;
 
-                    if ( temp->content && nodeIsP(temp->content->content) )
+                if ( temp->content && nodeIsP(temp->content->content) )
+                {
+                    Node* para = temp->content->content;
+                    if ( TY_(nodeIsText)(para->content) )
                     {
-                        Node* para = temp->content->content;
-                        if ( TY_(nodeIsText)(para->content) )
-                        {
-                            ctmbstr word = textFromOneNode( doc, para->content );
-                            if ( word && strstr(word, "browser") != NULL )
-                            {
-                                TY_(ReportAccessError)( doc, para, NOFRAMES_INVALID_CONTENT );
-                            }
-                        }
-                    }
-                    else if (temp->content == NULL)
-                    {
-                        TY_(ReportAccessError)( doc, temp, NOFRAMES_INVALID_NO_VALUE);
-                    }
-                    else if ( temp->content &&
-                              IsWhitespace(textFromOneNode(doc, temp->content)) )
-                    {
-                        TY_(ReportAccessError)( doc, temp, NOFRAMES_INVALID_NO_VALUE);
+                        ctmbstr word = textFromOneNode( doc, para->content );
+                        if ( word && strstr(word, "browser") != NULL )
+                            TY_(ReportAccessError)( doc, para, NOFRAMES_INVALID_CONTENT );
                     }
                 }
-
-                temp = temp->next;
+                else if (temp->content == NULL)
+                    TY_(ReportAccessError)( doc, temp, NOFRAMES_INVALID_NO_VALUE);
+                else if ( temp->content &&
+                          IsWhitespace(textFromOneNode(doc, temp->content)) )
+                    TY_(ReportAccessError)( doc, temp, NOFRAMES_INVALID_NO_VALUE);
             }
         }
 
         if (HasNoFrames == no)
-        {
             TY_(ReportAccessError)( doc, node, FRAME_MISSING_NOFRAMES);
-        }
     }
 }
 

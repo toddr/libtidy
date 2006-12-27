@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/30 10:27:29 $ 
-    $Revision: 1.163 $ 
+    $Date: 2006/12/27 19:06:17 $ 
+    $Revision: 1.164 $ 
 
 */
 
@@ -1267,7 +1267,7 @@ void TY_(ReportAttrError)(TidyDocImpl* doc, Node *node, AttVal *av, uint code)
 
     case MISSING_IMAGEMAP:
         messageNode(doc, TidyWarning, node, fmt, tagdesc);
-        doc->badAccess |= MISSING_IMAGE_MAP;
+        doc->badAccess |= BA_MISSING_IMAGE_MAP;
         break;
 
     case REPEATED_ATTRIBUTE:
@@ -1328,14 +1328,14 @@ void TY_(DisplayHTMLTableAlgorithm)( TidyDocImpl* doc )
 void TY_(ReportAccessWarning)( TidyDocImpl* doc, Node* node, uint code )
 {
     ctmbstr fmt = GetFormatFromCode(code);
-    doc->badAccess = yes;
+    doc->badAccess |= BA_WAI;
     messageNode( doc, TidyAccess, node, fmt );
 }
 
 void TY_(ReportAccessError)( TidyDocImpl* doc, Node* node, uint code )
 {
     ctmbstr fmt = GetFormatFromCode(code);
-    doc->badAccess = yes;
+    doc->badAccess |= BA_WAI;
     messageNode( doc, TidyAccess, node, fmt );
 }
 
@@ -1518,7 +1518,6 @@ void TY_(ReportFatal)( TidyDocImpl* doc, Node *element, Node *node, uint code)
 
 void TY_(ErrorSummary)( TidyDocImpl* doc )
 {
-    /* adjust badAccess to that its NULL if frames are ok */
     ctmbstr encnam = "specified";
     int charenc = cfg( doc, TidyCharEncoding ); 
     if ( charenc == WIN1252 ) 
@@ -1530,10 +1529,11 @@ void TY_(ErrorSummary)( TidyDocImpl* doc )
     else if ( charenc == LATIN0 )
         encnam = "latin0";
 
-    if ( doc->badAccess & (USING_FRAMES | USING_NOFRAMES) )
+    /* adjust badAccess to that it is 0 if frames are ok */
+    if ( doc->badAccess & (BA_USING_FRAMES | BA_USING_NOFRAMES) )
     {
-        if (!((doc->badAccess & USING_FRAMES) && !(doc->badAccess & USING_NOFRAMES)))
-            doc->badAccess &= ~(USING_FRAMES | USING_NOFRAMES);
+        if (!((doc->badAccess & BA_USING_FRAMES) && !(doc->badAccess & BA_USING_NOFRAMES)))
+            doc->badAccess &= ~(BA_USING_FRAMES | BA_USING_NOFRAMES);
     }
 
     if (doc->badChars)
@@ -1615,66 +1615,60 @@ void TY_(ErrorSummary)( TidyDocImpl* doc )
     
     if (doc->badAccess)
     {
-      if ( cfg(doc, TidyAccessibilityCheckLevel) > 0 )
-      {
-        tidy_out(doc, "For further advice on how to make your pages accessible, see\n");
-        tidy_out(doc, "%s", ACCESS_URL );
-        tidy_out(doc, " and\n" );
-        tidy_out(doc, "%s", ATRC_ACCESS_URL );
-        tidy_out(doc, ".\n" );
-        tidy_out(doc, "You may also want to try \"http://www.cast.org/bobby/\" which is a free Web-based\n");
-        tidy_out(doc, "service for checking URLs for accessibility.\n\n");
-      }
-      else
-      {
-        if (doc->badAccess & MISSING_SUMMARY)
+        /* Tidy "classic" accessibility tests */
+        if ( cfg(doc, TidyAccessibilityCheckLevel) == 0 )
         {
-          tidy_out(doc, "The table summary attribute should be used to describe\n");
-          tidy_out(doc, "the table structure. It is very helpful for people using\n");
-          tidy_out(doc, "non-visual browsers. The scope and headers attributes for\n");
-          tidy_out(doc, "table cells are useful for specifying which headers apply\n");
-          tidy_out(doc, "to each table cell, enabling non-visual browsers to provide\n");
-          tidy_out(doc, "a meaningful context for each cell.\n\n");
-        }
+            if (doc->badAccess & BA_MISSING_SUMMARY)
+            {
+                tidy_out(doc, "The table summary attribute should be used to describe\n");
+                tidy_out(doc, "the table structure. It is very helpful for people using\n");
+                tidy_out(doc, "non-visual browsers. The scope and headers attributes for\n");
+                tidy_out(doc, "table cells are useful for specifying which headers apply\n");
+                tidy_out(doc, "to each table cell, enabling non-visual browsers to provide\n");
+                tidy_out(doc, "a meaningful context for each cell.\n\n");
+            }
 
-        if (doc->badAccess & MISSING_IMAGE_ALT)
-        {
-          tidy_out(doc, "The alt attribute should be used to give a short description\n");
-          tidy_out(doc, "of an image; longer descriptions should be given with the\n");
-          tidy_out(doc, "longdesc attribute which takes a URL linked to the description.\n");
-          tidy_out(doc, "These measures are needed for people using non-graphical browsers.\n\n");
-        }
+            if (doc->badAccess & BA_MISSING_IMAGE_ALT)
+            {
+                tidy_out(doc, "The alt attribute should be used to give a short description\n");
+                tidy_out(doc, "of an image; longer descriptions should be given with the\n");
+                tidy_out(doc, "longdesc attribute which takes a URL linked to the description.\n");
+                tidy_out(doc, "These measures are needed for people using non-graphical browsers.\n\n");
+            }
 
-        if (doc->badAccess & MISSING_IMAGE_MAP)
-        {
-          tidy_out(doc, "Use client-side image maps in preference to server-side image\n");
-          tidy_out(doc, "maps as the latter are inaccessible to people using non-\n");
-          tidy_out(doc, "graphical browsers. In addition, client-side maps are easier\n");
-          tidy_out(doc, "to set up and provide immediate feedback to users.\n\n");
-        }
+            if (doc->badAccess & BA_MISSING_IMAGE_MAP)
+            {
+                tidy_out(doc, "Use client-side image maps in preference to server-side image\n");
+                tidy_out(doc, "maps as the latter are inaccessible to people using non-\n");
+                tidy_out(doc, "graphical browsers. In addition, client-side maps are easier\n");
+                tidy_out(doc, "to set up and provide immediate feedback to users.\n\n");
+            }
 
-        if (doc->badAccess & MISSING_LINK_ALT)
-        {
-          tidy_out(doc, "For hypertext links defined using a client-side image map, you\n");
-          tidy_out(doc, "need to use the alt attribute to provide a textual description\n");
-          tidy_out(doc, "of the link for people using non-graphical browsers.\n\n");
-        }
+            if (doc->badAccess & BA_MISSING_LINK_ALT)
+            {
+                tidy_out(doc, "For hypertext links defined using a client-side image map, you\n");
+                tidy_out(doc, "need to use the alt attribute to provide a textual description\n");
+                tidy_out(doc, "of the link for people using non-graphical browsers.\n\n");
+            }
 
-        if ((doc->badAccess & USING_FRAMES) && !(doc->badAccess & USING_NOFRAMES))
-        {
-          tidy_out(doc, "Pages designed using frames presents problems for\n");
-          tidy_out(doc, "people who are either blind or using a browser that\n");
-          tidy_out(doc, "doesn't support frames. A frames-based page should always\n");
-          tidy_out(doc, "include an alternative layout inside a NOFRAMES element.\n\n");
+            if ((doc->badAccess & BA_USING_FRAMES) && !(doc->badAccess & BA_USING_NOFRAMES))
+            {
+                tidy_out(doc, "Pages designed using frames presents problems for\n");
+                tidy_out(doc, "people who are either blind or using a browser that\n");
+                tidy_out(doc, "doesn't support frames. A frames-based page should always\n");
+                tidy_out(doc, "include an alternative layout inside a NOFRAMES element.\n\n");
+            }
+
         }
 
         tidy_out(doc, "For further advice on how to make your pages accessible\n");
-        tidy_out(doc, "see " );
-        tidy_out(doc, ACCESS_URL );
+        tidy_out(doc, "see %s", ACCESS_URL );
+        if ( cfg(doc, TidyAccessibilityCheckLevel) > 0 )
+            tidy_out(doc, " and %s", ATRC_ACCESS_URL );
+        tidy_out(doc, ".\n" );
         tidy_out(doc, ". You may also want to try\n" );
         tidy_out(doc, "\"http://www.cast.org/bobby/\" which is a free Web-based\n");
         tidy_out(doc, "service for checking URLs for accessibility.\n\n");
-      }
     }
 
     if (doc->badLayout)
