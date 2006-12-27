@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.19 $ 
+    $Date: 2006/12/27 21:51:58 $ 
+    $Revision: 1.20 $ 
 
 */
 
@@ -286,6 +286,81 @@ Node *TY_(InsertedToken)( TidyDocImpl* doc )
         lexer->insert = NULL;
 
     return node;
+}
+
+
+/*
+   We have two CM_INLINE elements pushed ... the first is closing,
+   but, like the browser, the second should be retained ...
+   Like <b>bold <i>bold and italics</b> italics only</i>
+   This function switches the tag positions on the stack,
+   returning 'yes' if both were found in the expected order.
+*/
+Bool TY_(SwitchInline)( TidyDocImpl* doc, Node* element, Node* node )
+{
+    Lexer* lexer = doc->lexer;
+    if ( lexer
+         && element && element->tag
+         && node && node->tag
+         && TY_(IsPushed)( doc, element )
+         && TY_(IsPushed)( doc, node ) 
+         && ((lexer->istacksize - lexer->istackbase) >= 2) )
+    {
+        /* we have a chance of succeeding ... */
+        int i;
+        for (i = (lexer->istacksize - lexer->istackbase - 1); i >= 0; --i)
+        {
+            if (lexer->istack[i].tag == element->tag) {
+                /* found the element tag - phew */
+                IStack *istack1 = &lexer->istack[i];
+                IStack *istack2 = NULL;
+                --i; /* back one more, and continue */
+                for ( ; i >= 0; --i)
+                {
+                    if (lexer->istack[i].tag == node->tag)
+                    {
+                        /* found the element tag - phew */
+                        istack2 = &lexer->istack[i];
+                        break;
+                    }
+                }
+                if ( istack2 )
+                {
+                    /* perform the swap */
+                    IStack tmp_istack = *istack2;
+                    *istack2 = *istack1;
+                    *istack1 = tmp_istack;
+                    return yes;
+                }
+            }
+        }
+    }
+    return no;
+}
+
+/*
+  We want to push a specific a specific element on the stack,
+  but it may not be the last element, which InlineDup()
+  would handle. Return yes, if found and inserted.
+*/
+Bool TY_(InlineDup1)( TidyDocImpl* doc, Node* node, Node* element )
+{
+    Lexer* lexer = doc->lexer;
+    int n, i;
+    if ( element
+         && (element->tag != NULL)
+         && ((n = lexer->istacksize - lexer->istackbase) > 0) )
+    {
+        for ( i = n - 1; i >=0; --i ) {
+            if (lexer->istack[i].tag == element->tag) {
+                /* found our element tag - insert it */
+                lexer->insert = &(lexer->istack[i]);
+                lexer->inode = node;
+                return yes;
+            }
+        }
+    }
+    return no;
 }
 
 /*

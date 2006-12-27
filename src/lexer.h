@@ -8,8 +8,8 @@
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2006/12/10 20:17:39 $ 
-    $Revision: 1.37 $ 
+    $Date: 2006/12/27 21:51:58 $ 
+    $Revision: 1.38 $ 
 
 */
 
@@ -602,6 +602,10 @@ int TY_(InlineDup)( TidyDocImpl* doc, Node *node );
 */
 void TY_(DeferDup)( TidyDocImpl* doc );
 Node* TY_(InsertedToken)( TidyDocImpl* doc );
+
+/* stack manipulation for inline elements */
+Bool TY_(SwitchInline)( TidyDocImpl* doc, Node* element, Node* node );
+Bool TY_(InlineDup1)( TidyDocImpl* doc, Node* node, Node* element );
 
 #ifdef __cplusplus
 }

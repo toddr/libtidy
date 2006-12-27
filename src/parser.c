@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 19:06:18 $ 
-    $Revision: 1.177 $ 
+    $Date: 2006/12/27 21:51:58 $ 
+    $Revision: 1.178 $ 
 
 */
 
@@ -1510,6 +1510,29 @@ void TY_(ParseInline)( TidyDocImpl* doc, Node *element, GetTokenMode mode )
                      && TY_(nodeHasCM)(element, CM_INLINE) )
             {
                 /* allow any inline end tag to end current element */
+
+                /* http://tidy.sf.net/issue/1426419 */
+                /* but, like the browser, retain an earlier inline element.
+                   This is implemented by setting the lexer into a mode
+                   where it gets tokens from the inline stack rather than
+                   from the input stream. Check if the scenerio fits. */
+                if ( !nodeIsA(element)
+                     && (node->tag != element->tag)
+                     && TY_(IsPushed)( doc, node )
+                     && TY_(IsPushed)( doc, element ) )
+                {
+                    /* we have something like
+                       <b>bold <i>bold and italic</b> italics</i> */
+                    if ( TY_(SwitchInline)( doc, element, node ) )
+                    {
+                        TY_(ReportError)(doc, element, node, NON_MATCHING_ENDTAG);
+                        TY_(UngetToken)( doc ); /* put this back */
+                        TY_(InlineDup1)( doc, NULL, element ); /* dupe the <i>, after </b> */
+                        if (!(mode & Preformatted))
+                            TrimSpaces( doc, element );
+                        return; /* close <i>, but will re-open it, after </b> */
+                    }
+                }
                 TY_(PopInline)( doc, element );
 
                 if ( !nodeIsA(element) )
