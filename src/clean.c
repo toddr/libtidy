@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.105 $ 
+    $Date: 2006/12/28 11:34:38 $ 
+    $Revision: 1.106 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -944,6 +944,23 @@ static void TextAlign( TidyDocImpl* doc, Node* node )
 }
 
 /*
+    Symptom: <table bgcolor="red">
+    Action: <table style="background-color: red">
+*/
+static void TableBgColor( TidyDocImpl* doc, Node* node )
+{
+    AttVal* attr;
+    tmbchar buf[256];
+
+    if (NULL != (attr = TY_(AttrGetById)(node, TidyAttr_BGCOLOR)))
+    {
+        TY_(tmbsnprintf)(buf, sizeof(buf), "background-color: %s", attr->value );
+        TY_(RemoveAttribute)( doc, node, attr );
+        TY_(AddStyleProperty)( doc, node, buf );
+    }
+}
+
+/*
    The clean up rules use the pnode argument to return the
    next node when the original node has been deleted
 */
@@ -1235,6 +1252,11 @@ static Bool CanApplyBlockStyle( Node *node )
 static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
 {
     Node *child;
+
+    /* check for bgcolor */
+    if (   nodeIsTABLE(node)
+        || nodeIsTD(node) || nodeIsTH(node) || nodeIsTR( node ))
+        TableBgColor( doc, node );
 
     if (CanApplyBlockStyle(node))
     {
