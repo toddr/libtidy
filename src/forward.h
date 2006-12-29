@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/19 08:36:40 $ 
-    $Revision: 1.5 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.6 $ 
 
   Avoids many include file circular dependencies.
 
@@ -56,6 +56,6 @@ typedef struct _IStack IStack;
 struct _Lexer;
 typedef struct _Lexer Lexer;
 
-
+extern TidyAllocator TY_(g_default_allocator);
 
 #endif /* __FORWARD_H__ */

@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 21:51:58 $ 
-    $Revision: 1.178 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.179 $ 
 
 */
 
@@ -84,15 +84,15 @@ void TY_(CoerceNode)(TidyDocImpl* doc, Node *node, TidyTagId tid, Bool obsolete,
     else
         TY_(ReportNotice)(doc, node, tmp, REPLACING_ELEMENT);
 
-    MemFree(tmp->element);
-    MemFree(tmp);
+    TidyDocFree(doc, tmp->element);
+    TidyDocFree(doc, tmp);
 
     node->was = node->tag;
     node->tag = tag;
     node->type = StartTag;
     node->implicit = yes;
-    MemFree(node->element);
-    node->element = TY_(tmbstrdup)(tag->name);
+    TidyDocFree(doc, node->element);
+    node->element = TY_(tmbstrdup)(doc->allocator, tag->name);
 }
 
 /* extract a node and its children from a markup tree */
@@ -406,7 +406,7 @@ static void TrimTrailingSpace( TidyDocImpl* doc, Node *element, Node *last )
 #if 0
 static Node *EscapeTag(Lexer *lexer, Node *element)
 {
-    Node *node = NewNode(lexer);
+    Node *node = NewNode(lexer->allocator, lexer);
 
     node->start = lexer->lexsize;
     AddByte(lexer, '<');
@@ -482,7 +482,7 @@ static void TrimInitialSpace( TidyDocImpl* doc, Node *element, Node *text )
             }
             else /* create new node */
             {
-                node = TY_(NewNode)(lexer);
+                node = TY_(NewNode)(lexer->allocator, lexer);
                 node->start = (element->start)++;
                 node->end = element->start;
                 lexer->lexbuf[node->start] = ' ';
@@ -1165,8 +1165,8 @@ void TY_(ParseBlock)( TidyDocImpl* doc, Node *element, GetTokenMode mode)
                         TY_(ReportError)(doc, element, node, DISCARDING_UNEXPECTED );
                         TY_(FreeNode)( doc, node );
                         node = element->parent;
-                        MemFree(node->element);
-                        node->element = TY_(tmbstrdup)("th");
+                        TidyDocFree(doc, node->element);
+                        node->element = TY_(tmbstrdup)(doc->allocator, "th");
                         node->tag = TY_(LookupTagDef)( TidyTag_TH );
                         continue;
                     }
@@ -1457,8 +1457,8 @@ void TY_(ParseInline)( TidyDocImpl* doc, Node *element, GetTokenMode mode )
            )
         {
             node->tag = TY_(LookupTagDef)( TidyTag_BR );
-            MemFree(node->element);
-            node->element = TY_(tmbstrdup)("br");
+            TidyDocFree(doc, node->element);
+            node->element = TY_(tmbstrdup)(doc->allocator, "br");
             TrimSpaces(doc, element);
             TY_(InsertNodeAtEnd)(element, node);
             continue;
@@ -3218,7 +3218,7 @@ void TY_(ParseHead)(TidyDocImpl* doc, Node *head, GetTokenMode ARG_UNUSED(mode))
                 {
                     tmbstr val, charset;
                     uint end = 0;
-                    val = charset = TY_(tmbstrdup)(content->value);
+                    val = charset = TY_(tmbstrdup)(doc->allocator, content->value);
                     val = TY_(tmbstrtolower)(val);
                     val = strstr(content->value, "charset");
                     
@@ -3235,7 +3235,7 @@ void TY_(ParseHead)(TidyDocImpl* doc, Node *head, GetTokenMode ARG_UNUSED(mode))
 
                     if (val && end)
                     {
-                        tmbstr encoding = TY_(tmbstrndup)(val, end);
+                        tmbstr encoding = TY_(tmbstrndup)(doc->allocator,val, end);
                         uint id = TY_(GetEncodingIdFromName)(encoding);
 
                         /* todo: detect mismatch with BOM/XMLDecl/declared */
@@ -3244,10 +3244,10 @@ void TY_(ParseHead)(TidyDocImpl* doc, Node *head, GetTokenMode ARG_UNUSED(mode))
                         /* todo: change input/output encoding settings */
                         /* todo: store id in StreamIn */
 
-                        MemFree(encoding);
+                        TidyDocFree(doc, encoding);
                     }
 
-                    MemFree(charset);
+                    TidyDocFree(doc, charset);
                 }
             }
 #endif /* AUTO_INPUT_ENCODING */

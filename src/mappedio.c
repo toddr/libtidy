@@ -5,7 +5,7 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.10 2006/12/13 14:04:26 arnaud02 Exp $
+   $Id: mappedio.c,v 1.11 2006/12/29 16:31:08 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -26,6 +26,7 @@
 
 typedef struct
 {
+    TidyAllocator *allocator;
     const byte *base;
     size_t pos, size;
 } MappedFileSource;
@@ -42,19 +43,19 @@ static Bool TIDY_CALL mapped_eof( void* sourceData )
     return (fin->pos >= fin->size);
 }
 
-static void TIDY_CALL mapped_ungetByte( void* sourceData, byte bv )
+static void TIDY_CALL mapped_ungetByte( void* sourceData, byte ARG_UNUSED(bv) )
 {
     MappedFileSource* fin = (MappedFileSource*) sourceData;
     fin->pos--;
 }
 
-int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
+int TY_(initFileSource)( TidyAllocator *allocator, TidyInputSource* inp, FILE* fp )
 {
     MappedFileSource* fin;
     struct stat sbuf;
     int fd;
 
-    fin = (MappedFileSource*) MemAlloc( sizeof(MappedFileSource) );
+    fin = (MappedFileSource*) TidyAlloc( allocator, sizeof(MappedFileSource) );
     if ( !fin )
         return -1;
 
@@ -63,12 +64,13 @@ int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
          (fin->base = mmap(0, fin->size = sbuf.st_size, PROT_READ, MAP_SHARED,
                            fd, 0)) == MAP_FAILED)
     {
-        MemFree( fin );
+        TidyFree( allocator, fin );
         /* Fallback on standard I/O */
-        return TY_(initStdIOFileSource)( inp, fp );
+        return TY_(initStdIOFileSource)( allocator, inp, fp );
     }
 
     fin->pos = 0;
+    fin->allocator = allocator;
     fclose(fp);
 
     inp->getByte    = mapped_getByte;
@@ -85,7 +87,7 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
     {
         MappedFileSource* fin = (MappedFileSource*) inp->sourceData;
         munmap( (void*)fin->base, fin->size );
-        MemFree( fin );
+        TidyFree( fin->allocator, fin );
     }
     else
         TY_(freeStdIOFileSource)( inp, closeIt );
@@ -107,6 +109,7 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
 
 typedef struct _fp_input_mapped_source
 {
+    TidyAllocator *allocator;
     LONGLONG size, pos;
     HANDLE file, map;
     byte *view, *iter, *end;
@@ -157,7 +160,7 @@ static Bool TIDY_CALL mapped_eof( void *sourceData )
     return ( data->pos >= data->size );
 }
 
-static void TIDY_CALL mapped_ungetByte( void *sourceData, byte bt )
+static void TIDY_CALL mapped_ungetByte( void *sourceData, byte ARG_UNUSED(bt) )
 {
     MappedFileSource *data = sourceData;
 
@@ -177,7 +180,7 @@ static void TIDY_CALL mapped_ungetByte( void *sourceData, byte bt )
     mapped_openView( data );
 }
 
-static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
+static int initMappedFileSource( TidyAllocator *allocator, TidyInputSource* inp, HANDLE fp )
 {
     MappedFileSource* fin = NULL;
 
@@ -185,7 +188,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
     inp->eof        = mapped_eof;
     inp->ungetByte  = mapped_ungetByte;
 
-    fin = (MappedFileSource*) MemAlloc( sizeof(MappedFileSource) );
+    fin = (MappedFileSource*) TidyAlloc( allocator, sizeof(MappedFileSource) );
     if ( !fin )
         return -1;
     
@@ -195,7 +198,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
         (DWORD)pli->LowPart = GetFileSize( fp, (DWORD *)&pli->HighPart );
         if ( GetLastError() != NO_ERROR || fin->size <= 0 )
         {
-            MemFree(fin);
+            TidyFree(allocator, fin);
             return -1;
         }
     }
@@ -203,7 +206,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
     if ( !GetFileSizeEx( fp, (LARGE_INTEGER*)&fin->size )
          || fin->size <= 0 )
     {
-        MemFree(fin);
+        TidyFree(allocator, fin);
         return -1;
     }
 #endif
@@ -212,7 +215,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
 
     if ( !fin->map )
     {
-        MemFree(fin);
+        TidyFree(allocator, fin);
         return -1;
     }
 
@@ -222,6 +225,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
         fin->gran = info.dwAllocationGranularity;
     }
 
+    fin->allocator = allocator;
     fin->pos    = 0;
     fin->view   = NULL;
     fin->iter   = NULL;
@@ -230,7 +234,7 @@ static int initMappedFileSource( TidyInputSource* inp, HANDLE fp )
     if ( mapped_openView( fin ) != 0 )
     {
         CloseHandle( fin->map );
-        MemFree( fin );
+        TidyFree( allocator, fin );
         return -1;
     }
 
@@ -251,13 +255,13 @@ static void freeMappedFileSource( TidyInputSource* inp, Bool closeIt )
         CloseHandle( fin->map );
         CloseHandle( fin->file );
     }
-    MemFree( fin );
+    TidyFree( fin->allocator, fin );
 }
 
 StreamIn* MappedFileInput ( TidyDocImpl* doc, HANDLE fp, int encoding )
 {
     StreamIn *in = TY_(initStreamIn)( doc, encoding );
-    if ( initMappedFileSource( &in->source, fp ) != 0 )
+    if ( initMappedFileSource( doc->allocator, &in->source, fp ) != 0 )
     {
         TY_(freeStreamIn)( in );
         return NULL;
@@ -274,7 +278,7 @@ int TY_(DocParseFileWithMappedFile)( TidyDocImpl* doc, ctmbstr filnam ) {
 
 #if PRESERVE_FILE_TIMES
     LONGLONG actime, modtime;
-    ClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
+    TidyClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
 
     if ( fin != INVALID_HANDLE_VALUE && cfgBool(doc,TidyKeepFileTimes) &&
          GetFileTime(fin, NULL, (FILETIME*)&actime, (FILETIME*)&modtime) )

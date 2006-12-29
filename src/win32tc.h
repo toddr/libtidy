@@ -7,10 +7,10 @@
    (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
-   $Id: win32tc.h,v 1.2 2006/09/12 15:14:44 arnaud02 Exp $
+   $Id: win32tc.h,v 1.3 2006/12/29 16:31:09 arnaud02 Exp $
 */
 
-uint TY_(Win32MLangGetCPFromName)(ctmbstr encoding);
+uint TY_(Win32MLangGetCPFromName)(TidyAllocator *allocator,ctmbstr encoding);
 Bool TY_(Win32MLangInitInputTranscoder)(StreamIn * in, uint wincp);
 void TY_(Win32MLangUninitInputTranscoder)(StreamIn * in);
 int TY_(Win32MLangGetChar)(byte firstByte, StreamIn * in, uint * bytesRead);

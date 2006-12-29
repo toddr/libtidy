@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/26 10:01:35 $ 
-    $Revision: 1.10 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -70,6 +70,9 @@ struct _TidyDocImpl
     uint                badChars;    /* for bad char encodings */
     uint                badForm;     /* for badly placed form tags */
 
+    /* Memory allocator */
+    TidyAllocator*      allocator;
+
     /* Miscellaneous */
     void*               appData;
     uint                nClassId;
@@ -116,7 +119,7 @@ TidyOption   tidyImplToOption( const TidyOptionImpl* option );
 #endif
 
 /* Create/Destroy a Tidy "document" object */
-TidyDocImpl* tidyDocCreate(void);
+TidyDocImpl* tidyDocCreate( TidyAllocator *allocator );
 void         tidyDocRelease( TidyDocImpl* impl );
 
 int          tidyDocStatus( TidyDocImpl* impl );

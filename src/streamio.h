@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/18 09:52:33 $ 
-    $Revision: 1.17 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.18 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -66,6 +66,7 @@ struct _StreamIn
 {
     ISO2022State    state;     /* FSM for ISO2022 */
     Bool   pushed;
+    TidyAllocator *allocator;
     tchar* charbuf;
     uint   bufpos;
     uint   bufsize;
@@ -123,13 +124,13 @@ struct _StreamOut
     TidyOutputSink sink;
 };
 
-StreamOut* TY_(FileOutput)( FILE* fp, int encoding, uint newln );
-StreamOut* TY_(BufferOutput)( TidyBuffer* buf, int encoding, uint newln );
-StreamOut* TY_(UserOutput)( TidyOutputSink* sink, int encoding, uint newln );
+StreamOut* TY_(FileOutput)( TidyDocImpl *doc, FILE* fp, int encoding, uint newln );
+StreamOut* TY_(BufferOutput)( TidyDocImpl *doc, TidyBuffer* buf, int encoding, uint newln );
+StreamOut* TY_(UserOutput)( TidyDocImpl *doc, TidyOutputSink* sink, int encoding, uint newln );
 
 StreamOut* TY_(StdErrOutput)(void);
 /* StreamOut* StdOutOutput(void); */
-void       TY_(ReleaseStreamOut)( StreamOut* out );
+void       TY_(ReleaseStreamOut)( TidyDocImpl *doc, StreamOut* out );
 
 void TY_(WriteChar)( uint c, StreamOut* out );
 void TY_(outBOM)( StreamOut *out );

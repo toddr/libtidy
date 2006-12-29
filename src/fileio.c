@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/13 14:04:25 $ 
-    $Revision: 1.14 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.15 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -56,14 +56,15 @@ static void TIDY_CALL filesrc_ungetByte( void* sourceData, byte bv )
 #define initFileSource initStdIOFileSource
 #define freeFileSource freeStdIOFileSource
 #endif
-int TY_(initFileSource)( TidyInputSource* inp, FILE* fp )
+int TY_(initFileSource)( TidyAllocator *allocator, TidyInputSource* inp, FILE* fp )
 {
   FileSource* fin = NULL;
 
-  fin = (FileSource*) MemAlloc( sizeof(FileSource) );
+  fin = (FileSource*) TidyAlloc( allocator, sizeof(FileSource) );
   if ( !fin )
       return -1;
-  ClearMemory( fin, sizeof(FileSource) );
+  TidyClearMemory( fin, sizeof(FileSource) );
+  fin->unget.allocator = allocator;
   fin->fp = fp;
 
   inp->getByte    = filesrc_getByte;
@@ -80,7 +81,7 @@ void TY_(freeFileSource)( TidyInputSource* inp, Bool closeIt )
     if ( closeIt && fin && fin->fp )
       fclose( fin->fp );
     tidyBufFree( &fin->unget );
-    MemFree( fin );
+    TidyFree( fin->unget.allocator, fin );
 }
 
 void TIDY_CALL TY_(filesink_putByte)( void* sinkData, byte bv )

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.25 $ 
+    $Date: 2006/12/29 16:31:07 $ 
+    $Revision: 1.26 $ 
 
 */
 
@@ -132,7 +132,7 @@ void TY_(FreeAnchors)( TidyDocImpl* doc );
 void TY_(InitAttrs)( TidyDocImpl* doc );
 void TY_(FreeAttrTable)( TidyDocImpl* doc );
 
-void TY_(AppendToClassAttr)( AttVal *classattr, ctmbstr classname );
+void TY_(AppendToClassAttr)( TidyDocImpl* doc, AttVal *classattr, ctmbstr classname );
 /*
  the same attribute name can't be used
  more than once in each element

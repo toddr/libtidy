@@ -6,12 +6,13 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/04 07:37:33 $ 
-    $Revision: 1.6 $ 
+    $Date: 2006/12/29 16:31:07 $ 
+    $Revision: 1.7 $ 
 
 */
 
 #include "tidy.h"
+#include "forward.h"
 
 static TidyMalloc  g_malloc  = NULL;
 static TidyRealloc g_realloc = NULL;
@@ -39,7 +40,7 @@ Bool TIDY_CALL tidySetPanicCall( TidyPanic fpanic )
   return yes;
 }
 
-void FatalError( ctmbstr msg )
+static void TIDY_CALL defaultPanic( TidyAllocator* ARG_UNUSED(allocator), ctmbstr msg )
 {
   if ( g_panic )
     g_panic( msg );
@@ -54,27 +55,27 @@ void FatalError( ctmbstr msg )
   }
 }
 
-void* MemAlloc( size_t size )
+static void* TIDY_CALL defaultAlloc( TidyAllocator* allocator, size_t size )
 {
     void *p = ( g_malloc ? g_malloc(size) : malloc(size) );
     if ( !p )
-        FatalError("Out of memory!");
+        defaultPanic( allocator,"Out of memory!");
     return p;
 }
 
-void* MemRealloc( void* mem, size_t newsize )
+static void* TIDY_CALL defaultRealloc( TidyAllocator* allocator, void* mem, size_t newsize )
 {
     void *p;
     if ( mem == NULL )
-        return MemAlloc( newsize );
+        return defaultAlloc( allocator, newsize );
 
     p = ( g_realloc ? g_realloc(mem, newsize) : realloc(mem, newsize) );
     if (!p)
-        FatalError("Out of memory!");
+        defaultPanic( allocator, "Out of memory!");
     return p;
 }
 
-void MemFree( void* mem )
+static void TIDY_CALL defaultFree( TidyAllocator* ARG_UNUSED(allocator), void* mem )
 {
     if ( mem )
     {
@@ -85,10 +86,16 @@ void MemFree( void* mem )
     }
 }
 
-void ClearMemory( void *mem, size_t size )
-{
-    memset(mem, 0, size);
-}
+static const TidyAllocatorVtbl defaultVtbl = {
+    defaultAlloc,
+    defaultRealloc,
+    defaultFree,
+    defaultPanic
+};
+
+TidyAllocator TY_(g_default_allocator) = {
+    &defaultVtbl
+};
 
 /*
  * local variables:

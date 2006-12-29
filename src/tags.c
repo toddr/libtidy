@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 19:06:18 $ 
-    $Revision: 1.68 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.69 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -273,14 +273,14 @@ static uint hash(ctmbstr s)
     return hashval % ELEMENT_HASH_SIZE;
 }
 
-static const Dict *install(TidyTagImpl* tags, const Dict* old)
+static const Dict *install(TidyDocImpl* doc, TidyTagImpl* tags, const Dict* old)
 {
     DictHash *np;
     uint hashval;
 
     if (old)
     {
-        np = (DictHash *)MemAlloc(sizeof(*np));
+        np = (DictHash *)TidyDocAlloc(doc, sizeof(*np));
         np->tag = old;
 
         hashval = hash(old->name);
@@ -291,7 +291,7 @@ static const Dict *install(TidyTagImpl* tags, const Dict* old)
     return old;
 }
 
-static void removeFromHash( TidyTagImpl* tags, ctmbstr s )
+static void removeFromHash( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
 {
     uint h = hash(s);
     DictHash *p, *prev = NULL;
@@ -304,14 +304,14 @@ static void removeFromHash( TidyTagImpl* tags, ctmbstr s )
                 prev->next = next; 
             else
                 tags->hashtab[h] = next;
-            MemFree(p);
+            TidyDocFree(doc, p);
             return;
         }
         prev = p;
     }
 }
 
-static void emptyHash( TidyTagImpl* tags )
+static void emptyHash( TidyDocImpl* doc, TidyTagImpl* tags )
 {
     uint i;
     DictHash *prev, *next;
@@ -324,7 +324,7 @@ static void emptyHash( TidyTagImpl* tags )
         while(next)
         {
             prev = next->next;
-            MemFree(next);
+            TidyDocFree(doc, next);
             next = prev;
         }
 
@@ -333,7 +333,7 @@ static void emptyHash( TidyTagImpl* tags )
 }
 #endif /* ELEMENT_HASH_LOOKUP */
 
-static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
+static const Dict* lookup( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
 {
     const Dict *np;
 #if ELEMENT_HASH_LOOKUP
@@ -355,11 +355,11 @@ static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
 
     for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
         if (TY_(tmbstrcmp)(s, np->name) == 0)
-            return install(tags, np);
+            return install(doc, tags, np);
 
     for (np = tags->declared_tag_list; np; np = np->next)
         if (TY_(tmbstrcmp)(s, np->name) == 0)
-            return install(tags, np);
+            return install(doc, tags, np);
 #else
 
     for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
@@ -375,11 +375,11 @@ static const Dict* lookup( TidyTagImpl* tags, ctmbstr s )
     return NULL;
 }
 
-static Dict* NewDict( ctmbstr name )
+static Dict* NewDict( TidyDocImpl* doc, ctmbstr name )
 {
-    Dict *np = (Dict*) MemAlloc( sizeof(Dict) );
+    Dict *np = (Dict*) TidyDocAlloc( doc, sizeof(Dict) );
     np->id = TidyTag_UNKNOWN;
-    np->name = name ? TY_(tmbstrdup)( name ) : NULL;
+    np->name = name ? TY_(tmbstrdup)( doc->allocator, name ) : NULL;
     np->versions = VERS_UNKNOWN;
     np->attrvers = NULL;
     np->model = CM_UNKNOWN;
@@ -389,23 +389,23 @@ static Dict* NewDict( ctmbstr name )
     return np;
 }
 
-static void FreeDict( Dict *d )
+static void FreeDict( TidyDocImpl* doc, Dict *d )
 {
     if ( d )
-        MemFree( d->name );
-    MemFree( d );
+        TidyDocFree( doc, d->name );
+    TidyDocFree( doc, d );
 }
 
-static void declare( TidyTagImpl* tags,
+static void declare( TidyDocImpl* doc, TidyTagImpl* tags,
                      ctmbstr name, uint versions, uint model, 
                      Parser *parser, CheckAttribs *chkattrs )
 {
     if ( name )
     {
-        Dict* np = (Dict*) lookup( tags, name );
+        Dict* np = (Dict*) lookup( doc, tags, name );
         if ( np == NULL )
         {
-            np = NewDict(  name );
+            np = NewDict( doc, name );
             np->next = tags->declared_tag_list;
             tags->declared_tag_list = np;
         }
@@ -432,7 +432,7 @@ Bool TY_(FindTag)( TidyDocImpl* doc, Node *node )
         return yes;
     }
 
-    if ( node->element && (np = lookup(&doc->tags, node->element)) )
+    if ( node->element && (np = lookup(doc, &doc->tags, node->element)) )
     {
         node->tag = np;
         return yes;
@@ -454,7 +454,7 @@ const Dict* TY_(LookupTagDef)( TidyTagId tid )
 
 Parser* TY_(FindParser)( TidyDocImpl* doc, Node *node )
 {
-    const Dict* np = lookup( &doc->tags, node->element );
+    const Dict* np = lookup( doc, &doc->tags, node->element );
     if ( np )
         return np->parser;
     return NULL;
@@ -492,7 +492,7 @@ void TY_(DefineTag)( TidyDocImpl* doc, UserTagType tagType, ctmbstr name )
         break;
     }
     if ( cm && parser )
-        declare( &doc->tags, name, vers, cm, parser, 0 );
+        declare( doc, &doc->tags, name, vers, cm, parser, 0 );
 }
 
 TidyIterator   TY_(GetDeclaredTagList)( TidyDocImpl* doc )
@@ -544,10 +544,10 @@ void TY_(InitTags)( TidyDocImpl* doc )
     Dict* xml;
     TidyTagImpl* tags = &doc->tags;
 
-    ClearMemory( tags, sizeof(TidyTagImpl) );
+    TidyClearMemory( tags, sizeof(TidyTagImpl) );
 
     /* create dummy entry for all xml tags */
-    xml =  NewDict( NULL );
+    xml =  NewDict( doc, NULL );
     xml->versions = VERS_XML;
     xml->model = CM_BLOCK;
     xml->parser = 0;
@@ -595,9 +595,9 @@ void TY_(FreeDeclaredTags)( TidyDocImpl* doc, UserTagType tagType )
         if ( deleteIt )
         {
 #if ELEMENT_HASH_LOOKUP
-          removeFromHash( &doc->tags, curr->name );
+          removeFromHash( doc, &doc->tags, curr->name );
 #endif
-          FreeDict( curr );
+          FreeDict( doc, curr );
           if ( prev )
             prev->next = next;
           else
@@ -613,13 +613,13 @@ void TY_(FreeTags)( TidyDocImpl* doc )
     TidyTagImpl* tags = &doc->tags;
 
 #if ELEMENT_HASH_LOOKUP
-    emptyHash( tags );
+    emptyHash( doc, tags );
 #endif
     TY_(FreeDeclaredTags)( doc, tagtype_null );
-    FreeDict( tags->xml_tags );
+    FreeDict( doc, tags->xml_tags );
 
     /* get rid of dangling tag references */
-    ClearMemory( tags, sizeof(TidyTagImpl) );
+    TidyClearMemory( tags, sizeof(TidyTagImpl) );
 }
 
 
@@ -736,7 +736,7 @@ void CheckTABLE( TidyDocImpl* doc, Node *node )
     if ( cfgBool(doc, TidyXmlOut) && (attval = TY_(AttrGetById)(node, TidyAttr_BORDER)) )
     {
         if (attval->value == NULL)
-            attval->value = TY_(tmbstrdup)("1");
+            attval->value = TY_(tmbstrdup)(doc->allocator, "1");
     }
 }
 

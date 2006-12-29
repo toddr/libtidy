@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/11 15:33:50 $ 
-    $Revision: 1.11 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.12 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -16,7 +16,7 @@
 
 #include "tidy.h"
 #include "buffio.h"
-
+#include "forward.h"
 
 /**************
    TIDY
@@ -62,7 +62,7 @@ void TIDY_CALL tidyInitOutputBuffer( TidyOutputSink* outp, TidyBuffer* buf )
 void TIDY_CALL tidyBufInit( TidyBuffer* buf )
 {
     assert( buf != NULL );
-    ClearMemory( buf, sizeof(TidyBuffer) );
+    tidyBufInitWithAllocator( buf, NULL );
 }
 
 void TIDY_CALL tidyBufAlloc( TidyBuffer* buf, uint allocSize )
@@ -71,11 +71,19 @@ void TIDY_CALL tidyBufAlloc( TidyBuffer* buf, uint allocSize )
     tidyBufCheckAlloc( buf, allocSize, 0 );
     buf->next = 0;
 }
+
+void TIDY_CALL tidyBufInitWithAllocator( TidyBuffer* buf, TidyAllocator *allocator )
+{
+    assert( buf != NULL );
+    TidyClearMemory( buf, sizeof(TidyBuffer) );
+    buf->allocator = allocator ? allocator : &TY_(g_default_allocator);
+}
+
 void TIDY_CALL tidyBufFree( TidyBuffer* buf )
 {
     assert( buf != NULL );
-    MemFree( buf->bp );
-    tidyBufInit( buf );
+    TidyFree(  buf->allocator, buf->bp );
+    tidyBufInitWithAllocator( buf, buf->allocator );
 }
 
 void TIDY_CALL tidyBufClear( TidyBuffer* buf )
@@ -83,7 +91,7 @@ void TIDY_CALL tidyBufClear( TidyBuffer* buf )
     assert( buf != NULL );
     if ( buf->bp )
     {
-        ClearMemory( buf->bp, buf->allocated );
+        TidyClearMemory( buf->bp, buf->allocated );
         buf->size = 0;
     }
     buf->next = 0;
@@ -108,10 +116,10 @@ void TIDY_CALL tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSiz
         while ( allocAmt < allocSize+1 )
             allocAmt *= 2;
 
-        bp = (byte*)MemRealloc( buf->bp, allocAmt );
+        bp = (byte*)TidyRealloc( buf->allocator, buf->bp, allocAmt );
         if ( bp != NULL )
         {
-            ClearMemory( bp + buf->allocated, allocAmt - buf->allocated );
+            TidyClearMemory( bp + buf->allocated, allocAmt - buf->allocated );
             buf->bp = bp;
             buf->allocated = allocAmt;
         }
@@ -130,7 +138,7 @@ void  TIDY_CALL tidyBufAttach( TidyBuffer* buf, byte* bp, uint size )
 /* Clear pointer to memory w/out deallocation */
 void TIDY_CALL tidyBufDetach( TidyBuffer* buf )
 {
-    tidyBufInit( buf );
+    tidyBufInitWithAllocator( buf, buf->allocator );
 }
 
 

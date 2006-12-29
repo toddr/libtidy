@@ -3,7 +3,7 @@
   (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.6 2006/09/12 15:14:44 arnaud02 Exp $
+  $Id: win32tc.c,v 1.7 2006/12/29 16:31:09 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -472,13 +472,13 @@ static struct _nameWinCPMap
   { NULL,                                                0,  no }
 };
 
-uint TY_(Win32MLangGetCPFromName)(ctmbstr encoding)
+uint TY_(Win32MLangGetCPFromName)(TidyAllocator *allocator, ctmbstr encoding)
 {
     uint i;
     tmbstr enc;
 
     /* ensure name is in lower case */
-    enc = TY_(tmbstrdup)(encoding);
+    enc = TY_(tmbstrdup)(allocator,encoding);
     enc = TY_(tmbstrtolower)(enc);
 
     for (i = 0; NameWinCPMap[i].name; ++i)
@@ -489,7 +489,7 @@ uint TY_(Win32MLangGetCPFromName)(ctmbstr encoding)
             uint wincp = NameWinCPMap[i].wincp;
             HRESULT hr;
 
-            MemFree(enc);
+            TidyDocFree(doc, enc);
 
             /* currently no support for unsafe encodings */
             if (!NameWinCPMap[i].safe)
@@ -520,7 +520,7 @@ uint TY_(Win32MLangGetCPFromName)(ctmbstr encoding)
         }
     }
 
-    MemFree(enc);
+    TidyDocFree(doc, enc);
     return 0;
 }
 
@@ -577,7 +577,8 @@ void TY_(Win32MLangUninitInputTranscoder)(StreamIn * in)
     CoUninitialize();
 }
 
-Bool Win32MLangInitOutputTranscoder(StreamOut * out, tmbstr encoding)
+#if 0
+Bool Win32MLangInitOutputTranscoder(TidyAllocator *allocator, StreamOut * out, tmbstr encoding)
 {
     IMLangConvertCharset * p = NULL;
     HRESULT hr;
@@ -587,7 +588,7 @@ Bool Win32MLangInitOutputTranscoder(StreamOut * out, tmbstr encoding)
 
     CoInitialize(NULL);
 
-    wincp = TY_(Win32MLangGetCPFromName)(encoding);
+    wincp = TY_(Win32MLangGetCPFromName)(allocator, encoding);
     if (wincp == 0)
     {
         /* no codepage found for this encoding */
@@ -631,6 +632,7 @@ void Win32MLangUninitOutputTranscoder(StreamOut * out)
 
     CoUninitialize();
 }
+#endif
 
 int TY_(Win32MLangGetChar)(byte firstByte, StreamIn * in, uint * bytesRead)
 {

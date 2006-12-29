@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/25 11:33:13 $ 
-    $Revision: 1.124 $ 
+    $Date: 2006/12/29 16:31:07 $ 
+    $Revision: 1.125 $ 
 
 */
 
@@ -526,14 +526,15 @@ static uint hash(ctmbstr s)
     return hashval % ATTRIBUTE_HASH_SIZE;
 }
 
-static const Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
+static const Attribute *install(TidyDocImpl* doc, TidyAttribImpl * attribs,
+                                const Attribute* old)
 {
     AttrHash *np;
     uint hashval;
 
     if (old)
     {
-        np = (AttrHash *)MemAlloc(sizeof(*np));
+        np = (AttrHash *)TidyDocAlloc(doc, sizeof(*np));
         np->attr = old;
 
         hashval = hash(old->name);
@@ -544,7 +545,8 @@ static const Attribute *install(TidyAttribImpl * attribs, const Attribute* old)
     return old;
 }
 
-static void removeFromHash( TidyAttribImpl * attribs, ctmbstr s )
+static void removeFromHash( TidyDocImpl* doc, TidyAttribImpl *attribs,
+                            ctmbstr s )
 {
     uint h = hash(s);
     AttrHash *p, *prev = NULL;
@@ -557,14 +559,14 @@ static void removeFromHash( TidyAttribImpl * attribs, ctmbstr s )
                 prev->next = next; 
             else
                 attribs->hashtab[h] = next;
-            MemFree(p);
+            TidyDocFree(doc, p);
             return;
         }
         prev = p;
     }
 }
 
-static void emptyHash( TidyAttribImpl * attribs )
+static void emptyHash( TidyDocImpl* doc, TidyAttribImpl * attribs )
 {
     AttrHash *dict, *next;
     uint i;
@@ -576,7 +578,7 @@ static void emptyHash( TidyAttribImpl * attribs )
         while(dict)
         {
             next = dict->next;
-            MemFree(dict);
+            TidyDocFree(doc, dict);
             dict = next;
         }
 
@@ -585,7 +587,8 @@ static void emptyHash( TidyAttribImpl * attribs )
 }
 #endif
 
-static const Attribute* lookup(TidyAttribImpl* ARG_UNUSED(attribs),
+static const Attribute* lookup(TidyDocImpl* doc,
+                               TidyAttribImpl* ARG_UNUSED(attribs),
                                ctmbstr atnam)
 {
     const Attribute *np;
@@ -603,7 +606,7 @@ static const Attribute* lookup(TidyAttribImpl* ARG_UNUSED(attribs),
 
     for (np = attribute_defs; np && np->name; ++np)
         if (TY_(tmbstrcmp)(atnam, np->name) == 0)
-            return install(attribs, np);
+            return install(doc, attribs, np);
 #else
     for (np = attribute_defs; np && np->name; ++np)
         if (TY_(tmbstrcmp)(atnam, np->name) == 0)
@@ -630,7 +633,7 @@ AttVal* TY_(AttrGetById)( Node* node, TidyAttrId id )
 const Attribute* TY_(FindAttribute)( TidyDocImpl* doc, AttVal *attval )
 {
     if ( attval )
-       return lookup( &doc->attribs, attval->attribute );
+       return lookup( doc, &doc->attribs, attval->attribute );
     return NULL;
 }
 
@@ -648,16 +651,16 @@ AttVal* TY_(GetAttrByName)( Node *node, ctmbstr name )
 AttVal* TY_(AddAttribute)( TidyDocImpl* doc,
                            Node *node, ctmbstr name, ctmbstr value )
 {
-    AttVal *av = TY_(NewAttribute)();
+    AttVal *av = TY_(NewAttribute)(doc);
     av->delim = '"';
-    av->attribute = TY_(tmbstrdup)(name);
+    av->attribute = TY_(tmbstrdup)(doc->allocator, name);
 
     if (value)
-        av->value = TY_(tmbstrdup)(value);
+        av->value = TY_(tmbstrdup)(doc->allocator, value);
     else
         av->value = NULL;
 
-    av->dict = lookup(&doc->attribs, name);
+    av->dict = lookup(doc, &doc->attribs, name);
 
     TY_(InsertAttributeAtEnd)(node, av);
     return av;
@@ -670,9 +673,9 @@ AttVal* TY_(RepairAttrValue)(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr
     if (old)
     {
         if (old->value)
-            MemFree(old->value);
+            TidyDocFree(doc, old->value);
         if (value)
-            old->value = TY_(tmbstrdup)(value);
+            old->value = TY_(tmbstrdup)(doc->allocator, value);
         else
             old->value = NULL;
 
@@ -685,7 +688,7 @@ AttVal* TY_(RepairAttrValue)(TidyDocImpl* doc, Node* node, ctmbstr name, ctmbstr
 static Bool CheckAttrType( TidyDocImpl* doc,
                            ctmbstr attrname, AttrCheck type )
 {
-    const Attribute* np = lookup( &doc->attribs, attrname );
+    const Attribute* np = lookup( doc, &doc->attribs, attrname );
     return (Bool)( np && np->attrchk == type );
 }
 
@@ -772,11 +775,11 @@ Bool TY_(IsCSS1Selector)( ctmbstr buf )
 }
 
 /* free single anchor */
-static void FreeAnchor(Anchor *a)
+static void FreeAnchor(TidyDocImpl* doc, Anchor *a)
 {
     if ( a )
-        MemFree( a->name );
-    MemFree( a );
+        TidyDocFree( doc, a->name );
+    TidyDocFree( doc, a );
 }
 
 /* removes anchor for specific node */
@@ -798,15 +801,15 @@ void TY_(RemoveAnchorByNode)( TidyDocImpl* doc, Node *node )
         }
         prev = curr;
     }
-    FreeAnchor( delme );
+    FreeAnchor( doc, delme );
 }
 
 /* initialize new anchor */
-static Anchor* NewAnchor( ctmbstr name, Node* node )
+static Anchor* NewAnchor( TidyDocImpl* doc, ctmbstr name, Node* node )
 {
-    Anchor *a = (Anchor*) MemAlloc( sizeof(Anchor) );
+    Anchor *a = (Anchor*) TidyDocAlloc( doc, sizeof(Anchor) );
 
-    a->name = TY_(tmbstrdup)( name );
+    a->name = TY_(tmbstrdup)( doc->allocator, name );
     a->name = TY_(tmbstrtolower)(a->name);
     a->node = node;
     a->next = NULL;
@@ -818,7 +821,7 @@ static Anchor* NewAnchor( ctmbstr name, Node* node )
 static Anchor* AddAnchor( TidyDocImpl* doc, ctmbstr name, Node *node )
 {
     TidyAttribImpl* attribs = &doc->attribs;
-    Anchor *a = NewAnchor( name, node );
+    Anchor *a = NewAnchor( doc, name, node );
 
     if ( attribs->anchor_list == NULL)
          attribs->anchor_list = a;
@@ -838,7 +841,7 @@ static Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
 {
     TidyAttribImpl* attribs = &doc->attribs;
     Anchor *found;
-    tmbstr lname = TY_(tmbstrdup)(name);
+    tmbstr lname = TY_(tmbstrdup)(doc->allocator, name);
     lname = TY_(tmbstrtolower)(lname);
 
     for ( found = attribs->anchor_list; found != NULL; found = found->next )
@@ -847,7 +850,7 @@ static Node* GetNodeByAnchor( TidyDocImpl* doc, ctmbstr name )
             break;
     }
     
-    MemFree(lname);
+    TidyDocFree(doc, lname);
     if ( found )
         return found->node;
     return NULL;
@@ -861,14 +864,14 @@ void TY_(FreeAnchors)( TidyDocImpl* doc )
     while (NULL != (a = attribs->anchor_list) )
     {
         attribs->anchor_list = a->next;
-        FreeAnchor(a);
+        FreeAnchor(doc, a);
     }
 }
 
 /* public method for inititializing attribute dictionary */
 void TY_(InitAttrs)( TidyDocImpl* doc )
 {
-    ClearMemory( &doc->attribs, sizeof(TidyAttribImpl) );
+    TidyClearMemory( &doc->attribs, sizeof(TidyAttribImpl) );
 #ifdef _DEBUG
     {
       /* Attribute ID is index position in Attribute type lookup table */
@@ -891,27 +894,27 @@ static void FreeDeclaredAttributes( TidyDocImpl* doc )
     {
         attribs->declared_attr_list = dict->next;
 #if ATTRIBUTE_HASH_LOOKUP
-        removeFromHash( &doc->attribs, dict->name );
+        removeFromHash( doc, &doc->attribs, dict->name );
 #endif
-        MemFree( dict->name );
-        MemFree( dict );
+        TidyDocFree( doc, dict->name );
+        TidyDocFree( doc, dict );
     }
 }
 
 void TY_(FreeAttrTable)( TidyDocImpl* doc )
 {
 #if ATTRIBUTE_HASH_LOOKUP
-    emptyHash( &doc->attribs );
+    emptyHash( doc, &doc->attribs );
 #endif
     TY_(FreeAnchors)( doc );
     FreeDeclaredAttributes( doc );
 }
 
-void TY_(AppendToClassAttr)( AttVal *classattr, ctmbstr classname )
+void TY_(AppendToClassAttr)( TidyDocImpl* doc, AttVal *classattr, ctmbstr classname )
 {
     uint len = TY_(tmbstrlen)(classattr->value) +
         TY_(tmbstrlen)(classname) + 2;
-    tmbstr s = (tmbstr) MemAlloc( len );
+    tmbstr s = (tmbstr) TidyDocAlloc( doc, len );
     s[0] = '\0';
     if (classattr->value)
     {
@@ -920,12 +923,12 @@ void TY_(AppendToClassAttr)( AttVal *classattr, ctmbstr classname )
     }
     TY_(tmbstrcat)( s, classname );
     if (classattr->value)
-        MemFree( classattr->value );
+        TidyDocFree( doc, classattr->value );
     classattr->value = s;
 }
 
 /* concatenate styles */
-static void AppendToStyleAttr( AttVal *styleattr, ctmbstr styleprop )
+static void AppendToStyleAttr( TidyDocImpl* doc, AttVal *styleattr, ctmbstr styleprop )
 {
     /*
     this doesn't handle CSS comments and
@@ -938,7 +941,7 @@ static void AppendToStyleAttr( AttVal *styleattr, ctmbstr styleprop )
     {
         /* attribute ends with declaration seperator */
 
-        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+        styleattr->value = (tmbstr) TidyDocRealloc(doc, styleattr->value,
             end + TY_(tmbstrlen)(styleprop) + 2);
 
         TY_(tmbstrcat)(styleattr->value, " ");
@@ -948,7 +951,7 @@ static void AppendToStyleAttr( AttVal *styleattr, ctmbstr styleprop )
     {
         /* attribute ends with rule set */
 
-        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+        styleattr->value = (tmbstr) TidyDocRealloc(doc, styleattr->value,
             end + TY_(tmbstrlen)(styleprop) + 6);
 
         TY_(tmbstrcat)(styleattr->value, " { ");
@@ -959,7 +962,7 @@ static void AppendToStyleAttr( AttVal *styleattr, ctmbstr styleprop )
     {
         /* attribute ends with property value */
 
-        styleattr->value = (tmbstr) MemRealloc(styleattr->value,
+        styleattr->value = (tmbstr) TidyDocRealloc(doc, styleattr->value,
             end + TY_(tmbstrlen)(styleprop) + 3);
 
         if (end > 0)
@@ -1006,7 +1009,7 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
             {
                 /* concatenate classes */
 
-                TY_(AppendToClassAttr)(first, second->value);
+                TY_(AppendToClassAttr)(doc, first, second->value);
 
                 temp = second->next;
                 TY_(ReportAttrError)( doc, node, second, JOINING_ATTRIBUTE);
@@ -1016,7 +1019,7 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
             else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles)
                      && AttrHasValue(first) && AttrHasValue(second))
             {
-                AppendToStyleAttr( first, second->value );
+                AppendToStyleAttr( doc, first, second->value );
 
                 temp = second->next;
                 TY_(ReportAttrError)( doc, node, second, JOINING_ATTRIBUTE);
@@ -1184,7 +1187,7 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
     if ( cfgBool(doc, TidyFixUri) && escape_count )
     {
         len = TY_(tmbstrlen)(p) + escape_count * 2 + 1;
-        dest = (tmbstr) MemAlloc(len);
+        dest = (tmbstr) TidyDocAlloc(doc, len);
         
         for (i = 0; 0 != (c = p[i]); ++i)
         {
@@ -1195,7 +1198,7 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
         }
         dest[pos] = 0;
 
-        MemFree(attval->value);
+        TidyDocFree(doc, attval->value);
         attval->value = dest;
     }
     if ( backslash_count )
@@ -1522,7 +1525,7 @@ void CheckClear( TidyDocImpl* doc, Node *node, AttVal *attval)
     {
         TY_(ReportAttrError)( doc, node, attval, MISSING_ATTR_VALUE);
         if (attval->value == NULL)
-            attval->value = TY_(tmbstrdup)( "none" );
+            attval->value = TY_(tmbstrdup)( doc->allocator, "none" );
         return;
     }
 
@@ -1611,14 +1614,14 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
     {
         tmbstr cp, s;
 
-        cp = s = (tmbstr) MemAlloc(2 + TY_(tmbstrlen)(given));
+        cp = s = (tmbstr) TidyDocAlloc(doc, 2 + TY_(tmbstrlen)(given));
         *cp++ = '#';
         while ('\0' != (*cp++ = *given++))
             continue;
 
         TY_(ReportAttrError)(doc, node, attval, BAD_ATTRIBUTE_VALUE_REPLACED);
 
-        MemFree(attval->value);
+        TidyDocFree(doc, attval->value);
         given = attval->value = s;
     }
 
@@ -1631,8 +1634,8 @@ void CheckColor( TidyDocImpl* doc, Node *node, AttVal *attval)
 
         if (newName)
         {
-            MemFree(attval->value);
-            given = attval->value = TY_(tmbstrdup)(newName);
+            TidyDocFree(doc, attval->value);
+            given = attval->value = TY_(tmbstrdup)(doc->allocator, newName);
         }
     }
 

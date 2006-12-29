@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.10 $ 
+    $Date: 2006/12/29 16:31:09 $ 
+    $Revision: 1.11 $ 
 
 */
 
@@ -21,11 +21,11 @@ extern "C"
 {
 #endif
 
-/* like strdup but using MemAlloc */
-tmbstr TY_(tmbstrdup)( ctmbstr str );
+/* like strdup but using an allocator */
+tmbstr TY_(tmbstrdup)( TidyAllocator *allocator, ctmbstr str );
 
-/* like strndup but using MemAlloc */
-tmbstr TY_(tmbstrndup)( ctmbstr str, uint len);
+/* like strndup but using an allocator */
+tmbstr TY_(tmbstrndup)( TidyAllocator *allocator, ctmbstr str, uint len);
 
 /* exactly same as strncpy */
 uint TY_(tmbstrncpy)( tmbstr s1, ctmbstr s2, uint size );

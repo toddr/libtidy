@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/10/23 15:17:18 $ 
-    $Revision: 1.65 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.66 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -91,7 +91,13 @@ TidyOption   tidyImplToOption( const TidyOptionImpl* option )
 
 TidyDoc TIDY_CALL       tidyCreate(void)
 {
-  TidyDocImpl* impl = tidyDocCreate();
+  TidyDocImpl* impl = tidyDocCreate( &TY_(g_default_allocator) );
+  return tidyImplToDoc( impl );
+}
+
+TidyDoc TIDY_CALL tidyCreateWithAllocator( TidyAllocator *allocator )
+{
+  TidyDocImpl* impl = tidyDocCreate( allocator );
   return tidyImplToDoc( impl );
 }
 
@@ -101,10 +107,11 @@ void TIDY_CALL          tidyRelease( TidyDoc tdoc )
   tidyDocRelease( impl );
 }
 
-TidyDocImpl* tidyDocCreate(void)
+TidyDocImpl* tidyDocCreate( TidyAllocator *allocator )
 {
-    TidyDocImpl* doc = (TidyDocImpl*)MemAlloc( sizeof(TidyDocImpl) );
-    ClearMemory( doc, sizeof(*doc) );
+    TidyDocImpl* doc = (TidyDocImpl*)TidyAlloc( allocator, sizeof(TidyDocImpl) );
+    TidyClearMemory( doc, sizeof(*doc) );
+    doc->allocator = allocator;
 
     TY_(InitMap)();
     TY_(InitTags)( doc );
@@ -130,21 +137,21 @@ void          tidyDocRelease( TidyDocImpl* doc )
         assert( doc->docIn == NULL );
         assert( doc->docOut == NULL );
 
-        TY_(ReleaseStreamOut)( doc->errout );
+        TY_(ReleaseStreamOut)( doc, doc->errout );
         doc->errout = NULL;
 
         TY_(FreePrintBuf)( doc );
         TY_(FreeLexer)( doc );
         TY_(FreeNode)(doc, &doc->root);
-        ClearMemory(&doc->root, sizeof(Node));
+        TidyClearMemory(&doc->root, sizeof(Node));
 
         if (doc->givenDoctype)
-            MemFree(doc->givenDoctype);
+            TidyDocFree(doc, doc->givenDoctype);
 
         TY_(FreeConfig)( doc );
         TY_(FreeAttrTable)( doc );
         TY_(FreeTags)( doc );
-        MemFree( doc );
+        TidyDocFree( doc, doc );
     }
 }
 
@@ -206,7 +213,7 @@ int TIDY_CALL         tidySetCharEncoding( TidyDoc tdoc, ctmbstr encnam )
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )
     {
-        int enc = TY_(CharEncodingId)( encnam );
+        int enc = TY_(CharEncodingId)( impl, encnam );
         if ( enc >= 0 && TY_(AdjustCharEncoding)(impl, enc) )
             return 0;
 
@@ -220,7 +227,7 @@ int TIDY_CALL           tidySetInCharEncoding( TidyDoc tdoc, ctmbstr encnam )
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )
     {
-        int enc = TY_(CharEncodingId)( encnam );
+        int enc = TY_(CharEncodingId)( impl, encnam );
         if ( enc >= 0 && TY_(SetOptionInt)( impl, TidyInCharEncoding, enc ) )
             return 0;
 
@@ -234,7 +241,7 @@ int TIDY_CALL           tidySetOutCharEncoding( TidyDoc tdoc, ctmbstr encnam )
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
     if ( impl )
     {
-        int enc = TY_(CharEncodingId)( encnam );
+        int enc = TY_(CharEncodingId)( impl, encnam );
         if ( enc >= 0 && TY_(SetOptionInt)( impl, TidyOutCharEncoding, enc ) )
             return 0;
 
@@ -662,8 +669,8 @@ FILE* TIDY_CALL   tidySetErrorFile( TidyDoc tdoc, ctmbstr errfilnam )
         {
             uint outenc = cfg( impl, TidyOutCharEncoding );
             uint nl = cfg( impl, TidyNewline );
-            TY_(ReleaseStreamOut)( impl->errout );
-            impl->errout = TY_(FileOutput)( errout, outenc, nl );
+            TY_(ReleaseStreamOut)( impl, impl->errout );
+            impl->errout = TY_(FileOutput)( impl, errout, outenc, nl );
             return errout;
         }
         else /* Emit message to current error sink */
@@ -679,8 +686,8 @@ int TIDY_CALL    tidySetErrorBuffer( TidyDoc tdoc, TidyBuffer* errbuf )
     {
         uint outenc = cfg( impl, TidyOutCharEncoding );
         uint nl = cfg( impl, TidyNewline );
-        TY_(ReleaseStreamOut)( impl->errout );
-        impl->errout = TY_(BufferOutput)( errbuf, outenc, nl );
+        TY_(ReleaseStreamOut)( impl, impl->errout );
+        impl->errout = TY_(BufferOutput)( impl, errbuf, outenc, nl );
         return ( impl->errout ? 0 : -ENOMEM );
     }
     return -EINVAL;
@@ -693,8 +700,8 @@ int TIDY_CALL    tidySetErrorSink( TidyDoc tdoc, TidyOutputSink* sink )
     {
         uint outenc = cfg( impl, TidyOutCharEncoding );
         uint nl = cfg( impl, TidyNewline );
-        TY_(ReleaseStreamOut)( impl->errout );
-        impl->errout = TY_(UserOutput)( sink, outenc, nl );
+        TY_(ReleaseStreamOut)( impl, impl->errout );
+        impl->errout = TY_(UserOutput)( impl, sink, outenc, nl );
         return ( impl->errout ? 0 : -ENOMEM );
     }
     return -EINVAL;
@@ -824,7 +831,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
 #if PRESERVE_FILE_TIMES
     struct stat sbuf = {0};
     /* get last modified time */
-    ClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
+    TidyClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
     if ( fin && cfgBool(doc,TidyKeepFileTimes) &&
          fstat(fileno(fin), &sbuf) != -1 )
     {
@@ -942,19 +949,19 @@ int         tidyDocSaveFile( TidyDocImpl* doc, ctmbstr filnam )
     {
         uint outenc = cfg( doc, TidyOutCharEncoding );
         uint nl = cfg( doc, TidyNewline );
-        StreamOut* out = TY_(FileOutput)( fout, outenc, nl );
+        StreamOut* out = TY_(FileOutput)( doc, fout, outenc, nl );
 
         status = tidyDocSaveStream( doc, out );
 
         fclose( fout );
-        MemFree( out );
+        TidyDocFree( doc, out );
 
 #if PRESERVE_FILE_TIMES
         if ( doc->filetimes.actime )
         {
             /* set file last accessed/modified times to original values */
             utime( filnam, &doc->filetimes );
-            ClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
+            TidyClearMemory( &doc->filetimes, sizeof(doc->filetimes) );
         }
 #endif /* PRESERVFILETIMES */
     }
@@ -995,7 +1002,7 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
     int status = 0;
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
-    StreamOut* out = TY_(FileOutput)( stdout, outenc, nl );
+    StreamOut* out = TY_(FileOutput)( doc, stdout, outenc, nl );
 
 #if !defined(NO_SETMODE_SUPPORT)
 
@@ -1023,7 +1030,7 @@ int         tidyDocSaveStdout( TidyDocImpl* doc )
 
 #endif
 
-    MemFree( out );
+    TidyDocFree( doc, out );
     return status;
 }
 
@@ -1033,7 +1040,7 @@ int         tidyDocSaveString( TidyDocImpl* doc, tmbstr buffer, uint* buflen )
     uint nl = cfg( doc, TidyNewline );
     TidyBuffer outbuf = {0};
 
-    StreamOut* out = TY_(BufferOutput)( &outbuf, outenc, nl );
+    StreamOut* out = TY_(BufferOutput)( doc, &outbuf, outenc, nl );
     int status = tidyDocSaveStream( doc, out );
 
     if ( outbuf.size > *buflen )
@@ -1043,7 +1050,7 @@ int         tidyDocSaveString( TidyDocImpl* doc, tmbstr buffer, uint* buflen )
 
     *buflen = outbuf.size;
     tidyBufFree( &outbuf );
-    MemFree( out );
+    TidyDocFree( doc, out );
     return status;
 }
 
@@ -1054,10 +1061,10 @@ int         tidyDocSaveBuffer( TidyDocImpl* doc, TidyBuffer* outbuf )
     {
         uint outenc = cfg( doc, TidyOutCharEncoding );
         uint nl = cfg( doc, TidyNewline );
-        StreamOut* out = TY_(BufferOutput)( outbuf, outenc, nl );
+        StreamOut* out = TY_(BufferOutput)( doc, outbuf, outenc, nl );
     
         status = tidyDocSaveStream( doc, out );
-        MemFree( out );
+        TidyDocFree( doc, out );
     }
     return status;
 }
@@ -1066,9 +1073,9 @@ int         tidyDocSaveSink( TidyDocImpl* doc, TidyOutputSink* sink )
 {
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
-    StreamOut* out = TY_(UserOutput)( sink, outenc, nl );
+    StreamOut* out = TY_(UserOutput)( doc, sink, outenc, nl );
     int status = tidyDocSaveStream( doc, out );
-    MemFree( out );
+    TidyDocFree( doc, out );
     return status;
 }
 
@@ -1124,10 +1131,10 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     TY_(FreeAnchors)( doc );
 
     TY_(FreeNode)(doc, &doc->root);
-    ClearMemory(&doc->root, sizeof(Node));
+    TidyClearMemory(&doc->root, sizeof(Node));
 
     if (doc->givenDoctype)
-        MemFree(doc->givenDoctype);
+        TidyDocFree(doc, doc->givenDoctype);
 
     doc->givenDoctype = NULL;
 
@@ -1155,14 +1162,14 @@ int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
     {
         TY_(ParseXMLDocument)( doc );
         if ( !TY_(CheckNodeIntegrity)( &doc->root ) )
-            FatalError( integrity );
+            TidyPanic( doc->allocator, integrity );
     }
     else
     {
         doc->warnings = 0;
         TY_(ParseDocument)( doc );
         if ( !TY_(CheckNodeIntegrity)( &doc->root ) )
-            FatalError( integrity );
+            TidyPanic( doc->allocator, integrity );
     }
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
@@ -1250,7 +1257,7 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
         TY_(VerifyHTTPEquiv)( doc, TY_(FindHEAD)( doc ));
 
     if ( !TY_(CheckNodeIntegrity)( &doc->root ) )
-        FatalError( integrity );
+        TidyPanic( doc->allocator, integrity );
 
     /* remember given doctype for reporting */
     node = TY_(FindDocType)(doc);
@@ -1260,8 +1267,8 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
         if (AttrHasValue(fpi))
         {
             if (doc->givenDoctype)
-                MemFree(doc->givenDoctype);
-            doc->givenDoctype = TY_(tmbstrdup)(fpi->value);
+                TidyDocFree(doc, doc->givenDoctype);
+            doc->givenDoctype = TY_(tmbstrdup)(doc->allocator,fpi->value);
         }
     }
 
@@ -1495,7 +1502,7 @@ Bool TIDY_CALL  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf
   {
       uint outenc     = cfg( doc, TidyOutCharEncoding );
       uint nl         = cfg( doc, TidyNewline );
-      StreamOut* out  = TY_(BufferOutput)( outbuf, outenc, nl );
+      StreamOut* out  = TY_(BufferOutput)( doc, outbuf, outenc, nl );
       Bool xmlOut     = cfgBool( doc, TidyXmlOut );
       Bool xhtmlOut   = cfgBool( doc, TidyXhtmlOut );
 
@@ -1508,7 +1515,7 @@ Bool TIDY_CALL  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf
       TY_(PFlushLine)( doc, 0 );
       doc->docOut = NULL;
   
-      MemFree( out );
+      TidyDocFree( doc, out );
       return yes;
   }
   return no;

@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/01/25 14:17:34 $ 
-    $Revision: 1.15 $ 
+    $Date: 2006/12/29 16:31:09 $ 
+    $Revision: 1.16 $ 
 
   Contributing Author(s):
 
@@ -107,6 +107,151 @@ TIDY_STRUCT struct _TidyBuffer;
 typedef struct _TidyBuffer TidyBuffer;
 
 
+/** @defgroup Memory  Memory Allocation
+**
+** Tidy uses a user provided allocator for all
+** memory allocations.  If this allocator is
+** not provided, then a default allocator is
+** used which simply wraps standard C malloc/free
+** calls.  These wrappers call the panic function
+** upon any failure.  The default panic function
+** prints an out of memory message to stderr, and
+** calls exit(2).
+**
+** For applications in which it is unacceptable to
+** abort in the case of memory allocation, then the
+** panic function can be replaced with one which
+** longjmps() out of the tidy code.  For this to
+** clean up completely, you should be careful not
+** to use any tidy methods that open files as these
+** will not be closed before panic() is called.
+**
+** TODO: associate file handles with tidyDoc and
+** ensure that tidyDocRelease() can close them all.
+**
+** Calling the withAllocator() family (
+** tidyCreateWithAllocator, tidyBufInitWithAllocator,
+** tidyBufAllocWithAllocator) allow settings custom
+** allocators).
+**
+** All parts of the document use the same allocator.
+** Calls that require a user provided buffer can
+** optionally use a different allocator.
+**
+** For reference in designing a plug-in allocator,
+** most allocations made by tidy are less than 100
+** bytes, corresponding to attribute names/values, etc.
+**
+** There is also an additional class of much larger
+** allocations which are where most of the data from
+** the lexer is stored.  (It is not currently possible
+** to use a separate allocator for the lexer, this
+** would be a useful extension).
+**
+** In general, approximately 1/3rd of the memory
+** used by tidy is freed during the parse, so if
+** memory usage is an issue then an allocator that 
+** can reuse this memory is a good idea.
+**
+** @{
+*/
+
+/** Prototype for the allocator's function table */
+struct _TidyAllocatorVtbl;
+/** The allocators function table */
+typedef struct _TidyAllocatorVtbl TidyAllocatorVtbl;
+
+/** Prototype for the allocator */
+struct _TidyAllocator;
+/** The allocator **/
+typedef struct _TidyAllocator TidyAllocator;
+
+/** An allocator's function table.  All functions here must
+    be provided.
+ */
+struct _TidyAllocatorVtbl {
+    /** Called to allocate a block of nBytes of memory */
+    void* (TIDY_CALL *alloc)( TidyAllocator *self, size_t nBytes );
+    /** Called to resize (grow, in general) a block of memory.
+        Must support being called with NULL.
+    */
+    void* (TIDY_CALL *realloc)( TidyAllocator *self, void *block, size_t nBytes );
+    /** Called to free a previously allocated block of memory */
+    void (TIDY_CALL *free)( TidyAllocator *self, void *block);
+    /** Called when a panic condition is detected.  Must support
+        block == NULL.  This function is not called if either alloc 
+        or realloc fails; it is up to the allocator to do this.
+        Currently this function can only be called if an error is
+        detected in the tree integrity via the internal function
+        CheckNodeIntegrity().  This is a situation that can
+        only arise in the case of a programming error in tidylib.
+        You can turn off node integrity checking by defining
+        the constant NO_NODE_INTEGRITY_CHECK during the build.
+    **/
+    void (TIDY_CALL *panic)( TidyAllocator *self, ctmbstr msg );
+};
+
+/** An allocator.  To create your own allocator, do something like
+    the following:
+    
+    typedef struct _MyAllocator {
+       TidyAllocator base;
+       ...other custom allocator state...
+    } MyAllocator;
+    
+    void* MyAllocator_alloc(TidyAllocator *base, void *block, size_t nBytes)
+    {
+        MyAllocator *self = (MyAllocator*)base;
+        ...
+    }
+    (etc)
+
+    static const TidyAllocatorVtbl MyAllocatorVtbl = {
+        MyAllocator_alloc,
+        MyAllocator_realloc,
+        MyAllocator_free,
+        MyAllocator_panic
+    };
+
+    myAllocator allocator;
+    TidyDoc doc;
+
+    allocator.base.vtbl = &MyAllocatorVtbl;
+    ...initialise allocator specific state...
+    doc = tidyCreateWithAllocator(&allocator);
+    ...
+
+    Although this looks slightly long winded, the advantage is that to create
+    a custom allocator you simply need to set the vtbl pointer correctly.
+    The vtbl itself can reside in static/global data, and hence does not
+    need to be initialised each time an allocator is created, and furthermore
+    the memory is shared amongst all created allocators.
+*/
+struct _TidyAllocator {
+    const TidyAllocatorVtbl *vtbl;
+};
+
+/** Callback for "malloc" replacement */
+typedef void* (TIDY_CALL *TidyMalloc)( size_t len );
+/** Callback for "realloc" replacement */
+typedef void* (TIDY_CALL *TidyRealloc)( void* buf, size_t len );
+/** Callback for "free" replacement */
+typedef void  (TIDY_CALL *TidyFree)( void* buf );
+/** Callback for "out of memory" panic state */
+typedef void  (TIDY_CALL *TidyPanic)( ctmbstr mssg );
+
+
+/** Give Tidy a malloc() replacement */
+TIDY_EXPORT Bool TIDY_CALL tidySetMallocCall( TidyMalloc fmalloc );
+/** Give Tidy a realloc() replacement */
+TIDY_EXPORT Bool TIDY_CALL tidySetReallocCall( TidyRealloc frealloc );
+/** Give Tidy a free() replacement */
+TIDY_EXPORT Bool TIDY_CALL tidySetFreeCall( TidyFree ffree );
+/** Give Tidy an "out of memory" handler */
+TIDY_EXPORT Bool TIDY_CALL tidySetPanicCall( TidyPanic fpanic );
+
+/** @} end Memory group */
+
 /** @defgroup Basic Basic Operations
 **
 ** Tidy public interface
@@ -172,6 +317,7 @@ int main(int argc, char **argv )
 */
 
 TIDY_EXPORT TidyDoc TIDY_CALL     tidyCreate(void);
+TIDY_EXPORT TidyDoc TIDY_CALL     tidyCreateWithAllocator( TidyAllocator *allocator );
 TIDY_EXPORT void TIDY_CALL        tidyRelease( TidyDoc tdoc );
 
 /** Let application store a chunk of data w/ each Tidy instance.
@@ -221,9 +367,9 @@ TIDY_EXPORT int TIDY_CALL         tidyLoadConfig( TidyDoc tdoc, ctmbstr configFi
 
 /** Load a Tidy configuration file with the specified character encoding */
 TIDY_EXPORT int TIDY_CALL         tidyLoadConfigEnc( TidyDoc tdoc, ctmbstr configFile,
-                                           ctmbstr charenc );
+                                                     ctmbstr charenc );
 
-TIDY_EXPORT Bool TIDY_CALL        tidyFileExists( ctmbstr filename );
+TIDY_EXPORT Bool TIDY_CALL        tidyFileExists( TidyDoc tdoc, ctmbstr filename );
 
 
 /** Set the input/output character encoding for parsing markup.
@@ -489,41 +635,6 @@ TIDY_EXPORT int TIDY_CALL     tidySetErrorBuffer( TidyDoc tdoc, TidyBuffer* errb
 TIDY_EXPORT int TIDY_CALL     tidySetErrorSink( TidyDoc tdoc, TidyOutputSink* sink );
 
 /** @} end IO group */
-
-
-/** @defgroup Memory  Memory Allocation
-**
-** By default, Tidy will use its own wrappers
-** around standard C malloc/free calls. 
-** These wrappers will abort upon any failures.
-** If any are set, all must be set.
-** Pass NULL to clear previous setting.
-**
-** May be used to set environment-specific allocators
-** such as used by web server plugins, etc.
-**
-** @{
-*/
-
-/** Callback for "malloc" replacement */
-typedef void* (TIDY_CALL *TidyMalloc)( size_t len );
-/** Callback for "realloc" replacement */
-typedef void* (TIDY_CALL *TidyRealloc)( void* buf, size_t len );
-/** Callback for "free" replacement */
-typedef void  (TIDY_CALL *TidyFree)( void* buf );
-/** Callback for "out of memory" panic state */
-typedef void  (TIDY_CALL *TidyPanic)( ctmbstr mssg );
-
-/** Give Tidy a malloc() replacement */
-TIDY_EXPORT Bool TIDY_CALL        tidySetMallocCall( TidyMalloc fmalloc );
-/** Give Tidy a realloc() replacement */
-TIDY_EXPORT Bool TIDY_CALL        tidySetReallocCall( TidyRealloc frealloc );
-/** Give Tidy a free() replacement */
-TIDY_EXPORT Bool TIDY_CALL        tidySetFreeCall( TidyFree ffree );
-/** Give Tidy an "out of memory" handler */
-TIDY_EXPORT Bool TIDY_CALL        tidySetPanicCall( TidyPanic fpanic );
-
-/** @} end Memory group */
 
 /* TODO: Catalog all messages for easy translation
 TIDY_EXPORT ctmbstr     tidyLookupMessage( int errorNo );
@@ -943,3 +1054,12 @@ TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetROWSPAN( TidyNode tnod );
 }  /* extern "C" */
 #endif
 #endif /* __TIDY_H__ */
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

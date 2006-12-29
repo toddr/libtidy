@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/07/03 14:08:57 $ 
-    $Revision: 1.57 $ 
+    $Date: 2006/12/29 16:31:09 $ 
+    $Revision: 1.58 $ 
 
 */
 
@@ -584,12 +584,20 @@ extern void* null;
 #include "dmalloc.h"
 #endif
 
-void *MemAlloc(size_t size);
-void *MemRealloc(void *mem, size_t newsize);
-void MemFree(void *mem);
-void ClearMemory(void *, size_t size);
-void FatalError( ctmbstr msg );
+/** Wrappers for easy memory allocation using an allocator */
+#define TidyAlloc(allocator, size) ((allocator)->vtbl->alloc((allocator), (size)))
+#define TidyRealloc(allocator, block, size) ((allocator)->vtbl->realloc((allocator), (block), (size)))
+#define TidyFree(allocator, block) ((allocator)->vtbl->free((allocator), (block)))
+#define TidyPanic(allocator, msg) ((allocator)->vtbl->panic((allocator), (msg)))
 
+/** Wrappers for easy memory allocation using the document's allocator */
+#define TidyDocAlloc(doc, size) TidyAlloc((doc)->allocator, size)
+#define TidyDocRealloc(doc, block, size) TidyRealloc((doc)->allocator, block, size)
+#define TidyDocFree(doc, block) TidyFree((doc)->allocator, block)
+#define TidyDocPanic(doc, msg) TidyPanic((doc)->allocator, msg)
+
+#define TidyClearMemory(block, size) memset((block), 0, (size))
+ 
 /* Opaque data structure.
 *  Cast to implementation type struct within lib.
 *  This will reduce inter-dependencies/conflicts w/ application code.
@@ -613,3 +621,13 @@ opaque_type( TidyIterator );
 #endif
 
 #endif /* __PLATFORM_H__ */
+
+
+/*
+ * local variables:
+ * mode: c
+ * indent-tabs-mode: nil
+ * c-basic-offset: 4
+ * eval: (c-set-offset 'substatement-open 0)
+ * end:
+ */

@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.100 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.101 $ 
 
 */
 
@@ -54,7 +54,7 @@
 
 void TY_(InitConfig)( TidyDocImpl* doc )
 {
-    ClearMemory( &doc->config, sizeof(TidyConfigImpl) );
+    TidyClearMemory( &doc->config, sizeof(TidyConfigImpl) );
     TY_(ResetConfigToDefault)( doc );
 }
 
@@ -327,24 +327,22 @@ const TidyOptionImpl* TY_(getOption)( TidyOptionId optId )
 }
 
 
-static void FreeOptionValue( const TidyOptionImpl* option, TidyOptionValue* value )
+static void FreeOptionValue( TidyDocImpl* doc, const TidyOptionImpl* option, TidyOptionValue* value )
 {
     if ( option->type == TidyString && value->p && value->p != option->pdflt )
-    {
-        MemFree( value->p );
-    }
+        TidyDocFree( doc, value->p );
 }
 
-static void CopyOptionValue( const TidyOptionImpl* option,
+static void CopyOptionValue( TidyDocImpl* doc, const TidyOptionImpl* option,
                              TidyOptionValue* oldval, const TidyOptionValue* newval )
 {
     assert( oldval != NULL );
-    FreeOptionValue( option, oldval );
+    FreeOptionValue( doc, option, oldval );
 
     if ( option->type == TidyString )
     {
         if ( newval->p && newval->p != option->pdflt )
-            oldval->p = TY_(tmbstrdup)( newval->p );
+            oldval->p = TY_(tmbstrdup)( doc->allocator, newval->p );
         else
             oldval->p = newval->p;
     }
@@ -360,8 +358,8 @@ static Bool SetOptionValue( TidyDocImpl* doc, TidyOptionId optId, ctmbstr val )
    if ( status )
    {
       assert( option->id == optId && option->type == TidyString );
-      FreeOptionValue( option, &doc->config.value[ optId ] );
-      doc->config.value[ optId ].p = TY_(tmbstrdup)( val );
+      FreeOptionValue( doc, option, &doc->config.value[ optId ] );
+      doc->config.value[ optId ].p = TY_(tmbstrdup)( doc->allocator, val );
    }
    return status;
 }
@@ -415,7 +413,7 @@ Bool TY_(ResetOptionToDefault)( TidyDocImpl* doc, TidyOptionId optId )
         TidyOptionValue* value = &doc->config.value[ optId ];
         assert( optId == option->id );
         GetOptionDefault( option, &dflt );
-        CopyOptionValue( option, value, &dflt );
+        CopyOptionValue( doc, option, value, &dflt );
     }
     return status;
 }
@@ -423,9 +421,9 @@ Bool TY_(ResetOptionToDefault)( TidyDocImpl* doc, TidyOptionId optId )
 static void ReparseTagType( TidyDocImpl* doc, TidyOptionId optId )
 {
     ctmbstr tagdecl = cfgStr( doc, optId );
-    tmbstr dupdecl = TY_(tmbstrdup)( tagdecl );
+    tmbstr dupdecl = TY_(tmbstrdup)( doc->allocator, tagdecl );
     TY_(ParseConfigValue)( doc, optId, dupdecl );
-    MemFree( dupdecl );
+    TidyDocFree( doc, dupdecl );
 }
 
 /* Not efficient, but effective */
@@ -452,7 +450,7 @@ void TY_(ResetConfigToDefault)( TidyDocImpl* doc )
         TidyOptionValue dflt;
         assert( ixVal == (uint) option->id );
         GetOptionDefault( option, &dflt );
-        CopyOptionValue( option, &value[ixVal], &dflt );
+        CopyOptionValue( doc, option, &value[ixVal], &dflt );
     }
     TY_(FreeDeclaredTags)( doc, tagtype_null );
 }
@@ -468,7 +466,7 @@ void TY_(TakeConfigSnapshot)( TidyDocImpl* doc )
     for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
     {
         assert( ixVal == (uint) option->id );
-        CopyOptionValue( option, &snap[ixVal], &value[ixVal] );
+        CopyOptionValue( doc, option, &snap[ixVal], &value[ixVal] );
     }
 }
 
@@ -482,7 +480,7 @@ void TY_(ResetConfigToSnapshot)( TidyDocImpl* doc )
     for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
     {
         assert( ixVal == (uint) option->id );
-        CopyOptionValue( option, &value[ixVal], &snap[ixVal] );
+        CopyOptionValue( doc, option, &value[ixVal], &snap[ixVal] );
     }
     TY_(FreeDeclaredTags)( doc, tagtype_null );
     ReparseTagDecls( doc );
@@ -501,7 +499,7 @@ void TY_(CopyConfig)( TidyDocImpl* docTo, TidyDocImpl* docFrom )
         for ( ixVal=0; ixVal < N_TIDY_OPTIONS; ++option, ++ixVal )
         {
             assert( ixVal == (uint) option->id );
-            CopyOptionValue( option, &to[ixVal], &from[ixVal] );
+            CopyOptionValue( docTo, option, &to[ixVal], &from[ixVal] );
         }
         ReparseTagDecls( docTo );
         AdjustConfig( docTo );  /* Make sure it's consistent */
@@ -627,7 +625,7 @@ static uint NextProperty( TidyConfigImpl* config )
  work on systems that support getpwnam(userid), 
  namely Unix/Linux.
 */
-static ctmbstr ExpandTilde( ctmbstr filename )
+static ctmbstr ExpandTilde( TidyDocImpl* doc, ctmbstr filename )
 {
     char *home_dir = NULL;
 
@@ -653,14 +651,14 @@ static ctmbstr ExpandTilde( ctmbstr filename )
         while ( *s && *s != '/' )
             s++;
 
-        if ( t = MemAlloc(s - filename) )
+        if ( t = TidyDocAlloc(doc, s - filename) )
         {
             memcpy(t, filename+1, s-filename-1);
             t[s-filename-1] = 0;
 
             passwd = getpwnam(t);
 
-            MemFree(t);
+            TidyDocFree(doc, t);
         }
 
         if ( passwd )
@@ -674,7 +672,7 @@ static ctmbstr ExpandTilde( ctmbstr filename )
     if ( home_dir )
     {
         uint len = TY_(tmbstrlen)(filename) + TY_(tmbstrlen)(home_dir) + 1;
-        tmbstr p = (tmbstr)MemAlloc( len );
+        tmbstr p = (tmbstr)TidyDocAlloc( doc, len );
         TY_(tmbstrcpy)( p, home_dir );
         TY_(tmbstrcat)( p, filename );
         return (ctmbstr) p;
@@ -682,9 +680,10 @@ static ctmbstr ExpandTilde( ctmbstr filename )
     return (ctmbstr) filename;
 }
 
-Bool TIDY_CALL tidyFileExists( ctmbstr filename )
+Bool TIDY_CALL tidyFileExists( TidyDoc tdoc, ctmbstr filename )
 {
-  ctmbstr fname = (tmbstr) ExpandTilde( filename );
+  TidyDocImpl* doc = tidyDocToImpl( tdoc );
+  ctmbstr fname = (tmbstr) ExpandTilde( doc, filename );
 #ifndef NO_ACCESS_SUPPORT
   Bool exists = ( access(fname, 0) == 0 );
 #else
@@ -696,7 +695,7 @@ Bool TIDY_CALL tidyFileExists( ctmbstr filename )
   exists = ( fin != NULL );
 #endif
   if ( fname != filename )
-      MemFree( (tmbstr) fname );
+      TidyDocFree( doc, (tmbstr) fname );
   return exists;
 }
 
@@ -715,10 +714,10 @@ int TY_(ParseConfigFile)( TidyDocImpl* doc, ctmbstr file )
 int TY_(ParseConfigFileEnc)( TidyDocImpl* doc, ctmbstr file, ctmbstr charenc )
 {
     uint opterrs = doc->optionErrors;
-    tmbstr fname = (tmbstr) ExpandTilde( file );
+    tmbstr fname = (tmbstr) ExpandTilde( doc, file );
     TidyConfigImpl* cfg = &doc->config;
     FILE* fin = fopen( fname, "r" );
-    int enc = TY_(CharEncodingId)( charenc );
+    int enc = TY_(CharEncodingId)( doc, charenc );
 
     if ( fin == NULL || enc < 0 )
     {
@@ -806,7 +805,7 @@ int TY_(ParseConfigFileEnc)( TidyDocImpl* doc, ctmbstr file, ctmbstr charenc )
     }
 
     if ( fname != (tmbstr) file )
-        MemFree( fname );
+        TidyDocFree( doc, fname );
 
     AdjustConfig( doc );
 
@@ -1146,7 +1145,7 @@ static void DeclareUserTag( TidyDocImpl* doc, TidyOptionId optId,
   if ( prvval )
   {
     uint len = TY_(tmbstrlen)(name) + TY_(tmbstrlen)(prvval) + 3;
-    catval = TY_(tmbstrndup)( prvval, len );
+    catval = TY_(tmbstrndup)( doc->allocator, prvval, len );
     TY_(tmbstrcat)( catval, ", " );
     TY_(tmbstrcat)( catval, name );
     theval = catval;
@@ -1154,7 +1153,7 @@ static void DeclareUserTag( TidyDocImpl* doc, TidyOptionId optId,
   TY_(DefineTag)( doc, tagType, name );
   SetOptionValue( doc, optId, theval );
   if ( catval )
-    MemFree( catval );
+    TidyDocFree( doc, catval );
 }
 
 /* a space or comma separated list of tag names */
@@ -1302,7 +1301,7 @@ Bool ParseCharEnc( TidyDocImpl* doc, const TidyOptionImpl* option )
     }
     buf[i] = 0;
 
-    enc = TY_(CharEncodingId)( buf );
+    enc = TY_(CharEncodingId)( doc, buf );
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
     /* limit support to --input-encoding */
@@ -1324,14 +1323,14 @@ Bool ParseCharEnc( TidyDocImpl* doc, const TidyOptionImpl* option )
 }
 
 
-int TY_(CharEncodingId)( ctmbstr charenc )
+int TY_(CharEncodingId)( TidyDocImpl* ARG_UNUSED(doc), ctmbstr charenc )
 {
     int enc = TY_(GetCharEncodingFromOptName)( charenc );
 
 #ifdef TIDY_WIN32_MLANG_SUPPORT
     if (enc == -1)
     {
-        uint wincp = TY_(Win32MLangGetCPFromName)(charenc);
+        uint wincp = TY_(Win32MLangGetCPFromName)(doc->allocator, charenc);
         if (wincp)
             enc = wincp;
     }
@@ -1574,7 +1573,7 @@ static int  SaveConfigToStream( TidyDocImpl* doc, StreamOut* out )
             tmbstr t;
             
             /* add 2 double quotes */
-            if (( t = (tmbstr)MemAlloc( TY_(tmbstrlen)( val->p ) + 2 ) ))
+            if (( t = (tmbstr)TidyDocAlloc( doc, TY_(tmbstrlen)( val->p ) + 2 ) ))
             {
               t[0] = '\"'; t[1] = 0;
             
@@ -1582,7 +1581,7 @@ static int  SaveConfigToStream( TidyDocImpl* doc, StreamOut* out )
               TY_(tmbstrcat)( t, "\"" );
               rc = WriteOptionString( option, t, out );
             
-              MemFree( t );
+              TidyDocFree( doc, t );
             }
           }
           else if ( dtmode == option_defs[TidyDoctypeMode].dflt )
@@ -1620,10 +1619,10 @@ int  TY_(SaveConfigFile)( TidyDocImpl* doc, ctmbstr cfgfil )
     FILE* fout = fopen( cfgfil, "wb" );
     if ( fout )
     {
-        out = TY_(FileOutput)( fout, outenc, nl );
+        out = TY_(FileOutput)( doc, fout, outenc, nl );
         status = SaveConfigToStream( doc, out );
         fclose( fout );
-        MemFree( out );
+        TidyDocFree( doc, out );
     }
     return status;
 }
@@ -1632,9 +1631,9 @@ int  TY_(SaveConfigSink)( TidyDocImpl* doc, TidyOutputSink* sink )
 {
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
-    StreamOut* out = TY_(UserOutput)( sink, outenc, nl );
+    StreamOut* out = TY_(UserOutput)( doc, sink, outenc, nl );
     int status = SaveConfigToStream( doc, out );
-    MemFree( out );
+    TidyDocFree( doc, out );
     return status;
 }
 

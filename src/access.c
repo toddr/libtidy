@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 19:06:17 $ 
-    $Revision: 1.35 $ 
+    $Date: 2006/12/29 16:31:07 $ 
+    $Revision: 1.36 $ 
 
 */
 
@@ -438,7 +438,7 @@ static void getTextNode( TidyDocImpl* doc, Node* node )
 static tmbstr getTextNodeClear( TidyDocImpl* doc, Node* node )
 {
     /* Clears list */
-    ClearMemory( doc->access.textNode, TEXTBUF_SIZE );
+    TidyClearMemory( doc->access.textNode, TEXTBUF_SIZE );
     doc->access.counter = 0;
 
     getTextNode( doc, node->content );
@@ -3015,7 +3015,7 @@ static void CheckListUsage( TidyDocImpl* doc, Node* node )
 
 static void InitAccessibilityChecks( TidyDocImpl* doc, int level123 )
 {
-    ClearMemory( &doc->access, sizeof(doc->access) );
+    TidyClearMemory( &doc->access, sizeof(doc->access) );
     doc->access.PRIORITYCHK = level123;
 }
 
@@ -3040,7 +3040,7 @@ static void FreeAccessibilityChecks( TidyDocImpl* ARG_UNUSED(doc) )
         void    *templink = (void *)current;
         
         current = current->next;
-        MemFree(templink);
+        TidyDocFree(doc, templink);
     }
     start = NULL;
     */

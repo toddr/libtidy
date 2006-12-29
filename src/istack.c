@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 21:51:58 $ 
-    $Revision: 1.20 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.21 $ 
 
 */
 
@@ -25,11 +25,11 @@ AttVal *TY_(DupAttrs)( TidyDocImpl* doc, AttVal *attrs)
     if (attrs == NULL)
         return attrs;
 
-    newattrs = TY_(NewAttribute)();
+    newattrs = TY_(NewAttribute)(doc);
     *newattrs = *attrs;
     newattrs->next = TY_(DupAttrs)( doc, attrs->next );
-    newattrs->attribute = TY_(tmbstrdup)(attrs->attribute);
-    newattrs->value = TY_(tmbstrdup)(attrs->value);
+    newattrs->attribute = TY_(tmbstrdup)(doc->allocator, attrs->attribute);
+    newattrs->value = TY_(tmbstrdup)(doc->allocator, attrs->value);
     newattrs->dict = TY_(FindAttribute)(doc, newattrs);
     newattrs->asp = attrs->asp ? TY_(CloneNode)(doc, attrs->asp) : NULL;
     newattrs->php = attrs->php ? TY_(CloneNode)(doc, attrs->php) : NULL;
@@ -87,14 +87,14 @@ void TY_(PushInline)( TidyDocImpl* doc, Node *node )
             lexer->istacklength = 6;   /* this is perhaps excessive */
 
         lexer->istacklength = lexer->istacklength * 2;
-        lexer->istack = (IStack *)MemRealloc(lexer->istack,
+        lexer->istack = (IStack *)TidyDocRealloc(doc, lexer->istack,
                             sizeof(IStack)*(lexer->istacklength));
     }
 
     istack = &(lexer->istack[lexer->istacksize]);
     istack->tag = node->tag;
 
-    istack->element = TY_(tmbstrdup)(node->element);
+    istack->element = TY_(tmbstrdup)(doc->allocator, node->element);
     istack->attributes = TY_(DupAttrs)( doc, node->attributes );
     ++(lexer->istacksize);
 }
@@ -114,7 +114,7 @@ static void PopIStack( TidyDocImpl* doc )
         istack->attributes = av->next;
         TY_(FreeAttribute)( doc, av );
     }
-    MemFree(istack->element);
+    TidyDocFree(doc, istack->element);
 }
 
 static void PopIStackUntil( TidyDocImpl* doc, TidyTagId tid )
@@ -259,7 +259,7 @@ Node *TY_(InsertedToken)( TidyDocImpl* doc )
         lexer->columns = doc->docIn->curcol;
     }
 
-    node = TY_(NewNode)(lexer);
+    node = TY_(NewNode)(doc->allocator, lexer);
     node->type = StartTag;
     node->implicit = yes;
     node->start = lexer->txtstart;
@@ -272,7 +272,7 @@ Node *TY_(InsertedToken)( TidyDocImpl* doc )
         fprintf( stderr, "0-size istack!\n" );
 #endif
 
-    node->element = TY_(tmbstrdup)(istack->element);
+    node->element = TY_(tmbstrdup)(doc->allocator, istack->element);
     node->tag = istack->tag;
     node->attributes = TY_(DupAttrs)( doc, istack->attributes );
 

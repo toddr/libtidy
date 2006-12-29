@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.13 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.14 $ 
 
   config files associate a property name with a value.
 
@@ -120,7 +120,7 @@ Bool  TY_(AdjustCharEncoding)( TidyDocImpl* doc, int encoding );
 Bool  TY_(ConfigDiffThanDefault)( TidyDocImpl* doc );
 Bool  TY_(ConfigDiffThanSnapshot)( TidyDocImpl* doc );
 
-int TY_(CharEncodingId)( ctmbstr charenc );
+int TY_(CharEncodingId)( TidyDocImpl* doc, ctmbstr charenc );
 ctmbstr TY_(CharEncodingName)( int encoding );
 ctmbstr TY_(CharEncodingOptName)( int encoding );
 

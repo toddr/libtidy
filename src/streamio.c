@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/18 09:52:33 $ 
-    $Revision: 1.38 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.39 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies
@@ -95,13 +95,13 @@ StreamOut* TY_(StdOutOutput)(void)
 }
 #endif
 
-void  TY_(ReleaseStreamOut)( StreamOut* out )
+void  TY_(ReleaseStreamOut)( TidyDocImpl *doc,  StreamOut* out )
 {
     if ( out && out != &stderrStreamOut && out != &stdoutStreamOut )
     {
         if ( out->iotype == FileIO )
             fclose( (FILE*) out->sink.sinkData );
-        MemFree( out );
+        TidyDocFree( doc, out );
     }
 }
 
@@ -112,16 +112,17 @@ void  TY_(ReleaseStreamOut)( StreamOut* out )
 
 StreamIn* TY_(initStreamIn)( TidyDocImpl* doc, int encoding )
 {
-    StreamIn *in = (StreamIn*) MemAlloc( sizeof(StreamIn) );
+    StreamIn *in = (StreamIn*) TidyDocAlloc( doc, sizeof(StreamIn) );
 
-    ClearMemory( in, sizeof(StreamIn) );
+    TidyClearMemory( in, sizeof(StreamIn) );
     in->curline = 1;
     in->curcol = 1;
     in->encoding = encoding;
     in->state = FSM_ASCII;
     in->doc = doc;
     in->bufsize = CHARBUF_SIZE;
-    in->charbuf = (tchar*)MemAlloc(sizeof(tchar) * in->bufsize);
+    in->allocator = doc->allocator;
+    in->charbuf = (tchar*)TidyDocAlloc(doc, sizeof(tchar) * in->bufsize);
 #ifdef TIDY_STORE_ORIGINAL_TEXT
     in->otextbuf = NULL;
     in->otextlen = 0;
@@ -134,16 +135,16 @@ void TY_(freeStreamIn)(StreamIn* in)
 {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
     if (in->otextbuf)
-        MemFree(in->otextbuf);
+        TidyFree(in->allocator, in->otextbuf);
 #endif
-    MemFree(in->charbuf);
-    MemFree(in);
+    TidyFree(in->allocator, in->charbuf);
+    TidyFree(in->allocator, in);
 }
 
 StreamIn* TY_(FileInput)( TidyDocImpl* doc, FILE *fp, int encoding )
 {
     StreamIn *in = TY_(initStreamIn)( doc, encoding );
-    if ( TY_(initFileSource)( &in->source, fp ) != 0 )
+    if ( TY_(initFileSource)( doc->allocator, &in->source, fp ) != 0 )
     {
         TY_(freeStreamIn)( in );
         return NULL;
@@ -244,7 +245,7 @@ void TY_(AddByteToOriginalText)(StreamIn *in, tmbchar c)
     if (in->otextlen + 1 >= in->otextsize)
     {
         size_t size = in->otextsize ? 1 : 2;
-        in->otextbuf = MemRealloc(in->otextbuf, in->otextsize + size);
+        in->otextbuf = TidyRealloc(in->allocator, in->otextbuf, in->otextsize + size);
         in->otextsize += size;
     }
     in->otextbuf[in->otextlen++] = c;
@@ -268,7 +269,7 @@ void TY_(AddCharToOriginalText)(StreamIn *in, tchar c)
     }
     
     for (i = 0; i < count; ++i)
-        AddByteToOriginalText(in, buf[i]);
+        TY_(AddByteToOriginalText)(in, buf[i]);
 }
 #endif
 
@@ -304,7 +305,7 @@ uint TY_(ReadChar)( StreamIn *in )
         {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
             added = yes;
-            AddCharToOriginalText(in, (tchar)c);
+            TY_(AddCharToOriginalText)(in, (tchar)c);
 #endif
             in->curcol = 1;
             in->curline++;
@@ -315,7 +316,7 @@ uint TY_(ReadChar)( StreamIn *in )
         {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
             added = yes;
-            AddCharToOriginalText(in, (tchar)c);
+            TY_(AddCharToOriginalText)(in, (tchar)c);
 #endif
             in->tabs = tabsize > 0 ?
                 tabsize - ((in->curcol - 1) % tabsize) - 1
@@ -330,7 +331,7 @@ uint TY_(ReadChar)( StreamIn *in )
         {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
             added = yes;
-            AddCharToOriginalText(in, (tchar)c);
+            TY_(AddCharToOriginalText)(in, (tchar)c);
 #endif
             c = ReadCharFromStream(in);
             if (c != '\n')
@@ -341,7 +342,7 @@ uint TY_(ReadChar)( StreamIn *in )
             else
             {
 #ifdef TIDY_STORE_ORIGINAL_TEXT
-                AddCharToOriginalText(in, (tchar)c);
+                TY_(AddCharToOriginalText)(in, (tchar)c);
 #endif
             }
             in->curcol = 1;
@@ -472,7 +473,7 @@ uint TY_(ReadChar)( StreamIn *in )
 
 #ifdef TIDY_STORE_ORIGINAL_TEXT
     if (!added)
-        AddCharToOriginalText(in, (tchar)c);
+        TY_(AddCharToOriginalText)(in, (tchar)c);
 #endif
 
     return c;
@@ -510,7 +511,7 @@ void TY_(UngetChar)( uint c, StreamIn *in )
     in->pushed = yes;
 
     if (in->bufpos + 1 >= in->bufsize)
-        in->charbuf = (tchar*)MemRealloc(in->charbuf, sizeof(tchar) * ++(in->bufsize));
+        in->charbuf = (tchar*)TidyRealloc(in->allocator, in->charbuf, sizeof(tchar) * ++(in->bufsize));
 
     in->charbuf[(in->bufpos)++] = c;
 
@@ -526,33 +527,33 @@ void TY_(UngetChar)( uint c, StreamIn *in )
 ** Sink
 ************************/
 
-static StreamOut* initStreamOut( int encoding, uint nl )
+static StreamOut* initStreamOut( TidyDocImpl* doc, int encoding, uint nl )
 {
-    StreamOut* out = (StreamOut*) MemAlloc( sizeof(StreamOut) );
-    ClearMemory( out, sizeof(StreamOut) );
+    StreamOut* out = (StreamOut*) TidyDocAlloc( doc, sizeof(StreamOut) );
+    TidyClearMemory( out, sizeof(StreamOut) );
     out->encoding = encoding;
     out->state = FSM_ASCII;
     out->nl = nl;
     return out;
 }
 
-StreamOut* TY_(FileOutput)( FILE* fp, int encoding, uint nl )
+StreamOut* TY_(FileOutput)( TidyDocImpl *doc, FILE* fp, int encoding, uint nl )
 {
-    StreamOut* out = initStreamOut( encoding, nl );
+    StreamOut* out = initStreamOut( doc, encoding, nl );
     TY_(initFileSink)( &out->sink, fp );
     out->iotype = FileIO;
     return out;
 }
-StreamOut* TY_(BufferOutput)( TidyBuffer* buf, int encoding, uint nl )
+StreamOut* TY_(BufferOutput)( TidyDocImpl *doc, TidyBuffer* buf, int encoding, uint nl )
 {
-    StreamOut* out = initStreamOut( encoding, nl );
+    StreamOut* out = initStreamOut( doc, encoding, nl );
     tidyInitOutputBuffer( &out->sink, buf );
     out->iotype = BufferIO;
     return out;
 }
-StreamOut* TY_(UserOutput)( TidyOutputSink* sink, int encoding, uint nl )
+StreamOut* TY_(UserOutput)( TidyDocImpl *doc, TidyOutputSink* sink, int encoding, uint nl )
 {
-    StreamOut* out = initStreamOut( encoding, nl );
+    StreamOut* out = initStreamOut( doc, encoding, nl );
     memcpy( &out->sink, sink, sizeof(TidyOutputSink) );
     out->iotype = UserIO;
     return out;

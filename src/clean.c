@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/28 11:34:38 $ 
-    $Revision: 1.106 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.107 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -61,29 +61,29 @@
 
 static Node* CleanNode( TidyDocImpl* doc, Node *node );
 
-static void RenameElem( Node* node, TidyTagId tid )
+static void RenameElem( TidyDocImpl* doc, Node* node, TidyTagId tid )
 {
     const Dict* dict = TY_(LookupTagDef)( tid );
-    MemFree( node->element );
-    node->element = TY_(tmbstrdup)( dict->name );
+    TidyDocFree( doc, node->element );
+    node->element = TY_(tmbstrdup)( doc->allocator, dict->name );
     node->tag = dict;
 }
 
-static void FreeStyleProps(StyleProp *props)
+static void FreeStyleProps(TidyDocImpl* doc, StyleProp *props)
 {
     StyleProp *next;
 
     while (props)
     {
         next = props->next;
-        MemFree(props->name);
-        MemFree(props->value);
-        MemFree(props);
+        TidyDocFree(doc, props->name);
+        TidyDocFree(doc, props->value);
+        TidyDocFree(doc, props);
         props = next;
     }
 }
 
-static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value )
+static StyleProp *InsertProperty( TidyDocImpl* doc, StyleProp* props, ctmbstr name, ctmbstr value )
 {
     StyleProp *first, *prev, *prop;
     int cmp;
@@ -105,9 +105,9 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
         {
             /* insert before this */
 
-            prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-            prop->name = TY_(tmbstrdup)(name);
-            prop->value = TY_(tmbstrdup)(value);
+            prop = (StyleProp *)TidyDocAlloc(doc, sizeof(StyleProp));
+            prop->name = TY_(tmbstrdup)(doc->allocator, name);
+            prop->value = TY_(tmbstrdup)(doc->allocator, value);
             prop->next = props;
 
             if (prev)
@@ -122,9 +122,9 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
         props = props->next;
     }
 
-    prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-    prop->name = TY_(tmbstrdup)(name);
-    prop->value = TY_(tmbstrdup)(value);
+    prop = (StyleProp *)TidyDocAlloc(doc, sizeof(StyleProp));
+    prop->name = TY_(tmbstrdup)(doc->allocator, name);
+    prop->value = TY_(tmbstrdup)(doc->allocator, value);
     prop->next = NULL;
 
     if (prev)
@@ -142,12 +142,12 @@ static StyleProp *InsertProperty( StyleProp* props, ctmbstr name, ctmbstr value 
  Some systems don't allow you to NULL literal strings,
  so to avoid this, a copy is made first.
 */
-static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
+static StyleProp* CreateProps( TidyDocImpl* doc, StyleProp* prop, ctmbstr style )
 {
     tmbstr name, value = NULL, name_end, value_end, line;
     Bool more;
 
-    line = TY_(tmbstrdup)(style);
+    line = TY_(tmbstrdup)(doc->allocator, style);
     name = line;
 
     while (*name)
@@ -191,7 +191,7 @@ static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
         *name_end = '\0';
         *value_end = '\0';
 
-        prop = InsertProperty(prop, name, value);
+        prop = InsertProperty(doc, prop, name, value);
         *name_end = ':';
 
         if (more)
@@ -204,11 +204,11 @@ static StyleProp* CreateProps( StyleProp* prop, ctmbstr style )
         break;
     }
 
-    MemFree(line);  /* free temporary copy */
+    TidyDocFree(doc, line);  /* free temporary copy */
     return prop;
 }
 
-static tmbstr CreatePropString(StyleProp *props)
+static tmbstr CreatePropString(TidyDocImpl* doc, StyleProp *props)
 {
     tmbstr style, p, s;
     uint len;
@@ -223,7 +223,7 @@ static tmbstr CreatePropString(StyleProp *props)
             len += TY_(tmbstrlen)(prop->value) + 2;
     }
 
-    style = (tmbstr) MemAlloc(len+1);
+    style = (tmbstr) TidyDocAlloc(doc, len+1);
     style[0] = '\0';
 
     for (p = style, prop = props; prop; prop = prop->next)
@@ -261,10 +261,10 @@ static tmbstr AddProperty( ctmbstr style, ctmbstr property )
     tmbstr line;
     StyleProp *prop;
 
-    prop = CreateProps(NULL, style);
-    prop = CreateProps(prop, property);
-    line = CreatePropString(prop);
-    FreeStyleProps(prop);
+    prop = CreateProps(doc, NULL, style);
+    prop = CreateProps(doc, prop, property);
+    line = CreatePropString(doc, prop);
+    FreeStyleProps(doc, prop);
     return line;
 }
 */
@@ -278,10 +278,10 @@ void TY_(FreeStyles)( TidyDocImpl* doc )
         for ( style = lexer->styles; style; style = next )
         {
             next = style->next;
-            MemFree( style->tag );
-            MemFree( style->tag_class );
-            MemFree( style->properties );
-            MemFree( style );
+            TidyDocFree( doc, style->tag );
+            TidyDocFree( doc, style->tag_class );
+            TidyDocFree( doc, style->properties );
+            TidyDocFree( doc, style );
         }
     }
 }
@@ -294,7 +294,7 @@ static tmbstr GensymClass( TidyDocImpl* doc )
       pfx = "c";
 
     TY_(tmbsnprintf)(buf, sizeof(buf), "%s%u", pfx, ++doc->nClassId );
-    return TY_(tmbstrdup)(buf);
+    return TY_(tmbstrdup)(doc->allocator, buf);
 }
 
 static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
@@ -309,10 +309,10 @@ static ctmbstr FindStyle( TidyDocImpl* doc, ctmbstr tag, ctmbstr properties )
             return style->tag_class;
     }
 
-    style = (TagStyle *)MemAlloc( sizeof(TagStyle) );
-    style->tag = TY_(tmbstrdup)(tag);
+    style = (TagStyle *)TidyDocAlloc( doc, sizeof(TagStyle) );
+    style->tag = TY_(tmbstrdup)(doc->allocator, tag);
     style->tag_class = GensymClass( doc );
-    style->properties = TY_(tmbstrdup)( properties );
+    style->properties = TY_(tmbstrdup)( doc->allocator, properties );
     style->next = lexer->styles;
     lexer->styles = style;
     return style->tag_class;
@@ -330,7 +330,7 @@ static void AddClass( TidyDocImpl* doc, Node* node, ctmbstr classname )
      then append class name after a space.
     */
     if (classattr)
-        TY_(AppendToClassAttr)( classattr, classname );
+        TY_(AppendToClassAttr)( doc, classattr, classname );
     else /* create new class attribute */
         TY_(AddAttribute)( doc, node, "class", classname );
 }
@@ -376,15 +376,15 @@ static void Style2Rule( TidyDocImpl* doc, Node *node)
         */
         if (classattr)
         {
-            TY_(AppendToClassAttr)( classattr, classname );
+            TY_(AppendToClassAttr)( doc, classattr, classname );
             TY_(RemoveAttribute)( doc, node, styleattr );
         }
         else /* reuse style attribute for class attribute */
         {
-            MemFree(styleattr->attribute);
-            MemFree(styleattr->value);
-            styleattr->attribute = TY_(tmbstrdup)("class");
-            styleattr->value = TY_(tmbstrdup)(classname);
+            TidyDocFree(doc, styleattr->attribute);
+            TidyDocFree(doc, styleattr->value);
+            styleattr->attribute = TY_(tmbstrdup)(doc->allocator, "class");
+            styleattr->value = TY_(tmbstrdup)(doc->allocator, classname);
         }
     }
 }
@@ -447,21 +447,21 @@ static void CleanBodyAttrs( TidyDocImpl* doc, Node* body )
             TY_(AddStringLiteral)(lexer, "  background-image: url(");
             TY_(AddStringLiteral)(lexer, bgurl);
             TY_(AddStringLiteral)(lexer, ");\n");
-            MemFree(bgurl);
+            TidyDocFree(doc, bgurl);
         }
         if (bgcolor)
         {
             TY_(AddStringLiteral)(lexer, "  background-color: ");
             TY_(AddStringLiteral)(lexer, bgcolor);
             TY_(AddStringLiteral)(lexer, ";\n");
-            MemFree(bgcolor);
+            TidyDocFree(doc, bgcolor);
         }
         if (color)
         {
             TY_(AddStringLiteral)(lexer, "  color: ");
             TY_(AddStringLiteral)(lexer, color);
             TY_(AddStringLiteral)(lexer, ";\n");
-            MemFree(color);
+            TidyDocFree(doc, color);
         }
 
         TY_(AddStringLiteral)(lexer, " }\n");
@@ -517,10 +517,10 @@ static void CreateStyleElement( TidyDocImpl* doc )
     if ( lexer->styles == NULL && NiceBody(doc) )
         return;
 
-    node = TY_(NewNode)( lexer );
+    node = TY_(NewNode)( doc->allocator, lexer );
     node->type = StartTag;
     node->implicit = yes;
-    node->element = TY_(tmbstrdup)("style");
+    node->element = TY_(tmbstrdup)(doc->allocator, "style");
     TY_(FindTag)( doc, node );
 
     /* insert type attribute */
@@ -647,15 +647,15 @@ static void DiscardContainer( TidyDocImpl* doc, Node *element, Node **pnode)
   into the list in order, merging values for
   the same property name.
 */
-static tmbstr MergeProperties( ctmbstr s1, ctmbstr s2 )
+static tmbstr MergeProperties( TidyDocImpl* doc, ctmbstr s1, ctmbstr s2 )
 {
     tmbstr s;
     StyleProp *prop;
 
-    prop = CreateProps(NULL, s1);
-    prop = CreateProps(prop, s2);
-    s = CreatePropString(prop);
-    FreeStyleProps(prop);
+    prop = CreateProps(doc, NULL, s1);
+    prop = CreateProps(doc, prop, s2);
+    s = CreatePropString(doc, prop);
+    FreeStyleProps(doc, prop);
     return s;
 }
 
@@ -673,13 +673,13 @@ void TY_(AddStyleProperty)(TidyDocImpl* doc, Node *node, ctmbstr property )
     {
         if (av->value != NULL)
         {
-            tmbstr s = MergeProperties( av->value, property );
-            MemFree( av->value );
+            tmbstr s = MergeProperties( doc, av->value, property );
+            TidyDocFree( doc, av->value );
             av->value = s;
         }
         else
         {
-            av->value = TY_(tmbstrdup)( property );
+            av->value = TY_(tmbstrdup)( doc->allocator, property );
         }
     }
     else /* else create new style attribute */
@@ -719,11 +719,11 @@ static void MergeClasses(TidyDocImpl* doc, Node *node, Node *child)
             uint l1, l2;
             l1 = TY_(tmbstrlen)(s1);
             l2 = TY_(tmbstrlen)(s2);
-            names = (tmbstr) MemAlloc(l1 + l2 + 2);
+            names = (tmbstr) TidyDocAlloc(doc, l1 + l2 + 2);
             TY_(tmbstrcpy)(names, s1);
             names[l1] = ' ';
             TY_(tmbstrcpy)(names+l1+1, s2);
-            MemFree(av->value);
+            TidyDocFree(doc, av->value);
             av->value = names;
         }
     }
@@ -768,8 +768,8 @@ static void MergeStyles(TidyDocImpl* doc, Node *node, Node *child)
     {
         if (s2)  /* merge styles from both */
         {
-            style = MergeProperties(s1, s2);
-            MemFree(av->value);
+            style = MergeProperties(doc, s1, s2);
+            TidyDocFree(doc, av->value);
             av->value = style;
         }
     }
@@ -852,8 +852,8 @@ static void AddFontSize( TidyDocImpl* doc, Node* node, ctmbstr size )
 
         if (value)
         {
-            MemFree(node->element);
-            node->element = TY_(tmbstrdup)(value);
+            TidyDocFree(doc, node->element);
+            node->element = TY_(tmbstrdup)(doc->allocator, value);
             TY_(FindTag)(doc, node);
             return;
         }
@@ -994,8 +994,8 @@ static Bool Dir2Div( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode))
 
         /* coerce dir to div */
         node->tag = TY_(LookupTagDef)( TidyTag_DIV );
-        MemFree( node->element );
-        node->element = TY_(tmbstrdup)("div");
+        TidyDocFree( doc, node->element );
+        node->element = TY_(tmbstrdup)(doc->allocator, "div");
         TY_(AddStyleProperty)( doc, node, "margin-left: 2em" );
         StripOnlyChild( doc, node );
         return yes;
@@ -1041,7 +1041,7 @@ static Bool Center2Div( TidyDocImpl* doc, Node *node, Node **pnode)
             return yes;
         }
 
-        RenameElem( node, TidyTag_DIV );
+        RenameElem( doc, node, TidyTag_DIV );
         TY_(AddStyleProperty)( doc, node, "text-align: center" );
         return yes;
     }
@@ -1391,7 +1391,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
         }
 
         node->attributes = style;
-        RenameElem( node, TidyTag_SPAN );
+        RenameElem( doc, node, TidyTag_SPAN );
         return yes;
     }
 
@@ -1525,9 +1525,9 @@ void TY_(EmFromI)( TidyDocImpl* doc, Node* node )
     while (node)
     {
         if ( nodeIsI(node) )
-            RenameElem( node, TidyTag_EM );
+            RenameElem( doc, node, TidyTag_EM );
         else if ( nodeIsB(node) )
-            RenameElem( node, TidyTag_STRONG );
+            RenameElem( doc, node, TidyTag_STRONG );
 
         if ( node->content )
             TY_(EmFromI)( doc, node->content );
@@ -1559,7 +1559,7 @@ void TY_(List2BQ)( TidyDocImpl* doc, Node* node )
              HasOneChild(node) && node->content->implicit )
         {
             StripOnlyChild( doc, node );
-            RenameElem( node, TidyTag_BLOCKQUOTE );
+            RenameElem( doc, node, TidyTag_BLOCKQUOTE );
             node->implicit = yes;
         }
 
@@ -1598,7 +1598,7 @@ void TY_(BQ2Div)( TidyDocImpl* doc, Node *node )
             TY_(tmbsnprintf)(indent_buf, sizeof(indent_buf), "margin-left: %dem",
                              2*indent);
 
-            RenameElem( node, TidyTag_DIV );
+            RenameElem( doc, node, TidyTag_DIV );
             TY_(AddStyleProperty)(doc, node, indent_buf );
         }
         else if (node->content)
@@ -1694,7 +1694,7 @@ void TY_(DropSections)( TidyDocImpl* doc, Node* node )
     }
 }
 
-static void PurgeWord2000Attributes( TidyDocImpl* ARG_UNUSED(doc), Node* node )
+static void PurgeWord2000Attributes( TidyDocImpl* doc, Node* node )
 {
     AttVal *attr, *next, *prev = NULL;
 
@@ -2175,18 +2175,18 @@ void FixBrakes( TidyDocImpl* pDoc, Node *pParent )
 }
 #endif
 
-void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
+void TY_(VerifyHTTPEquiv)(TidyDocImpl* doc, Node *head)
 {
     Node *pNode;
     StyleProp *pFirstProp = NULL, *pLastProp = NULL, *prop = NULL;
     tmbstr s, pszBegin, pszEnd;
-    ctmbstr enc = TY_(GetEncodingNameFromTidyId)(cfg(pDoc, TidyOutCharEncoding));
+    ctmbstr enc = TY_(GetEncodingNameFromTidyId)(cfg(doc, TidyOutCharEncoding));
 
     if (!enc)
         return;
 
     if (!nodeIsHEAD(head))
-        head = TY_(FindHEAD)(pDoc);
+        head = TY_(FindHEAD)(doc);
 
     if (!head)
         return;
@@ -2201,7 +2201,7 @@ void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
              !AttrValueIs(httpEquiv, "Content-Type") )
             continue;
 
-        pszBegin = s = TY_(tmbstrdup)( metaContent->value );
+        pszBegin = s = TY_(tmbstrdup)( doc->allocator, metaContent->value );
         while (pszBegin && *pszBegin)
         {
             while (isspace( *pszBegin ))
@@ -2213,8 +2213,8 @@ void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
                 *(pszEnd++) = '\0';
             if (pszEnd > pszBegin)
             {
-                prop = (StyleProp *)MemAlloc(sizeof(StyleProp));
-                prop->name = TY_(tmbstrdup)( pszBegin );
+                prop = (StyleProp *)TidyDocAlloc(doc, sizeof(StyleProp));
+                prop->name = TY_(tmbstrdup)( doc->allocator, pszBegin );
                 prop->value = NULL;
                 prop->next = NULL;
 
@@ -2227,7 +2227,7 @@ void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
                 pszBegin = pszEnd;
             }
         }
-        MemFree( s );
+        TidyDocFree( doc, s );
 
         /*  find the charset property */
         for (prop = pFirstProp; NULL != prop; prop = prop->next)
@@ -2235,17 +2235,17 @@ void TY_(VerifyHTTPEquiv)(TidyDocImpl* pDoc, Node *head)
             if (0 != TY_(tmbstrncasecmp)( prop->name, "charset", 7 ))
                 continue;
 
-            MemFree( prop->name );
-            prop->name = (tmbstr)MemAlloc( 8 + TY_(tmbstrlen)(enc) + 1 );
+            TidyDocFree( doc, prop->name );
+            prop->name = (tmbstr)TidyDocAlloc( doc, 8 + TY_(tmbstrlen)(enc) + 1 );
             TY_(tmbstrcpy)(prop->name, "charset=");
             TY_(tmbstrcpy)(prop->name+8, enc);
-            s = CreatePropString( pFirstProp );
-            MemFree( metaContent->value );
+            s = CreatePropString( doc, pFirstProp );
+            TidyDocFree( doc, metaContent->value );
             metaContent->value = s;
             break;
         }
         /* #718127, prevent memory leakage */
-        FreeStyleProps(pFirstProp);
+        FreeStyleProps(doc, pFirstProp);
         pFirstProp = NULL;
         pLastProp = NULL;
     }

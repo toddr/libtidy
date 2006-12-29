@@ -8,8 +8,8 @@
   
    CVS Info:
      $Author: arnaud02 $ 
-     $Date: 2006/09/12 15:14:44 $ 
-     $Revision: 1.7 $ 
+     $Date: 2006/12/29 16:31:08 $ 
+     $Revision: 1.8 $ 
 
 */
 
@@ -61,6 +61,7 @@ typedef struct _TidyPrintImpl
     uint ixInd;
     TidyIndent indent[2];  /* Two lines worth of indent state */
 
+    TidyAllocator *allocator; /* Allocator */
 } TidyPrintImpl;
 
 

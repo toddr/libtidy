@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/16 07:57:06 $ 
-    $Revision: 1.187 $ 
+    $Date: 2006/12/29 16:31:08 $ 
+    $Revision: 1.188 $ 
 
 */
 
@@ -644,12 +644,13 @@ static tmbchar LastChar( tmbstr str )
 
 Lexer* TY_(NewLexer)( TidyDocImpl* doc )
 {
-    Lexer* lexer = (Lexer*) MemAlloc( sizeof(Lexer) );
+    Lexer* lexer = (Lexer*) TidyDocAlloc( doc, sizeof(Lexer) );
 
     if ( lexer != NULL )
     {
-        ClearMemory( lexer, sizeof(Lexer) );
+        TidyClearMemory( lexer, sizeof(Lexer) );
 
+        lexer->allocator = doc->allocator;
         lexer->lines = 1;
         lexer->columns = 1;
         lexer->state = LEX_CONTENT;
@@ -685,9 +686,9 @@ void TY_(FreeLexer)( TidyDocImpl* doc )
         while ( lexer->istacksize > 0 )
             TY_(PopInline)( doc, NULL );
 
-        MemFree( lexer->istack );
-        MemFree( lexer->lexbuf );
-        MemFree( lexer );
+        TidyDocFree( doc, lexer->istack );
+        TidyDocFree( doc, lexer->lexbuf );
+        TidyDocFree( doc, lexer );
         doc->lexer = NULL;
     }
 }
@@ -709,11 +710,11 @@ static void AddByte( Lexer *lexer, tmbchar ch )
             else
                 allocAmt *= 2;
         }
-        buf = (tmbstr) MemRealloc( lexer->lexbuf, allocAmt );
+        buf = (tmbstr) TidyRealloc( lexer->allocator, lexer->lexbuf, allocAmt );
         if ( buf )
         {
-          ClearMemory( buf + lexer->lexlength, 
-                       allocAmt - lexer->lexlength );
+          TidyClearMemory( buf + lexer->lexlength, 
+                           allocAmt - lexer->lexlength );
           lexer->lexbuf = buf;
           lexer->lexlength = allocAmt;
         }
@@ -989,10 +990,10 @@ static tmbchar ParseTagName( TidyDocImpl* doc )
 */
 
 
-Node *TY_(NewNode)(Lexer *lexer)
+Node *TY_(NewNode)(TidyAllocator* allocator, Lexer *lexer)
 {
-    Node* node = (Node*) MemAlloc( sizeof(Node) );
-    ClearMemory( node, sizeof(Node) );
+    Node* node = (Node*) TidyAlloc( allocator, sizeof(Node) );
+    TidyClearMemory( node, sizeof(Node) );
     if ( lexer )
     {
         node->line = lexer->lines;
@@ -1006,7 +1007,7 @@ Node *TY_(NewNode)(Lexer *lexer)
 Node *TY_(CloneNode)( TidyDocImpl* doc, Node *element )
 {
     Lexer* lexer = doc->lexer;
-    Node *node = TY_(NewNode)( lexer );
+    Node *node = TY_(NewNode)( lexer->allocator, lexer );
 
     node->start = lexer->lexsize;
     node->end   = lexer->lexsize;
@@ -1018,7 +1019,7 @@ Node *TY_(CloneNode)( TidyDocImpl* doc, Node *element )
         node->closed     = element->closed;
         node->implicit   = element->implicit;
         node->tag        = element->tag;
-        node->element    = TY_(tmbstrdup)( element->element );
+        node->element    = TY_(tmbstrdup)( doc->allocator, element->element );
         node->attributes = TY_(DupAttrs)( doc, element->attributes );
     }
     return node;
@@ -1051,9 +1052,9 @@ void TY_(FreeAttribute)( TidyDocImpl* doc, AttVal *av )
 {
     TY_(FreeNode)( doc, av->asp );
     TY_(FreeNode)( doc, av->php );
-    MemFree( av->attribute );
-    MemFree( av->value );
-    MemFree( av );
+    TidyDocFree( doc, av->attribute );
+    TidyDocFree( doc, av->value );
+    TidyDocFree( doc, av );
 }
 
 /* detach attribute from node
@@ -1097,13 +1098,13 @@ void TY_(FreeNode)( TidyDocImpl* doc, Node *node )
 
         TY_(FreeAttrs)( doc, node );
         TY_(FreeNode)( doc, node->content );
-        MemFree( node->element );
+        TidyDocFree( doc, node->element );
 #ifdef TIDY_STORE_ORIGINAL_TEXT
         if (node->otext)
-            MemFree(node->otext);
+            TidyDocFree(doc, node->otext);
 #endif
         if (RootNode != node->type)
-            MemFree( node );
+            TidyDocFree( doc, node );
         else
             node->content = NULL;
 
@@ -1133,8 +1134,8 @@ void StoreOriginalTextInToken(TidyDocImpl* doc, Node* node, uint count)
     else
     {
         uint len = doc->docIn->otextlen;
-        tmbstr buf1 = (tmbstr)MemAlloc(len - count + 1);
-        tmbstr buf2 = (tmbstr)MemAlloc(count + 1);
+        tmbstr buf1 = (tmbstr)TidyDocAlloc(doc, len - count + 1);
+        tmbstr buf2 = (tmbstr)TidyDocAlloc(doc, count + 1);
         uint i, j;
 
         /* strncpy? */
@@ -1149,7 +1150,7 @@ void StoreOriginalTextInToken(TidyDocImpl* doc, Node* node, uint count)
 
         buf2[j] = 0;
 
-        MemFree(doc->docIn->otextbuf);
+        TidyDocFree(doc, doc->docIn->otextbuf);
         node->otext = buf1;
         doc->docIn->otextbuf = buf2;
         doc->docIn->otextlen = count;
@@ -1160,7 +1161,7 @@ void StoreOriginalTextInToken(TidyDocImpl* doc, Node* node, uint count)
 
 Node* TY_(TextToken)( Lexer *lexer )
 {
-    Node *node = TY_(NewNode)( lexer );
+    Node *node = TY_(NewNode)( lexer->allocator, lexer );
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
     return node;
@@ -1169,7 +1170,7 @@ Node* TY_(TextToken)( Lexer *lexer )
 /* used for creating preformatted text from Word2000 */
 Node *TY_(NewLineNode)( Lexer *lexer )
 {
-    Node *node = TY_(NewNode)( lexer );
+    Node *node = TY_(NewNode)( lexer->allocator, lexer );
     node->start = lexer->lexsize;
     TY_(AddCharToLexer)( lexer, (uint)'\n' );
     node->end = lexer->lexsize;
@@ -1179,7 +1180,7 @@ Node *TY_(NewLineNode)( Lexer *lexer )
 /* used for adding a &nbsp; for Word2000 */
 Node* TY_(NewLiteralTextNode)( Lexer *lexer, ctmbstr txt )
 {
-    Node *node = TY_(NewNode)( lexer );
+    Node *node = TY_(NewNode)( lexer->allocator, lexer );
     node->start = lexer->lexsize;
     AddStringToLexer( lexer, txt );
     node->end = lexer->lexsize;
@@ -1189,9 +1190,10 @@ Node* TY_(NewLiteralTextNode)( Lexer *lexer, ctmbstr txt )
 static Node* TagToken( TidyDocImpl* doc, NodeType type )
 {
     Lexer* lexer = doc->lexer;
-    Node* node = TY_(NewNode)( lexer );
+    Node* node = TY_(NewNode)( lexer->allocator, lexer );
     node->type = type;
-    node->element = TY_(tmbstrndup)( lexer->lexbuf + lexer->txtstart,
+    node->element = TY_(tmbstrndup)( doc->allocator,
+                                     lexer->lexbuf + lexer->txtstart,
                                      lexer->txtend - lexer->txtstart );
     node->start = lexer->txtstart;
     node->end = lexer->txtstart;
@@ -1205,7 +1207,7 @@ static Node* TagToken( TidyDocImpl* doc, NodeType type )
 static Node* NewToken(TidyDocImpl* doc, NodeType type)
 {
     Lexer* lexer = doc->lexer;
-    Node* node = TY_(NewNode)(lexer);
+    Node* node = TY_(NewNode)(lexer->allocator, lexer);
     node->type = type;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -1382,8 +1384,8 @@ Bool TY_(AddGenerator)( TidyDocImpl* doc )
                         /* update the existing content to reflect the */
                         /* actual version of Tidy currently being used */
                         
-                        MemFree(attval->value);
-                        attval->value = TY_(tmbstrdup)(buf);
+                        TidyDocFree(doc, attval->value);
+                        attval->value = TY_(tmbstrdup)(doc->allocator, buf);
                         return no;
                     }
                 }
@@ -1422,8 +1424,8 @@ static uint FindGivenVersion( TidyDocImpl* doc, Node* doctype )
     }
 
     /* todo: add a warning if case does not match? */
-    MemFree(fpi->value);
-    fpi->value = TY_(tmbstrdup)(GetFPIFromVers(vers));
+    TidyDocFree(doc, fpi->value);
+    fpi->value = TY_(tmbstrdup)(doc->allocator, GetFPIFromVers(vers));
 
     return vers;
 }
@@ -1491,7 +1493,7 @@ static Node* NewDocTypeNode( TidyDocImpl* doc )
     if ( !html )
         return NULL;
 
-    doctype = TY_(NewNode)( NULL );
+    doctype = TY_(NewNode)( doc->allocator, NULL );
     doctype->type = DocTypeTag;
     TY_(InsertNodeBeforeElement)(html, doctype);
     return doctype;
@@ -1520,7 +1522,7 @@ Bool TY_(SetXHTMLDocType)( TidyDocImpl* doc )
     if (!doctype)
     {
         doctype = NewDocTypeNode(doc);
-        doctype->element = TY_(tmbstrdup)("html");
+        doctype->element = TY_(tmbstrdup)(doc->allocator, "html");
     }
     else
     {
@@ -1660,7 +1662,7 @@ Bool TY_(FixDocType)( TidyDocImpl* doc )
     else
     {
         doctype = NewDocTypeNode(doc);
-        doctype->element = TY_(tmbstrdup)("html");
+        doctype->element = TY_(tmbstrdup)(doc->allocator, "html");
     }
 
     TY_(RepairAttrValue)(doc, doctype, "PUBLIC", GetFPIFromVers(guessed));
@@ -1686,7 +1688,7 @@ Bool TY_(FixXmlDecl)( TidyDocImpl* doc )
     }
     else
     {
-        xml = TY_(NewNode)(lexer);
+        xml = TY_(NewNode)(lexer->allocator, lexer);
         xml->type = XmlDecl;
         if ( root->content )
             TY_(InsertNodeBeforeElement)(root->content, xml);
@@ -1718,14 +1720,14 @@ Bool TY_(FixXmlDecl)( TidyDocImpl* doc )
 Node* TY_(InferredTag)(TidyDocImpl* doc, TidyTagId id)
 {
     Lexer *lexer = doc->lexer;
-    Node *node = TY_(NewNode)( lexer );
+    Node *node = TY_(NewNode)( lexer->allocator, lexer );
     const Dict* dict = TY_(LookupTagDef)(id);
 
     assert( dict != NULL );
 
     node->type = StartTag;
     node->implicit = yes;
-    node->element = TY_(tmbstrdup)(dict->name);
+    node->element = TY_(tmbstrdup)(doc->allocator, dict->name);
     node->tag = dict;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -2583,7 +2585,8 @@ static Node* GetTokenFromStream( TidyDocImpl* doc, GetTokenMode mode )
 
                     lexer->token = PIToken(doc);
                     lexer->token->closed = closed;
-                    lexer->token->element = TY_(tmbstrndup)(lexer->lexbuf +
+                    lexer->token->element = TY_(tmbstrndup)(doc->allocator,
+                                                            lexer->lexbuf +
                                                             lexer->txtstart - i, i);
                 }
                 else
@@ -2690,7 +2693,7 @@ static Node* GetTokenFromStream( TidyDocImpl* doc, GetTokenMode mode )
                         return lexer->token;
                     }
 
-                    av = TY_(NewAttribute)();
+                    av = TY_(NewAttribute)(doc);
                     av->attribute = name;
                     av->value = ParseValue( doc, name, yes, &isempty, &pdelim );
                     av->delim = pdelim;
@@ -3058,7 +3061,8 @@ static tmbstr  ParseAttribute( TidyDocImpl* doc, Bool *isempty,
 
     /* handle attribute names with multibyte chars */
     len = lexer->lexsize - start;
-    attr = (len > 0 ? TY_(tmbstrndup)(lexer->lexbuf+start, len) : NULL);
+    attr = (len > 0 ? TY_(tmbstrndup)(doc->allocator,
+                                      lexer->lexbuf+start, len) : NULL);
     lexer->lexsize = start;
     return attr;
 }
@@ -3238,7 +3242,8 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
         *pdelim = ParseServerInstruction( doc );
         len = lexer->lexsize - start;
         lexer->lexsize = start;
-        return (len > 0 ? TY_(tmbstrndup)(lexer->lexbuf+start, len) : NULL);
+        return (len > 0 ? TY_(tmbstrndup)(doc->allocator,
+                                          lexer->lexbuf+start, len) : NULL);
     }
     else
         TY_(UngetChar)(c, doc->docIn);
@@ -3440,7 +3445,7 @@ static tmbstr ParseValue( TidyDocImpl* doc, ctmbstr name,
             }
         }
 
-        value = TY_(tmbstrndup)(lexer->lexbuf + start, len);
+        value = TY_(tmbstrndup)(doc->allocator, lexer->lexbuf + start, len);
     }
     else
         value = NULL;
@@ -3475,10 +3480,10 @@ static Bool IsValidAttrName( ctmbstr attr )
 }
 
 /* create a new attribute */
-AttVal *TY_(NewAttribute)(void)
+AttVal *TY_(NewAttribute)( TidyDocImpl* doc )
 {
-    AttVal *av = (AttVal*) MemAlloc( sizeof(AttVal) );
-    ClearMemory( av, sizeof(AttVal) );
+    AttVal *av = (AttVal*) TidyDocAlloc( doc, sizeof(AttVal) );
+    TidyClearMemory( av, sizeof(AttVal) );
     return av;
 }
 
@@ -3486,9 +3491,9 @@ AttVal *TY_(NewAttribute)(void)
 AttVal* TY_(NewAttributeEx)( TidyDocImpl* doc, ctmbstr name, ctmbstr value,
                              int delim )
 {
-    AttVal *av = TY_(NewAttribute)();
-    av->attribute = TY_(tmbstrdup)(name);
-    av->value = TY_(tmbstrdup)(value);
+    AttVal *av = TY_(NewAttribute)(doc);
+    av->attribute = TY_(tmbstrdup)(doc->allocator, name);
+    av->value = TY_(tmbstrdup)(doc->allocator, value);
     av->delim = delim;
     av->dict = TY_(FindAttribute)( doc, av );
     return av;
@@ -3539,7 +3544,7 @@ static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             /* check if attributes are created by ASP markup */
             if (asp)
             {
-                av = TY_(NewAttribute)();
+                av = TY_(NewAttribute)(doc);
                 av->asp = asp;
                 AddAttrToList( &list, av ); 
                 continue;
@@ -3548,7 +3553,7 @@ static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
             /* check if attributes are created by PHP markup */
             if (php)
             {
-                av = TY_(NewAttribute)();
+                av = TY_(NewAttribute)(doc);
                 av->php = php;
                 AddAttrToList( &list, av ); 
                 continue;
@@ -3562,7 +3567,7 @@ static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
         if (attribute && (IsValidAttrName(attribute) ||
             (cfgBool(doc, TidyXmlTags) && IsValidXMLAttrName(attribute))))
         {
-            av = TY_(NewAttribute)();
+            av = TY_(NewAttribute)(doc);
             av->delim = delim;
             av->attribute = attribute;
             av->value = value;
@@ -3571,7 +3576,7 @@ static AttVal* ParseAttrs( TidyDocImpl* doc, Bool *isempty )
         }
         else
         {
-            av = TY_(NewAttribute)();
+            av = TY_(NewAttribute)(doc);
             av->attribute = attribute;
             av->value = value;
 
@@ -3611,7 +3616,7 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
     uint delim = 0;
     Bool hasfpi = yes;
 
-    Node* node = TY_(NewNode)(lexer);
+    Node* node = TY_(NewNode)(lexer->allocator, lexer);
     node->type = DocTypeTag;
     node->start = lexer->txtstart;
     node->end = lexer->txtend;
@@ -3699,7 +3704,8 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             /* read document type name */
             if (TY_(IsWhite)(c) || c == '>' || c == '[')
             {
-                node->element = TY_(tmbstrndup)(lexer->lexbuf + start,
+                node->element = TY_(tmbstrndup)(doc->allocator,
+                                                lexer->lexbuf + start,
                                                 lexer->lexsize - start - 1);
                 if (c == '>' || c == '[')
                 {
@@ -3715,11 +3721,12 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             /* read PUBLIC/SYSTEM */
             if (TY_(IsWhite)(c) || c == '>')
             {
-                char *attname = TY_(tmbstrndup)(lexer->lexbuf + start,
+                char *attname = TY_(tmbstrndup)(doc->allocator,
+                                                lexer->lexbuf + start,
                                                 lexer->lexsize - start - 1);
                 hasfpi = !(TY_(tmbstrcasecmp)(attname, "SYSTEM") == 0);
 
-                MemFree(attname);
+                TidyDocFree(doc, attname);
 
                 /* todo: report an error if SYSTEM/PUBLIC not uppercase */
 
@@ -3737,10 +3744,11 @@ static Node *ParseDocTypeDecl(TidyDocImpl* doc)
             /* read quoted string */
             if (c == delim)
             {
-                char *value = TY_(tmbstrndup)(lexer->lexbuf + start,
+                char *value = TY_(tmbstrndup)(doc->allocator,
+                                              lexer->lexbuf + start,
                                               lexer->lexsize - start - 1);
                 AttVal* att = TY_(AddAttribute)(doc, node, hasfpi ? "PUBLIC" : "SYSTEM", value);
-                MemFree(value);
+                TidyDocFree(doc, value);
                 att->delim = delim;
                 hasfpi = no;
                 state = DT_INTERMEDIATE;
