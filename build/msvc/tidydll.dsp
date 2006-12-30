@@ -169,6 +169,10 @@ SOURCE=..\..\src\tagask.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\tidy.def
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\src\tags.c
 # End Source File
 # Begin Source File
