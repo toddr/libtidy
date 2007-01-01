@@ -3,7 +3,7 @@
     For generating the `tidy.1` man page from the
     output of `tidy -xml-help` and `tidy -xml-config`
 
-    (c) 2005 (W3C) MIT, ERCIM, Keio University
+    (c) 2005-2007 (W3C) MIT, ERCIM, Keio University
     See tidy.h for the copyright notice.
 
     Written by Jelks Cabaniss and Arnaud Desitter
@@ -11,8 +11,8 @@
   CVS Info :
 
     $Author: arnaud02 $
-    $Date: 2005/10/20 17:57:11 $
-    $Revision: 1.6 $
+    $Date: 2007/01/01 17:52:20 $
+    $Revision: 1.7 $
 
 -->
 <xsl:stylesheet version="1.0"
@@ -48,7 +48,7 @@
 
 <xsl:template name="header-section">
   <xsl:text/>.\" tidy man page for the Tidy Sourceforge project
-.TH tidy 1 "$Date: 2005/10/20 17:57:11 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
+.TH tidy 1 "$Date: 2007/01/01 17:52:20 $" "HTML Tidy <xsl:value-of select="cmdline/@version" />" "User commands"
 </xsl:template>
 
 
@@ -81,7 +81,7 @@ For more information about HTML Tidy, visit the project home page at \fIhttp://t
 .SH ENVIRONMENT
 .TP
 .B HTML_TIDY
-Name of the default configuration file.  This should be an absolute path, since you will probably invoke \fBtidy\fR from different directories.  The value of HTML_TIDY will be parsed after the compiled-in default (defined with -DCONFIG_FILE), but before any of the files specified using \fB-config\fR.
+Name of the default configuration file.  This should be an absolute path, since you will probably invoke \fBtidy\fR from different directories.  The value of HTML_TIDY will be parsed after the compiled-in default (defined with -DTIDY_CONFIG_FILE), but before any of the files specified using \fB-config\fR.
 .SH "EXIT STATUS"
 .IP 0
 All input files were processed successfully.

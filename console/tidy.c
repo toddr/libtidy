@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/11/30 10:25:21 $ 
-    $Revision: 1.43 $ 
+    $Date: 2007/01/01 17:52:20 $ 
+    $Revision: 1.44 $ 
 */
 
 #include "tidy.h"
@@ -910,14 +910,14 @@ int main( int argc, char** argv )
     errout = stderr;  /* initialize to stderr */
     status = 0;
     
-#ifdef CONFIG_FILE
-    if ( tidyFileExists(CONFIG_FILE) )
+#ifdef TIDY_CONFIG_FILE
+    if ( tidyFileExists( tdoc, TIDY_CONFIG_FILE) )
     {
-        status = tidyLoadConfig( tdoc, CONFIG_FILE );
+        status = tidyLoadConfig( tdoc, TIDY_CONFIG_FILE );
         if ( status != 0 )
-            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", CONFIG_FILE, status);
+            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", TIDY_CONFIG_FILE, status);
     }
-#endif /* CONFIG_FILE */
+#endif /* TIDY_CONFIG_FILE */
 
     /* look for env var "HTML_TIDY" */
     /* then for ~/.tidyrc (on platforms defining $HOME) */
@@ -928,14 +928,14 @@ int main( int argc, char** argv )
         if ( status != 0 )
             fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", cfgfil, status);
     }
-#ifdef USER_CONFIG_FILE
-    else if ( tidyFileExists(USER_CONFIG_FILE) )
+#ifdef TIDY_USER_CONFIG_FILE
+    else if ( tidyFileExists( tdoc, TIDY_USER_CONFIG_FILE) )
     {
-        status = tidyLoadConfig( tdoc, USER_CONFIG_FILE );
+        status = tidyLoadConfig( tdoc, TIDY_USER_CONFIG_FILE );
         if ( status != 0 )
-            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", USER_CONFIG_FILE, status);
+            fprintf(errout, "Loading config file \"%s\" failed, err = %d\n", TIDY_USER_CONFIG_FILE, status);
     }
-#endif /* USER_CONFIG_FILE */
+#endif /* TIDY_USER_CONFIG_FILE */
 
     /* read command line */
     while ( argc > 0 )

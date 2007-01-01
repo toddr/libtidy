@@ -1,16 +1,16 @@
-#ifndef __BUFFIO_H__
-#define __BUFFIO_H__
+#ifndef __TIDY_BUFFIO_H__
+#define __TIDY_BUFFIO_H__
 
 /** @file buffio.h - Treat buffer as an I/O stream.
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:09 $ 
-    $Revision: 1.7 $ 
+    $Date: 2007/01/01 17:52:20 $ 
+    $Revision: 1.8 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -105,7 +105,7 @@ TIDY_EXPORT void TIDY_CALL tidyInitOutputBuffer( TidyOutputSink* outp, TidyBuffe
 #ifdef __cplusplus
 }
 #endif
-#endif /* __BUFFIO_H__ */
+#endif /* __TIDY_BUFFIO_H__ */
 
 /*
  * local variables:
