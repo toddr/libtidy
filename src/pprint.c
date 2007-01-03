@@ -1,14 +1,14 @@
 /*
   pprint.c -- pretty print parse tree  
   
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.113 $ 
+    $Date: 2007/01/03 12:16:27 $ 
+    $Revision: 1.114 $ 
 
 */
 
@@ -1267,7 +1267,7 @@ static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
  x</span>y</p>
  will display properly. Whereas
  <p><img />
- x<</p> won't.
+ x</p> won't.
 */
 static Bool AfterSpaceImp(Lexer *lexer, Node *node, Bool isEmpty)
 {
@@ -1364,7 +1364,8 @@ static void PPrintTag( TidyDocImpl* doc,
                leave as is. Note that AfterSpace returns true for non inline
                elements but can still be false for some <br>. So it has to
                stay as well. */
-            if (!(mode & NOWRAP) && (!TY_(nodeCMIsInline)(node) || nodeIsBR(node))
+            if (!(mode & NOWRAP)
+                && (!TY_(nodeCMIsInline)(node) || nodeIsBR(node))
                 && AfterSpace(doc->lexer, node))
             {
                 pprint->wraphere = pprint->linelen;
