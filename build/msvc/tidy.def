@@ -1,4 +1,4 @@
-LIBRARY tidy
+LIBRARY libtidy
   EXPORTS
     tidyCreate                    @1001
     tidyRelease                   @1002
