@@ -1,13 +1,13 @@
 /* buffio.c -- Treat buffer as an I/O stream.
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.12 $ 
+    $Date: 2007/01/05 16:33:39 $ 
+    $Revision: 1.13 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -67,16 +67,24 @@ void TIDY_CALL tidyBufInit( TidyBuffer* buf )
 
 void TIDY_CALL tidyBufAlloc( TidyBuffer* buf, uint allocSize )
 {
-    tidyBufInit( buf );
-    tidyBufCheckAlloc( buf, allocSize, 0 );
-    buf->next = 0;
+    tidyBufAllocWithAllocator( buf, NULL, allocSize );
 }
 
-void TIDY_CALL tidyBufInitWithAllocator( TidyBuffer* buf, TidyAllocator *allocator )
+void TIDY_CALL tidyBufInitWithAllocator( TidyBuffer* buf,
+                                         TidyAllocator *allocator )
 {
     assert( buf != NULL );
     TidyClearMemory( buf, sizeof(TidyBuffer) );
     buf->allocator = allocator ? allocator : &TY_(g_default_allocator);
+}
+
+void TIDY_CALL tidyBufAllocWithAllocator( TidyBuffer* buf,
+                                          TidyAllocator *allocator,
+                                          uint allocSize )
+{
+    tidyBufInitWithAllocator( buf, allocator );
+    tidyBufCheckAlloc( buf, allocSize, 0 );
+    buf->next = 0;
 }
 
 void TIDY_CALL tidyBufFree( TidyBuffer* buf )
