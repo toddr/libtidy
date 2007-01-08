@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:09 $ 
-    $Revision: 1.16 $ 
+    $Date: 2007/01/08 17:01:11 $ 
+    $Revision: 1.17 $ 
 
   Contributing Author(s):
 
@@ -216,7 +216,7 @@ struct _TidyAllocatorVtbl {
     myAllocator allocator;
     TidyDoc doc;
 
-    allocator.base.vtbl = &MyAllocatorVtbl;
+    allocator.base.vtbl = &amp;MyAllocatorVtbl;
     ...initialise allocator specific state...
     doc = tidyCreateWithAllocator(&allocator);
     ...
@@ -851,6 +851,12 @@ TIDY_EXPORT TidyTagId TIDY_CALL tidyNodeGetId( TidyNode tnod );
 TIDY_EXPORT uint TIDY_CALL tidyNodeLine( TidyNode tnod );
 TIDY_EXPORT uint TIDY_CALL tidyNodeColumn( TidyNode tnod );
 
+/** @defgroup NodeIsElementName
+**
+** @deprecated The functions tidyNodeIs{ElementName} are deprecated and 
+** should be replaced by tidyNodeGetId.
+** @{
+*/
 TIDY_EXPORT Bool TIDY_CALL tidyNodeIsHTML( TidyNode tnod );
 TIDY_EXPORT Bool TIDY_CALL tidyNodeIsHEAD( TidyNode tnod );
 TIDY_EXPORT Bool TIDY_CALL tidyNodeIsTITLE( TidyNode tnod );
@@ -932,6 +938,8 @@ TIDY_EXPORT Bool TIDY_CALL tidyNodeIsSTRIKE( TidyNode tnod );
 TIDY_EXPORT Bool TIDY_CALL tidyNodeIsU( TidyNode tnod );
 TIDY_EXPORT Bool TIDY_CALL tidyNodeIsMENU( TidyNode tnod );
 
+/** @} End NodeIsElementName group */
+
 /** @} End NodeAsk group */
 
 
@@ -945,6 +953,12 @@ TIDY_EXPORT TidyAttrId TIDY_CALL tidyAttrGetId( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsEvent( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsProp( TidyAttr tattr );
 
+/** @defgroup AttrIsAttributeName
+**
+** @deprecated The functions  tidyAttrIs{AttributeName} are deprecated and 
+** should be replaced by tidyAttrGetId.
+** @{
+*/
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsHREF( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsSRC( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsID( TidyAttr tattr );
@@ -991,6 +1005,8 @@ TIDY_EXPORT Bool TIDY_CALL tidyAttrIsABBR( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsCOLSPAN( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsROWSPAN( TidyAttr tattr );
 
+/** @} End AttrIsAttributeName group */
+
 /** @} end AttrAsk group */
 
 
@@ -1001,6 +1017,13 @@ TIDY_EXPORT Bool TIDY_CALL tidyAttrIsROWSPAN( TidyAttr tattr );
 */
 
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetById( TidyNode tnod, TidyAttrId attId );
+
+/** @defgroup AttrGetAttributeName
+**
+** @deprecated The functions tidyAttrGet{AttributeName} are deprecated and 
+** should be replaced by tidyAttrGetById.
+** @{
+*/
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetHREF( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetSRC( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetID( TidyNode tnod );
@@ -1047,6 +1070,7 @@ TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetABBR( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetCOLSPAN( TidyNode tnod );
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetROWSPAN( TidyNode tnod );
 
+/** @} End AttrGetAttributeName group */
 
 /** @} end AttrGet group */
 
