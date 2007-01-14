@@ -5,14 +5,14 @@
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.11 2006/12/29 16:31:08 arnaud02 Exp $
+   $Id: mappedio.c,v 1.12 2007/01/14 13:52:13 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
 #include "forward.h"
 #include "mappedio.h"
 
-#ifdef SUPPORT_POSIX_MAPPED_FILES
+#if SUPPORT_POSIX_MAPPED_FILES
 
 #include "fileio.h"
 

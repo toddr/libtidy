@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2007/01/01 17:48:54 $ 
-#     $Revision: 1.30 $ 
+#     $Date: 2007/01/14 13:52:12 $ 
+#     $Revision: 1.31 $ 
 #
 #  Copyright (c) 1998-2007 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -84,17 +84,19 @@ DOCDIR = ${TOPDIR}/htmldoc
 # Lookup based on hash table can be disabled with 
 # "-DELEMENT_HASH_LOOKUP=0 -DATTRIBUTE_HASH_LOOKUP=0"
 
+# Memory mapped i/o can be disabled with -DSUPPORT_POSIX_MAPPED_FILES=0
+#
+
 # CFLAGS etc..
 # For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1
 # disabled.
 CC= gcc
 CFLAGS= -g -Wall -Wno-switch -Wno-parentheses -I $(INCDIR)
 # flags only supported with gcc 3.x
-# CFLAGS += -Wunused-parameter
+CFLAGS += -Wunused-parameter
 
 OTHERCFLAGS=
 OTHERCFLAGS+= -D_DEBUG=1
-OTHERCFLAGS+= -DSUPPORT_POSIX_MAPPED_FILES
 # OTHERCFLAGS+= -fvisibility=hidden -DTIDY_EXPORT='__attribute__((visibility("default")))'
 ifdef SUPPORT_UTF16_ENCODINGS
 CFLAGS += -DSUPPORT_UTF16_ENCODINGS=$(SUPPORT_UTF16_ENCODINGS)

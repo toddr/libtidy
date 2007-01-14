@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.15 $ 
+    $Date: 2007/01/14 13:52:13 $ 
+    $Revision: 1.16 $ 
 
   Default implementations of Tidy input sources
   and output sinks based on standard C FILE*.
@@ -52,7 +52,7 @@ static void TIDY_CALL filesrc_ungetByte( void* sourceData, byte bv )
   tidyBufPutByte( &fin->unget, bv );
 }
 
-#ifdef SUPPORT_POSIX_MAPPED_FILES
+#if SUPPORT_POSIX_MAPPED_FILES
 #define initFileSource initStdIOFileSource
 #define freeFileSource freeStdIOFileSource
 #endif

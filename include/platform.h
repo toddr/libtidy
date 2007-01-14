@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/01 17:52:20 $ 
-    $Revision: 1.59 $ 
+    $Date: 2007/01/14 13:52:13 $ 
+    $Revision: 1.60 $ 
 
 */
 
@@ -556,6 +556,10 @@ typedef const tmbchar* ctmbstr; /* Ditto, but const */
    has been defined. */
 #ifndef HAS_VSNPRINTF
 # define HAS_VSNPRINTF 1
+#endif
+
+#ifndef SUPPORT_POSIX_MAPPED_FILES
+# define SUPPORT_POSIX_MAPPED_FILES 1
 #endif
 
 /*
