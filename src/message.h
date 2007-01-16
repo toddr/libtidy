@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 19:06:18 $ 
-    $Revision: 1.27 $ 
+    $Date: 2007/01/16 22:30:51 $ 
+    $Revision: 1.28 $ 
 
 */
 
@@ -158,7 +158,9 @@ void TY_(ReportFatal)(TidyDocImpl* doc, Node* element, Node* node, uint code);
 #define INVALID_XML_ID               74
 #define UNEXPECTED_END_OF_FILE_ATTR  75
 #define MISSING_ATTRIBUTE            86
-#define WHITE_IN_URI                 87 /* last */
+#define WHITE_IN_URI                 87
+
+#define PREVIOUS_LOCATION            88 /* last */
 
 /* character encoding errors */
 

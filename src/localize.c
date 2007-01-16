@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/27 19:06:17 $ 
-    $Revision: 1.164 $ 
+    $Date: 2007/01/16 22:30:51 $ 
+    $Revision: 1.165 $ 
 
 */
 
@@ -156,6 +156,9 @@ static struct _msgfmt
   { DUPLICATE_FRAMESET,           "repeated FRAMESET element"                                               }, /* Error */
   { UNKNOWN_ELEMENT,              "%s is not recognized!"                                                   }, /* Error */
   { UNEXPECTED_ENDTAG,            "unexpected </%s>"                                                }, /* Error */
+
+/* */
+  { PREVIOUS_LOCATION,            "<%s> previously mentioned"                                               }, /* Info */
 
 #if SUPPORT_ACCESSIBILITY_CHECKS
 
@@ -1447,6 +1450,8 @@ void TY_(ReportError)(TidyDocImpl* doc, Node *element, Node *node, uint code)
     case UNEXPECTED_ENDTAG_IN:
     case TOO_MANY_ELEMENTS_IN:
         messageNode(doc, TidyWarning, node, fmt, node->element, element->element);
+        messageNode(doc, TidyInfo, node, GetFormatFromCode(PREVIOUS_LOCATION),
+                    element->element);
         break;
 
     case ENCODING_IO_CONFLICT:
@@ -1478,7 +1483,9 @@ void TY_(ReportError)(TidyDocImpl* doc, Node *element, Node *node, uint code)
         break;
 
     case TAG_NOT_ALLOWED_IN:
-        messageNode(doc, TidyWarning, rpt, fmt, nodedesc, element->element);
+        messageNode(doc, TidyWarning, node, fmt, nodedesc, element->element);
+        messageNode(doc, TidyInfo, element,
+                    GetFormatFromCode(PREVIOUS_LOCATION), element->element);
         break;
 
     case REPLACING_UNEX_ELEMENT:

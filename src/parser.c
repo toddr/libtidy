@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.179 $ 
+    $Date: 2007/01/16 22:30:51 $ 
+    $Revision: 1.180 $ 
 
 */
 
@@ -3934,6 +3934,7 @@ void TY_(ParseHTML)(TidyDocImpl* doc, Node *html, GetTokenMode mode)
         }
 
         node = TY_(InferredTag)(doc, TidyTag_BODY);
+        TY_(ReportError)(doc, html, node, INSERTING_TAG );
         TY_(ConstrainVersion)(doc, ~VERS_FRAMESET);
         break;
     }
