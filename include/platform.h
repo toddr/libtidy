@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/14 13:52:13 $ 
-    $Revision: 1.60 $ 
+    $Date: 2007/01/16 21:08:21 $ 
+    $Revision: 1.61 $ 
 
 */
 
@@ -167,6 +167,7 @@ extern "C" {
 #endif
 
 #define FILENAMES_CASE_SENSITIVE 0
+#define SUPPORT_POSIX_MAPPED_FILES 0
 
 #endif
 
