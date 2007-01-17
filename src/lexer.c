@@ -1,13 +1,13 @@
 /* lexer.c -- Lexer for html parser
   
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.188 $ 
+    $Date: 2007/01/17 10:51:18 $ 
+    $Revision: 1.189 $ 
 
 */
 
@@ -207,6 +207,15 @@ Bool TY_(IsDigit)(uint c)
     map = MAP(c);
 
     return (map & digit)!=0;
+}
+
+static Bool IsDigitHex(uint c)
+{
+    uint map;
+
+    map = MAP(c);
+
+    return (map & digithex)!=0;
 }
 
 Bool TY_(IsLetter)(uint c)
@@ -803,8 +812,23 @@ static void SetLexerLocus( TidyDocImpl* doc, Lexer *lexer )
 */
 static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
 {
+    typedef enum
+    {
+        ENT_default,
+        ENT_numdec,
+        ENT_numhex
+    } ENTState;
+    
+    typedef Bool (*ENTfn)(uint);
+    const ENTfn entFn[] = {
+        TY_(IsNamechar),
+        TY_(IsDigit),
+        IsDigitHex
+    };
     uint start;
-    Bool first = yes, semicolon = no, found = no;
+    ENTState entState = ENT_default;
+    uint charRead = 0;
+    Bool semicolon = no, found = no;
     Bool isXml = cfgBool( doc, TidyXmlTags );
     uint c, ch, startcol, entver = 0;
     Lexer* lexer = doc->lexer;
@@ -819,8 +843,9 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
             semicolon = yes;
             break;
         }
+        ++charRead;
 
-        if (first && c == '#')
+        if (charRead == 1 && c == '#')
         {
 #if SUPPORT_ASIAN_ENCODINGS
             if ( !cfgBool(doc, TidyNCR) || 
@@ -832,20 +857,24 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
             }
 #endif
             TY_(AddCharToLexer)( lexer, c );
-            first = no;
+            entState = ENT_numdec;
+            continue;
+        }
+        else if (charRead == 2 && entState == ENT_numdec
+                 && (c == 'x' || (!isXml && c == 'X')) )
+        {
+            TY_(AddCharToLexer)( lexer, c );
+            entState = ENT_numhex;
             continue;
         }
 
-        first = no;
-
-        if ( TY_(IsNamechar)(c) )
+        if ( entFn[entState](c) )
         {
             TY_(AddCharToLexer)( lexer, c );
             continue;
         }
 
         /* otherwise put it back */
-
         TY_(UngetChar)( c, doc->docIn );
         break;
     }
@@ -895,7 +924,7 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
                 
                 if ( c != ';' )  /* issue warning if not terminated by ';' */
                     TY_(ReportEntityError)( doc, MISSING_SEMICOLON_NCR,
-                                       lexer->lexbuf+start, c );
+                                            lexer->lexbuf+start, c );
  
                 TY_(ReportEncodingError)(doc, INVALID_NCR, ch, replaceMode == DISCARDED_CHAR);
                 
@@ -2832,9 +2861,10 @@ void TY_(InitMap)(void)
     MapStr("\r\n\f", newline|white);
     MapStr(" \t", white);
     MapStr("-.:_", namechar);
-    MapStr("0123456789", digit|namechar);
+    MapStr("0123456789", digit|digithex|namechar);
     MapStr("abcdefghijklmnopqrstuvwxyz", lowercase|letter|namechar);
     MapStr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", uppercase|letter|namechar);
+    MapStr("abcdefABCDEF", digithex);
 }
 
 /*
