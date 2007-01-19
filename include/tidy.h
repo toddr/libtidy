@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/08 17:01:11 $ 
-    $Revision: 1.17 $ 
+    $Date: 2007/01/19 22:46:14 $ 
+    $Revision: 1.18 $ 
 
   Contributing Author(s):
 
@@ -282,6 +282,8 @@ int main(int argc, char **argv )
   Bool ok;
 
   TidyDoc tdoc = tidyCreate();                     // Initialize "document"
+  tidyBufInit( &amp;output );
+  tidyBufInit( &amp;errbuf );
   printf( "Tidying:\t\%s\\n", input );
 
   ok = tidyOptSetBool( tdoc, TidyXhtmlOut, yes );  // Convert to XHTML
