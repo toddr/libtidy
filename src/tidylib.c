@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.66 $ 
+    $Date: 2007/01/19 11:05:03 $ 
+    $Revision: 1.67 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -881,11 +881,12 @@ int   tidyDocParseBuffer( TidyDocImpl* doc, TidyBuffer* inbuf )
 int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
 {
     int status = -EINVAL;
-    TidyBuffer inbuf = {0};
+    TidyBuffer inbuf;
     StreamIn* in = NULL;
 
     if ( content )
     {
+        tidyBufInitWithAllocator( &inbuf, doc->allocator );
         tidyBufAttach( &inbuf, (byte*)content, TY_(tmbstrlen)(content)+1 );
         in = TY_(BufferInput)( doc, &inbuf, cfg( doc, TidyInCharEncoding ));
         status = tidyDocParseStream( doc, in );
@@ -1038,8 +1039,9 @@ int         tidyDocSaveString( TidyDocImpl* doc, tmbstr buffer, uint* buflen )
 {
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
-    TidyBuffer outbuf = {0};
+    TidyBuffer outbuf;
 
+    tidyBufInitWithAllocator( &outbuf, doc->allocator );
     StreamOut* out = TY_(BufferOutput)( doc, &outbuf, outenc, nl );
     int status = tidyDocSaveStream( doc, out );
 

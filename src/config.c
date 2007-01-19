@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.101 $ 
+    $Date: 2007/01/19 11:05:03 $ 
+    $Revision: 1.102 $ 
 
 */
 
@@ -846,7 +846,8 @@ Bool TY_(ParseConfigValue)( TidyDocImpl* doc, TidyOptionId optId, ctmbstr optval
         TY_(ReportBadArgument)( doc, option->name );
     else
     {
-        TidyBuffer inbuf = {0};            /* Set up input source */
+        TidyBuffer inbuf;            /* Set up input source */
+        tidyBufInitWithAllocator( &inbuf, doc->allocator );
         tidyBufAttach( &inbuf, (byte*)optval, TY_(tmbstrlen)(optval)+1 );
         doc->config.cfgIn = TY_(BufferInput)( doc, &inbuf, ASCII );
         doc->config.c = GetC( &doc->config );
