@@ -1,14 +1,14 @@
 /* version information
 
-  (c) 2006 (W3C) MIT, ERCIM, Keio University
+  (c) 2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:09 $ 
-    $Revision: 1.15 $ 
+    $Date: 2007/01/20 09:40:21 $ 
+    $Revision: 1.16 $ 
 
 */
 
-static const char TY_(release_date)[] = "29 December 2006";
+static const char TY_(release_date)[] = "20 January 2007";
