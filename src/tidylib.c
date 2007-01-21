@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/19 11:05:03 $ 
-    $Revision: 1.67 $ 
+    $Date: 2007/01/21 19:59:29 $ 
+    $Revision: 1.68 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1040,10 +1040,12 @@ int         tidyDocSaveString( TidyDocImpl* doc, tmbstr buffer, uint* buflen )
     uint outenc = cfg( doc, TidyOutCharEncoding );
     uint nl = cfg( doc, TidyNewline );
     TidyBuffer outbuf;
-
+    StreamOut* out;
+    int status;
+    
     tidyBufInitWithAllocator( &outbuf, doc->allocator );
-    StreamOut* out = TY_(BufferOutput)( doc, &outbuf, outenc, nl );
-    int status = tidyDocSaveStream( doc, out );
+    out = TY_(BufferOutput)( doc, &outbuf, outenc, nl );
+    status = tidyDocSaveStream( doc, out );
 
     if ( outbuf.size > *buflen )
         status = -ENOMEM;
