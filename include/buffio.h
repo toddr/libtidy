@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/01 17:52:20 $ 
-    $Revision: 1.8 $ 
+    $Date: 2007/01/23 11:17:45 $ 
+    $Revision: 1.9 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -35,17 +35,18 @@ struct _TidyBuffer
     uint  next;         /**< Offset of current input position */
 };
 
-/** Zero out data structure */
+/** Initialize data structure using the default allocator */
 TIDY_EXPORT void TIDY_CALL tidyBufInit( TidyBuffer* buf );
 
-/** Zero out data structure, use given custom allocator */
+/** Initialize data structure using the given custom allocator */
 TIDY_EXPORT void TIDY_CALL tidyBufInitWithAllocator( TidyBuffer* buf, TidyAllocator* allocator );
 
-/** Free current buffer, allocate given amount, reset input pointer */
+/** Free current buffer, allocate given amount, reset input pointer,
+    use the default allocator */
 TIDY_EXPORT void TIDY_CALL tidyBufAlloc( TidyBuffer* buf, uint allocSize );
 
 /** Free current buffer, allocate given amount, reset input pointer,
-    use given custom allocator */
+    use the given custom allocator */
 TIDY_EXPORT void TIDY_CALL tidyBufAllocWithAllocator( TidyBuffer* buf,
                                                       TidyAllocator* allocator,
                                                       uint allocSize );

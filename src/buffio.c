@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/05 16:33:39 $ 
-    $Revision: 1.13 $ 
+    $Date: 2007/01/23 11:17:46 $ 
+    $Revision: 1.14 $ 
 
   Requires buffer to automatically grow as bytes are added.
   Must keep track of current read and write points.
@@ -105,6 +105,14 @@ void TIDY_CALL tidyBufClear( TidyBuffer* buf )
     buf->next = 0;
 }
 
+/* Many users do not call tidyBufInit() or tidyBufAlloc() or their allocator
+   counterparts. So by default, set the default allocator.
+*/
+static void setDefaultAllocator( TidyBuffer* buf )
+{
+    buf->allocator = &TY_(g_default_allocator);
+}
+
 /* Avoid thrashing memory by doubling buffer size
 ** until larger than requested size.
    buf->allocated is bigger than allocSize+1 so that a trailing null byte is
@@ -113,6 +121,10 @@ void TIDY_CALL tidyBufClear( TidyBuffer* buf )
 void TIDY_CALL tidyBufCheckAlloc( TidyBuffer* buf, uint allocSize, uint chunkSize )
 {
     assert( buf != NULL );
+
+    if ( !buf->allocator )
+        setDefaultAllocator( buf );
+        
     if ( 0 == chunkSize )
         chunkSize = 256;
     if ( allocSize+1 > buf->allocated )
@@ -141,6 +153,8 @@ void  TIDY_CALL tidyBufAttach( TidyBuffer* buf, byte* bp, uint size )
     buf->bp = bp;
     buf->size = buf->allocated = size;
     buf->next = 0;
+    if ( !buf->allocator )
+        setDefaultAllocator( buf );
 }
 
 /* Clear pointer to memory w/out deallocation */
