@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/03 12:16:27 $ 
-    $Revision: 1.114 $ 
+    $Date: 2007/01/24 22:17:11 $ 
+    $Revision: 1.115 $ 
 
 */
 
@@ -1896,6 +1896,11 @@ static Bool ShouldIndent( TidyDocImpl* doc, Node *node )
             return no;
 
         if ( nodeIsTITLE(node) )
+            return no;
+
+        /* http://tidy.sf.net/issue/1610888
+           Indenting <div><img /></div> produces spurious lines with IE 6.x */
+        if ( nodeIsDIV(node) && node->last && nodeIsIMG(node->last) )
             return no;
     }
 
