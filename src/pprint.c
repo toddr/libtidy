@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/24 22:17:11 $ 
-    $Revision: 1.115 $ 
+    $Date: 2007/01/28 12:03:35 $ 
+    $Revision: 1.116 $ 
 
 */
 
@@ -652,31 +652,36 @@ static void WrapAttrVal( TidyDocImpl* doc )
     ResetLineAfterWrap( pprint );
 }
 
+static void PFlushLineImpl( TidyDocImpl* doc )
+{
+    TidyPrintImpl* pprint = &doc->pprint;
+
+    uint i;
+
+    CheckWrapLine( doc );
+
+    if ( WantIndent(doc) )
+    {
+        uint spaces = GetSpaces( pprint );
+        for ( i = 0; i < spaces; ++i )
+            TY_(WriteChar)( ' ', doc->docOut );
+    }
+
+    for ( i = 0; i < pprint->linelen; ++i )
+        TY_(WriteChar)( pprint->linebuf[i], doc->docOut );
+    
+    if ( IsInString(pprint) )
+        TY_(WriteChar)( '\\', doc->docOut );
+    ResetLine( pprint );
+    pprint->linelen = 0;
+}
+
 void TY_(PFlushLine)( TidyDocImpl* doc, uint indent )
 {
     TidyPrintImpl* pprint = &doc->pprint;
 
     if ( pprint->linelen > 0 )
-    {
-        uint i;
-
-        CheckWrapLine( doc );
-
-        if ( WantIndent(doc) )
-        {
-            uint spaces = GetSpaces( pprint );
-            for ( i = 0; i < spaces; ++i )
-                TY_(WriteChar)( ' ', doc->docOut );
-        }
-
-        for ( i = 0; i < pprint->linelen; ++i )
-            TY_(WriteChar)( pprint->linebuf[i], doc->docOut );
-
-        if ( IsInString(pprint) )
-            TY_(WriteChar)( '\\', doc->docOut );
-        ResetLine( pprint );
-        pprint->linelen = 0;
-    }
+        PFlushLineImpl( doc );
 
     TY_(WriteChar)( '\n', doc->docOut );
     pprint->indent[ 0 ].spaces = indent;
@@ -685,29 +690,13 @@ void TY_(PFlushLine)( TidyDocImpl* doc, uint indent )
 static void PCondFlushLine( TidyDocImpl* doc, uint indent )
 {
     TidyPrintImpl* pprint = &doc->pprint;
+
     if ( pprint->linelen > 0 )
     {
-        uint i;
+         PFlushLineImpl( doc );
 
-        CheckWrapLine( doc );
-
-        if ( WantIndent(doc) )
-        {
-            uint spaces = GetSpaces( pprint );
-            for ( i = 0; i < spaces; ++i )
-                TY_(WriteChar)(' ', doc->docOut);
-        }
-
-        for ( i = 0; i < pprint->linelen; ++i )
-            TY_(WriteChar)( pprint->linebuf[i], doc->docOut );
-
-        if ( IsInString(pprint) )
-            TY_(WriteChar)( '\\', doc->docOut );
-        ResetLine( pprint );
-
-        TY_(WriteChar)( '\n', doc->docOut );
-        pprint->indent[ 0 ].spaces = indent;
-        pprint->linelen = 0;
+         TY_(WriteChar)( '\n', doc->docOut );
+         pprint->indent[ 0 ].spaces = indent;
     }
 }
 
