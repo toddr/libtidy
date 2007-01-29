@@ -3,7 +3,7 @@
   (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.7 2006/12/29 16:31:09 arnaud02 Exp $
+  $Id: win32tc.c,v 1.8 2007/01/29 21:18:18 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -489,7 +489,7 @@ uint TY_(Win32MLangGetCPFromName)(TidyAllocator *allocator, ctmbstr encoding)
             uint wincp = NameWinCPMap[i].wincp;
             HRESULT hr;
 
-            TidyDocFree(doc, enc);
+            TidyFree(allocator, enc);
 
             /* currently no support for unsafe encodings */
             if (!NameWinCPMap[i].safe)
@@ -520,7 +520,7 @@ uint TY_(Win32MLangGetCPFromName)(TidyAllocator *allocator, ctmbstr encoding)
         }
     }
 
-    TidyDocFree(doc, enc);
+    TidyFree(allocator, enc);
     return 0;
 }
 
@@ -671,7 +671,7 @@ int TY_(Win32MLangGetChar)(byte firstByte, StreamIn * in, uint * bytesRead)
             tchar n = (tchar)outbuf[1];
             assert( IsHighSurrogate(n) && IsLowSurrogate(m) );
             *bytesRead = readNow;
-            return (int)CombineSurrogatePair(n, m);
+            return (int)TY_(CombineSurrogatePair)(n, m);
         }
 
         if (outbufsize == 1)
@@ -721,7 +721,7 @@ Bool Win32MLangIsConvertible(tchar c, StreamOut * out)
         tchar high = 0;
         tchar low = 0;
 
-        SplitSurrogatePair(c, &low, &high);
+        TY_(SplitSurrogatePair)(c, &low, &high);
 
         inbuf[inbufsize++] = (WCHAR)low;
         inbuf[inbufsize++] = (WCHAR)high;
@@ -761,7 +761,7 @@ void Win32MLangPutChar(tchar c, StreamOut * out, uint * bytesWritten)
         tchar high = 0;
         tchar low = 0;
 
-        SplitSurrogatePair(c, &low, &high);
+        TY_(SplitSurrogatePair)(c, &low, &high);
 
         inbuf[inbufsize++] = (WCHAR)low;
         inbuf[inbufsize++] = (WCHAR)high;
