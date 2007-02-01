@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/21 19:59:29 $ 
-    $Revision: 1.45 $ 
+    $Date: 2007/02/01 12:27:55 $ 
+    $Revision: 1.46 $ 
 */
 
 #include "tidy.h"
@@ -403,7 +403,7 @@ static void help( ctmbstr prog )
 {
     printf( "%s [option...] [file...] [option...] [file...]\n", prog );
     printf( "Utility to clean up and pretty print HTML/XHTML/XML\n");
-    printf( "see http://tidy.sourceforge.net/\n");
+    printf( "See http://tidy.sourceforge.net/\n");
     printf( "\n");
 
 #ifdef PLATFORM_NAME
@@ -416,10 +416,11 @@ static void help( ctmbstr prog )
 
     print_help_option();
 
-    printf( "Use --blah blarg for any configuration option \"blah\" with argument \"blarg\"\n");
-    printf( "\n");
+    printf( "Use --optionX valueX for any configuration option \"optionX\" with argument\n"
+            "\"valueX\". For a list of the configuration options, use \"-help-config\" or refer\n"
+            "to the man page.\n\n");
 
-    printf( "Input/Output default to stdin/stdout respectively\n");
+    printf( "Input/Output default to stdin/stdout respectively.\n");
     printf( "Single letter options apart from -f may be combined\n");
     printf( "as in:  tidy -f errs.txt -imu foo.html\n");
     printf( "For further info on HTML see http://www.w3.org/MarkUp\n");
