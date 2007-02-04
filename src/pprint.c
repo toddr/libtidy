@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/28 12:03:35 $ 
-    $Revision: 1.116 $ 
+    $Date: 2007/02/04 23:08:28 $ 
+    $Revision: 1.117 $ 
 
 */
 
@@ -1244,6 +1244,24 @@ static void PPrintAttrs( TidyDocImpl* doc, uint indent, Node *node )
     }
 }
 
+Bool TY_(TextNodeEndWithSpace)( Lexer *lexer, Node *node )
+{
+    if (TY_(nodeIsText)(node) && node->end > node->start)
+    {
+        uint i, c = '\0'; /* initialised to avoid warnings */
+        for (i = node->start; i < node->end; ++i)
+        {
+            c = (byte) lexer->lexbuf[i];
+            if ( c > 0x7F )
+                i += TY_(GetUTF8)( lexer->lexbuf + i, &c );
+        }
+
+        if ( c == ' ' || c == '\n' )
+            return yes;
+    }
+    return no;
+}
+
 /*
  Line can be wrapped immediately after inline start tag provided
  if follows a text node ending in a space, or it follows a <br>,
@@ -1268,19 +1286,8 @@ static Bool AfterSpaceImp(Lexer *lexer, Node *node, Bool isEmpty)
     prev = node->prev;
     if (prev)
     {
-        if (TY_(nodeIsText)(prev) && prev->end > prev->start)
-        {
-            uint i, c = '\0'; /* initialised to avoid warnings */
-            for (i = prev->start; i < prev->end; ++i)
-            {
-                c = (byte) lexer->lexbuf[i];
-                if ( c > 0x7F )
-                    i += TY_(GetUTF8)( lexer->lexbuf + i, &c );
-            }
-
-            if ( c == ' ' || c == '\n' )
-                return yes;
-        }
+        if (TY_(nodeIsText)(prev))
+            return TY_(TextNodeEndWithSpace)( lexer, prev );
         else if (nodeIsBR(prev))
             return yes;
 

@@ -9,14 +9,16 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/09/12 15:14:44 $ 
-    $Revision: 1.12 $ 
+    $Date: 2007/02/04 23:08:28 $ 
+    $Revision: 1.13 $ 
 
 */
 
 #include "forward.h"
 
 Bool TY_(CheckNodeIntegrity)(Node *node);
+
+Bool TY_(TextNodeEndWithSpace)( Lexer *lexer, Node *node );
 
 /*
  used to determine how attributes
