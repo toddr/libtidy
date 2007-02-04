@@ -11,8 +11,8 @@
 # CVS Info:
 #
 #    $Author: arnaud02 $
-#    $Date: 2005/03/23 12:57:19 $
-#    $Revision: 1.1 $
+#    $Date: 2007/02/04 17:35:31 $
+#    $Revision: 1.2 $
 #
 # set -x
 
@@ -71,7 +71,7 @@ fi
 $TIDY -f $MSGFILE --accessibility-check $ACCESSLEVEL -config $CFGFILE "$@" --gnu-emacs yes --tidy-mark no -o $TIDYFILE $INFILE
 STATUS=$?
 
-if [ `grep -c -e ' \['$TESTEXPECTED'\]: ' $MSGFILE` -eq 0 ]
+if [ `grep -c -e ' \['$TESTEXPECTED'\]: ' $MSGFILE` = 0 ]
 then
   echo "--- test '$TESTEXPECTED' not detected in file '$INFILE'"
   cat $MSGFILE
