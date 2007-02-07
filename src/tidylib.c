@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/21 19:59:29 $ 
-    $Revision: 1.68 $ 
+    $Date: 2007/02/07 11:44:16 $ 
+    $Revision: 1.69 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -497,7 +497,7 @@ TidyIterator TIDY_CALL tidyOptGetDocLinksList( TidyDoc ARG_UNUSED(tdoc), TidyOpt
 
 TidyOption TIDY_CALL tidyOptGetNextDocLinks( TidyDoc tdoc, TidyIterator* pos )
 {
-    const TidyOptionId* curr = (TidyOptionId *)*pos;
+    const TidyOptionId* curr = (const TidyOptionId *)*pos;
     TidyOption opt;
 
     if (*curr == TidyUnknownOption)

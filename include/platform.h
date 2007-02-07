@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/06 10:56:58 $ 
-    $Revision: 1.63 $ 
+    $Date: 2007/02/07 11:44:11 $ 
+    $Revision: 1.64 $ 
 
 */
 
@@ -616,9 +616,9 @@ extern void* null;
 #if 1
 #define opaque_type( typenam )\
 struct _##typenam { int _opaque; };\
-typedef struct _##typenam* typenam
+typedef struct _##typenam const * typenam
 #else
-#define opaque_type(typenam) typedef void* typenam
+#define opaque_type(typenam) typedef const void* typenam
 #endif
 
 /* Opaque data structure used to pass back
