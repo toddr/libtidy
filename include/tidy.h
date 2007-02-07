@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/20 21:03:51 $ 
-    $Revision: 1.19 $ 
+    $Date: 2007/02/07 11:02:54 $ 
+    $Revision: 1.20 $ 
 
   Contributing Author(s):
 
@@ -1024,6 +1024,9 @@ TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetById( TidyNode tnod, TidyAttrId attId 
 **
 ** @deprecated The functions tidyAttrGet{AttributeName} are deprecated and 
 ** should be replaced by tidyAttrGetById.
+** For instance, tidyAttrGetID( TidyNode tnod ) can be replaced by 
+** tidyAttrGetById( TidyNode tnod, TidyAttr_ID ). This avoids a potential
+** name clash with tidyAttrGetId for case-insensitive languages.
 ** @{
 */
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetHREF( TidyNode tnod );
