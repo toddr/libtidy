@@ -1,11 +1,11 @@
 /* Interface to mmap style I/O
 
-   (c) 2006 (W3C) MIT, ERCIM, Keio University
+   (c) 2006-2007 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.12 2007/01/14 13:52:13 arnaud02 Exp $
+   $Id: mappedio.c,v 1.13 2007/02/07 12:08:31 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -306,7 +306,7 @@ int TY_(DocParseFileWithMappedFile)( TidyDocImpl* doc, ctmbstr filnam ) {
             return -ENOMEM;
         }
 
-        status = tidyDocParseStream( doc, in );
+        status = TY_(DocParseStream)( doc, in );
         freeMappedFileSource( &in->source, yes );
         TY_(freeStreamIn)( in );
     }

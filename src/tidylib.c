@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/07 11:44:16 $ 
-    $Revision: 1.69 $ 
+    $Date: 2007/02/07 12:08:31 $ 
+    $Revision: 1.70 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -40,6 +40,37 @@
 #ifdef TIDY_WIN32_MLANG_SUPPORT
 #include "win32tc.h"
 #endif
+
+/* Create/Destroy a Tidy "document" object */
+static TidyDocImpl* tidyDocCreate( TidyAllocator *allocator );
+static void         tidyDocRelease( TidyDocImpl* impl );
+
+static int          tidyDocStatus( TidyDocImpl* impl );
+
+/* Parse Markup */
+static int          tidyDocParseFile( TidyDocImpl* impl, ctmbstr htmlfil );
+static int          tidyDocParseStdin( TidyDocImpl* impl );
+static int          tidyDocParseString( TidyDocImpl* impl, ctmbstr content );
+static int          tidyDocParseBuffer( TidyDocImpl* impl, TidyBuffer* inbuf );
+static int          tidyDocParseSource( TidyDocImpl* impl, TidyInputSource* docIn );
+
+
+/* Execute post-parse diagnostics and cleanup.
+** Note, the order is important.  You will get different
+** results from the diagnostics depending on if they are run
+** pre-or-post repair.
+*/
+static int          tidyDocRunDiagnostics( TidyDocImpl* doc );
+static int          tidyDocCleanAndRepair( TidyDocImpl* doc );
+
+
+/* Save cleaned up file to file/buffer/sink */
+static int          tidyDocSaveFile( TidyDocImpl* impl, ctmbstr htmlfil );
+static int          tidyDocSaveStdout( TidyDocImpl* impl );
+static int          tidyDocSaveString( TidyDocImpl* impl, tmbstr buffer, uint* buflen );
+static int          tidyDocSaveBuffer( TidyDocImpl* impl, TidyBuffer* outbuf );
+static int          tidyDocSaveSink( TidyDocImpl* impl, TidyOutputSink* docOut );
+static int          tidyDocSaveStream( TidyDocImpl* impl, StreamOut* out );
 
 #ifdef NEVER
 TidyDocImpl* tidyDocToImpl( TidyDoc tdoc )
@@ -848,7 +879,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
             fclose( fin );
             return status;
         }
-        status = tidyDocParseStream( doc, in );
+        status = TY_(DocParseStream)( doc, in );
         TY_(freeFileSource)(&in->source, yes);
         TY_(freeStreamIn)(in);
     }
@@ -861,7 +892,7 @@ int   tidyDocParseFile( TidyDocImpl* doc, ctmbstr filnam )
 int   tidyDocParseStdin( TidyDocImpl* doc )
 {
     StreamIn* in = TY_(FileInput)( doc, stdin, cfg( doc, TidyInCharEncoding ));
-    int status = tidyDocParseStream( doc, in );
+    int status = TY_(DocParseStream)( doc, in );
     TY_(freeStreamIn)(in);
     return status;
 }
@@ -872,7 +903,7 @@ int   tidyDocParseBuffer( TidyDocImpl* doc, TidyBuffer* inbuf )
     if ( inbuf )
     {
         StreamIn* in = TY_(BufferInput)( doc, inbuf, cfg( doc, TidyInCharEncoding ));
-        status = tidyDocParseStream( doc, in );
+        status = TY_(DocParseStream)( doc, in );
         TY_(freeStreamIn)(in);
     }
     return status;
@@ -889,7 +920,7 @@ int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
         tidyBufInitWithAllocator( &inbuf, doc->allocator );
         tidyBufAttach( &inbuf, (byte*)content, TY_(tmbstrlen)(content)+1 );
         in = TY_(BufferInput)( doc, &inbuf, cfg( doc, TidyInCharEncoding ));
-        status = tidyDocParseStream( doc, in );
+        status = TY_(DocParseStream)( doc, in );
         tidyBufDetach( &inbuf );
         TY_(freeStreamIn)(in);
     }
@@ -899,7 +930,7 @@ int   tidyDocParseString( TidyDocImpl* doc, ctmbstr content )
 int   tidyDocParseSource( TidyDocImpl* doc, TidyInputSource* source )
 {
     StreamIn* in = TY_(UserInput)( doc, source, cfg( doc, TidyInCharEncoding ));
-    int status = tidyDocParseStream( doc, in );
+    int status = TY_(DocParseStream)( doc, in );
     TY_(freeStreamIn)(in);
     return status;
 }
@@ -1121,7 +1152,7 @@ int TIDY_CALL        tidyRunDiagnostics( TidyDoc tdoc )
 */
 static ctmbstr integrity = "\nPanic - tree has lost its integrity\n";
 
-int         tidyDocParseStream( TidyDocImpl* doc, StreamIn* in )
+int         TY_(DocParseStream)( TidyDocImpl* doc, StreamIn* in )
 {
     Bool xmlIn = cfgBool( doc, TidyXmlTags );
     int bomEnc;
