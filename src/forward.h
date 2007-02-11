@@ -3,14 +3,14 @@
 
 /* forward.h -- Forward declarations for major Tidy structures
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.6 $ 
+    $Date: 2007/02/11 09:45:52 $ 
+    $Revision: 1.7 $ 
 
   Avoids many include file circular dependencies.
 
@@ -57,5 +57,13 @@ struct _Lexer;
 typedef struct _Lexer Lexer;
 
 extern TidyAllocator TY_(g_default_allocator);
+
+/** Wrappers for easy memory allocation using an allocator */
+#define TidyAlloc(allocator, size) ((allocator)->vtbl->alloc((allocator), (size)))
+#define TidyRealloc(allocator, block, size) ((allocator)->vtbl->realloc((allocator), (block), (size)))
+#define TidyFree(allocator, block) ((allocator)->vtbl->free((allocator), (block)))
+#define TidyPanic(allocator, msg) ((allocator)->vtbl->panic((allocator), (msg)))
+#define TidyClearMemory(block, size) memset((block), 0, (size))
+ 
 
 #endif /* __FORWARD_H__ */

@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/07 12:08:31 $ 
-    $Revision: 1.12 $ 
+    $Date: 2007/02/11 09:45:52 $ 
+    $Revision: 1.13 $ 
 
 */
 
@@ -117,6 +117,12 @@ TidyOption   tidyImplToOption( const TidyOptionImpl* option );
 #define tidyImplToOption( option )  ((TidyOption)(option))
 
 #endif
+
+/** Wrappers for easy memory allocation using the document's allocator */
+#define TidyDocAlloc(doc, size) TidyAlloc((doc)->allocator, size)
+#define TidyDocRealloc(doc, block, size) TidyRealloc((doc)->allocator, block, size)
+#define TidyDocFree(doc, block) TidyFree((doc)->allocator, block)
+#define TidyDocPanic(doc, msg) TidyPanic((doc)->allocator, msg)
 
 int          TY_(DocParseStream)( TidyDocImpl* impl, StreamIn* in );
 

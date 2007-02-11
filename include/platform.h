@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/07 11:44:11 $ 
-    $Revision: 1.64 $ 
+    $Date: 2007/02/11 09:45:52 $ 
+    $Revision: 1.65 $ 
 
 */
 
@@ -595,20 +595,6 @@ extern void* null;
 #include "dmalloc.h"
 #endif
 
-/** Wrappers for easy memory allocation using an allocator */
-#define TidyAlloc(allocator, size) ((allocator)->vtbl->alloc((allocator), (size)))
-#define TidyRealloc(allocator, block, size) ((allocator)->vtbl->realloc((allocator), (block), (size)))
-#define TidyFree(allocator, block) ((allocator)->vtbl->free((allocator), (block)))
-#define TidyPanic(allocator, msg) ((allocator)->vtbl->panic((allocator), (msg)))
-
-/** Wrappers for easy memory allocation using the document's allocator */
-#define TidyDocAlloc(doc, size) TidyAlloc((doc)->allocator, size)
-#define TidyDocRealloc(doc, block, size) TidyRealloc((doc)->allocator, block, size)
-#define TidyDocFree(doc, block) TidyFree((doc)->allocator, block)
-#define TidyDocPanic(doc, msg) TidyPanic((doc)->allocator, msg)
-
-#define TidyClearMemory(block, size) memset((block), 0, (size))
- 
 /* Opaque data structure.
 *  Cast to implementation type struct within lib.
 *  This will reduce inter-dependencies/conflicts w/ application code.
