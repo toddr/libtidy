@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/06 16:28:59 $ 
-    $Revision: 1.166 $ 
+    $Date: 2007/02/11 17:14:27 $ 
+    $Revision: 1.167 $ 
 
 */
 
@@ -353,7 +353,7 @@ static const TidyOptionId TidyMergeDivsLinks[] =
 static const TidyOptionId TidyAsciiCharsLinks[] =
   { TidyMakeClean, TidyUnknownOption };
 static const TidyOptionId TidyNumEntitiesLinks[] =
-  { TidyDoctype, TidyUnknownOption };
+  { TidyDoctype, TidyPreserveEntities, TidyUnknownOption };
 
 /* Documentation of options */
 static const TidyOptionDoc option_docs[] =
@@ -821,6 +821,10 @@ static const TidyOptionDoc option_docs[] =
   {TidyDecorateInferredUL,
    "This option specifies if Tidy should decorate inferred UL elements with "
    "some CSS markup to avoid indentation to the right. "
+  },
+  {TidyPreserveEntities,
+   "This option specifies if Tidy should preserve the well-formed entitites "
+   "as found in the input. "
   },
   {N_TIDY_OPTIONS,
    NULL
