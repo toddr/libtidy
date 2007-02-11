@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/17 10:51:18 $ 
-    $Revision: 1.189 $ 
+    $Date: 2007/02/11 13:40:15 $ 
+    $Revision: 1.190 $ 
 
 */
 
@@ -945,14 +945,14 @@ static void ParseEntity( TidyDocImpl* doc, GetTokenMode mode )
             }
             else
                 TY_(ReportEntityError)( doc, UNKNOWN_ENTITY,
-                                   lexer->lexbuf+start, ch );
+                                        lexer->lexbuf+start, ch );
 
             if (semicolon)
                 TY_(AddCharToLexer)( lexer, ';' );
         }
         else /* naked & */
             TY_(ReportEntityError)( doc, UNESCAPED_AMPERSAND,
-                               lexer->lexbuf+start, ch );
+                                    lexer->lexbuf+start, ch );
     }
     else
     {
@@ -1057,7 +1057,6 @@ Node *TY_(CloneNode)( TidyDocImpl* doc, Node *element )
 /* free node's attributes */
 void TY_(FreeAttrs)( TidyDocImpl* doc, Node *node )
 {
-
     while ( node->attributes )
     {
         AttVal *av = node->attributes;
@@ -1894,7 +1893,7 @@ static Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 continue;
 
             matches = TY_(tmbstrncasecmp)(container->element, lexer->lexbuf + start,
-                                     TY_(tmbstrlen)(container->element)) == 0;
+                                          TY_(tmbstrlen)(container->element)) == 0;
             if (matches)
                 nested++;
 
@@ -1907,7 +1906,7 @@ static Node *GetCDATA( TidyDocImpl* doc, Node *container )
                 continue;
 
             matches = TY_(tmbstrncasecmp)(container->element, lexer->lexbuf + start,
-                                     TY_(tmbstrlen)(container->element)) == 0;
+                                          TY_(tmbstrlen)(container->element)) == 0;
 
             if (isEmpty && !matches)
             {
