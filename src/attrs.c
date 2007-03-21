@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:07 $ 
-    $Revision: 1.125 $ 
+    $Date: 2007/03/21 16:09:30 $ 
+    $Revision: 1.126 $ 
 
 */
 
@@ -975,7 +975,7 @@ static void AppendToStyleAttr( TidyDocImpl* doc, AttVal *styleattr, ctmbstr styl
  the same attribute name can't be used
  more than once in each element
 */
-void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
+void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node, Bool isXml )
 {
     AttVal *first;
 
@@ -994,8 +994,8 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
         {
             AttVal *temp;
 
-            if (!(second->asp == NULL && second->php == NULL &&
-                AttrsHaveSameId(first, second)))
+            if (!(second->asp == NULL && second->php == NULL
+                  && AttrsHaveSameId(first, second)))
             {
                 second = second->next;
                 continue;
@@ -1004,7 +1004,8 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
             /* first and second attribute have same local name */
             /* now determine what to do with this duplicate... */
 
-            if (attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses)
+            if (!isXml
+                && attrIsCLASS(first) && cfgBool(doc, TidyJoinClasses)
                 && AttrHasValue(first) && AttrHasValue(second))
             {
                 /* concatenate classes */
@@ -1016,7 +1017,8 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node)
                 TY_(RemoveAttribute)( doc, node, second );
                 second = temp;
             }
-            else if (attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles)
+            else if (!isXml
+                     && attrIsSTYLE(first) && cfgBool(doc, TidyJoinStyles)
                      && AttrHasValue(first) && AttrHasValue(second))
             {
                 AppendToStyleAttr( doc, first, second->value );

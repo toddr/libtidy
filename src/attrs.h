@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:07 $ 
-    $Revision: 1.26 $ 
+    $Date: 2007/03/21 16:09:30 $ 
+    $Revision: 1.27 $ 
 
 */
 
@@ -137,7 +137,7 @@ void TY_(AppendToClassAttr)( TidyDocImpl* doc, AttVal *classattr, ctmbstr classn
  the same attribute name can't be used
  more than once in each element
 */
-void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node* node );
+void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node* node, Bool isXml );
 
 Bool TY_(IsBoolAttribute)( AttVal* attval );
 Bool TY_(attrIsEvent)( AttVal* attval );
