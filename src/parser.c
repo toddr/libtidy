@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/04 23:08:28 $ 
-    $Revision: 1.181 $ 
+    $Date: 2007/04/02 10:11:38 $ 
+    $Revision: 1.182 $ 
 
 */
 
@@ -1994,10 +1994,21 @@ void TY_(ParseDefList)(TidyDocImpl* doc, Node *list, GetTokenMode mode)
     TY_(ReportError)(doc, list, node, MISSING_ENDTAG_FOR);
 }
 
+static Bool FindLastLI( Node *list, Node **lastli )
+{
+    Node *node;
+
+    *lastli = NULL;
+    for ( node = list->content; node && node->next; node = node->next )
+        if ( nodeIsLI(node) )
+            *lastli=node;
+    return *lastli ? yes:no;
+}
+
 void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
 {
     Lexer* lexer = doc->lexer;
-    Node *node, *parent;
+    Node *node, *parent, *lastli;
     Bool wasblock;
 
     if (list->tag->model & CM_EMPTY)
@@ -2088,11 +2099,10 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                If "list" is an unordered list, insert the next tag within 
                the last <li> to preserve the numbering to match the visual 
                rendering of most browsers. */    
-            if ( nodeIsOL(list) && list->content )
+            if ( nodeIsOL(list) && FindLastLI(list, &lastli) )
             {
                 TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
-                for ( node = list->content; node && node->next;
-                      node = node->next ) {}
+                node = lastli;
             }
             else
             {
