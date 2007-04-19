@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:07 $ 
-    $Revision: 1.36 $ 
+    $Date: 2007/04/19 14:17:22 $ 
+    $Revision: 1.37 $ 
 
 */
 
@@ -31,7 +31,9 @@
 * Programmed by: Mike Lam and Chris Ridpath
 * Modifications by : Terry Teague (TRT)
 *
+* Reference document: http://www.w3.org/TR/WAI-WEBCONTENT/
 *********************************************************************/
+
 
 #include "tidy-int.h"
 
@@ -2778,15 +2780,11 @@ static Bool CheckMetaData( TidyDocImpl* doc, Node* node, Bool HasMetaData )
                 HasMetaData = yes;
         }
 
-        if ( nodeIsLINK(node) )
+        if( !HasMetaData && nodeIsLINK(node) )
         {
             AttVal* av = attrGetREL(node);
-            HasMetaData = yes;
-
-            if (AttrContains(av, "stylesheet"))
-            {
-                TY_(ReportAccessError)( doc, node, METADATA_MISSING_LINK );
-            }
+            if( !AttrContains(av, "stylesheet") )
+                HasMetaData = yes;
         }
             
         /* Check for MetaData */

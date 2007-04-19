@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/11 17:14:27 $ 
-    $Revision: 1.167 $ 
+    $Date: 2007/04/19 14:17:23 $ 
+    $Revision: 1.168 $ 
 
 */
 
@@ -288,7 +288,6 @@ static struct _msgfmt
   { LINK_TEXT_TOO_LONG,                            "[13.1.1.3]: link text too long."                                          }, /* Access */
   { LINK_TEXT_NOT_MEANINGFUL_CLICK_HERE,           "[13.1.1.4]: link text not meaningful (click here)."                       }, /* Access */
   { METADATA_MISSING,                              "[13.2.1.1]: Metadata missing."                                            }, /* Access */
-  { METADATA_MISSING_LINK,                         "[13.2.1.2]: Metadata missing (link element)."                             }, /* Access */
   { METADATA_MISSING_REDIRECT_AUTOREFRESH,         "[13.2.1.3]: Metadata missing (redirect/auto-refresh)."                    }, /* Access */
   { SKIPOVER_ASCII_ART,                            "[13.10.1.1]: skip over ascii art."                                        }, /* Access */
 
