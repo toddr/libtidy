@@ -3,8 +3,8 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2007/04/10 09:05:22 $ 
-#     $Revision: 1.33 $ 
+#     $Date: 2007/04/19 13:07:43 $ 
+#     $Revision: 1.34 $ 
 #
 #  Copyright (c) 1998-2007 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
@@ -186,10 +186,9 @@ $(OBJDIR)/%$(OBJSUF):	$(SRCDIR)/%.c $(HFILES) $(LIBHFILES) Makefile
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ -c $<
 
-# On MacOS X, "-L$(LIBDIR) -l$(PROJECT)" should be replaced by "$(LIBRARY)"
 $(BINDIR)/$(PROJECT):	$(APPDIR)/tidy.c $(HFILES) $(LIBRARY)
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
-	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tidy.c -I$(INCDIR) -L$(LIBDIR) -l$(PROJECT)
+	$(CC) $(CFLAGS) $(OTHERCFLAGS) -o $@ $(APPDIR)/tidy.c -I$(INCDIR) $(LIBRARY)
 
 $(BINDIR)/tab2space: $(APPDIR)/tab2space.c
 	if [ ! -d $(BINDIR) ]; then mkdir $(BINDIR); fi
