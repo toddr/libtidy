@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/04/02 10:11:38 $ 
-    $Revision: 1.182 $ 
+    $Date: 2007/04/26 10:02:35 $ 
+    $Revision: 1.183 $ 
 
 */
 
@@ -2000,7 +2000,7 @@ static Bool FindLastLI( Node *list, Node **lastli )
 
     *lastli = NULL;
     for ( node = list->content; node && node->next; node = node->next )
-        if ( nodeIsLI(node) )
+        if ( nodeIsLI(node) && node && node->type == StartTag )
             *lastli=node;
     return *lastli ? yes:no;
 }
