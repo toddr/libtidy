@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.18 $ 
+    $Date: 2007/05/13 18:13:34 $ 
+    $Revision: 1.19 $ 
 
   Wrapper around Tidy input source and output sink
   that calls appropriate interfaces, and applies 
@@ -59,7 +59,11 @@ typedef enum
 ** Source
 ************************/
 
-#define CHARBUF_SIZE 5
+enum
+{
+    CHARBUF_SIZE=5,
+    LASTPOS_SIZE=64
+};
 
 /* non-raw input is cleaned up*/
 struct _StreamIn
@@ -71,7 +75,9 @@ struct _StreamIn
     uint   bufpos;
     uint   bufsize;
     int    tabs;
-    int    lastcol;
+    int    lastcols[LASTPOS_SIZE];
+    unsigned short curlastpos; /* current last position in lastcols */ 
+    unsigned short firstlastpos; /* first valid last position in lastcols */ 
     int    curcol;
     int    curline;
     int    encoding;
