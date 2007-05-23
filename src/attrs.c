@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/03/21 16:09:30 $ 
-    $Revision: 1.126 $ 
+    $Date: 2007/05/23 07:31:53 $ 
+    $Revision: 1.127 $ 
 
 */
 
@@ -975,6 +975,21 @@ static void AppendToStyleAttr( TidyDocImpl* doc, AttVal *styleattr, ctmbstr styl
  the same attribute name can't be used
  more than once in each element
 */
+static Bool AttrsHaveSameName( AttVal* av1, AttVal* av2)
+{
+    TidyAttrId id1, id2;
+
+    id1 = AttrId(av1);
+    id2 = AttrId(av2);
+    if (id1 != TidyAttr_UNKNOWN && id2 != TidyAttr_UNKNOWN)
+        return AttrsHaveSameId(av1, av2);
+    if (id1 != TidyAttr_UNKNOWN || id2 != TidyAttr_UNKNOWN)
+        return no;
+    if (av1->attribute && av2->attribute)
+        return TY_(tmbstrcmp)(av1->attribute, av2->attribute) == 0;
+     return no;
+}
+
 void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node, Bool isXml )
 {
     AttVal *first;
@@ -995,7 +1010,7 @@ void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node *node, Bool isXml )
             AttVal *temp;
 
             if (!(second->asp == NULL && second->php == NULL
-                  && AttrsHaveSameId(first, second)))
+                  && AttrsHaveSameName(first, second)))
             {
                 second = second->next;
                 continue;
