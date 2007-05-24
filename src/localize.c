@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/04/19 14:17:23 $ 
-    $Revision: 1.168 $ 
+    $Date: 2007/05/24 12:18:44 $ 
+    $Revision: 1.169 $ 
 
 */
 
@@ -597,8 +597,9 @@ static const TidyOptionDoc option_docs[] =
   },
   {TidyBodyOnly,
    "This option specifies if Tidy should print only the contents of the "
-   "body tag as an HTML fragment.  Useful for incorporating existing whole "
-   "pages as a portion of another page. "
+   "body tag as an HTML fragment. If set to \"auto\", this is performed only "
+   "if the body tag has been inferred. Useful for incorporating "
+   "existing whole pages as a portion of another page. "
   },
   {TidyUpperCaseAttrs,
    "This option specifies if Tidy should output attribute names in upper "

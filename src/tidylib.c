@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/07 12:08:31 $ 
-    $Revision: 1.70 $ 
+    $Date: 2007/05/24 12:18:44 $ 
+    $Revision: 1.71 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1344,6 +1344,26 @@ int         tidyDocCleanAndRepair( TidyDocImpl* doc )
     return tidyDocStatus( doc );
 }
 
+static
+Bool showBodyOnly( TidyDocImpl* doc, TidyTriState bodyOnly )
+{
+    Node* node;
+
+    switch( bodyOnly )
+    {
+    case TidyNoState:
+        return no;
+    case TidyYesState:
+        return yes;
+    default:
+        node = TY_(FindBody)( doc );
+        if (node && node->implicit )
+            return yes;
+    }
+    return no;
+}
+
+
 int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 {
     Bool showMarkup  = cfgBool( doc, TidyShowMarkup );
@@ -1354,7 +1374,7 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 #endif
     Bool xmlOut      = cfgBool( doc, TidyXmlOut );
     Bool xhtmlOut    = cfgBool( doc, TidyXhtmlOut );
-    Bool bodyOnly    = cfgBool( doc, TidyBodyOnly );
+    TidyTriState bodyOnly    = cfgAutoBool( doc, TidyBodyOnly );
 
     Bool dropComments = cfgBool(doc, TidyHideComments);
     Bool makeClean    = cfgBool(doc, TidyMakeClean);
@@ -1403,7 +1423,7 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
         doc->docOut = out;
         if ( xmlOut && !xhtmlOut )
             TY_(PPrintXMLTree)( doc, NORMAL, 0, &doc->root );
-        else if ( bodyOnly )
+        else if ( showBodyOnly( doc, bodyOnly ) )
             TY_(PrintBody)( doc );
         else
             TY_(PPrintTree)( doc, NORMAL, 0, &doc->root );
