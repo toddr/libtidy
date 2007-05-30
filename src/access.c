@@ -1,14 +1,14 @@
 /* access.c -- carry out accessibility checks
 
   Copyright University of Toronto
-  Portions (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  Portions (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/04/19 14:17:22 $ 
-    $Revision: 1.37 $ 
+    $Date: 2007/05/30 16:47:31 $ 
+    $Revision: 1.38 $ 
 
 */
 

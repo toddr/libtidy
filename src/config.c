@@ -1,14 +1,14 @@
 /*
   config.c -- read config file and manage config properties
   
-  (c) 1998-2005 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/24 12:18:44 $ 
-    $Revision: 1.105 $ 
+    $Date: 2007/05/30 16:47:31 $ 
+    $Revision: 1.106 $ 
 
 */
 

@@ -1,13 +1,13 @@
 /* parser.c -- HTML Parser
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/04/26 10:02:35 $ 
-    $Revision: 1.183 $ 
+    $Date: 2007/05/30 16:47:31 $ 
+    $Revision: 1.184 $ 
 
 */
 

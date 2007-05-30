@@ -3,14 +3,14 @@
 
 /* message.h -- general message writing routines
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/01/16 22:30:51 $ 
-    $Revision: 1.28 $ 
+    $Date: 2007/05/30 16:47:31 $ 
+    $Revision: 1.29 $ 
 
 */
 
