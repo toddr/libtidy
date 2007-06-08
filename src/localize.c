@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/30 16:47:31 $ 
-    $Revision: 1.170 $ 
+    $Date: 2007/06/08 11:54:59 $ 
+    $Revision: 1.171 $ 
 
 */
 
@@ -946,12 +946,13 @@ __attribute__((format(printf, 5, 0)))
 static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
                         int line, int col, ctmbstr msg, va_list args )
 {
-    char messageBuf[ 2048 ];
+    enum { sizeMessageBuf=2048 };
+    char *messageBuf = TidyDocAlloc(doc,sizeMessageBuf);
     Bool go = UpdateCount( doc, level );
 
     if ( go )
     {
-        TY_(tmbvsnprintf)(messageBuf, sizeof(messageBuf), msg, args);
+        TY_(tmbvsnprintf)(messageBuf, sizeMessageBuf, msg, args);
         if ( doc->mssgFilt )
         {
             TidyDoc tdoc = tidyImplToDoc( doc );
@@ -961,23 +962,26 @@ static void messagePos( TidyDocImpl* doc, TidyReportLevel level,
 
     if ( go )
     {
-        char buf[ 64 ];
+        enum { sizeBuf=1024 };
+        char *buf = TidyDocAlloc(doc,sizeBuf);
         const char *cp;
         if ( line > 0 && col > 0 )
         {
-            ReportPosition(doc, line, col, buf, sizeof(buf));
+            ReportPosition(doc, line, col, buf, sizeBuf);
             for ( cp = buf; *cp; ++cp )
                 TY_(WriteChar)( *cp, doc->errout );
         }
 
-        LevelPrefix( level, buf, sizeof(buf) );
+        LevelPrefix( level, buf, sizeBuf );
         for ( cp = buf; *cp; ++cp )
             TY_(WriteChar)( *cp, doc->errout );
 
         for ( cp = messageBuf; *cp; ++cp )
             TY_(WriteChar)( *cp, doc->errout );
         TY_(WriteChar)( '\n', doc->errout );
+        TidyDocFree(doc, buf);
     }
+    TidyDocFree(doc, messageBuf);
 }
 
 /* Reports error at current Lexer line/column. */ 
@@ -1054,15 +1058,17 @@ void tidy_out( TidyDocImpl* doc, ctmbstr msg, ... )
     if ( !cfgBool(doc, TidyQuiet) )
     {
         ctmbstr cp;
-        char buf[ 2048 ];
+        enum { sizeBuf=2048 };
+        char *buf = TidyDocAlloc(doc,sizeBuf);
 
         va_list args;
         va_start( args, msg );
-        TY_(tmbvsnprintf)(buf, sizeof(buf), msg, args);
+        TY_(tmbvsnprintf)(buf, sizeBuf, msg, args);
         va_end( args );
 
         for ( cp=buf; *cp; ++cp )
           TY_(WriteChar)( *cp, doc->errout );
+        TidyDocFree(doc, buf);
     }
 }
 
