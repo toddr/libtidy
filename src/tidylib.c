@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/24 12:18:44 $ 
-    $Revision: 1.71 $ 
+    $Date: 2007/06/12 20:57:52 $ 
+    $Revision: 1.72 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1381,6 +1381,7 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
     Bool asciiChars   = cfgBool(doc, TidyAsciiChars);
     Bool makeBare     = cfgBool(doc, TidyMakeBare);
     Bool escapeCDATA  = cfgBool(doc, TidyEscapeCdata);
+    TidyAttrSortStrategy sortAttrStrat = cfg(doc, TidySortAttributes);
 
     if (escapeCDATA)
         TY_(ConvertCDATANodes)(doc, &doc->root);
@@ -1404,6 +1405,9 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
         TY_(NormalizeSpaces)(doc->lexer, &doc->root);
     else
         TY_(ReplacePreformattedSpaces)(doc, &doc->root);
+
+    if ( sortAttrStrat != TidySortAttrNone )
+        TY_(SortAttributes)(&doc->root, sortAttrStrat);
 
     if ( showMarkup && (doc->errors == 0 || forceOutput) )
     {

@@ -6,7 +6,7 @@
   Simplifies enum re-use in various wrappers.  e.g. SWIG
   generated wrappers and COM IDL files.
 
-  Copyright (c) 1998-2006 World Wide Web Consortium
+  Copyright (c) 1998-2007 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
@@ -14,8 +14,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/11 17:14:27 $ 
-    $Revision: 1.15 $ 
+    $Date: 2007/06/12 20:57:52 $ 
+    $Revision: 1.16 $ 
 
   Contributing Author(s):
 
@@ -200,7 +200,8 @@ typedef enum
 #endif
   TidyMergeDivs,       /**< Merge multiple DIVs */
   TidyDecorateInferredUL,  /**< Mark inferred UL elements with no indent CSS */
-  TidyPreserveEntities,    /**< Preserv entities */
+  TidyPreserveEntities,    /**< Preserve entities */
+  TidySortAttributes,      /**< Sort attributes */
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 
@@ -253,6 +254,13 @@ typedef enum
     TidyKeepLast
 } TidyDupAttrModes;
 
+/** Mode controlling treatment of sorting attributes
+*/
+typedef enum
+{
+    TidySortAttrNone,
+    TidySortAttrAlpha
+} TidyAttrSortStrategy;
 
 /* I/O and Message handling interface
 **

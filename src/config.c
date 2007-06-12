@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/30 16:47:31 $ 
-    $Revision: 1.106 $ 
+    $Date: 2007/06/12 20:57:52 $ 
+    $Revision: 1.107 $ 
 
 */
 
@@ -144,6 +144,13 @@ static const ctmbstr doctypePicks[] =
   NULL 
 };
 
+static const ctmbstr sorterPicks[] = 
+{
+  "none",
+  "alpha",
+  NULL
+};
+
 #define MU TidyMarkup
 #define DG TidyDiagnostics
 #define PP TidyPrettyPrint
@@ -189,6 +196,9 @@ static ParseProperty ParseString;
 
 /* a space or comma separated list of tag names */
 static ParseProperty ParseTagNames;
+
+/* alpha */
+static ParseProperty ParseSorter;
 
 /* RAW, ASCII, LATIN0, LATIN1, UTF8, ISO2022, MACROMAN, 
    WIN1252, IBM858, UTF16LE, UTF16BE, UTF16, BIG5, SHIFTJIS
@@ -302,6 +312,7 @@ static const TidyOptionImpl option_defs[] =
   { TidyMergeDivs,               MU, "merge-divs",                  IN, TidyAutoState,   ParseAutoBool,     autoBoolPicks   },
   { TidyDecorateInferredUL,      MU, "decorate-inferred-ul",        BL, no,              ParseBool,         boolPicks       },
   { TidyPreserveEntities,        MU, "preserve-entities",           BL, no,              ParseBool,         boolPicks       },
+  { TidySortAttributes,          PP, "sort-attributes",             IN, TidySortAttrNone,ParseSorter,       sorterPicks     },
   { N_TIDY_OPTIONS,              XX, NULL,                          XY, 0,               NULL,              NULL            }
 };
 
@@ -1491,6 +1502,34 @@ Bool ParseRepeatAttr( TidyDocImpl* doc, const TidyOptionImpl* option )
         cfg->value[ TidyDuplicateAttrs ].v = TidyKeepFirst;
     else if ( TY_(tmbstrcasecmp)(buf, "keep-last") == 0 )
         cfg->value[ TidyDuplicateAttrs ].v = TidyKeepLast;
+    else
+    {
+        TY_(ReportBadArgument)( doc, option->name );
+        status = no;
+    }
+    return status;
+}
+
+Bool ParseSorter( TidyDocImpl* doc, const TidyOptionImpl* option )
+{
+    Bool status = yes;
+    tmbchar buf[64] = {0};
+    uint i = 0;
+
+    TidyConfigImpl* cfg = &doc->config;
+    tchar c = SkipWhite( cfg );
+
+    while (i < sizeof(buf)-1 && c != EndOfStream && !TY_(IsWhite)(c))
+    {
+        buf[i++] = (tmbchar) c;
+        c = AdvanceChar( cfg );
+    }
+    buf[i] = '\0';
+
+    if ( TY_(tmbstrcasecmp)(buf, "alpha") == 0 )
+        cfg->value[ TidySortAttributes ].v = TidySortAttrAlpha;
+    else if ( TY_(tmbstrcasecmp)(buf, "none") == 0)
+        cfg->value[ TidySortAttributes ].v = TidySortAttrNone;
     else
     {
         TY_(ReportBadArgument)( doc, option->name );

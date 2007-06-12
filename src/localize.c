@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/06/08 11:54:59 $ 
-    $Revision: 1.171 $ 
+    $Date: 2007/06/12 20:57:52 $ 
+    $Revision: 1.172 $ 
 
 */
 
@@ -589,6 +589,11 @@ static const TidyOptionDoc option_docs[] =
    "This option specifies if Tidy should keep the first or last attribute, if "
    "an attribute is repeated, e.g. has two align attributes. "
    , TidyDuplicateAttrsLinks
+  },
+  {TidySortAttributes,
+   "This option specifies that tidy should sort attributes within an element "
+   "using the specified sort algorithm. If set to \"alpha\", the algorithm is "
+   "an ascending alphabetic sort. "
   },
   {TidyReplaceColor,
    "This option specifies if Tidy should replace numeric values in color "
