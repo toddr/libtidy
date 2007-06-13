@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/01 12:27:55 $ 
-    $Revision: 1.46 $ 
+    $Date: 2007/06/13 08:47:46 $ 
+    $Revision: 1.47 $ 
 */
 
 #include "tidy.h"
@@ -498,6 +498,7 @@ void GetOption( TidyDoc tdoc, TidyOption topt, OptionDesc *d )
     switch ( optId )
     {
     case TidyDuplicateAttrs:
+    case TidySortAttributes:
     case TidyNewline:
     case TidyAccessibilityCheckLevel:
         d->type = "enum";
