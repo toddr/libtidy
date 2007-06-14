@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/30 16:47:31 $ 
-    $Revision: 1.28 $ 
+    $Date: 2007/06/14 09:36:06 $ 
+    $Revision: 1.29 $ 
 
 */
 
@@ -138,6 +138,7 @@ void TY_(AppendToClassAttr)( TidyDocImpl* doc, AttVal *classattr, ctmbstr classn
  more than once in each element
 */
 void TY_(RepairDuplicateAttributes)( TidyDocImpl* doc, Node* node, Bool isXml );
+void TY_(SortAttributes)(Node* node, TidyAttrSortStrategy strat);
 
 Bool TY_(IsBoolAttribute)( AttVal* attval );
 Bool TY_(attrIsEvent)( AttVal* attval );
