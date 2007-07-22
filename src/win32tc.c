@@ -3,7 +3,7 @@
   (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.9 2007/05/30 16:47:31 arnaud02 Exp $
+  $Id: win32tc.c,v 1.10 2007/07/22 09:33:26 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -555,7 +555,7 @@ Bool TY_(Win32MLangInitInputTranscoder)(StreamIn * in, uint wincp)
         return no;
     }
 
-    in->mlang = (ulong)p;
+    in->mlang = p;
 
     return yes;
 }
@@ -571,7 +571,7 @@ void TY_(Win32MLangUninitInputTranscoder)(StreamIn * in)
     {
         IMLangConvertCharset_Release(p);
         p = NULL;
-        in->mlang = (ulong)NULL;
+        in->mlang = NULL;
     }
 
     CoUninitialize();
@@ -611,7 +611,7 @@ Bool Win32MLangInitOutputTranscoder(TidyAllocator *allocator, StreamOut * out, t
         return no;
     }
 
-    out->mlang = (ulong)p;
+    out->mlang = p;
 
     return yes;
 }
@@ -627,7 +627,7 @@ void Win32MLangUninitOutputTranscoder(StreamOut * out)
     {
         IMLangConvertCharset_Release(p);
         p = NULL;
-        out->mlang = (ulong)NULL;
+        out->mlang = NULL;
     }
 
     CoUninitialize();
@@ -646,7 +646,7 @@ int TY_(Win32MLangGetChar)(byte firstByte, StreamIn * in, uint * bytesRead)
     assert( in != NULL );
     assert( &in->source != NULL );
     assert( bytesRead != NULL );
-    assert( in->mlang != 0 );
+    assert( in->mlang != NULL );
 
     p = (IMLangConvertCharset *)in->mlang;
     source = &in->source;
@@ -714,7 +714,7 @@ Bool Win32MLangIsConvertible(tchar c, StreamOut * out)
     assert( c != 0 );
     assert( c <= 0x10FFFF );
     assert( out != NULL );
-    assert( out->mlang != 0 );
+    assert( out->mlang != NULL );
 
     if (c > 0xFFFF)
     {
@@ -751,7 +751,7 @@ void Win32MLangPutChar(tchar c, StreamOut * out, uint * bytesWritten)
     assert( bytesWritten != NULL );
     assert( out != NULL );
     assert( &out->sink != NULL );
-    assert( out->mlang != 0 );
+    assert( out->mlang != NULL );
 
     p = (IMLangConvertCharset *)out->mlang;
     sink = &out->sink;
