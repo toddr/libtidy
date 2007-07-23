@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/06/12 20:57:52 $ 
-    $Revision: 1.107 $ 
+    $Date: 2007/07/23 16:23:21 $ 
+    $Revision: 1.108 $ 
 
 */
 
@@ -1543,7 +1543,7 @@ Bool ParseSorter( TidyDocImpl* doc, const TidyOptionImpl* option )
 */
 TidyIterator TY_(getOptionList)( TidyDocImpl* ARG_UNUSED(doc) )
 {
-  return (TidyIterator) 1;
+    return (TidyIterator) (size_t)1;
 }
 
 /* Check if this item is last valid option.
@@ -1553,15 +1553,15 @@ const TidyOptionImpl*  TY_(getNextOption)( TidyDocImpl* ARG_UNUSED(doc),
                                            TidyIterator* iter )
 {
   const TidyOptionImpl* option = NULL;
-  ulong optId;
+  size_t optId;
   assert( iter != NULL );
-  optId = (ulong) *iter;
+  optId = (size_t) *iter;
   if ( optId > TidyUnknownOption && optId < N_TIDY_OPTIONS )
   {
     option = &option_defs[ optId ];
     optId++;
   }
-  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? optId : 0 );
+  *iter = (TidyIterator) ( optId < N_TIDY_OPTIONS ? optId : (size_t)0 );
   return option;
 }
 
@@ -1569,7 +1569,7 @@ const TidyOptionImpl*  TY_(getNextOption)( TidyDocImpl* ARG_UNUSED(doc),
 */
 TidyIterator TY_(getOptionPickList)( const TidyOptionImpl* option )
 {
-    ulong ix = 0;
+    size_t ix = 0;
     if ( option && option->pickList )
         ix = 1;
     return (TidyIterator) ix;
@@ -1578,14 +1578,14 @@ TidyIterator TY_(getOptionPickList)( const TidyOptionImpl* option )
 ctmbstr      TY_(getNextOptionPick)( const TidyOptionImpl* option,
                                      TidyIterator* iter )
 {
-    ulong ix;
+    size_t ix;
     ctmbstr val = NULL;
     assert( option!=NULL && iter != NULL );
 
-    ix = (ulong) *iter;
+    ix = (size_t) *iter;
     if ( ix > 0 && ix < 16 && option->pickList )
         val = option->pickList[ ix-1 ];
-    *iter = (TidyIterator) ( val && option->pickList[ix] ? ix + 1 : 0 );
+    *iter = (TidyIterator) ( val && option->pickList[ix] ? ix + 1 : (size_t)0 );
     return val;
 }
 
