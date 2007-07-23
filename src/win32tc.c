@@ -3,7 +3,7 @@
   (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.10 2007/07/22 09:33:26 arnaud02 Exp $
+  $Id: win32tc.c,v 1.11 2007/07/23 15:41:22 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -669,7 +669,7 @@ int TY_(Win32MLangGetChar)(byte firstByte, StreamIn * in, uint * bytesRead)
             /* U+10000-U+10FFFF are returned as a pair of surrogates */
             tchar m = (tchar)outbuf[0];
             tchar n = (tchar)outbuf[1];
-            assert( IsHighSurrogate(n) && IsLowSurrogate(m) );
+            assert( TY_(IsHighSurrogate)(n) && TY_(IsLowSurrogate)(m) );
             *bytesRead = readNow;
             return (int)TY_(CombineSurrogatePair)(n, m);
         }
