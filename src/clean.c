@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.107 $ 
+    $Date: 2007/07/24 16:17:14 $ 
+    $Revision: 1.108 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1212,13 +1212,41 @@ static Bool NestedList( TidyDocImpl* doc, Node *node, Node **pnode )
     return no;
 }
 
-/*
-  Some necessary conditions to apply BlockStyle().
- */
+/* Find CSS equivalent in a SPAN element */
+static
+Bool FindCSSSpanEq( Node *node, ctmbstr *s, Bool deprecatedOnly )
+{
+    struct
+    {
+        TidyTagId id;
+        ctmbstr CSSeq;
+        Bool deprecated;
+    }
+    const CSS_SpanEq[] =
+        {
+            { TidyTag_B, "font-weight: bold", no },
+            { TidyTag_I, "font-style: italic", no },
+            { TidyTag_S, "text-decoration: line-through", yes},
+            { TidyTag_STRIKE, "text-decoration: line-through", yes},
+            { TidyTag_U, "text-decoration: underline", yes},
+            { TidyTag_UNKNOWN, NULL, no }
+        };
+    uint i;
 
+    for (i=0; CSS_SpanEq[i].CSSeq; ++i)
+        if ( (!deprecatedOnly || CSS_SpanEq[i].deprecated)
+             && TagIsId(node, CSS_SpanEq[i].id) )
+        {
+            *s = CSS_SpanEq[i].CSSeq;
+            return yes;
+        }
+    return no; 
+}
+
+/* Necessary conditions to apply BlockStyle(). */
 static Bool CanApplyBlockStyle( Node *node )
 {
-    if (node->tag->model & (CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE)
+    if (TY_(nodeHasCM)(node,CM_BLOCK | CM_LIST | CM_DEFLIST | CM_TABLE)
         && !nodeIsTABLE(node) && !nodeIsTR(node) && !nodeIsLI(node) )
     {
         return yes;
@@ -1252,6 +1280,7 @@ static Bool CanApplyBlockStyle( Node *node )
 static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
 {
     Node *child;
+    ctmbstr CSSeq;
 
     /* check for bgcolor */
     if (   nodeIsTABLE(node)
@@ -1272,23 +1301,14 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
         if (child->next)
             return no;
 
-        if ( nodeIsB(child) )
+        if ( FindCSSSpanEq(child, &CSSeq, no) )
         {
             MergeStyles( doc, node, child );
-            TY_(AddStyleProperty)( doc, node, "font-weight: bold" );
+            TY_(AddStyleProperty)( doc, node, CSSeq );
             StripOnlyChild( doc, node );
             return yes;
         }
-
-        if ( nodeIsI(child) )
-        {
-            MergeStyles( doc, node, child );
-            TY_(AddStyleProperty)( doc, node, "font-style: italic" );
-            StripOnlyChild( doc, node );
-            return yes;
-        }
-
-        if ( nodeIsFONT(child) )
+        else if ( nodeIsFONT(child) )
         {
             MergeStyles( doc, node, child );
             AddFontStyles( doc, node, child->attributes );
@@ -1300,12 +1320,19 @@ static Bool BlockStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
     return no;
 }
 
+/* Necessary conditions to apply InlineStyle(). */
+static Bool CanApplyInlineStyle( Node *node )
+{
+    return !nodeIsFONT(node) && TY_(nodeHasCM)(node, CM_INLINE|CM_ROW);
+}
+
 /* the only child of table cell or an inline element such as em */
 static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) )
 {
     Node *child;
+    ctmbstr CSSeq;
 
-    if ( !nodeIsFONT(node) && TY_(nodeHasCM)(node, CM_INLINE|CM_ROW) )
+    if ( CanApplyInlineStyle(node) )
     {
         child = node->content;
 
@@ -1317,23 +1344,14 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) 
         if (child->next)
             return no;
 
-        if ( nodeIsB(child) && cfgBool(doc, TidyLogicalEmphasis) )
+        if ( FindCSSSpanEq(child, &CSSeq, no) )
         {
             MergeStyles( doc, node, child );
-            TY_(AddStyleProperty)( doc, node, "font-weight: bold" );
+            TY_(AddStyleProperty)( doc, node, CSSeq );
             StripOnlyChild( doc, node );
             return yes;
         }
-
-        if ( nodeIsI(child) && cfgBool(doc, TidyLogicalEmphasis) )
-        {
-            MergeStyles( doc, node, child );
-            TY_(AddStyleProperty)( doc, node, "font-style: italic" );
-            StripOnlyChild( doc, node );
-            return yes;
-        }
-
-        if ( nodeIsFONT(child) )
+        else if ( nodeIsFONT(child) )
         {
             MergeStyles( doc, node, child );
             AddFontStyles( doc, node, child->attributes );
@@ -1344,6 +1362,30 @@ static Bool InlineStyle( TidyDocImpl* doc, Node *node, Node **ARG_UNUSED(pnode) 
 
     return no;
 }
+
+/*
+    Transform element to equivalent CSS
+*/
+static Bool InlineElementToCSS( TidyDocImpl* doc, Node* node,
+                                Node **ARG_UNUSED(pnode)  )
+{
+    ctmbstr CSSeq;
+
+    /* if node is the only child of parent element then leave alone
+          Do so only if BlockStyle may be succesful. */
+    if ( node->parent->content == node && node->next == NULL &&
+         (CanApplyBlockStyle(node->parent)
+          || CanApplyInlineStyle(node->parent)) )
+        return no;
+
+    if ( FindCSSSpanEq(node, &CSSeq, yes) )
+    {
+        RenameElem( doc, node, TidyTag_SPAN );
+        TY_(AddStyleProperty)( doc, node, CSSeq );
+        return yes;
+    }
+    return no;
+} 
 
 /*
   Replace font elements by span elements, deleting
@@ -1362,7 +1404,7 @@ static Bool Font2Span( TidyDocImpl* doc, Node *node, Node **pnode )
             return yes;
         }
 
-        /* if FONT is only child of parent element then leave alone
+        /* if node is the only child of parent element then leave alone
           Do so only if BlockStyle may be succesful. */
         if ( node->parent->content == node && node->next == NULL &&
              CanApplyBlockStyle(node->parent) )
@@ -1429,6 +1471,9 @@ Node* CleanNode( TidyDocImpl* doc, Node *node )
             continue;
 
         if ( InlineStyle(doc, node, &next) )
+            continue;
+
+        if ( InlineElementToCSS(doc, node, &next) )
             continue;
 
         if ( Font2Span(doc, node, &next) )
