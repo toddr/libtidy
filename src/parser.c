@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/30 16:47:31 $ 
-    $Revision: 1.184 $ 
+    $Date: 2007/08/12 08:25:19 $ 
+    $Revision: 1.185 $ 
 
 */
 
@@ -687,7 +687,7 @@ static Bool InsertMisc(Node *element, Node *node)
         Node* root = element;
         while ( root && root->parent )
             root = root->parent;
-        if ( root )
+        if ( root && !(root->content && root->content->type == XmlDecl))
         {
           TY_(InsertNodeAtStart)( root, node );
           return yes;
