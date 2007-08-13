@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/08/09 09:11:57 $ 
-    $Revision: 1.173 $ 
+    $Date: 2007/08/13 16:27:26 $ 
+    $Revision: 1.174 $ 
 
 */
 
@@ -348,7 +348,9 @@ static const TidyOptionId TidyInlineTagsLinks[] =
 static const TidyOptionId TidyPreTagsLinks[] =
   { TidyBlockTags, TidyEmptyTags, TidyInlineTags, TidyUnknownOption };
 static const TidyOptionId TidyMergeDivsLinks[] =
-  { TidyMakeClean, TidyUnknownOption };
+  { TidyMakeClean, TidyMergeSpans, TidyUnknownOption };
+static const TidyOptionId TidyMergeSpansLinks[] =
+  { TidyMakeClean, TidyMergeDivs, TidyUnknownOption };
 static const TidyOptionId TidyAsciiCharsLinks[] =
   { TidyMakeClean, TidyUnknownOption };
 static const TidyOptionId TidyNumEntitiesLinks[] =
@@ -507,6 +509,13 @@ static const TidyOptionDoc option_docs[] =
    "merged. If set to \"yes\", the attributes of the inner &lt;div&gt; "
    "are discarded with the exception of \"class\" and \"style\". "
    ,TidyMergeDivsLinks
+  },
+  {TidyMergeSpans,
+   "Can be used to modify behavior of -c (--clean yes) option. "
+   "This option specifies if Tidy should merge nested &lt;span&gt; such as "
+   "\"&lt;span&gt;&lt;span&gt;...&lt;/span&gt;&lt;/span&gt;\". The algorithm "
+   "is identical to the one used by --merge-divs. "
+   ,TidyMergeSpansLinks
   },
 #if SUPPORT_ASIAN_ENCODINGS
   {TidyNCR,

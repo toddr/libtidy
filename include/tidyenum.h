@@ -14,8 +14,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/06/12 20:57:52 $ 
-    $Revision: 1.16 $ 
+    $Date: 2007/08/13 16:27:26 $ 
+    $Revision: 1.17 $ 
 
   Contributing Author(s):
 
@@ -202,6 +202,7 @@ typedef enum
   TidyDecorateInferredUL,  /**< Mark inferred UL elements with no indent CSS */
   TidyPreserveEntities,    /**< Preserve entities */
   TidySortAttributes,      /**< Sort attributes */
+  TidyMergeSpans,       /**< Merge multiple SPANs */
   N_TIDY_OPTIONS       /**< Must be last */
 } TidyOptionId;
 
