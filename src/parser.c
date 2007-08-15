@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/08/12 08:25:19 $ 
-    $Revision: 1.185 $ 
+    $Date: 2007/08/15 17:43:02 $ 
+    $Revision: 1.186 $ 
 
 */
 
@@ -1999,8 +1999,8 @@ static Bool FindLastLI( Node *list, Node **lastli )
     Node *node;
 
     *lastli = NULL;
-    for ( node = list->content; node && node->next; node = node->next )
-        if ( nodeIsLI(node) && node && node->type == StartTag )
+    for ( node = list->content; node ; node = node->next )
+        if ( nodeIsLI(node) && node->type == StartTag )
             *lastli=node;
     return *lastli ? yes:no;
 }
@@ -2101,7 +2101,10 @@ void TY_(ParseList)(TidyDocImpl* doc, Node *list, GetTokenMode ARG_UNUSED(mode))
                rendering of most browsers. */    
             if ( nodeIsOL(list) && FindLastLI(list, &lastli) )
             {
+                /* Create a node for error reporting */
+                node = TY_(InferredTag)(doc, TidyTag_LI);
                 TY_(ReportError)(doc, list, node, MISSING_STARTTAG );
+                TY_(FreeNode)( doc, node);
                 node = lastli;
             }
             else
