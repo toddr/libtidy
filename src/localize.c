@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/11/06 11:54:30 $ 
-    $Revision: 1.176 $ 
+    $Date: 2007/11/06 11:59:14 $ 
+    $Revision: 1.177 $ 
 
 */
 
@@ -752,6 +752,8 @@ static const TidyOptionDoc option_docs[] =
    "encodings e.g. ISO-2022-JP. For mac and win1252, Tidy will accept vendor "
    "specific character values, but will use entities for all characters whose "
    "value &gt; 127. "
+   "For unsupported encodings, use an external utility to convert to and from "
+   "UTF-8. "
    ,TidyCharEncodingLinks
   },
   {TidyInCharEncoding,
