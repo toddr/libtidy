@@ -301,3 +301,4 @@ LIBRARY libtidy
     tidyBufUngetByte              @2015
     tidyBufInitWithAllocator      @2016
     tidyBufAllocWithAllocator     @2017
+    tidyNodeGetValue              @2018

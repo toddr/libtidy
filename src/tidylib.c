@@ -1,13 +1,13 @@
 /* tidylib.c -- internal library definitions
 
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/06/12 20:57:52 $ 
-    $Revision: 1.72 $ 
+    $Date: 2008/01/25 18:51:01 $ 
+    $Revision: 1.73 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1580,6 +1580,35 @@ Bool TIDY_CALL  tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* outbuf
   return no;
 }
 
+Bool TIDY_CALL tidyNodeGetValue( TidyDoc tdoc, TidyNode tnod, TidyBuffer* buf )
+{
+    TidyDocImpl *doc = tidyDocToImpl( tdoc );
+    Node *node = tidyNodeToImpl( tnod );
+    if ( doc == NULL || node == NULL || buf == NULL )
+        return no;
+
+    switch( node->type ) {
+    case TextNode:
+    case CDATATag:
+    case CommentTag:
+    case ProcInsTag:
+    case SectionTag:
+    case AspTag:
+    case JsteTag:
+    case PhpTag:
+    {
+        tidyBufClear( buf );
+        tidyBufAppend( buf, doc->lexer->lexbuf + node->start,
+                       node->end - node->start );
+        break;
+    }
+    default:
+        /* The node doesn't have a value */
+        return no;
+    }
+
+    return yes;
+}
 
 Bool TIDY_CALL tidyNodeIsProp( TidyDoc ARG_UNUSED(tdoc), TidyNode tnod )
 {

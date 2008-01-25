@@ -11,7 +11,7 @@
   this-equivalent as 1st arg.
 
 
-  Copyright (c) 1998-2007 World Wide Web Consortium
+  Copyright (c) 1998-2008 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/07 11:02:54 $ 
-    $Revision: 1.20 $ 
+    $Date: 2008/01/25 18:51:01 $ 
+    $Revision: 1.21 $ 
 
   Contributing Author(s):
 
@@ -847,6 +847,9 @@ TIDY_EXPORT Bool TIDY_CALL tidyNodeIsHeader( TidyNode tnod ); /* h1, h2, ... */
 
 TIDY_EXPORT Bool TIDY_CALL tidyNodeHasText( TidyDoc tdoc, TidyNode tnod );
 TIDY_EXPORT Bool TIDY_CALL tidyNodeGetText( TidyDoc tdoc, TidyNode tnod, TidyBuffer* buf );
+
+/* Copy the unescaped value of this node into the given TidyBuffer as UTF-8 */
+TIDY_EXPORT Bool TIDY_CALL tidyNodeGetValue( TidyDoc tdoc, TidyNode tnod, TidyBuffer* buf );
 
 TIDY_EXPORT TidyTagId TIDY_CALL tidyNodeGetId( TidyNode tnod );
 
