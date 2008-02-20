@@ -1,7 +1,7 @@
 /*
   tidy.c - HTML TidyLib command line driver
 
-  Copyright (c) 1998-2007 World Wide Web Consortium
+  Copyright (c) 1998-2008 World Wide Web Consortium
   (Massachusetts Institute of Technology, European Research 
   Consortium for Informatics and Mathematics, Keio University).
   All Rights Reserved.
@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/06/13 08:47:46 $ 
-    $Revision: 1.47 $ 
+    $Date: 2008/02/20 10:01:48 $ 
+    $Revision: 1.48 $ 
 */
 
 #include "tidy.h"
@@ -25,6 +25,12 @@ static Bool samefile( ctmbstr filename1, ctmbstr filename2 )
 #else
     return ( strcasecmp( filename1, filename2 ) == 0 );
 #endif
+}
+
+static void outOfMemory(void)
+{
+    fprintf(stderr,"Out of memory. Bailing out.");
+    exit(1);
 }
 
 static const char *cutToWhiteSpace(const char *s, uint offset, char *sbuf)
@@ -66,6 +72,8 @@ static void print2Columns( const char* fmt, uint l1, uint l2,
     const char *pc1=c1, *pc2=c2;
     char *c1buf = (char *)malloc(l1+1);
     char *c2buf = (char *)malloc(l2+1);
+    if (!c1buf) outOfMemory();
+    if (!c2buf) outOfMemory();
 
     do
     {
@@ -86,6 +94,9 @@ static void print3Columns( const char* fmt, uint l1, uint l2, uint l3,
     char *c1buf = (char *)malloc(l1+1);
     char *c2buf = (char *)malloc(l2+1);
     char *c3buf = (char *)malloc(l3+1);
+    if (!c1buf) outOfMemory();
+    if (!c2buf) outOfMemory();
+    if (!c3buf) outOfMemory();
 
     do
     {
@@ -279,6 +290,7 @@ static tmbstr get_option_names( const CmdOptDesc* pos )
         len += 2+strlen(pos->name3);
 
     name = (tmbstr)malloc(len+1);
+    if (!name) outOfMemory();
     strcpy(name, pos->name1);
     if (pos->name2)
     {
@@ -315,6 +327,7 @@ static tmbstr get_escaped_name( ctmbstr name )
         }
 
     escpName = (tmbstr)malloc(len+1);
+    if (!escpName) outOfMemory();
     escpName[0] = '\0';
 
     aux[1] = '\0';
@@ -755,6 +768,7 @@ tmbstr GetAllowedValuesFromPick( TidyOption topt )
         len += strlen(def);
     }
     val = (tmbstr)malloc(len+1);
+    if (!val) outOfMemory();
     val[0] = '\0';
     pos = tidyOptGetPickList( topt );
     first = yes;
@@ -776,6 +790,7 @@ tmbstr GetAllowedValues( TidyOption topt, const OptionDesc *d )
     if (d->vals)
     {
         tmbstr val = (tmbstr)malloc(1+strlen(d->vals));
+        if (!val) outOfMemory();
         strcpy(val, d->vals);
         return val;
     }
