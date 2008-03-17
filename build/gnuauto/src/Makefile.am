@@ -3,10 +3,10 @@
 #  CVS Info :
 #
 #     $Author: arnaud02 $ 
-#     $Date: 2006/10/06 09:25:13 $ 
-#     $Revision: 1.7 $ 
+#     $Date: 2008/03/17 12:49:41 $ 
+#     $Revision: 1.8 $ 
 #
-#  Copyright (c) 1998-2006 World Wide Web Consortium
+#  Copyright (c) 1998-2008 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
 #  Consortium for Informatics and Mathematics, Keio University).
 #  All Rights Reserved.
@@ -53,7 +53,7 @@
 #  acknowledgment is not required but would be appreciated.
 #
 
-CFLAGS = @CFLAGS@ @WARNING_CFLAGS@
+AM_CFLAGS = @CFLAGS@ @WARNING_CFLAGS@
 
 INCLUDES = -I$(top_srcdir)/include
 

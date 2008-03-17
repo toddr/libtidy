@@ -2,11 +2,11 @@
 #
 #  CVS Info :
 #
-#     $Author: creitzel $ 
-#     $Date: 2003/03/19 18:37:37 $ 
-#     $Revision: 1.2 $ 
+#     $Author: arnaud02 $ 
+#     $Date: 2008/03/17 12:49:40 $ 
+#     $Revision: 1.3 $ 
 #
-#  Copyright (c) 1998-2003 World Wide Web Consortium
+#  Copyright (c) 1998-2008 World Wide Web Consortium
 #  (Massachusetts Institute of Technology, European Research 
 #  Consortium for Informatics and Mathematics, Keio University).
 #  All Rights Reserved.
@@ -53,7 +53,7 @@
 #  acknowledgment is not required but would be appreciated.
 #
 
-CFLAGS = @CFLAGS@ @WARNING_CFLAGS@
+AM_CFLAGS = @CFLAGS@ @WARNING_CFLAGS@
 
 INCLUDES = -I$(top_srcdir)/include
 
