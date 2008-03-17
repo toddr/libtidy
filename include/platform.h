@@ -3,14 +3,14 @@
 
 /* platform.h -- Platform specifics
 
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/02/11 09:45:52 $ 
-    $Revision: 1.65 $ 
+    $Date: 2008/03/17 12:57:01 $ 
+    $Revision: 1.66 $ 
 
 */
 
@@ -121,6 +121,12 @@ extern "C" {
 #define BSD_BASED_OS
 #ifndef PLATFORM_NAME
 #define PLATFORM_NAME "OpenBSD"
+#endif
+
+#elif defined(__DragonFly__)
+#define BSD_BASED_OS
+#ifndef PLATFORM_NAME
+#define PLATFORM_NAME "DragonFly"
 #endif
 
 #elif defined(__MINT__)
