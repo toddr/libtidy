@@ -1,11 +1,11 @@
 /* Interface to mmap style I/O
 
-   (c) 2006-2007 (W3C) MIT, ERCIM, Keio University
+   (c) 2006-2008 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
 
    Originally contributed by Cory Nelson and Nuno Lopes
 
-   $Id: mappedio.c,v 1.13 2007/02/07 12:08:31 arnaud02 Exp $
+   $Id: mappedio.c,v 1.14 2008/03/18 20:19:35 arnaud02 Exp $
 */
 
 /* keep these here to keep file non-empty */
@@ -60,9 +60,10 @@ int TY_(initFileSource)( TidyAllocator *allocator, TidyInputSource* inp, FILE* f
         return -1;
 
     fd = fileno(fp);
-    if ( fstat(fd, &sbuf) == -1 ||
-         (fin->base = mmap(0, fin->size = sbuf.st_size, PROT_READ, MAP_SHARED,
-                           fd, 0)) == MAP_FAILED)
+    if ( fstat(fd, &sbuf) == -1
+         || sbuf.st_size == 0
+         || (fin->base = mmap(0, fin->size = sbuf.st_size, PROT_READ,
+                              MAP_SHARED, fd, 0)) == MAP_FAILED)
     {
         TidyFree( allocator, fin );
         /* Fallback on standard I/O */
