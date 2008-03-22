@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2006/12/29 16:31:08 $ 
-    $Revision: 1.69 $ 
+    $Date: 2008/03/22 20:23:38 $ 
+    $Revision: 1.70 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -911,13 +911,13 @@ Bool TY_(nodeCMIsEmpty)( Node* node )
 Bool TY_(nodeIsHeader)( Node* node )
 {
     TidyTagId tid = TagId( node  );
-    return ( tid && 
+    return ( tid && (
              tid == TidyTag_H1 ||
              tid == TidyTag_H2 ||
              tid == TidyTag_H3 ||        
              tid == TidyTag_H4 ||        
              tid == TidyTag_H5 ||
-             tid == TidyTag_H6 );
+             tid == TidyTag_H6 ));
 }
 
 uint TY_(nodeHeaderLevel)( Node* node )

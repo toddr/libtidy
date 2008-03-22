@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/02/20 10:01:48 $ 
-    $Revision: 1.48 $ 
+    $Date: 2008/03/22 20:23:37 $ 
+    $Revision: 1.49 $ 
 */
 
 #include "tidy.h"
@@ -939,7 +939,7 @@ int main( int argc, char** argv )
     /* look for env var "HTML_TIDY" */
     /* then for ~/.tidyrc (on platforms defining $HOME) */
 
-    if ( cfgfil = getenv("HTML_TIDY") )
+    if ( (cfgfil = getenv("HTML_TIDY")) != NULL )
     {
         status = tidyLoadConfig( tdoc, cfgfil );
         if ( status != 0 )
@@ -1181,7 +1181,7 @@ int main( int argc, char** argv )
                 uint c;
                 ctmbstr s = argv[1];
 
-                while ( c = *++s )
+                while ( (c = *++s) != '\0' )
                 {
                     switch ( c )
                     {
