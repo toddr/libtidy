@@ -1,13 +1,13 @@
 /* lexer.c -- Lexer for html parser
   
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/13 18:13:34 $ 
-    $Revision: 1.193 $ 
+    $Date: 2008/03/22 21:06:55 $ 
+    $Revision: 1.194 $ 
 
 */
 
@@ -1627,6 +1627,9 @@ Bool TY_(SetXHTMLDocType)( TidyDocImpl* doc )
                 TY_(DiscardElement)(doc, doctype);
             return no;
         }
+        break;
+    case TidyDoctypeOmit:
+        assert(0);
         break;
     }
 
