@@ -1,14 +1,14 @@
 /*
   config.c -- read config file and manage config properties
   
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/08/13 16:27:26 $ 
-    $Revision: 1.109 $ 
+    $Date: 2008/03/22 20:52:09 $ 
+    $Revision: 1.110 $ 
 
 */
 
@@ -481,6 +481,8 @@ static Bool NeedReparseTagDecls( const TidyOptionValue* current,
             TEST_USERTAGS(TidyBlockTags,tagtype_block);
             TEST_USERTAGS(TidyEmptyTags,tagtype_empty);
             TEST_USERTAGS(TidyPreTags,tagtype_pre);
+        default:
+            break;
         }
     }
     return ret;
@@ -488,16 +490,16 @@ static Bool NeedReparseTagDecls( const TidyOptionValue* current,
 
 static void ReparseTagDecls( TidyDocImpl* doc, uint changedUserTags  )
 {
-#define REPARSE_USERTAGS(USERTAGTYPE) \
+#define REPARSE_USERTAGS(USERTAGOPTION,USERTAGTYPE) \
     if ( changedUserTags & USERTAGTYPE ) \
     { \
         TY_(FreeDeclaredTags)( doc, USERTAGTYPE ); \
-        ReparseTagType( doc, USERTAGTYPE ); \
+        ReparseTagType( doc, USERTAGOPTION ); \
     }
-    REPARSE_USERTAGS(TidyInlineTags);
-    REPARSE_USERTAGS(TidyBlockTags);
-    REPARSE_USERTAGS(TidyEmptyTags);
-    REPARSE_USERTAGS(TidyPreTags);
+    REPARSE_USERTAGS(TidyInlineTags,tagtype_inline);
+    REPARSE_USERTAGS(TidyBlockTags,tagtype_block);
+    REPARSE_USERTAGS(TidyEmptyTags,tagtype_empty);
+    REPARSE_USERTAGS(TidyPreTags,tagtype_pre);
 }
 
 void TY_(ResetConfigToDefault)( TidyDocImpl* doc )
