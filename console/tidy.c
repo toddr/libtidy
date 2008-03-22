@@ -9,8 +9,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/03/22 20:23:37 $ 
-    $Revision: 1.49 $ 
+    $Date: 2008/03/22 20:53:08 $ 
+    $Revision: 1.50 $ 
 */
 
 #include "tidy.h"
@@ -871,6 +871,8 @@ void printOptionValues( TidyDoc ARG_UNUSED(tdoc), TidyOption topt,
         break;
     case TidyNewline:
         d->def = tidyOptGetCurrPick( tdoc, optId );
+        break;
+    default:
         break;
     }
 
