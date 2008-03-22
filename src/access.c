@@ -1,14 +1,14 @@
 /* access.c -- carry out accessibility checks
 
   Copyright University of Toronto
-  Portions (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  Portions (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/05/30 16:47:31 $ 
-    $Revision: 1.38 $ 
+    $Date: 2008/03/22 00:02:34 $ 
+    $Revision: 1.39 $ 
 
 */
 
@@ -2509,7 +2509,7 @@ static void AccessibleCompatible( TidyDocImpl* doc, Node* node )
 * It seems like a bad idea to emit this message for
 * every document with _more_ than 3 words!
 ********************************************************/
-
+#if 0
 static int WordCount( TidyDocImpl* doc, Node* node )
 {
     int wc = 0;
@@ -2539,7 +2539,7 @@ static int WordCount( TidyDocImpl* doc, Node* node )
     }
     return wc;
 }
-
+#endif
 
 /**************************************************
 * CheckFlicker
