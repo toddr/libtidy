@@ -3,13 +3,13 @@
 
 /* lexer.h -- Lexer for html parser
   
-   (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+   (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
    See tidy.h for the copyright notice.
   
    CVS Info:
     $Author: arnaud02 $ 
-    $Date: 2007/01/17 10:51:18 $ 
-    $Revision: 1.40 $ 
+    $Date: 2008/03/22 21:06:11 $ 
+    $Revision: 1.41 $ 
 
 */
 
@@ -88,7 +88,6 @@ typedef enum
   LEX_COMMENT,
   LEX_DOCTYPE,
   LEX_PROCINSTR,
-  LEX_ENDCOMMENT,
   LEX_CDATA,
   LEX_SECTION,
   LEX_ASP,
