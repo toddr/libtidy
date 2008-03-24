@@ -6,8 +6,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/01/25 18:51:01 $ 
-    $Revision: 1.73 $ 
+    $Date: 2008/03/24 21:00:51 $ 
+    $Revision: 1.74 $ 
 
   Defines HTML Tidy API implemented by tidy library.
   
@@ -1453,7 +1453,10 @@ int         tidyDocSaveStream( TidyDocImpl* doc, StreamOut* out )
 TidyNode TIDY_CALL   tidyGetRoot( TidyDoc tdoc )
 {
     TidyDocImpl* impl = tidyDocToImpl( tdoc );
-    return tidyImplToNode( &impl->root );
+    Node* node = NULL;
+    if ( impl )
+        node = &impl->root;
+    return tidyImplToNode( node );
 }
 
 TidyNode TIDY_CALL   tidyGetHtml( TidyDoc tdoc )
