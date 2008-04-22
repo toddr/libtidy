@@ -19,8 +19,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/01/25 18:51:01 $ 
-    $Revision: 1.21 $ 
+    $Date: 2008/04/22 11:00:42 $ 
+    $Revision: 1.22 $ 
 
   Contributing Author(s):
 
@@ -101,7 +101,7 @@ opaque_type( TidyNode );
 */
 opaque_type( TidyAttr );
 
-/** @} */
+/** @} end Opaque group */
 
 TIDY_STRUCT struct _TidyBuffer;
 typedef struct _TidyBuffer TidyBuffer;
@@ -856,7 +856,7 @@ TIDY_EXPORT TidyTagId TIDY_CALL tidyNodeGetId( TidyNode tnod );
 TIDY_EXPORT uint TIDY_CALL tidyNodeLine( TidyNode tnod );
 TIDY_EXPORT uint TIDY_CALL tidyNodeColumn( TidyNode tnod );
 
-/** @defgroup NodeIsElementName
+/** @defgroup NodeIsElementName Deprecated node interrogation per TagId
 **
 ** @deprecated The functions tidyNodeIs{ElementName} are deprecated and 
 ** should be replaced by tidyNodeGetId.
@@ -958,7 +958,7 @@ TIDY_EXPORT TidyAttrId TIDY_CALL tidyAttrGetId( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsEvent( TidyAttr tattr );
 TIDY_EXPORT Bool TIDY_CALL tidyAttrIsProp( TidyAttr tattr );
 
-/** @defgroup AttrIsAttributeName
+/** @defgroup AttrIsAttributeName Deprecated attribute interrogation per AttrId
 **
 ** @deprecated The functions  tidyAttrIs{AttributeName} are deprecated and 
 ** should be replaced by tidyAttrGetId.
@@ -1023,7 +1023,7 @@ TIDY_EXPORT Bool TIDY_CALL tidyAttrIsROWSPAN( TidyAttr tattr );
 
 TIDY_EXPORT TidyAttr TIDY_CALL tidyAttrGetById( TidyNode tnod, TidyAttrId attId );
 
-/** @defgroup AttrGetAttributeName
+/** @defgroup AttrGetAttributeName Deprecated attribute retrieval per AttrId
 **
 ** @deprecated The functions tidyAttrGet{AttributeName} are deprecated and 
 ** should be replaced by tidyAttrGetById.
