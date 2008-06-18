@@ -1,6 +1,6 @@
 /* localize.c -- text strings and routines to handle errors and general messages
 
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   Portions Copyright University of Toronto
   See tidy.h and access.h for the copyright notice.
 
@@ -10,8 +10,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2007/11/06 11:59:14 $ 
-    $Revision: 1.177 $ 
+    $Date: 2008/06/18 20:18:54 $ 
+    $Revision: 1.178 $ 
 
 */
 
@@ -848,6 +848,14 @@ static const TidyOptionDoc option_docs[] =
   {TidyPreserveEntities,
    "This option specifies if Tidy should preserve the well-formed entitites "
    "as found in the input. "
+  },
+  {TidyAnchorAsName,
+   "This option controls the deletion or addition of the name attribute "
+   "in elements where it can serve as anchor. "
+   "If set to \"yes\", a name attribute, if not already existing, "
+   "is added along an existing id attribute if the DTD allows it. "
+   "If set to \"no\", any existing name attribute is removed "
+   "if an id attribute exists or has been added. "
   },
   {N_TIDY_OPTIONS,
    NULL

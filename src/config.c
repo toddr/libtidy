@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/03/22 20:52:09 $ 
-    $Revision: 1.110 $ 
+    $Date: 2008/06/18 20:18:54 $ 
+    $Revision: 1.111 $ 
 
 */
 
@@ -313,7 +313,8 @@ static const TidyOptionImpl option_defs[] =
   { TidyDecorateInferredUL,      MU, "decorate-inferred-ul",        BL, no,              ParseBool,         boolPicks       },
   { TidyPreserveEntities,        MU, "preserve-entities",           BL, no,              ParseBool,         boolPicks       },
   { TidySortAttributes,          PP, "sort-attributes",             IN, TidySortAttrNone,ParseSorter,       sorterPicks     },
-  { TidyMergeSpans,               MU, "merge-spans",                IN, TidyAutoState,   ParseAutoBool,     autoBoolPicks   },
+  { TidyMergeSpans,              MU, "merge-spans",                 IN, TidyAutoState,   ParseAutoBool,     autoBoolPicks   },
+  { TidyAnchorAsName,            MU, "anchor-as-name",              BL, yes,             ParseBool,         boolPicks       },
   { N_TIDY_OPTIONS,              XX, NULL,                          XY, 0,               NULL,              NULL            }
 };
 
