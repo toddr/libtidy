@@ -1,13 +1,13 @@
 /* entities.c -- recognize HTML ISO entities
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2006/11/30 17:09:20 $ 
-    $Revision: 1.18 $ 
+    $Author: hoehrmann $ 
+    $Date: 2008/08/09 11:55:27 $ 
+    $Revision: 1.19 $ 
 
   Entity handling can be static because there are no config or
   document-specific values.  Lookup table is 100% defined at 
@@ -311,7 +311,7 @@ static const entity entities[] =
 ** speed that hash doesn't improve things without > 500
 ** items in list.
 */
-static const entity* lookup( ctmbstr s )
+static const entity* entitiesLookup( ctmbstr s )
 {
     tmbchar ch = (tmbchar)( s ? *s : 0 );
     const entity *np;
@@ -344,7 +344,7 @@ uint EntityCode( ctmbstr name, uint versions )
     }
 
    /* Named entity: name ="&" followed by a name */
-    if ( NULL != (np = lookup(name+1)) )
+    if ( NULL != (np = entitiesLookup(name+1)) )
     {
         /* Only recognize entity name if version supports it.  */
         if ( np->versions & versions )
@@ -379,7 +379,7 @@ Bool TY_(EntityInfo)( ctmbstr name, Bool isXml, uint* code, uint* versions )
     }
 
     /* Named entity: name ="&" followed by a name */
-    if ( NULL != (np = lookup(name+1)) )
+    if ( NULL != (np = entitiesLookup(name+1)) )
     {
         *code = np->code;
         *versions = np->versions;

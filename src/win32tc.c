@@ -1,13 +1,13 @@
 /* win32tc.c -- Interface to Win32 transcoding routines
 
-  (c) 1998-2007 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
-  $Id: win32tc.c,v 1.11 2007/07/23 15:41:22 arnaud02 Exp $
+  $Id: win32tc.c,v 1.12 2008/08/09 11:55:27 hoehrmann Exp $
 */
 
 /* keep these here to keep file non-empty */
-#include <tidy.h>
+#include "tidy.h"
 #include "forward.h"
 #include "streamio.h"
 #include "tmbstr.h"

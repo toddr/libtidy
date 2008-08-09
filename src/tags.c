@@ -1,13 +1,13 @@
 /* tags.c -- recognize HTML tags
 
-  (c) 1998-2006 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
 
   CVS Info :
 
-    $Author: arnaud02 $ 
-    $Date: 2008/03/22 20:23:38 $ 
-    $Revision: 1.70 $ 
+    $Author: hoehrmann $ 
+    $Date: 2008/08/09 11:55:27 $ 
+    $Revision: 1.71 $ 
 
   The HTML tags are stored as 8 bit ASCII strings.
 
@@ -263,7 +263,7 @@ static const Dict tag_defs[] =
 };
 
 #if ELEMENT_HASH_LOOKUP
-static uint hash(ctmbstr s)
+static uint tagsHash(ctmbstr s)
 {
     uint hashval;
 
@@ -273,7 +273,7 @@ static uint hash(ctmbstr s)
     return hashval % ELEMENT_HASH_SIZE;
 }
 
-static const Dict *install(TidyDocImpl* doc, TidyTagImpl* tags, const Dict* old)
+static const Dict *tagsInstall(TidyDocImpl* doc, TidyTagImpl* tags, const Dict* old)
 {
     DictHash *np;
     uint hashval;
@@ -283,7 +283,7 @@ static const Dict *install(TidyDocImpl* doc, TidyTagImpl* tags, const Dict* old)
         np = (DictHash *)TidyDocAlloc(doc, sizeof(*np));
         np->tag = old;
 
-        hashval = hash(old->name);
+        hashval = tagsHash(old->name);
         np->next = tags->hashtab[hashval];
         tags->hashtab[hashval] = np;
     }
@@ -291,9 +291,9 @@ static const Dict *install(TidyDocImpl* doc, TidyTagImpl* tags, const Dict* old)
     return old;
 }
 
-static void removeFromHash( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
+static void tagsRemoveFromHash( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
 {
-    uint h = hash(s);
+    uint h = tagsHash(s);
     DictHash *p, *prev = NULL;
     for (p = tags->hashtab[h]; p && p->tag; p = p->next)
     {
@@ -311,7 +311,7 @@ static void removeFromHash( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
     }
 }
 
-static void emptyHash( TidyDocImpl* doc, TidyTagImpl* tags )
+static void tagsEmptyHash( TidyDocImpl* doc, TidyTagImpl* tags )
 {
     uint i;
     DictHash *prev, *next;
@@ -333,7 +333,7 @@ static void emptyHash( TidyDocImpl* doc, TidyTagImpl* tags )
 }
 #endif /* ELEMENT_HASH_LOOKUP */
 
-static const Dict* lookup( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
+static const Dict* tagsLookup( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
 {
     const Dict *np;
 #if ELEMENT_HASH_LOOKUP
@@ -349,17 +349,17 @@ static const Dict* lookup( TidyDocImpl* doc, TidyTagImpl* tags, ctmbstr s )
     /* than the new one.                                          */
     /* However, as FreeDeclaredTags() correctly cleans the hash   */
     /* this should not be true anymore.                           */
-    for (p = tags->hashtab[hash(s)]; p && p->tag; p = p->next)
+    for (p = tags->hashtab[tagsHash(s)]; p && p->tag; p = p->next)
         if (TY_(tmbstrcmp)(s, p->tag->name) == 0)
             return p->tag;
 
     for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
         if (TY_(tmbstrcmp)(s, np->name) == 0)
-            return install(doc, tags, np);
+            return tagsInstall(doc, tags, np);
 
     for (np = tags->declared_tag_list; np; np = np->next)
         if (TY_(tmbstrcmp)(s, np->name) == 0)
-            return install(doc, tags, np);
+            return tagsInstall(doc, tags, np);
 #else
 
     for (np = tag_defs + 1; np < tag_defs + N_TIDY_TAGS; ++np)
@@ -402,7 +402,7 @@ static void declare( TidyDocImpl* doc, TidyTagImpl* tags,
 {
     if ( name )
     {
-        Dict* np = (Dict*) lookup( doc, tags, name );
+        Dict* np = (Dict*) tagsLookup( doc, tags, name );
         if ( np == NULL )
         {
             np = NewDict( doc, name );
@@ -432,7 +432,7 @@ Bool TY_(FindTag)( TidyDocImpl* doc, Node *node )
         return yes;
     }
 
-    if ( node->element && (np = lookup(doc, &doc->tags, node->element)) )
+    if ( node->element && (np = tagsLookup(doc, &doc->tags, node->element)) )
     {
         node->tag = np;
         return yes;
@@ -454,7 +454,7 @@ const Dict* TY_(LookupTagDef)( TidyTagId tid )
 
 Parser* TY_(FindParser)( TidyDocImpl* doc, Node *node )
 {
-    const Dict* np = lookup( doc, &doc->tags, node->element );
+    const Dict* np = tagsLookup( doc, &doc->tags, node->element );
     if ( np )
         return np->parser;
     return NULL;
@@ -595,7 +595,7 @@ void TY_(FreeDeclaredTags)( TidyDocImpl* doc, UserTagType tagType )
         if ( deleteIt )
         {
 #if ELEMENT_HASH_LOOKUP
-          removeFromHash( doc, &doc->tags, curr->name );
+          tagsRemoveFromHash( doc, &doc->tags, curr->name );
 #endif
           FreeDict( doc, curr );
           if ( prev )
@@ -613,7 +613,7 @@ void TY_(FreeTags)( TidyDocImpl* doc )
     TidyTagImpl* tags = &doc->tags;
 
 #if ELEMENT_HASH_LOOKUP
-    emptyHash( doc, tags );
+    tagsEmptyHash( doc, tags );
 #endif
     TY_(FreeDeclaredTags)( doc, tagtype_null );
     FreeDict( doc, tags->xml_tags );
