@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/03/22 00:02:34 $ 
-    $Revision: 1.39 $ 
+    $Date: 2008/08/11 10:08:23 $ 
+    $Revision: 1.40 $ 
 
 */
 
@@ -1721,7 +1721,7 @@ static void CheckTable( TidyDocImpl* doc, Node* node )
         {
             TNode = node->content;
 
-            if (TNode->content->tag == NULL)
+            if (TNode->content && TNode->content->tag == NULL)
             {
                 word = getTextNodeClear( doc, TNode);
             }
