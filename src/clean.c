@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/06/18 20:18:54 $ 
-    $Revision: 1.110 $ 
+    $Date: 2008/10/14 12:18:10 $ 
+    $Revision: 1.111 $ 
 
   Filters from other formats such as Microsoft Word
   often make excessive use of presentation markup such
@@ -1691,8 +1691,11 @@ static Node* PruneSection( TidyDocImpl* doc, Node *node )
           }
         }
 
-        /* discard node and returns next */
-        node = TY_(DiscardElement)( doc, node );
+        /* discard node and returns next, unless it is a text node */
+        if ( node->type == TextNode )
+            node = node->next;
+        else
+            node = TY_(DiscardElement)( doc, node );
 
         if (node == NULL)
             return NULL;
