@@ -5,9 +5,9 @@
   
   CVS Info :
 
-    $Author: hoehrmann $ 
-    $Date: 2008/08/09 11:55:26 $ 
-    $Revision: 1.130 $ 
+    $Author: arnaud02 $ 
+    $Date: 2008/12/07 21:08:48 $ 
+    $Revision: 1.131 $ 
 
 */
 
@@ -1173,6 +1173,8 @@ static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attva
 
 /* methods for checking value of a specific attribute */
 
+void arnaud(){}
+
 void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbchar c; 
@@ -1180,7 +1182,10 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
     uint escape_count = 0, backslash_count = 0;
     uint i, pos = 0;
     uint len;
+    Bool isJavascript = no;
     
+    arnaud();
+
     if (!AttrHasValue(attval))
     {
         TY_(ReportAttrError)( doc, node, attval, MISSING_ATTR_VALUE);
@@ -1189,12 +1194,15 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
 
     p = attval->value;
     
+    isJavascript =
+        TY_(tmbstrncmp)(p,"javascript:",sizeof("javascript:")-1)==0;
+
     for (i = 0; '\0' != (c = p[i]); ++i)
     {
         if (c == '\\')
         {
             ++backslash_count;
-            if ( cfgBool(doc, TidyFixBackslash) )
+            if ( cfgBool(doc, TidyFixBackslash) && !isJavascript)
                 p[i] = '/';
         }
         else if ((c > 0x7e) || (c <= 0x20) || (strchr("<>", c)))
@@ -1220,7 +1228,7 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
     }
     if ( backslash_count )
     {
-        if ( cfgBool(doc, TidyFixBackslash) )
+        if ( cfgBool(doc, TidyFixBackslash) && !isJavascript )
             TY_(ReportAttrError)( doc, node, attval, FIXED_BACKSLASH );
         else
             TY_(ReportAttrError)( doc, node, attval, BACKSLASH_IN_URI );
