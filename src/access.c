@@ -7,8 +7,8 @@
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2009/03/25 21:37:06 $ 
-    $Revision: 1.41 $ 
+    $Date: 2009/03/25 22:04:35 $ 
+    $Revision: 1.42 $ 
 
 */
 
@@ -1580,21 +1580,6 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
                     {
                         temp = TNode->content;
 
-                        if ( nodeIsTH(temp) )
-                        {
-                            AttVal* av;
-                            for (av = temp->attributes; av != NULL; av = av->next)
-                            {
-                                if ( attrIsROWSPAN(av) )
-                                {
-                                    if (atoi(av->value) > 1)
-                                    {
-                                        validColSpanRows = no;
-                                    }
-                                }
-                            }
-                        }
-
                         /* The number of TH elements found within TR element */
                         if (flag == 0)
                         {
@@ -1609,13 +1594,13 @@ static void CheckMultiHeaders( TidyDocImpl* doc, Node* node )
                                     AttVal* av;
                                     for (av = temp->attributes; av != NULL; av = av->next)
                                     {
-                                        if ( attrIsCOLSPAN(av) )
-                                        {
-                                            if (atoi(av->value) > 1)
-                                            {
-                                                validColSpanColumns = no;
-                                            }
-                                        }
+                                        if ( attrIsCOLSPAN(av)
+                                             && (atoi(av->value) > 1) )
+                                            validColSpanColumns = no;
+
+                                        if ( attrIsROWSPAN(av)
+                                             && (atoi(av->value) > 1) )
+                                            validColSpanRows = no;
                                     }
                                 }
 
