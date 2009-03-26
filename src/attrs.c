@@ -1,13 +1,13 @@
 /* attrs.c -- recognize HTML attributes
 
-  (c) 1998-2008 (W3C) MIT, ERCIM, Keio University
+  (c) 1998-2009 (W3C) MIT, ERCIM, Keio University
   See tidy.h for the copyright notice.
   
   CVS Info :
 
     $Author: arnaud02 $ 
-    $Date: 2008/12/07 21:08:48 $ 
-    $Revision: 1.131 $ 
+    $Date: 2009/03/26 13:05:22 $ 
+    $Revision: 1.132 $ 
 
 */
 
@@ -1173,8 +1173,6 @@ static void CheckLowerCaseAttrValue( TidyDocImpl* doc, Node *node, AttVal *attva
 
 /* methods for checking value of a specific attribute */
 
-void arnaud(){}
-
 void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
 {
     tmbchar c; 
@@ -1184,8 +1182,6 @@ void TY_(CheckUrl)( TidyDocImpl* doc, Node *node, AttVal *attval)
     uint len;
     Bool isJavascript = no;
     
-    arnaud();
-
     if (!AttrHasValue(attval))
     {
         TY_(ReportAttrError)( doc, node, attval, MISSING_ATTR_VALUE);
