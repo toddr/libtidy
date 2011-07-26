@@ -57,14 +57,10 @@ SHELL=/bin/sh
 
 PROJECT=tidy
 
-# Installation variables.  Spaces OK, only dir create and file copy operations.
-runinst_prefix=/usr/local
-devinst_prefix=/usr/local
-
-bininst = ${runinst_prefix}/bin
-libinst = ${devinst_prefix}/lib
-incinst = ${devinst_prefix}/include/$(PROJECT)
-maninst = ${devinst_prefix}/man
+bininst = ${DESTDIR}/bin
+libinst = ${DESTDIR}/lib
+incinst = ${DESTDIR}/include/$(PROJECT)
+maninst = ${DESTDIR}/man
 
 # Internal variables. - No spaces allowed: libtool chokes on spaces in directory names.
 TOPDIR = ../..
@@ -91,7 +87,8 @@ DOCDIR = ${TOPDIR}/htmldoc
 # For optimised builds, flags such as "-O2" should be added and -D_DEBUG=1
 # disabled.
 CC= gcc
-CFLAGS= -g -pedantic -Wall -I $(INCDIR)
+# Honor ENV CFLAGS
+CFLAGS=$CFLAGS -g -pedantic -Wall -I $(INCDIR)
 # flags only supported with gcc 3.x
 CFLAGS += -Wunused-parameter
 
